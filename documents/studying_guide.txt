@@ -44,23 +44,5 @@ study MVC frameworks, networking, backend, NLP, algorithms, design patterns / ar
 while studying kotlin: 
 study algorithms, OS, microservices, GIS (probably google maps I imagine), and security 
 
-***while studying Go:
+while studying Go:
 study architecture, front end, security, graphics, NLP, and amazon web services 
-
-study by themselves: algorithms, enterpreneurship, GIS, and gaming
-(study them less in other words?) 
-___________________________________________
-FOR TOPICS STUDY THESE LANGUAGES AT THE SAME TIME: 
-networking: swift
-database: c# 
-web tech: php 
-machine learning: c++ 
-multithreading: swift 
-security: go 
-hacking: SQL 
-microservices: php 
-OS: swift 
-algorithms: kotlin 
-MVC frameworks: java 
-servers: go
-distributed systems: typescript

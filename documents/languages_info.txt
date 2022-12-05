@@ -30,12 +30,6 @@ low level programming > professor > android
 ideal specializations eventually: 
 big tech companies > datacenter > math 
 
-greatest talent: 
-graphics > professor > system admin > web dev 
-
-weakest area: 
-ios > ios > graphics (?) 
-
 not really my cup of tea: 
 datacenter > ios > web dev 
 
@@ -47,12 +41,8 @@ python > backend servers > random
 
 _________________________________________
 
-
 most employable languages: 
 python > sql > swift 
-
-languages best for my career going forward: 
-php > go > python
 
 my favorite languages: 
 python > swift > java 
@@ -69,15 +59,6 @@ go > sql > python > php
 best future in for me: 
 python
 
-best next languages for personal development: 
-php > c# > c++ > c > python > sql 
-
-best language to go in depth with after preliminary learning: 
-c# > sql > java > c++
-
-biggest lapse in my knowledge: 
-c# > javascript
-
 most money to be made by me: 
 python > kotlin > c#
 
@@ -86,12 +67,6 @@ php, kotlin, go
 
 most overrated language: 
 c++, sql
-
-most underrated language (again): 
-python > c++ > php 
-
-most overrated language (again): 
-java > c# > swift
 
 ------------------------------------------
 best to study a particular topic with:
@@ -162,12 +137,6 @@ python
 best direction to go long term: 
 java > python > go 
 
-languages I'll most beat others in: 
-java > swift > kotlin > go 
-
-direction I'll make the most money the fastest: 
-java > php 
-
 direction i'll make biggest money in long term: 
 javascript > java > c 
 
@@ -205,8 +174,4 @@ my worst career:
 java > sql > go > c# 
 
 career I'd most want to have: 
-c# > sql > python > java 
-
-best job prospects overall over the next 20 years: 
-c > java > c# > php 
-
+c# > sql > python > java
