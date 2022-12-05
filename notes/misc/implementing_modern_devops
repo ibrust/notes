@@ -1,0 +1,17 @@
+CHAPTER 1: 
+
+-a site reliability engineer (SRE) is basically a system engineer with tools to automate the infrastructure 
+-devops engineers are really responsible for more than this: they're SREs but are also totally involved in the software development lifecycle, 
+    coordinating & solving communication problems that go along with release management, meeting requirements, etc. 
+-traditional software dev used to divide teams into: business analysts, developers, system admins, QA engineers. this is a horizontal slice of the company. 
+-modern devops consists of combined teams: developers, business analysts, system admins, and QA engineers working together: vertical slicing. 
+    also called a cross-functional team
+-the automation of devops software also allows some reduction in the number of different roles required for a team. 
+    For example, a team might now consist of business analysts, developers, and devops engineers. 
+    sometimes the business analysts or devops people assist in development. 
+    In some teams, both developer and devops roles are merged into one - so you just have devlop/developers and analysts. 
+-automation is especially critical when using microservices, which all have to have their deployments managed separately
+
+-devops does not work without good code coverage and automated testing. testing is especially essential to automated deployment 
+
+-

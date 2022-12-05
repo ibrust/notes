@@ -1,0 +1,30 @@
+=============CHAPTER 1 - INTRODUCTION=================
+
+install and import beautifulsoup: 
+    $: pip3 install beautifulsoup4 
+
+    from bs4 import BeautifulSoup 
+
+create & use a virtual environment: 
+    virtualenv your_environment_name 
+    cd your_enironment_name 
+    source bin/activate 
+    
+    pip3 install beautifulsoup 
+    
+    ... 
+    deactivate              <- turns off virtual environment 
+
+
+BeaitufulSoup can handle XML as well as HTML 
+
+encountering exceptions is very common during scraping, and you must know how to handle them. 
+
+if you try to access a tag and it wasn't there this will throw an AttributeError
+likewise when you request a page you must check for an HTTPError or URLError
+
+so it's best to write some higher level functions for these common operations, with error handling built into them 
+
+=============CHAPTER 2 - HTML PARSING=================
+
+pg 13

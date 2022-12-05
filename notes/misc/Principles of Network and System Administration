@@ -1,0 +1,222 @@
+chmod 4000 file or chmod u+s file <- setuid bit 
+chmod 2000 file or chmod g+s file <- setgid bit 
+chmod 1000 file or chmod +t file <- sticky bit 
+
+setuid tells UNIX that regardless of who runs the program it should be execution with permissions of the owner 
+    often this is used to set up limited root access for running certain programs 
+setgid is the same but for the group
+a directory with the sticky bit set restricts the deletion of files within it. a file or directory with this bit set 
+    can only be deleted or renamed by its owner or the superuser. this is useful for directories which must be writable to 
+    by everyone, but which you dont want people deleting from (could someone still overwrite the files with dummy data though?)
+
+umask is a bitmask used to set default permissions for new files. each user sets their own umask. read about the implementation details 
+
+symbolic links vs hard links: hard links will count as a reference to the file & retain it in memory, symbolic links will not 
+    ln -s file linkname     <- create symbolic link 
+    ln file linkname        <- create hard link 
+
+/export      <- this UNIX directory is used by network filesystems to make files available for mounting by other systems 
+
+old operating systems (pre Windows XP) file systems were not designed for a network environment and cannot be secured. 
+    adding them to your network introduces giant security flaws 
+
+kill pid   <- by defaut sends signal 15, a normal signal termination signal. this can be ignored by some handlers, however 
+kill -9 pid     <- sends signal 9, a stronger termination signal that cannot be ignored 
+
+if you kill a parent process all of its children die also 
+sometimes software bugs cause zombie processes hang around after their parent is gone. you cant kill them, the way to get 
+    rid of them is restart their parent process that's waiting for it or kill that process 
+
+the child inherits the environment variables of its parent. thus when hyou set an environment variable in the shell, processes 
+    spawned by the shell inherit those variables 
+
+the 3 upper layers of the OSI model: 
+    1) Application layer        <- layer where application level protocols go (surprisingly above the presentation layer?)
+    2) Presentation layer       <- layer for transforming the data into a format suitable for interpretation by the receiver 
+    3) Session layer            <- the OS code which sets up / maintains the session. includes the sockets interface & multiplexing / demultiplexing 
+
+an alternative to routers, VLANs selective filtering at the switch level can help protect large subnets of switches against
+     broadcast storms & help switched subnets scale. VLANs are also a cheap solution 
+
+Solaris uses big endian (aka network byte ordering), while Windows & Unix systems running intel hardware use little endian. 
+    little endian systems have to convert their data to big endian before sending it over a network. 
+    it's also sometimes necessary to specify little endian or big endian when compiling software 
+
+Class D IP4 addresses are also called MBONE or multicast backbone addresses - from 240.0.0.0 to 239.255.255.0
+    this is like a restricted form of broadcast. hosts can 'tune in' to these channels by subscribing to MBONE services. read for further details
+
+special IP4 addresses: 
+    0.0.0.0     default route                   // the default destination for outgoing packets on a subnet, usually made equal to the router address  
+    127.0.0.1   loopback address                // send messages to oneself 
+    127.*.*.*   loopback network
+    *.*.*.0     network addresses (or old broadcast)        // refers to the network itself. use of this for broadcast has been abandoned 
+    *.*.*.255   broadcast addresses 
+    *.*.*.1     router or gateway (conventionally)
+    224.*.*.*   multicast addresses 
+
+the purpose of subnets is to divide a network up into regions & limit broadcast traffic, which can stiffle network performance 
+    usually this is achieved using routers, dividing hosts up into groups. as mentioned earlier it can also be achieved with VLANs 
+netmasks divide up the IP address into 2 parts: a network address & a host address. the netmask sets the boundary for how many 
+    IP addresses are kept for hosts in the subnet & how many subnets (or domains) the network can support 
+a netmask can also be used to separate hosts that lie on the same network, forcing them to communicate via the network router 
+    (this sounds like a VLAN... you can setup packet filtering at the router & do other things)
+in a multi-level network there can be multiple levels of netmasks applied 
+
+apparently you can set your IP address using ifconfig/ipconfig, though the book doesn't specify how this interacts with DHCP
+    it also says usually this is automatically configured during boot, and that normally we dont need this command unless things were misconfigured
+    I think this might be going over configuration without DHCP  
+hosts need minimal configuration unless they are acting as routers. but they do need a default route where datagrams outside the subnet are sent to 
+    the following commands are examples of setting the default route: 
+        route add default <gateway_address> 1                   <- he doesn't say which system 
+        ./sbin/route add default gw <gateway_address> metric 1  <- GNU/Linux (as of 2004) 
+to check the default route, & all other routing table entries: 
+    netstat -r 
+if the default route isn't set the routing table will blow up with entries outside of the systems subnet, apparently 
+
+CIDR revolutionized the way IP routing took place. As a result, we now have "autonomous systems" - containers of routing domains within containers. 
+    within an autonomous system (AS) internal routing protocols are used; between them border routing protocols are used (BGP4 - border gateway protocol 4)
+    AS's are assigned an autonomous system number (ASN) & the systems border router is addressed using the ASN 
+    AS's are sometimes also called 'routing domains' 
+
+NAT provides a single IP address to the outside world for an internal network
+the NAT internal networks IP addresses should be non-routable (i.e. 10.x.x.x) 
+NATs are often used in conjunction with a firewall (not great detail on why is given) 
+some network services wont run through a NAT, because it looks like the IP addresses have been spoofed (i.e. changed - and they have been)
+
+find a tutorial on ifconfig / ipconfig
+    ipconfig /all       <- on windows this shows every address you can think of
+    ifconfig -a         <- on UNIX shows a bunch of addresses 
+
+_____________________________________________________
+CHAPTER 3 
+
+It seems like you generally want homogeny between systems in your network - including GPUs, mice, keyboards, OS's, NICs, disk sizes, software, etc. 
+    this makes it easier to configure / maintain the systems. you can also swap out parts as needed 
+    bear in mind though that heterogeny protects against single points of failure (but this is I think insignificant if you carefully design the system)
+
+the author claims a server is not the machine, but a process (questionable - language is a tool). in UNIX server processes are called daemons, on Windows they're called services
+
+machines often have many identifiers used in a variety of contexts: 
+    1) circuit board ID number - often used in software licensing 
+    2) install name - setup during OS installation. often it's compiled into the kernel or placed in a file like /etc/hostname
+    3) domain name resolution cache - a file mapping IPs to domain names, avoiding repeated DNS lookups 
+    4) IP addresses - typically assigned with DHCP, I don't think people do this manually much anymore but I might be wrong 
+    5) hosts domain name - if you register your hosts IP with DNS
+    6) link layer address - MAC address for computers, SIM card id (whatever its called) on a mobile phone
+
+prefer static IPs to dynamic ones for hosts that provide network services 
+
+BIND is the common implementation of a DNS service 
+w/ DNS, hosts have a canonical name but can also have aliases. For example: 
+    mother.domain.country <- canonical name 
+    www.domain.country <- alias 
+    ftp.domain.country <- alias 
+
+it's very important to secure DNS servers, if subverted they can be used to trick hosts into trusting the wrong foreign hosts 
+
+Windows comes in 2 flavors: server & workstation. Commonly Windows networks have a centralized topology, with a server providing network services to hosts within its domain. 
+UNIX is not limited like Windows is. Hosts can be setup as a server, client, or both. Hosts can share resources. Network topology can be distributed or centralized. 
+
+a machines user-settings can be stored on the machine or on a distributed filesystem or centralized server  
+a machines permissions are also often configured, with some global settings setup by the admin & other settings users have access to 
+
+if user-settings are stored on the local machine they can be more easily lost if the OS needs reinstallation, if a disk fault occurs, etc. 
+    the settings also will not follow the user from one machine to another. Therefor storing user-settings in a distributed filesystem or server is preferred 
+
+the first thing you should do as an admin is find out the following things about your network: 
+    what is the networks topology (physical layout) & what hardware is connected to the network 
+    what function does each host have on the network? 
+    where are the key network services located? 
+    how many different subnets does the network have, and what are their network addresses 
+    what are the router addresses & default routes of each segment 
+    what is the netmask 
+different protocols & applications exist for helping answer some of these questions - SNMP, nmap, syslogd are a few examples (though be careful not to alert security w/ port scans) 
+
+also answer these questions about the hosts attached to your network: 
+    what hardware are they using? 
+    what OS are they running? ('uname -a' on UNIX systems should tell you)
+    what are their names / addresses? 
+    are there any key servers on the network & what services do they provide? 
+
+it's especially important to know how to troubleshoot problems that may arise: 
+    know who is responsible for maintaining different parts of the network, and how you can contact them if things go wrong there
+    know what hardware contracts you have, and what software is upgradable / what licenses you have, etc. 
+    know what system is responsible for creating backups, and how you would restore from a backup should the need arise 
+
+a variety of programs are used for querying DNS: dig, host, nslookup
+    as of this writing (2003) nslookup was deprecated in BIND implementations. there may be something even newer than dig or host, you'll have to search the internet for this
+the domain name is the suffix part of the URL
+    if our domain is example.org, hosts in our domain have names like hostname.example.org 
+once you know your domain name you can find hosts registered within your domain using nslookup or another tool 
+most UNIX systems (as of 2003) have a command 'domainname'. this prints the local Network Information Service (NIS) domain name, not the DNS domain name, so don't confuse these. 
+
+ping and traceroute are the most basic tools for testing network connectivity 
+netcat (the nc command) is like telnut but more secure. the author calls it a swiss army knife of network tools. 
+    echo -e "GET http://www.google.com HTTP/1.0\n\n" | nc www.google.com | head -20         <- use netcat to look at the first 20 lines of the response from google 
+find whatever modern equivalent of netcat or telnet is in use now and become familiar with it 
+
+network efficiency can be improved greatly by the selection & placement of hosts for key network services such as file-servers, web caches, and DNS servers 
+    keep all file services on the same host as the disks with the data 
+    try to use powerful servers to run web & disk services 
+    file servers always benefit from a large amount of RAM. fast network interfaces nad hard disks are also important 
+    consolidating services on one host is easier to administer, but distributing them amongst hosts is more efficient & less prone to catastrophic failure 
+    make sure not to create circular references between hosts, especially when mounting networked file systems (NFS). 
+        for example, if host A needs host B & vice versa - this can cause the system to hang 
+    if the service is important enough than you need a backup server for it. DNS is particularly important to babck up - the network is paralyzed without it 
+
+keep your data on as few machines as possible to simplify management 
+there are different conventions for how to name your files which vary depending on the type of filesystem you have, read about best practices. 
+common URL formats for file naming conventions (as of 2003): 
+    /site/host/content 
+    /nfs/host/content 
+each unique resource requires a unique name. 
+read a bit about automount, AFS, DFS, NFS, & the NT file system 
+    automount: 
+    AFS: 
+    DFS: 
+    NFS: 
+    NT: 
+
+the name of every filesystem mount-point should be unique and tell where its located & what its function is 
+when mounting a remote fiesystem on a host, the client & server directories should have exactly the same name for better cross-platform integration
+you can also set up aliases from traditional resource locations (like usr/local) to actual locations (like /site/host/local) to make use more seamless 
+
+when choosing a host for a service consider the following: 
+    does traffic have to cross subnet boundaries (slows down the service & the network)
+        some services, like DNS, can be mirrored on each network. others cannot be. 
+    generally does the topology minimize network traffic
+    would it place insecure services on unimportant hosts 
+
+while user data is shared between all hosts, software binaries are only shared between hosts with the same architecture 
+two strategies for sharing data are a shared filesystem (NFS, AFS) & remote disk mirroring 
+while a network file system is cheap it congests the network, & network access is always slower than disk acccess 
+a certain amount of network traffic can be minimized by mirroring 
+mirroring can't be done to user files since they change too often, but works very well with software binaries  
+on UNIX some utilities used for mirroring are rsync, and cfengine (and I'm sure there are newer ones by now) 
+    you can also just mount & manually copy files from the network filesystem to local files 
+
+typical topology is to have a group of file-servers synchronized by mirroring from a central source, with at least one file server per subnet to avoid router traffic. 
+_____________________________________________________
+CHAPTER 4
+
+usually the hosts OS installation required configuration, the base settings are rarely sufficient for a system / network admins purposes 
+
+server rooms should be locked, kept cool, & secure. 
+backups should ideally be kept in a separate physical location to protect against fire / other disasters 
+
+within the server room: 
+    a reliable (uninterruptible) power supply is needed 
+    single points of failure (i.e. network cables) should be avoided 
+    hot standby equipment should be available for minimal loss of uptime in case of failure 
+    consider using replaceable harddisks with RAID 
+    protection from natural disasters like fire, floods, and heating failure should be provided. 
+        a server should be in its own 'fire cell', isolated by doorways & ventilation areas to avoid spread of fire 
+    access to cabling should be easy 
+    no carpeting or linolium that allows the buildup of static electricity should be allowed in the room. purchase antistatic carpet 
+    humans should not have access 
+    humidity should be kept at reasonable levels: too high and condensation can form on components, shorting circuits; too low and static electricity can build up 
+        static electricity is especially a problem around laster printers that run hot and expel moisture. static electricity causes paper jams 
+
+pg 111, 4.3
+
+

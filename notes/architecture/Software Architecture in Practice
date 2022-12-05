@@ -1,0 +1,416 @@
+these notes should be brief, only containing the tactics (common ways of meeting quality attrivutes) mentioned in the book 
+
+=========================================================
+CHAPTER 4 - AVAILABILITY 
+=========================================================
+
+tactics for detecting a fault: 
+    -ping/echo: often sent by a monitor. tell whether a server is responding (using a timeout) & how long it's taking 
+    -monitor: a component used to monitor the state of health of other components in the system: processors, processes, I/O, memory, security issues, etc. 
+        it orchestrates software using other tactics in th is category to detect malfunctions. 
+    -heartbeat: a fault detection mechanism that employs periodic message exchange between a monitor and a process being monitored 
+        a special case of this is called a watchdog timer, when the heartbeat periodically resets a timeout in its monitor to indicate there's no fault 
+        to improve scalability you can piggy-back these messages in with other control messages 
+        the main difference between a heartbeat & ping/echo is who initiates the message - the monitor or the thing being monitored 
+    -time stamp / sequence numbers: used to detect incorrect sequence of events. 
+    -condition monitoring: continuously checking for potential problems & responding preemptively to prevent a system from ever producing faulty behavior. 
+        the computation of a checksum is one example - if it fails, you repeat the message. 
+    -sanity checking: checking the validity of specific operations or outputs. 
+        the validation is based on knowledge of the systems internals, and typically occurs at interfaces. 
+        example would be fixture validation 
+    -voting: algorithms for ruling out data inconsistencies via the majority 
+        usually the voting algorithm itself is rigorously tested to ensure there aren't any errors in it 
+        the following are some typical voting schemes: 
+        -replication: components are cloned. protects against hardware failures, but can't protect against design or implementation errors 
+        -functional redundancy: a form of voting intended to address the issue of design or implementation faults in both hardware and software 
+            the components must always give the same output given the same input, despite the design & implementations being different 
+        -analytic redundancy: takes functional redundancy a step further, & permits variation amongst the components inputs & outputs 
+            intended to tolerate specification errors by using separate requirement specifications. 
+            in embedded systemms this is used when some input sources are likely to be unavailable 
+                for example, there are multiple ways of computing altitude in an airplane (barometric pressure, radar altimeter, geometrically)
+            the voter method needs to be more sophisticated to accommodate the different system input/output specifications 
+    -exception detection: 
+        an exception is a system condition that alters the flow of execution
+        exceptions are a subset of faults
+        the following are common tactics for detecting exceptions:
+        -system exceptions: vary with the processor & hardware. things like divide by zero, bus and address faults, illegal instructions, etc. 
+        -parameter fence: a specific combination of bits placed immediately after structures in memory to detect overflow errors 
+        -parameter typing: exception raised either by the languages typing mechanism or some custom validation mechanism in your code 
+            doing validation on data formatting across APIs is one example of custom typing you may employ 
+        -timeout: an exception raised by a network timeout
+    -self-test: components can run procedures to test themselves for correct operation. This can be self-initiated or system monitor initiated 
+        similar to condition monitoring but done by the component itself, the same techniques like checksumming are often used to implement it 
+
+tactics for recovering from faults: 
+    via preparation, redundancy, repair, or retrying:
+        -replicated spare: the spare can step in and handle the work. 
+            -hot spare: redundant replicas maintain identical processes & take over immediately when the primary fails 
+                1+1 redundancy: a simple implementation of hot spare with 1 redundant replica per 1 primary
+            -warm spare: the primary processes input traffic & periodically checkpoints, but replicas aren't kept completely in sync 
+            -cold spare: the redundant nodes are out of service until a failure occurs, and then booted up.
+                cheaper and can provide high reliability but not high availability 
+        -rollback: revert the system to the previous valid checkpoint, also known as the 'rollback line'
+            this is often combined with transactions and hot or warm spares to implement recovery  
+            checkpoints can be stored at a fixed location and updated at regular intervals 
+                or at convenient times during processing (like after a demanding operation finishes)
+        -exception handling: software can handle the errors by checking codes or more detailed information, and can then retry, mask or repair the fault 
+        -silent software update: update software without affecting the service 
+            can be accomplished via function patches, class patches, or in-service software upgrades (ISSU)
+            function & class patches are ways of changing the code at runtime - often used for bug fixes 
+            ISSUs are updates done on the non-primary processes in replicated systems 
+            in practice function and class patches are used to deliver bug fixes, while ISSUs are used to deliver new features
+        -retry: assume the fault is transient & retry the operation. often used in networks and server farms where faults are common 
+            it's important to limit the number of retries before a failure 
+        -ignore faulty behavior: ignore a message sent from a source if it's determined to be faulty (possibly via checksumming)
+        -graceful degradation: maintain critical system functions in the presence of failures, dropping less critical functions
+            individual components should gracefully reduce system functionality without causing widespread failure
+        -reconfiguration: attempt fault recovery by reassigning responsibilities to components that are still working
+    via rehabilitation & reintroduction: 
+        -shadow: running a previously failed, rebooted component in 'shadow mode' for a period of time 
+            to monitor it for correctness and allow its state to repopulate 
+        -state resynchronization: when reintroducing a replica its state must be brought back into sync with the other replicas 
+            how the state must be synchronized depends on whether it's a hot, warm, or cold replica 
+            with hot spares often resynchronization occurs organically 
+            with warm spares often synchronization between replicas is enforced through checksums or message digests, 
+                in both warm & hot spares I expect there's a resynchronization protocol involved
+            with cold spares resynchronization is achieved via aligning with the most recent checkpoint
+        -escalating restart: perform restarts on part of the system first & see if it fixes the problem; 
+            then proceed incrementally, restarting larger parts of the system as necessary until the problem is fixed 
+            it's implemented on a system that degrades gracefully, restarting just part of the system while still maintaining some services 
+        -nonstop forwarding: this concept originated in router design. if the control plane or control mechanism fails, 
+            the router keeps forwarding packets while the control mechanism gets back online.
+            when the control plane restarts it does so gracefully, rebuilding its routing protocol database without interrupting router forwarding 
+            it's a specific form of graceful degradation and graceful rehabilitation
+            more generally it's a component that keeps forwarding packets when a controller has failed. 
+
+tactics for preventing faults: 
+    -removal from service: a system component might be designated out of service to guard against faults or prevent faults from causing a failure
+        for example, if your shut your computer down every night you are guarding aganisit faults. another term for this is therapeutic reboot 
+    -transactions: high availability systems use transactions to ensure that messages are atomic, consistent, isolated, and durable (ACID) 
+        this prevents race conditions between processes accessing the same data. it also ensures changes are reliable incase of failures 
+        the most common implementation of transactions is the two-phase commit (2PC) protocol. 
+    -predictive model: employed with a monitor to take corrective action when a system meets critical thresholds. 
+        the performance metrics monitored are used to predict the onset of faults. 
+        examples of metrics include number of sessions established, various thresholds, statistics on the process state, message queue lengths, etc. 
+    -exception prevention: techniques to prevent exceptions from happening. 
+        defining and handling different classes of exceptions, for example 
+        error-correcting code, special classes like smart pointers, the use of wrappers to prevent faults like dangling pointers or semaphore access violations 
+    -increase competence set: a programs competence set is the set of states where it's competent to operate. 
+        an exception indicates the program is outside its competence set. 
+        by designing the program to handle more cases you expand its competence set and prevent errors. 
+        for example, one component might throw an error if it tries to access a locked resource. another component may wait until the resource is freed instead. 
+
+some common availability patterns (combinations of tactics): 
+    -triple modular redundancy (TMR): a common implementation of voting that uses 3 replicas - few enough to be efficient but still safe  
+    -process pairs: a system that employs checkpointing and rollback might implement that using only pairs of replicas instead
+    -circuit breaker pattern: a way of implementing retry. the system keeps retrying until it's confident there's a non-transient fault, 
+        at which point a flag is set. this flag will prevent the system from retrying endlessly until it is reset 
+        be careful not to cause a cascade of failures with other components trying endlessly to reach the newly disabled component. 
+        the system must listen for the flag being set and once its set begin recovery procedures, including suspending requests to the disabled component
+        care must be taken in choosing an appropriate timeout or number of retries to avoid triggering the flag unnecessarily, degrading system performance
+    -forward error recovery: the use of built-in error correction, such as data redundancy, to move a faulty system forward into correct state 
+        without needing to fall back to a previous state or retry. the new state may be slightly degraded from the old one 
+
+
+=========================================================
+CHAPTER 5 - DEPLOYABILITY 
+=========================================================
+
+
+tactics for deployment (often these are determined by the CI/CD software you choose to use): 
+    
+    for managing the CI/CD pipeline: 
+        -scaled rollouts: deploy the new software gradually to only subsets of the users 
+            this allows you to monitor the release and roll back if necessary 
+            implemented by routing specific users requests to the old vs. new software services 
+        -roll back: if there's a problem in the newly deployed software revert it to a prior state 
+            the rollback mechanism must revert all services and data that was updated, preferably in an automated fashion 
+        -script deployment commands: deployments are often complex and require many commands to be done correctly
+            scripts can execute the deployment steps automatically, minimizing human error 
+
+    for managing the deployed application: 
+        -manage service interactions: there's complexity in accommodating simultaneous deployments of multiple versions of backend services.  
+            there can be version incompatibilities, and you don't want to have to replicate the data - you'd like them to access the same data. 
+            so there must be a mediating component to resolve these issues. 
+        -package dependencies: when you package an application together with its dependencies you avoid inconsistent versions across environments. 
+            often this packaging is achieved by using virtual machines, containers, or pods 
+        -feature toggle: a mechanism that can be used to deactivate specific features in a deployed application (i.e. CCM) 
+            a low impact alternative to roll back 
+
+patterns for deployment: 
+
+    patterns for how services are structured: 
+        -microservices architecture: structure the system as a collection of independently deployable services that communiate only 
+            via messages through service interfaces. no other form of interprocess communication is allowed. 
+            services are usually stateless and relatively small (only worked on by 1 team)
+            service dependencies are acyclic 
+            an important part of this pattern is a discover service so messages can be correctly routed 
+            benefits: 
+                once a team finishes the microservice it can be deployed immediately independent of the rest of the application 
+                teams are free to choose their own technologies for their microservice since communication only occurs through service interfaces 
+                microservices can also be scaled independently of one another 
+            tradeoffs: 
+                performance is reduced since all communication occurs via service interfaces across a network and goes through the discovery service
+                    this can be mitigated using the service mesh pattern, which deploys frequently communicating microservices on the same host 
+                complex transactions become difficult because of the need to coordinate multiple microservices in a distributed system 
+                if teams use different technology there's more variety of technology to maintain 
+                large numbers of microservices become complex and require good documentation to understand and combine properly 
+                designing microservices with the right responsibilities at the right granularity can be difficult 
+                the microservices must be designed to support multiple versions of deployments 
+
+    patterns for how services get deployed: 
+        patterns that replace all services with new ones while keeping the services available: 
+            -blue/green: old services are blue, new ones are green. spin up all the new green services and, when ready, reroute requests to them. 
+                once it is confirmed the system is working tear down all the old blue services. 
+                note that this requires double the resources allocated during the transition. 
+                but with cloud computing and the ability to scale dynamically this pattern is now viable 
+            -rolling upgrade: instantiate one or a few new services, reroute requests to them, 
+                then tear down a few old services & repeat until finished. 
+                unlike blue/green this approach doesn't require double the resources allocated during the transition 
+                unlike blue/green it also allows you to detect errors while doing the rollout and revert before having all units effected
+                the downside is you will have two versions active at once, and this can introduce two problems: 
+                    1) temporal inconsistency - a client may get mixed requests from different versions, and this can cause errors on the client 
+                        you can prevent this using the manage service interactions tactic 
+                    2) interface mismatch - old clients with old interfaces sending requests to new services with different interfaces can cause erros 
+                        this can be prevented using a mediator to translate the old request into the new format 
+        patterns that replace only some services with new ones, which is occasionally desirable: 
+            -canary testing: the continuous deployment analogue of beta testing. 
+                designate a small set of users to get the new version and test it out 
+                the users can be unknowing customers or people within the organization 
+                a strategy for carrying out the test and evaluating the results needs to be formulated 
+            -A/B testing: used by marketers to determine which of several options yields the best business results. 
+                a small but meaningful number of users receive a different treatment from the remainder of users 
+                the users might be targetted based on some set of characteristics 
+                the different versions are monitored to see which produces the best results 
+                for example, google tested 41 different shades of blue in their search results report before deciding on one to use 
+
+
+=========================================================
+CHAPTER 6 - ENERGY EFFICIENCY 
+=========================================================
+
+mobile devices, the internet of things, and cloud computing have made energy efficiency more important than in the past 
+
+you can group tactics for energy efficiency into 3 broad categories: 
+
+    tactics for monitoring resources: you can't manage what you can't monitor 
+        -metering: collecting data about energy consumption of a device via a sensor
+            external tools such as amp meters or watt-hour meters are often used. 
+            some devices like server racks have built-in sensors
+        -static classification: estimate energy consumption via cataloguing computing resources used and their known 
+            energy consumption characteristics. 
+            often used when direct measurement is not possible - i.e. running on a cloud, computationally expensive
+            the amount of energy used per memory device fetch, for example, is available via benchmarks or via the manufacturer
+        -dynamic classification: estimate energy consumption based on knowledge of transient conditions such as workload. 
+            this could be done via a table lookup, a regression analysis based on past usage, or a simulation 
+    tactics for allocating resources: assigning resources to do work in a way that's mindful of energy consumption 
+        -reduce usage: at the device level this can be achieved by reducing the refresh rate or darking the background. 
+            removing or deactivating resources when they're no longer needed is another method. 
+            this may involve spinning down harddrives, turning off CPUs or servers, running CPUs at a slower clock rate, etc. 
+            consolidating VMs onto a minimum number of servers and shutting down the idle servers 
+            in mobile apps delegating computations to the cloud can also conserve the phones battery, assuming the computations 
+            require more resources than the network messages do 
+        -discovery: requests to service APIs can be annotated with energy request information and routed accordingly to servers
+            with different energy usage profiles. this allows a client to choose a service based on its possibly dynamic 
+            energy needs 
+        -schedule resources: task scheduling in an energy context can be used to manage energy usage given a tasks constraints 
+            and priorities. scheduling can be based on data gathered via the resource monitoring tactics. 
+            for example, one service may be more lightly loaded than another, allowing it to adapt its energy usage. 
+    tactics for reducing the demand on resources: these tactics are covered in chapter 9 on performance, but are relevant here too 
+
+    patterns for energy efficiency: 
+        -sensor fusion: the strategy of using low-power sensors to detect whether there's a need for a higher powered one. 
+            a common example is using the accelerometer to check whether the user has moved, and if they have using another sensor like GPS 
+            be mindful that this increases complexity, can increase power usage depending on the use case, and may sacrfice data collection speed 
+        -kill abnormal tasks: monitor high-energy consuming apps and, if the user isn't using them, kill them 
+            just be careful that you don't kill important apps that shouldn't be killed 
+        -power monitor: monitor and manage system devices, disabling them when they aren't active. 
+            just remember that restarting a device takes time and can be more energy expensive 
+
+=========================================================
+CHAPTER 7 - INTEGRABILITY
+=========================================================
+
+for integrability purposes interfaces must be understood as more than APIs. they must characterize all relevant dependencies between elements. 
+elements have syntactic and semantic differences that must be bridged. 
+elements also must agree on what the behavior should be in all possible system states (i.e. startup, shutdown, recovery)
+it's worth paying special attention to issues of timing, such as the ordering of events and latency 
+there also needs to be coordination on how to use shared resources 
+
+    tactics for limiting dependencies: 
+        -Encapsulate: this is the foundation on which all integration tactics are built. 
+            introduces an explicit interface to the element and ensures all interactions with the component pass through this interface
+            reduces dependencies
+        -Use an Intermediary: used for breaking dependencies between a set of components. 
+            for example, a pubish subscribe bus, discovery service, and shared data repository are intermediaries that reduce dependencies 
+            between producers and consumers by removing any need to know the identity of the other party. 
+            similarly, data transformers and protocol translators resolve problems with syntactic and data distance. 
+        -Restrict Communication Paths: limit the set of elements to which a given element can communicate. 
+            this is achieved by access controls, hiding elements behind APIs. this forces programmers to go through the API 
+        -Adhere to Standards: standards allow for interoperability and integration across vendors and platforms
+            even local conventions can become a kind of standard within their sphere of influence
+            often forcing others to adhere to a standard when interacting with your component reduces dependencies 
+            it may also address other problems such as syntax, semantics, behavior, timing issues, etc. 
+        -Abstract Common Services: when multiple elements provide services that are similar you can abstract them behind a common interface
+            or an intermediary that translates requests for the abstract service into more specific or adapted requests 
+            this means future components can be integrated with a single abstraction rather than separately integrated with multiple services 
+            also it is easier to change the abstracted service & the interface rather than change a multitude of separate elements 
+    tactics for adaptive integration: 
+        -discover: mechanism by which applications and services discovver one anothers location. 
+            services register an entry in the discovery service so they can be located, and remove it when the service is no longer relevant 
+            deregistration might also be performed by system monitoring performing health checks of components, or by an external service 
+            that decides which entries are no longer relevant 
+            additional attributes useful for routing may also be included in the entry table, such as the services response time 
+            the discovery service reduces dependencies between cooperating processes, which should not have knowledge of one another 
+            dynamic discovery applies the tactic at runtime to allow real time bindings between consumers and providers 
+        -tailor interface: add capabilities to, or hide capabilities in, an existing interface without changing the API or implementation 
+            translation, buffering, and data smoothing can be added to an API without changing it. 
+            interception filters that do validation of messages is another common example 
+            removing capabilities by hiding certain parameters or functions from untrusted users is another 
+            this tactic enables services with different syntax to interoperate without modification 
+            this tactic is usually applied during integration 
+            it is like an intermediary, but usually is limited to bridging the syntactic and data semantic distance, not behavioral differences. 
+        -configure behavior: the behavior of the component can be configured during the build phase, during system initialization 
+            (via reading a config file, for example), or during runtime (by specifying a version as part of a request, for example)
+    tactics for coordinated integration: 
+        -orchestrate: use a control mechanism to coordinate and manage invocations of services. 
+            the system services are unaware of one another and can easily be reorchestrated to fit new needs. 
+            this tactic removes point to point dependencies among the system components. 
+            if the service APIs conform to standards than this also further reduces the orchestrators burden of translating between services 
+        -manage resources: multiple components aren't allowed to directly access resources (threads, memory, etc.) but instead request access 
+            through a resource manager. this can prevent resource exhaustion, prevent race conditions, enforce fair access policy, etc. 
+
+    patterns for integration: 
+        -wrappers, bridges, mediators: Go4 patterns often useful for tailoring interfaces without having to change the elements internals
+        -service oriented architecture (SOA): different languages and technologies can provide and consume services in this pattern. 
+            the services have interfaces that define what they consume and provide, along with service-legal agreements (SLAs) 
+            standards used to facilitate communication between services are SOAP (simple object access protocol)
+            or WSDL (web services description language). implementing these adds significant complexity 
+            microservices are used by a single system within a single organization, while SOAs provide reusable services across organizations
+            many organizations will design and market their service with the goal of broad adoption 
+
+=========================================================
+CHAPTER 8 - MODIFIABILITY
+=========================================================
+
+
+size, cohesion, coupling, & time of modifications are the four important considerations when thinking about modifiability 
+
+cohesion measures how strongly the responsibilities of a module are related. 
+increasing cohesion makes code easier to change.
+
+an architecture that is prepared to oaccommodate changes late in the life cycle will minimize the cost of changes. 
+ideally one prefers that a change is bound as late as possible, though to make this possible requires upfront preparation 
+
+
+tactics for facilitating easy modifiability: 
+    by increasing cohesion: 
+        -split module: if a module is overloaded in responsibilities split them apart into cohesive modules 
+        -redistribute responsibilities: if code with the same responsibilities are sprinkled around different modules, 
+            make a new module & move them into it 
+
+    by reducing coupling: 
+        -encapsullate / use an intermediary / abstract common services: all 3 of these tactics were covered in CH7, but apply here too 
+        -restrict dependencies: restrict which modules a given module interacts and depends on. achieved with access controls & visibility levels.
+            layered architectures employ this by only allowing a layer to use lower layers, preferably those immediately below it. 
+            this can also be achieved using wrappers, where external entities only see (and depend on) the wrapper, not the internal implementation 
+
+    by deferring binding (this section was poorly written, much of this information is incomplete):
+        to compile or build time; 
+            -component replacement: for example, using a build script or makefile to replace components appropriately
+            -compile-time parameterization
+            -aspects: ?
+
+        to deployment, startup. or initialization time: 
+            -configuration files: setting up components by reading from configuration files 
+            -resource files: ? 
+
+        to runtime (preferred if possible):
+            -discovery: see CH7 
+            -interpret parameters: ? 
+            -shared repositories: ? 
+            -polymorphism 
+
+    -external modification: separating the building of a mechanism for modifiability from the user of that mechanism to make a modification 
+        allows different stakeholders such as product managers or designers to make changes (tempo is one example of this)
+
+patterns for facilitating easy modifiability (there are many, here are just a few): 
+    -client-server architecture: first there's a discovery phase. 
+        communication is initiated by the client using a discovery service to find the servers location. 
+        if the serer is stateless each request is treated independently. 
+        if it's stateful each request must identify the client in some fashion. 
+            the client should send an 'end of session' message so the server can remove the stateful resources. 
+            similarly if the client has not sent a request in a specified amount of time the server should remove the allocated resources. 
+    
+    -plug-in architecture (also known as a microkernel architecture): consists of two types of elements - core elements and plugins. 
+        the core elements provide a coroe set of functionality, the plugins add functionality to the core via a fixed set of interfaces. 
+        the two types of elements are bound together at build time or later. 
+        plugins provide a controlled way of oextending a core product in a variety of contexts. 
+        this also allows different teams and even different organizations to develop the plugins separately
+            though bear in mind that involving different organizations is a security risk 
+    
+    -layered architecture: each layer is a grouping of modules that offers a cohesive set of services. 
+        the relationship between layers is unidirectional - layers use those below them and send data above them 
+        layers also only interact with those adjacent to them except for rare exceptions 
+            note however that this will increase coupling between the layers, making them harder to reuse 
+        because dataflow is unidirectional the lower layers can be changed, as long as the interface is preserved, without effecting higher layers 
+        lower level layers may be reused across different applications
+        if the layers aren't designed correctly, and the lower layers dont provide all the needed functionality to higher layers, this can get messy
+    
+    -publish-subscribe architecture: components communicate primarily through asynchronous messages, aka events 
+        components publish their events and other components can subscribe to receive those events 
+        there's an event loop or event bus that notifies all the subscribers of the event
+        it becomes easy to modify this system because there's very loose coupling between publishers and subscribers 
+        likewise a small change in a published message can have a big impact through all its subscribers throughout the system 
+        events can easily be logged by subscribing, and reproducing errors becomes easier 
+        system performance and resource management get more complicated and non-deterministic 
+        security can also be complicated since publishers dont know the identities of their subscribers. 
+            for end-to-end encryption all publishers and subscribers must share the same key. 
+
+
+=========================================================
+CHAPTER 9 - PERFORMANCE
+=========================================================
+
+there are two aspects to a systems response time to an event: processing time and blocked time. 
+    blocked time is the period that, after receiving the event, the system spends waiting to begin processing
+ 
+tactics for increasing performance center around either reducing demand on resources or improving the resources ability to handle the load: 
+    tactics for reducing demand on resources: 
+        -manage work requests: reduce the number of events coming into the system. this can be done in two ways:
+            1) manage event arrival: one way of doing this is with SLAs (service level agreements). 
+                SLAs guarantee the server will process a certain number of evevnts with a certain response time. 
+                both the client & server are constrained by an SLA - the client by number of events, the server by response time 
+            2) manage sampling rate: limit the number of events processed to an adequate rate. a common example would be sampling analytics requests 
+                another example is a video server choosing the resolution of video to return based on network congestion & connection speed
+        -limit event response: you can choose to process events only up to a set maximum rate, ensuring predictable processing 
+            setting a max queue size is one way to achieve this - when events overflow a queue they start falling off. SLAs are another. 
+                if you do end up dropping events you need a policy on whether to log that or ignore it, notify other systems or not
+        -prioritize events: when processing resources get scarce prioritize high priority events over low priority events. 
+            you may even ignore low priority events
+        -reduce computational overhead: try to reduce the amount of work needed to handle each event. there are 3 approaches to this worth mentioning: 
+            1) reduce indirection: intermediaries increase computational overhead while processing an event stream, removing them improves latency. 
+                separation of concerns also increases processing overhead if it leads an event to be processed by a chain of components instead of one. 
+                remember though that careful code optimization can allow you to use encapsulation while still maintaining good performance. 
+                likewise some brokers can setup direct communication between client and server after the initial connection is established 
+            2) colocate communicating resources: you can put resources on the same node, in close proximity, or in the same runtime component 
+                to avoid communicating over networks or having to call subroutines / pass through layers of encapsulation. 
+            3) periodic cleansing: sometimes resources become inefficient over time and need cleansing. 
+                for example, hash tables and virtual memory maps may need recalculation. system admins often reboot systems periodically for this reason
+        -bound execution times: for iterative algorithms you may be able to limit the total iterations if the result is still good enough. 
+            this is often used in combination with the tactic to manage sampling rate. 
+        -increase efficiency: this is just programmatic optimization, what most programmers think of optimization as. 
+    tactics for improving resources ability to handle load: 
+        -increase resources:
+        -introduce concurrency:
+        -maintain multiple copies of computations:
+        -maintain multiple copies of data:
+        -bound queue sizes:
+        -schedule resources:
+
+
+
+pg 141, manage resources
+
+
+

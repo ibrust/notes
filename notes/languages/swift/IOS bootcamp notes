@@ -1,0 +1,129 @@
+-he says structs are on the stack and classes are on the heap
+
+-it appears that if you set the access level of the whole class it will implicitly set its parameters to that 
+
+-you can modify constant variables that point to classes, because they're reference types; this is not the case with enums / structs 
+
+-weird optional binding syntax in switch statements, used with where syntax. read more about both. I think the book gave a better example:
+
+    var str: String? = nil
+    switch (str){
+        case (let s) where s == "string1":
+            ...
+    }
+
+-array.enumerated().forEach syntax and others:
+    var array1 = [1, 2, 3, 4, 5] 
+    array1.forEach { x in 
+        print(x) 
+    } 
+    for (index, value) in array1.enumerated() {
+        print(index, value) 
+    }
+    array1.enumerated().forEach { index, value in 
+        print(index, value) 
+    }
+
+-inout syntax creates a reference parameter: 
+    func function1(_: inout String) {
+        ...
+    } 
+    ...
+    function1(&string1)
+
+-as? does not cast, it just converts between parent/child, it appears
+
+________________________________________________________________________________________________ 
+-for alpha he checked "over full screen"... combined with changing the alphas we could see through the new view. 
+    without that over full screen option it frees up memory apparently 
+_______________________________________________________________________ 
+
+-he's claiming that if you use didSet and you update the variable on a non-main thread it might not use the main thread by default 
+
+-so he got an error "must register a nib or a class for the identifier" - you have to register specific UI elements if they're not on the storyboard, basically. 
+    So, for the xib... put this in viewDidLoad(), apparently:
+    let custom_nib = UINib(nibName: "table_view_cell", bundle: nil)    <- "we need to instantiate our NIB" 
+                "the nib name is not the identifier, it's the actual file name with .xib taken off, or the class name, no idea which"
+    self.tableView.register(_ nib: custom_nib, forCellReuseIdentifier: String)  
+
+-CaseIterable protocol for enums allows you to iterate & provides a count for them. combine with setting raw values of the enum
+
+____________________________________________________________________________________________________________________________________
+-Some notes posted in Skype about the application and View lifecycles : 
+# 1. loadView()
+This is where subclasses should create their custom view hierarchy if they aren't using a nib. Should never be called directly.
+
+# 2. loadViewIfNeeded()
+Loads the view controller's view if it has not already been set.
+
+# 3. viewDidLoad()
+Called after the view has been loaded. For view controllers created in code, this is after -loadView. For view controllers unarchived from a nib, this is after the view is set.
+
+# 4. viewWillAppear(_ animated: Bool)
+Called when the view is about to made visible. Default does nothing
+
+# 5. viewWillLayoutSubviews()
+Called just before the view controller's view's layoutSubviews method is invoked. Subclasses can implement as necessary. Default does nothing.
+
+# 6. viewDidLayoutSubviews()
+Called just after the view controller's view's layoutSubviews method is invoked. Subclasses can implement as necessary. Default does nothing.
+
+# 7. viewDidAppear(_ animated: Bool)
+Called when the view has been fully transitioned onto the screen. Default does nothing
+
+# 8. viewWillDisappear(_ animated: Bool)
+Called when the view is dismissed, covered or otherwise hidden. Default does nothing
+
+# 9. viewDidDisappear(_ animated: Bool)
+Called after the view was dismissed, covered or otherwise hidden. Default does nothing
+
+# 10. viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator)
+Called when the view is Transitioning.
+
+# 11. willMove(toParentViewController parent: UIViewController?)
+# 12. didMove(toParentViewController parent: UIViewController?)
+These two methods are public for container subclasses to call when transitioning between child controllers. If they are overridden, the overrides should ensure to call the super.
+The parent argument in both of these methods is nil when a child is being removed from its parent; otherwise it is equal to the new parent view controller.
+
+# 13. didReceiveMemoryWarning()
+Called when the parent application receives a memory warning. On iOS 6.0 it will no longer clear the view by default.
+
+_________________________ 
+# Application States
+## Not Running 
+ Either the application has not started yet or was running and has been terminated by the system.
+
+## Inactive
+An application is running in the Foreground but is not receiving any events. This could happen in case a Call or Message is received. An application could also stay in this state while in transition to a different state. In this State, we can not interact with app’s UI.
+
+## Active
+ An application is running in the Foreground and receiving the events. This is the normal mode for the Foreground apps. The only way to go to or from the Active state is through the Inactive state. User normally interacts with UI, and can see the response/result for user actions.
+
+## Background
+An application is running in the background and executing the code. Freshly launching apps directly enter into In-Active state and then to Active state. Apps that are suspended, will come back to this background state, and then transition to In-Active → Active states. In addition, an application being launched directly into the background enters this state instead of the inactive state.
+
+## Suspended
+ An application is in the background but is not executing the code. The system moves the application to this state automatically and does not notify. In case of low memory, the system may purge suspended application without notice to make free space for the foreground application. Usually after 5 secs spent in the background, apps will transition to Suspend state, but we can extend the time if app needs.
+  
+
+# Functions
+## application:willFinishLaunchingWithOptions
+This method is called after your application has been launched successfully. It is the first method from our app delegate , which will be called. You can execute your code if the launch was successful.
+
+## application:didFinishLaunchingWithOptions 
+This method is called before the app’s window is displayed. You can finalise your interface and can provide the root ViewController to the window.
+
+## applicationDidBecomeActive /sceneDidBecomeActive
+This method is either called to let your app know that it moved from the inactive to active state or your app was launched by the user or the system or in case user ignores an interruption (such as an incoming phone call or SMS message) that sent the application temporarily to the inactive state. You should use this method to restart any tasks that were paused (or not yet started) while the app was inactive.
+
+## applicationWillResignActive/sceneWillResignActive
+This method is called to let your app know that it is about to move from active to inactive state. This can happen in case of any interruptions (such as an incoming phone call or SMS message or Calendar alerts) or when the user quits the app. You should use this method to pause any ongoing tasks or disable timers etc.
+
+## applicationDidEnterBackground/sceneDidEnterBackground
+ This method is called to let app know that it is not running in the foreground. You have approximately five seconds to perform any tasks and return back. In case you need additional time, you can request additional execution time from the system by calling beginBackgroundTask(expirationHandler:). If the method does not return before time runs out your app is terminated and purged from memory.
+
+## applicationWillEnterForeground/sceneWillEnterForeground
+This method is called as a part of the transition from the background to the active state. You should use this to undo any change you made to your app upon entering the background. applicationDidBecomeActive method is called soon after this method has finished its execution which then moves the app from the inactive to the active state.
+
+## applicationWillTerminate
+ This method is called to let you know that your app is about to terminate. You should use this method to perform any final clean-up task. You have approximately five seconds to perform any tasks and return back. If the method does not return before time expires, the system may kill the process altogether. This method may be called in situations where the app is running in the background (not suspended) and the system needs to terminate it for some reason. You shouldn’t wait applicationWillTerminate to be called in order to save your data. There are some cases when applicationWillTerminate won’t be called before app termination. For example the system will not call applicationWillTerminate when the device reboots.

@@ -1,0 +1,14 @@
+
+cd -                        // takes you back to the directory you were in previously 
+
+ctrl+l                      // move command prompt to top of screen. appears to clear screen, but doesn't 
+reset                       // resets the whole shell - like clear on steroids. you'd use it if something is wrong with the shell session 
+
+pushd <new_directory>       // change to a new directory, but remember your current one 
+popd                        // return to the pushd directory you remembered
+
+ctrl+z                      // send a running command line program (like vim) to the background, returning you to the command line 
+fg                          // bring your background program back to the foreground
+
+sudo !!                     // the two !! refer to the previous command. so if you forget sudo, run this and it'll rerun the command 
+

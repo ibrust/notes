@@ -1,0 +1,229 @@
+====================================================================
+CHAPTER 1 - OVERVIEW OF HTTP
+====================================================================
+
+HTTP requires reliable, in order data delivery 
+
+HTTP servers tag messages with a MIME type, which indicates the type of data it is.
+    browsers are setup to handle the different media types 
+
+    text/html                           html text 
+    text/plain                          ASCII text 
+    image/gif
+    image/jpeg 
+    video/quicktime 
+    application/vnd.ms-powerpoint  
+
+agents are web clients that make automated HTTP requests.
+    this is a broad definition. even browsers are technically agents... but you also have things like web crawlers. 
+
+remember that HTTPS sets up a tunnel between sender and receiver
+
+====================================================================
+CHAPTER 2 - URLS AND RESOURCES 
+====================================================================
+
+typical URLs have a scheme (the protocol), a domain (the servers location), and a resource path
+
+the scheme syntax allows the browser to send requests using many different protocols 
+    for example, we no longer need FTP clients since we can just use the browser to make FTP requests
+    we also don't need an email program to send/receive email messages since the browser can do this 
+
+URLs actually have a nine part syntax: 
+
+    <scheme>://<user>:<password>@<host>:<port>/<path>;<params>?<query>#<frag>
+
+    <user>:<password>   some schemes require a username / password to access resources 
+
+    ;<params>           some schemes use this to specify input parameters as name/value pairs. these are used to help locate a resource 
+                        URLs can actually contain multiple path segments, and each path segment can have its own params 
+                        i.e. /hammers;sale=false/index.html;graphics=true 
+
+    ?<query>            some schemes use this to pass parameters to gateway applications (i.e. databases, search engines, etc.)
+                        basically the path identifies the gateway application, which is an access point to another application
+                        there is no common format for the contents of the query component, except that some characters are illegal,
+                        but many applications expect the format: "name1=value1&name2=value2" 
+    
+    #<frag>             name for a piece of a resource. this field is not passed to the server, it's used internally by the browser 
+
+
+if you pass your browser an FTP URL without specifying a username / password it will insert "anonymous" as the username and a default password 
+
+try to use relative URLs so that you can move resources around and your links will still work 
+    if you must explicitly specify the base URL look into using the <BASE> HTML tag
+
+
+the browser can expand incomplete URLs you type in into full ones. 
+    some browsers will do this automatically if DNS lookup fails to find a match 
+    browsers also store a history of URLs you've typed 
+
+some protocols use transmission methods that strip away certain characters.
+    for this reason URLs are only allowed to contain certain safe characters 
+    but you can use % followed by two hex digits for the ASCII code if you want to include unsafe characters in the URL 
+
+    %7E             ~ 
+    %20             space 
+    %25             % 
+
+client applications should convert URLs into safe characters before sending requests. 
+    servers then need to decode the URLs before processing them 
+
+common schemes: 
+    http 
+    https 
+    mailto                  mail URLs refer to email addresses. the format of a mailto URL actually differs from other URLs: 
+                                mailto:joe@joes-hardware.com
+    ftp 
+    rtsp, rtspu             identifiers for audio or video resources that can be retrieved through the Real Time Streaming Protocol 
+                                probably no longer used since all the new HTML5 innovations in video / audio streaming
+    file                    for files directly accessible on local disk or via a network file system
+    telnet                  used to access a resource via the telnet protocol 
+
+the IETF has been working on a new standard called URNs. 
+    These are supposed to be URLs that provide a stable name for a resource regardless of its location 
+    PURLs (persistent uniform resource locators) are an example of how this would be implemented. 
+        with PURLs there's a central resource locator service that catalogues and tracks resources (sounds like improved DNS)
+    I'm not sure if any of these ideas ever gained traction 
+
+====================================================================
+CHAPTER 3 - HTTP MESSAGES  
+====================================================================
+
+HTTP methods:
+
+    GET 
+    PUT                                 sends data to overwrite a named server resource 
+    POST                                sends data to a server gateway application
+    DELETE 
+    HEAD                                get just the headers from the server for a specific request 
+    TRACE                               trace the message through proxy servers to the server 
+    OPTIONS                             determine what HTTP methods the server supports 
+
+not all servers implement all 7 of these methods apparently 
+
+HTTP is extensible, and servers are allowed to define their own custom HTTP methods
+
+a common usage of HEAD is to determine if a resource exists, if it's up to date or been modified lately
+
+a common usage of POST is with forms 
+
+proxies, firewalls, & other applications often modify the HTTP request on its way to the server. 
+    the TRACE method allows you to see how the request is being modified by these intermediaries 
+    note that many intermediaries do different things depending on what type of request it is, 
+    so TRACE may not always follow the same route as your other requests 
+
+note that DELETE does not guarantee the deletion of a resource, that's for the server to decide 
+
+here are some common extension methods:
+
+    LOCK                                allows you to lock a resource
+                                        i.e. if you're editing a resource you may want to prevent others from editing it
+    MKCOL                               create a resource 
+    COPY                                copy a resource on the server 
+    MOVE                                move a resource on the server 
+
+proxies should either relay unknown extension methods without modifying them, or respond with '501 Not Implemented'
+
+there are different kinds of headers: 
+
+    general headers             can appear in the request or response 
+    request headers             only appear in the request 
+    response headers            only appear in the response 
+    entity headers              headers which describe the body, size, and the resource itself 
+    extension headers 
+
+a server is only required to support GET and HEAD. these are both supposed to be read operations 
+    (though if the application developer screws up they could still trigger changes on the server, but they shouldn't)
+other operations such as DELETE or POST often have restricted usage associated with them. 
+    i.e. you wouldn't want just anyone to be allowed to delete resources (DELETE) or store them (PUT)
+
+status code classes: 
+
+    100-199                     informational 
+    200-299                     success
+    300-399                     redirects
+    400-499                     client errors
+    500-599                     server errors 
+
+HTTP defines a small set of status messages, and servers are also allowed to add their own custom status messages 
+
+100-199 informational status codes: 
+
+    100 Continue                        the server indicates the initial part of the request was received and the client should continue. 
+                                            the client needs to send an Expect header with the value 100-continue to receive this 
+                                            this may be done if the client wants to wait for server confirmation before sending a large entity 
+                                            in practice alot of poorly written servers send errant Continue responses, so be aware of that 
+    101 Switching Protocols             indicates the server is changing protocols to one listed by the client in the Upgrade header
+
+200-299 success status codes: 
+
+    200 OK 
+    201 Created                         for requests that create objects (i.e. PUT). 
+                                            should contain URLs for referencing the new object in the Location header 
+    202 Accepted                        request was accepted but server has not yet performed an action with it. 
+                                            doesn't guarantee the action will be performed. 
+    203 Non-Authoritative Information   indicates the information contained in the headers didn't come from the original source, 
+                                            but from some cache that had a copy of it. note that use of this code by caches is not required 
+    204 No Content                      the response contains headers but no content. used to prompt the browser to refresh the page 
+    205 Reset Content                   tells the browser to clear any HTML form elements on the page 
+    206 Parital Content                 indicates success of a range request (when client requests only part of a resource). 
+                                            response must also include the headers Content-Range, Date, and either ETag or Content-Location 
+
+redirect codes either tell the client to use an alternate location for the resource, or provide an alternate response instead of the content. 
+    some redirect codes can be used to validate that the local copy of a resource is up to date with the origin servers. 
+    for example, if the client sends an If-Modified-Since header the server can respond with a 304 
+
+300-399 redirect status codes: 
+
+    300 Multiple Choices                returned if client requests a URL that actually refers to multiple resources
+                                            this code is returned along with a list of options to choose from 
+                                            for example, if the server has an HTML document in many different languages 
+    301 Moved Permanently               indicates the resource has been moved. 
+                                            The Location header should contain a URL for the new location 
+    302 Found                           like 301 - however, the URL in the location header should only be used to locate the resource temporarily.
+                                            future requests should continue to use the old URL. used with HTTP 1.0 
+    303 See Other                       tells the client the resource should be fetched via the URL in the location header. 
+                                            typically used in the response to a POST request to direct a client to a resource 
+    304 Not Modified                    if the client makes a conditional request, this code indicates the resource hasn't changed. 
+                                            responses with this code shouldn't contain a body 
+    305 Use Proxy                       indicates the resource must be accessed through a proxy specified in the Location header. 
+                                            don't assume this proxy should be used for future requests 
+    307 Temporary Redirect              same as 302 but used with HTTP 1.1 
+
+there is overlap between 302, 303, and 307 status codes. this is due to compatibility issues with HTTP 1.0 
+    HTTP 1.1 will use 303 and 307, but not 302 except when interating with older HTTP 1.0 clients 
+
+most client errors are handled by the browser and you're never aware of them. 
+
+400-499 client error status codes: 
+
+    400 Bad Request                         indicates the request was malformed 
+    401 Unauthorized                        returned along with headers asking the client to authenticate itself before accessing resource 
+    403 Forbidden                           indicates request was refused by the server, but the server doesn't want to tell you why 
+    404 Not Found                           nothing at the URL. often an entity is included for the client to display to the user 
+    405 Method Not Allowed 
+    406 Not Acceptable 
+    407 Proxy Authentication Required 
+    408 Request Timeout 
+    409 Conflict 
+    410 Gone 
+    411 Length Required 
+    412 Precondition Failed 
+    413 Request Entity Too Large 
+    414 Request URI Too Long 
+    415 Unsupported Media Type 
+    416 Requested Range Not Satisfiable 
+    417 Expectation Failed 
+
+
+pg 65
+
+
+
+
+
+
+
+
+
+

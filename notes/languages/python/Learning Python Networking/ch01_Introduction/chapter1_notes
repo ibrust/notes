@@ -1,0 +1,36 @@
+
+to check the network interfaces on your machine run the following commands: 
+    Mac OS - ifconfig 
+    Windows - ipconfig 
+    Linux - ip addr 
+    other (UNIX) - ? 
+
+to make a DHCP request run the following command: 
+    Windows - ipconfig/renew 
+    Linux - dhclient 
+    other (UNIX, Mac OS) - ? 
+
+there are different DNS providers such as OpenDNS, UltraDNS, and Google DNS apparently 
+to make DNS queries on most platforms use nslookup:
+
+    nslookup www.packtpub.com
+
+
+PyPI, located at https://pypi.python.org, is the official repo for third party python packages
+this is where pip downloads packages from 
+
+there's an alternative package installer called Conda that comes with Anaconda python distributions 
+Anaconda is a distribution of Python and R programming languages for data science and Machine learning 
+    the main advantage of Anaconda is it comes with 100 popular python packages for data science and machine learning initially installed 
+you can download anaconda from https://www.anaconda.com/download 
+conda uses their own independent repository instead of PyPI, and you won't find as many packages available, but the popular ones are available 
+to install a package with conda you type: 
+    conda install <package_name>
+
+Pipenv is another option. It's a tool that aims to bring the best of all packaging worlds (bundler, composer, npm, cargo, yarn, etc.) to Python.
+    It automatically creates and manages a virtualenv for your projects,
+    and it adds/removes packages from your Pipfile as you install/uninstall packages
+Pipenv is primarily meant to provide users and developers of applications with an easy method to setup a working environment.
+read about Pipenv here: https://pipenv.pypa.io/
+
+

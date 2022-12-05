@@ -1,0 +1,12 @@
+
+-SwiftUI is an abstraction layer that sits on top of previous development tools and allows development of UIs that work on all platforms 
+-SwiftUI only works for the most recent versions of these technologies: macOS Catalina, iOS 13, tvOS 13, watchOS 6, iPadOS 
+
+-XCode11 includes SDKs for all 5 of the Apple platforms, and compilers for C, C++, objective-C, and Swift 
+-XCode uses the LLVM compiler, which can compile code written in C, C++, objective-C, and Swift 
+
+
+
+
+
+

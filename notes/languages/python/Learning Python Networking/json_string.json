@@ -1,0 +1,124 @@
+{
+  "capabilities": "Map,Query,Data",
+  "copyrightText": "",
+  "currentVersion": 10.71,
+  "datumTransformations": [
+    {
+      "geoTransforms": [
+        {
+          "latestWkid": 1241,
+          "name": "NAD_1927_To_NAD_1983_NADCON",
+          "transformForward": true,
+          "wkid": 108001
+        }
+      ]
+    },
+    {
+      "geoTransforms": [
+        {
+          "latestWkid": 1241,
+          "name": "NAD_1927_To_NAD_1983_NADCON",
+          "transformForward": false,
+          "wkid": 108001
+        }
+      ]
+    }
+  ],
+  "description": "",
+  "documentInfo": {
+    "AntialiasingMode": "None",
+    "Author": "",
+    "Category": "",
+    "Comments": "This map contains sample data of the United States.\n\nThis is a sample service hosted by ESRI, powered by ArcGIS Server. ESRI reserves the right to change or remove this service at any time and without notice.",
+    "Keywords": "usa,sample",
+    "Subject": "This map contains sample data of the United States.",
+    "TextAntialiasingMode": "Force",
+    "Title": ""
+  },
+  "exportTilesAllowed": false,
+  "fullExtent": {
+    "spatialReference": {
+      "latestWkid": 4326,
+      "wkid": 4326
+    },
+    "xmax": -66.96927110500002,
+    "xmin": -178.217598382,
+    "ymax": 71.40623554799998,
+    "ymin": 18.921786345999976
+  },
+  "initialExtent": {
+    "spatialReference": {
+      "latestWkid": 4326,
+      "wkid": 4326
+    },
+    "xmax": -16.2692137558099,
+    "xmin": -173.24789851593732,
+    "ymax": 109.10900234289849,
+    "ymin": -69.43544422133593
+  },
+  "layers": [
+    {
+      "defaultVisibility": true,
+      "geometryType": "esriGeometryPoint",
+      "id": 0,
+      "maxScale": 0,
+      "minScale": 0,
+      "name": "Cities",
+      "parentLayerId": -1,
+      "subLayerIds": null,
+      "type": "Feature Layer"
+    },
+    {
+      "defaultVisibility": true,
+      "geometryType": "esriGeometryPolyline",
+      "id": 1,
+      "maxScale": 0,
+      "minScale": 0,
+      "name": "Highways",
+      "parentLayerId": -1,
+      "subLayerIds": null,
+      "type": "Feature Layer"
+    },
+    {
+      "defaultVisibility": true,
+      "geometryType": "esriGeometryPolygon",
+      "id": 2,
+      "maxScale": 0,
+      "minScale": 0,
+      "name": "States",
+      "parentLayerId": -1,
+      "subLayerIds": null,
+      "type": "Feature Layer"
+    },
+    {
+      "defaultVisibility": true,
+      "geometryType": "esriGeometryPolygon",
+      "id": 3,
+      "maxScale": 0,
+      "minScale": 0,
+      "name": "Counties",
+      "parentLayerId": -1,
+      "subLayerIds": null,
+      "type": "Feature Layer"
+    }
+  ],
+  "mapName": "Layers",
+  "maxImageHeight": 4096,
+  "maxImageWidth": 4096,
+  "maxRecordCount": 1000,
+  "maxScale": 0,
+  "minScale": 0,
+  "serviceDescription": "This map contains sample data of the United States.\n\nThis is a sample service hosted by ESRI, powered by ArcGIS Server. ESRI reserves the right to change or remove this service at any time and without notice.",
+  "singleFusedMapCache": false,
+  "spatialReference": {
+    "latestWkid": 4326,
+    "wkid": 4326
+  },
+  "supportedExtensions": "KmlServer",
+  "supportedImageFormatTypes": "PNG32,PNG24,PNG,JPG,DIB,TIFF,EMF,PS,PDF,GIF,SVG,SVGZ,BMP",
+  "supportedQueryFormats": "JSON, geoJSON",
+  "supportsDatumTransformation": true,
+  "supportsDynamicLayers": true,
+  "tables": [],
+  "units": "esriDecimalDegrees"
+}

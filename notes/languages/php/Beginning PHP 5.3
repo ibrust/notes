@@ -1,0 +1,1293 @@
+CHAPTER 3, BASIC SYNTAX: 
+-You don't have to declare variables in PHP, and they're automatically initialized to Null
+-8 data types in PHP: Integer, Float, String, Boolean, Array, Object, Resource, Null 
+-functions to test a variables datatype: 
+    gettype($var)
+    is_int($var)
+    is_float($var)
+    is_string($var)
+    is_bool($var)
+    is_array($var)
+    is_object($var)
+    is_resource($var)
+    is_null($var) 
+-functions to change a variables data type: 
+    settype($var, "string")
+    settype($var, "integer")
+    etc.
+-syntax to temporariy change a return values data type: 
+    -6 parenthesis typecast: 
+        (int) $var or (integer) $var 
+        (bool) $var or (boolean) $var 
+        (string) $var 
+        (float) $var 
+        (array) $var 
+        (object) $var 
+    -3 specific casting functions: 
+        intval($var) or intval($var, old_base)        // intval() can also convert a non-base10 number to a base10 number 
+        floatval($var) 
+        strval($var) 
+-only the increment/decrement operators have higher precedence than the parenthesis typecastes 
+
+-the assignment expression both sets a value & returns one, thus the following works: 
+    $var2 = $var1 = 18; 
+
+-operators include: 
+    +=, etc. 
+    .= (concatenation)
+    | (bitwise or)
+    & (bitwise and)
+    === or !== (true identity or non-identity)
+    <> or != (not equal)
+    ++$var or $var++, etc.      // increment works with characters, but not decrement! 
+
+-the special boolean operator xor is also included in the language 
+-be mindful of the low precedence of boolean operators or, and, xor - it's lower than assignment statements precedence. &&, || are safer
+
+-the following unexpected things evaluate to false: 
+    " " 
+    "0" 
+    array() 
+    null 
+    XML object created from an empty XML tag 
+
+-to define a constant: 
+    define("CONSTANT_NAME", value); 
+-constants can only be primitive types 
+
+-to get the exponent of a number: 
+    pow(base, exponent); 
+__________________________________________________________ 
+CHAPTER 4, CONTROL STRUCTURES: 
+
+-else if or elseif are both valid 
+-the following PHP function returns the current timestamp: 
+    microtime(true); 
+-to get a random number: 
+    rand(1, 1000); 
+
+-you can specify how many levels to break out of: 
+    for ($x = 0; $x < 10; $x++){
+        for ($y = 0; $y < 10; $y++){
+            if ($y == 5){
+                break 1;    // breaks out of the y loop but not the x loop 
+            }
+        }
+    }
+
+-you can switch between php & html, and the php control flow statements will control which sections of the html are displayed
+__________________________________________________________________
+CHAPTER 5, STRINGS: 
+-single quote strings are displayed exactly as typed; double quote strings have special properties. 
+-within double quote strings, variable names and escaped special characters are replaced 
+-backslash \ is the escape delimiter: \$, \", \\, etc. 
+-PHP strings can span multiple lines by default: 
+    $var = "this is 
+            a php 
+            string";
+
+-when inserting variables into double quoted strings: if you need the variable surrounded by symbols other than spaces, use curly braces: 
+    $var = dog; 
+    echo "the {$dog}'s favorite ball"; 
+
+-instead of using single or double quotes, you can specify your own string delimiters using heredoc or nowdoc syntax: 
+    heredoc syntax works like double quotes: 
+        $string_variable = <<<DELIMITER
+            this is a string
+        DELIMITER; 
+    nowdoc syntax works like single quotes: 
+        $string_variable = <<<'DELIMITER'
+            this is a string 
+        'DELIMITER';
+
+-make sure no spaces or tabs are anywhere near the DELIMITER: https://stackoverflow.com/questions/5416437/syntax-error-unexpected-t-sl
+
+-strlen($var) returns the number of characters in the string 
+-strwordcount($var) returns the number of words in a string 
+
+-you can read & write to specific characters in a string using brackets: 
+    $string_var[3] = '!';
+
+-to return a portion of the string use substr(): 
+    $var1 = "crocodile"; 
+    $var2 = substr($var1, 0, 4);
+-substr()'s 2nd parameter is the starting index, 3rd parameter is the number of characters to extract 
+-a negative index for the 2nd parameter will start at the end; a negative index for the 3rd parameter will extract backwards 
+
+-to search for substrings within a string there are multiple functions: strstr(), strpos(), strrpos(), substr_count(), strpbrk() 
+    -strstr($primary_string, $search_string)            returns the remainder of the primary string starting from the seasrch string onward, or false if not found 
+    -strstr($primary_string, $search_string, true)      returns the front of the primary string leading up to the search string, or false
+    -strpos($primary_string, $search_string)            returns the index of the first character in the first matching search string, or false
+    -strpos($primary_string, $search_string, 500)       the third parameter specifies the index to start the search at (for searching a giant string)
+    -strrpos($primary_string, $search_string)           same as strpos but does the search in reverse, starting at the end of the string 
+    -strrpos($primary_string, $search_string, -500)     to start at the end of the string, the argument must still be negative 
+    -substr_count($primary_string, $search_string, 500) returns the number of times the search string occurs, or false. 3rd arg is where it starts searching
+    -strpbrk($string, "abcdefg")        if any character in the 2nd argument is found in $string, returns the remainder of $string from that index onward 
+
+-note that although these functions return false, they could also return strings that evaluate to false, so you must use === to test for falseness
+
+-to replace text within a string there are multiple functions: str_replace(), substr_replace, strtr() 
+    -str_replace($old, $new, $primary_string)   replaces all occurences of the old substring with a new substring in the primary string 
+    -str_replace($old, $new, $primary_string, $total)  the 4th argument is treated as a reference and will contain the total number of replacements
+    -substr_replace($primary_string, $inserted_string, 10)      replaces a portion of the primary string from an index onward. 
+    -substr_replace($primary_string, $inserted_string, 10, 4)   replaces only a given number of characters in the primary string, from an index onward
+    -substr_replace($primary_string, $inserted_string, 10, -1)  a negative index can specify to not replace the last character, for example
+    -strtr($primary_string, "abc", "ABC")       replaces specific characters in the string with specific other characters. 
+                                                the 2nd & 3rd arguments have a 1 to 1 correspondence: a is replaced with A, b is replaced with B, etc.
+    -strtr($primary_string, $associative_array) you can also replace substrings with other substrings. to do so, pass an array of key-value pairs. 
+                                                the key will be replaced with the value 
+
+-many of these string functions have case-insensitive versions as well. some of these include: stristr(), stripos(), strripos(), str_ireplace() 
+
+-common output functions include: echo, printf(), sprintf(), fprintf() 
+-printf uses specifiers similar to the C function printf   
+-to add padding with printf, precede the specifier with the character to use and the number of times to use it: 
+    printf("%_6d", 12345);          // ______12345
+-if you don't specify a character to use, printf defaults to using spaces: 
+    printf("%6d", 12345);           //       12345
+-to output + signs before positive numbers: 
+    printf("%+d", 12345);           // +12345 
+-to specify the precision of a floating point number: 
+    printf("%.2f", 123.4567)        // 123.46 
+    printf("_6.2f", 123,4567)       // ______123.46 
+-a precision specifier used on a string will just truncate the string: 
+    printf("%.5s", "Hello Johnson") // Hello
+
+-sprintf() behaves the same as printf, but it returns the results instead of print it to the terminal 
+-fprintf() likewise writes the results to an open file 
+    fprintf($file_handle, "%d", 12345); 
+
+-three trim functions return trimmed versions of a string. a 2nd argument can be passed to specify a set of characters to trim instead of spaces (the default): 
+    trim($string) 
+    ltrim($string) 
+    rtrim($string) 
+    rtrim("NO!!\n", "\n!")                      // returns NO
+-for the 2nd argument, .. can also be used to specify a range of characters, i.e: 
+    rtrim("192 Lascassas Pike!!", "0..9!");     //  Lascassas Pike 
+
+-str_pad() returns a padded string. It is more flexible than printf: 
+    str_pad("dinosaur", 10);                        'dinosaur  '    by default, the string is padded on the right with spaces 
+    str_pad("dinosaur", 10, "_")                    'dinosaur__'    the 3rd argument specifies the width of the entire string, not the padding amount
+    str_pad("dinosaur", 11, "_", STR_PAD_BOTH)      '_dinosaur__'  the 4th argument takes a constant to change the side the padding is on. 
+                                                    valid constants are: STR_PAD_LEFT, STR_PAD_RIGHT, STR_PAD_BOTH
+                                                    STR_PAD_BOTH tries to center the string as much as possible 
+-wordwrap() takes a large string and inserts newlines after the final words, for lines of a certain max length (the default is 75 max characters per line): 
+    wordwrap($large_string, 100)            the optional 2nd argument specifies a different max length 
+    wordwrap($large_string, 100, '\r\n')    the optional 3rd argument will insert a specified string instead of an \n at the end of lines 
+    wordwrap($large_string, 100, '<br/>', true)     the optional fourth argument, if true, will split words instead of inserting between them 
+
+-nl2br() convert all newlines in a string into <br />'s: 
+    $converted_string = nl2br($string); 
+
+-number_format() is an easy way to format strings of numbers: 
+    number_format(12345.6)                  // 12346 
+    number_format(12345.678, 1)             // 12345.7 
+    number_format(12345.678, 2, ' and ')    // 12345 and 68 
+    number_format(12345.678, 2, '.', ",")   // 12,345.68
+
+-money_format() is useful for money strings. Read the docs for more details, and remember this function isn't available on windows. 
+_____________________________________________________________________________ 
+CHAPTER 6, ARRAYS: 
+-Arrays have no limit to their length 
+-Arrays can store any combination of data types 
+-PHP has 2 types of arrays: indexed, and associative 
+-an indexed array is a special kind of associative array whose indices are the real numbers 
+
+-to create an array: 
+    $indexed_array = array("dog", "cat", "rat", "bat", "tiger"); 
+    $associative_array = array("title" => "the grapes of wrath", "author" => "John Steinbeck", "pubYear" => 1939);  
+
+-a variety of PHP functions also create / return arrays 
+
+-array indices are accessed with their keys, or an expression that evaluates to the key: 
+    indexed_array[2 + 2]; 
+
+-to add more values to arrays, you can either set the index or key directly, or you can just use an empty []: 
+    indexed_array[5] = "hawk"; 
+    indexed_array[] = "dove"; 
+
+-arrays do not work with normal output functions like printf, echo, etc. 
+-print_r() is used for outputting arrays / objects: 
+    print_r($indexed_array); 
+    $string_output = print_r($indexed_array, true);     // the 2nd optional argument returns a string of the output
+
+-to get a slice from an array:
+    $array_slice = array($input_array, 3);          // 2nd argument is the starting index
+    $array_slice2 = array($input_array, 3, 10);     // 3rd argument is size of slice. if omitted, slice goes until the end  
+-indexed arrays are re-indexed when they are sliced, unless you pass true as an optional 4th argument: 
+    $array_slice2 = array($input_array, 3, 10, true);
+-the order associative arrays key/value pairs are created in is maintained in their implementation, and is used for slicing operations  
+
+-to count the number of elements in an array, use count(): 
+    $total_elements = count($array); 
+    $buggy_last_index = count($indexed_array) - 1;            // potential bug - this assumes indices are continuous 
+
+-PHP arrays are implemented as a list, and have an internal iterator pointing to the first element
+-you can manipulate the array iterator using a few functions: current(), key(), next(), prev(), end(), reset() 
+    $value = current($array)           // returns the value the iterator currently points to 
+    $key = key($array)                 // returns the key or index the iterator currently points to 
+    $next_value = next($array)         // moves iterator forward 1 step & returns that elements value
+    $prev_value = prev($array)         // moves iterator back 1 step & returns that elements value
+    $final_value = end($array)         // moves iterator to end of array & returns that elements value
+    $first_value = reset($array)       // moves iterator to start of array & returns that elements value 
+
+-the above iterator methods return false if an element could not be retrieved. 
+-what if some elements in your array actually contain the value false? how could you tell? 
+-each() gets around that problem. it returns an array of data for the current element, and advances the pointer; or false if it fails. 
+    $data_array = true;            
+    while ($data_array != false){
+        $data_array = $array.each();            // the array contains the elements index/values or key/values 
+        $index_or_key = data_array[0]; 
+        $value = data_array[1];
+    }
+
+-foreach is a special looping statement that works only on arrays and objects 
+    foreach($array as $value){              // it can return just the elements value 
+        ...
+    }
+    foreach($array as $key => $value){      // or it can get the keys and values 
+        ...
+    }
+-the keys or values returned by foreach are copies, not references to the array. 
+-to change the actual keys / values in the array, make them references: 
+    foreach($array as $key => &$value){
+        ...
+    }
+    unset($value); 
+
+-when working with references, you should unset them after using them for safety against bugs. this deletes the reference variable, not the element. 
+-foreach is useful for looping through multidimensional jagged arrays: 
+    foreach($array as $element){
+        foreach($element as $value){
+            ...
+        }
+    }
+
+-sort arrays with the following functions: sort(), asort(), ksort(), array_multisort() 
+    sort($array)        // works on indexed arrays. will mess up associative arrays by reindexing them 
+    asort($array)       // sorts an associative array by value 
+    ksort($array)       // sorts an associative array by key 
+-rsort(), arsort(), and krsort() sort the arrays in reverse order 
+-array_multisort() can sort multiple arrays simultaneously, and can sort multidimensional arrays: 
+    array_multisort($array1, $array2, $array3);         // when sorting multiple arrays simultaneously, it preserves the relationships between the arrays. 
+                                                        // the arrays are sorted by the first array, then the 2nd (if the elements matched), etc. 
+    array_multisort($multidimensional_array);           // with multidimensional arrays it works the same, but the elements are used as input arrays 
+
+-array_multisort() is useful in sorting rows by a specific column. 
+-if you wanted a specific sort order for a multidimensional array, swap the positions of its array elements to match your preferences 
+-note that array_multisort() preserves string keys & their associated values, but does reindex numeric keys or indexes  
+
+-PHP shares 5 functions with javascript: array_unshift(), array_shift(), array_push(), array_pop(), array_splice()
+-you can't add values to associative arrays using these functions, so use array_merge() for that  
+-array_splice() is for adding / removing elements in the middle of an indexed array: 
+    array_splice($array, 5, 2, $array_to_insert);       // the 2nd argument is the insertion index
+                                                        // the 3rd argument is how many elements to remove from the insertion point
+                                                        // the 4th argument is an array of elements to insert 
+    array_splice($array, 5, 0, $array_to_insert);       // this will only insert elements 
+    array_splice($array, 5, 2);                         // this will only remove 2 elements 
+    array_splice($array, 5);                            // this removes all elements past index 5, so be careful 
+    array_splice($array, 5, 0, "one_value");            // passing a non-array will insert a single element at the insertion point - in this case a string
+-array_splice() reindexes the array, so don't use it with associative arrays 
+
+-array_merge() takes multiple arrays as arguments and returns the merged array: 
+    array_merge($array1, $array2, $array3); 
+-array_merge() preserves the keys of associative arrays
+-if there are duplicate keys between associative arrays, the leftmost array elements get overwritten. 
+-this makes array_merge() useful for updating associative arrays with new values as well 
+-array_merge() will not overwrite duplicates between indexed arrays, but it will reindex them 
+-if you pass a single indexed array to array_merge(), it will reindex it, eliminating any gaps between indices - another useful feature. 
+
+-to convert between arrays & strings, use explode() and implode() 
+-explode() splits a string into chunks using a delimiter, and returns an array: 
+    $CSV_string = "orange,banana,apple,pear,lemon,lime"; 
+    explode(",", $CSV_string);                  // ['orange', 'banana', 'apple', 'pear', 'lemon', 'lime'] 
+    explode(",", $CSV_string, 3);               // ['orange', 'banana', 'apple,pear,lemon,lime']
+                                                // the 3rd argument specifies how many splits to make, and the last split contains the remaining string 
+    $split_array = explode(",", $CSV_string, -3);              // ['orange', 'banana', 'apple', 'pear']
+                                                // if the 3rd argument is negative, that many elements are discluded from the array instead 
+    implode("_", $split_array)                  // "orange_banana_apple_pear"; 
+                                                // implode inserts the delimiter back between the array elements. 
+-other useful string-to-array functions: preg_split() (uses regular expressions), str_split() (splits a string into single characters or fixed size chunks) 
+
+-list() can transfer an indexed arrays contents into a list of variables:
+    $array = array("jon", "fred", "jimmy"); 
+    list($var1, $var2, $var3) = $array; 
+    echo var1;      // jon 
+
+-list() doesn't work with associative arrays, and assumes the indexed arrays elements are consecutive
+-list() is often used in combination with functions that return indexed arrays, like each(): 
+    while(list($key, $value) = each($associative_array)){
+        ...
+    }
+______________________________________________________ 
+CHAPTER 7, FUNCTIONS: 
+
+function hello($name){      // typical function syntax 
+    echo "hello $name"; 
+}
+
+-you can store a functions name in a string variable and actually call the string variable:
+    $string = "sqrt"; 
+    $string(4); // 2 
+-this can allow you to dynamically select from a list of function names 
+
+function hello_again($name = "ian"){        // default values
+    echo "hello $name"; 
+}
+hello_again();  // hello ian
+
+function bold($text){           // an interesting function 
+    return "<b>$text</b>"; 
+}
+
+-global variables must be preceded by the global keyword to be used within a function: 
+    $global_name = "joe"; 
+    function goodnight(){
+        global $global_name; 
+        echo "hello $global_name"; 
+    }
+
+-you can declare global variables within the function, they don't have to exist prior to the function: 
+    function set_name(){
+        global $global_name = "smith";
+    }
+    function say_goodnight(){
+        global $global_name; 
+        echo "goodnight $global_name"; 
+    }
+    set_name(); 
+    say_goodnight(); // goodnight smith 
+
+-more than one global variable can be declared on the same line: 
+    global $global1, $global2, $global3; 
+
+-THE $GLOBALS array is an associative array of all global variables, keyed using their names
+-you can access globals using the $GLOBALS array instead of declaring them: 
+    $global_name = "johnson"; 
+    function afternoon_greeting(){
+        echo "good afternoon $GLOBALS["global_name"]"; 
+    }
+    afternoon_greeting();   // good afternoon johnson 
+
+-the $GLOBALS array is a superglobal variable. It can be accessed anywhere and no declaration is required when using it
+
+-you can also create static variables within functions: 
+    function how_many_hellos(){
+        static $counter = 0; 
+        counter++; 
+        echo "hello number $counter"; 
+    }
+    how_many_hellos(); // hello number 1
+    how_many_hellos(); // hello number 2
+
+-static variables in functions are most often used with recursion 
+
+-anonymous functions can be created using create_function(): 
+    $parameters = "$arg1, $arg2"; 
+    $function_body = "
+        $temp = $arg1 + $arg2; 
+        return $temp;
+    ";
+    $anonymous_function = create_function($parameters, $function_body); 
+
+-the PHP sorting function usort() expects a callback, similar to javascript:
+    $parameters = "$a, $b"; 
+    $function_body = "
+        return strlen($a) - strlen($b);
+    ";
+    usort($strings_array, create_function($parameters, $function_body));        // sorts the array by word length 
+
+-there's a compound operator for creating references: 
+    $var1 = "hawk"; 
+    $var2 &= $var1; 
+    $var2 .= "s"; 
+    echo "$var1"; // hawks
+
+-to pass reference parameters, precede them with &: 
+    function func(&$ref_param){
+        ...
+    } 
+
+-many built in PHP functions accept references 
+
+-to return a reference with a function, place & before the function name: 
+    function &ref_func(){
+        global $var1 = "joe"; 
+        return $var1; 
+    }
+    $name &= ref_func(); 
+    $name = "bob"; 
+    echo "$name = $var1";   // bob = bob 
+
+-PHP automatically returns objects by reference 
+______________________________________________________________________ 
+CHAPTER 8, OBJECTS: 
+
+class car{
+    protected $speed = "0mph"; 
+    private $tires = "new";
+    public $rims; 
+
+    const $WHEEL_COUNT = 4; 
+    public $static car_count = 0; 
+
+    public function roll(){
+        $this->wheels = "10mph";            // $this must be used to access an objects data or methods from within its methods
+    }
+
+    public static function car_sold(){
+        car::car_count++;
+    }
+}
+
+$new_car = new car();
+$new_car->rims = "32_inch"; 
+car::car_sold(); 
+$new_car->roll(); 
+print_r($new_car); 
+
+-if passing an object or array as a parameter to a method or function, precede the object with its class name or the array keyword. 
+-this type hinting helps track down / prevent bugs caused by passing the wrong types.
+
+-there are 3 common overloadable methods for intercepting private/protected/nonexistent calls: __get(), __set(), __call() 
+-__get() and __set() work with properties, __call() works with methods
+-the following shows the typical use of __get() and __set() to enable a class to handle new properties, though this can be further customized: 
+class car{
+    private $extra_data = array(); 
+
+    public function __get($property_name){                      // get always contains this 1 parameter, and returns the retieved value 
+        if (array_key_exists($property_name, $this->extra_data)){
+            return $this->extra_data[$property_name]; 
+        }
+        else{
+            return null; 
+        }
+    }
+    public function __set($property_name, $property_value) {    // set always contains these 2 parameters, and doesn't return anything 
+        $this->extra_data[$property_name] = $property_value; 
+    }
+}
+
+-though the above stores new properties in a private array, you could also store them in a file, database, pass them to an API, etc.
+
+-the following is a use of __call() to handle nonexistent methods:
+class clever_string{
+    private $string = ""; 
+    private static $allowed_functions = array("strlen", "strtoupper", "strpos"); 
+
+    public function get_string(){
+        return $this->string; 
+    }
+    public function __call($method_name, $args){
+        if (in_array($method_name, clever_string::$allowed_functions)){
+            array_unshift($args, $this->string); 
+            return call_user_func_array($method_name, $args); 
+        }
+    }
+}
+-this will verify that the method is one of the ones listed before it calls the method. you could also verify that the function is not of a given name. 
+
+-there are also 3 less common overloadable methods: __isset(), __unset(), __callStatic()
+-these are likewise called when dealing with private, protected, or nonexistent property / method calls
+
+-__isset() returns a boolean if the property/method is deemed to be "set"
+-it's not often you'd want to overload this function, but one use might to treat properties/methods beginning with "test" as set (for debugging):
+class a_class{
+    public function __isset($objects_property){
+        return ( substr( $property_name, 0, 4) == "test") ? true : false;   
+    }
+}
+
+-__unset() is called when PHP attempts to delete a value. you can overload it also: 
+class a_class{
+    public function __unset($property_name){    // takes 1 argument, the property name, and returns nothing 
+        ...                                     // no example code is given, and you probably would never use this 
+    }
+}
+
+-__callStatic() works the same as __call(), but works with static methods instead of normal methods. 
+
+-the keyword extends is used to inherit from a parent class: 
+class shape{
+    ...
+}
+class circle extends shape{
+    ...
+}
+
+-overriding is accomplished simply by reimplementing the method in the child class 
+-you can call a parent method within an overriden child method (especially common w/ constructors or destructors): 
+    class circle extends shape{
+        public function draw(){
+            parent::draw(); 
+            ...
+        }
+    }
+
+-the keyword final preceding a class or function will block inheritance or overrides: 
+    final class circle extends shape{
+        public final function draw(){ 
+            ...
+        }
+    }
+
+-to declare an abstract class, the keyword abstract must precede the class and 1 or more methods within the class: 
+    abstract class shape{
+        public abstract function draw($param1, $param2);    // note that the abstract function has no body 
+    }
+
+-interfaces are similar to abstract parent classes in that they enforce the implementation of particular methods
+-interfaces do not have a hierarchical parent/child relationship with classes that use them, there is no inheritance. they are purely abstract
+-since interfaces are not inherited, the idea is totally unrelated classes may share them
+-although you could already do this with abstract classes, it's been made more explicit this way
+-an interface is created with the keyword interface, and is just a list of methods that must be implemented: 
+    interface custom_API{
+        public function method1($param1); 
+        public function method2($param1, $param2); 
+    }
+-the class then uses the implements keyword followed by the API name: 
+    class triangle implements custom_API{
+        public function method1($param1){
+            ...
+        }
+        public function method2($param1, $param2){
+            ...
+        }
+    }
+-a class can implement multiple interfaces: 
+    class square implements custom_API, custom_API_2{
+        ... 
+    }
+
+-PHP does not support overloading of functions, and that includes constructors (functions like __set() sounded like exceptions in the book)
+-you can get around this limitation using an associative array or default values:
+    class object{                                      // default values method 
+        private $_field1; 
+        private $_field2; 
+        public function __construct($arg1 = "value1", $arg2 = "value2"){
+            $this->_field1 = $arg1; 
+            $this->_field2 = $arg2; 
+        }
+    }
+    class object{                                      // associative array method 
+        private $properties_array = array(
+            "field1" => "value1", 
+            "field2" => "value2"
+        ); 
+        public function __construct($input_array){
+            foreach ($input_array as $key => $value){
+                if (array_key_exists($key, $this->properties_array)){
+                    $this->properties_array[$key] = $value; 
+                }
+            }
+        }
+    }
+
+-destructors are used for things like closing files or writing data to databases before the object is garbage collected: 
+    class car{
+        public function __destruct(){   // the destructor doesn't take any arguments 
+            ...                         // no serious example given 
+        }
+    }
+    $new_car = new car(); 
+    unset($new_car);        // the unset function deletes a reference to an object
+                            // there are no remaining references to the object now and it will be garbage collected, so the destructor will be called 
+
+-children do not inherit their parents constructor or destructor, but can call them with parent::__construct() or parent::__destruct();  
+
+-use require_once("filename.php") to include a PHP file, avoiding the multiple includes problem 
+
+-when PHP encounters a class that's undefined, it calls the autoload() function. you can overload this function in your script to load files on-demand:
+    
+    function __autoload($class_name){                           // the following implementation assumes the filename is the same as the class name 
+        $class_name = str_replace("..", "", $class_name);       // an important safety measure, apparently - attackers can insert .. into the path 
+        require_once("{$class_name}.php");                      // the .php is necessary here, apparently 
+    }
+
+-serialize() and unserialize() convert objects or arrays to/from strings: 
+    $new_car = new car(); 
+    $car_string = serialize($new_car); 
+    $original_car = unserialize($car_string); 
+
+-when an object is serialized PHP first calls __sleep() inside the object. You can implement custom code to do things prior to serialization 
+-likewise when an object is unserialized PHP calls __wakeup(), and you can implement custom code prior to unserializing the object 
+-typical things you might use this for are closing / opening database handles, file handles, etc. 
+-__sleep() is expected to return an array of property names for the properties to preserve across serialization. 
+-thus you can also use __sleep() to limit the properties that get serialized, useful when serializing large objects or with security concerns 
+
+    public function __sleep(){
+        ... 
+        return array("wheels", "rims", "tires");
+    }
+
+-if you want to preserve all properties across sleep, one way to get just the property names is by combining array_keys() with get_object_vars(): 
+    public function __sleep(){
+        return array_keys(get_object_vars($this)); 
+    }
+
+-to find out what class an object belongs to, use get_class(): 
+    get_class($new_car);
+
+-to check if an object inherits from a specific class, use instanceof(): 
+    $new_car = new car(); 
+    if ($new_car instanceof car){   // notice the class name is used, like a type name 
+
+    }
+___________________________________________________________________ 
+CHAPTER 9, HTML FORMS: 
+
+-GET can handle amounts of data less than 1024 characters (someone else said 2048...) (it's put in a query string in the URL) 
+-sometimes GET requests are cacheable
+-GET also allows users to edit the URI, use the back button, and bookmark the pages
+-GETs are generally used, as the name implies, for getting information from the server (rather than posting it to the server)
+-POST embeds the data in HTTP headers 
+-POST is only slightly more secure (users can't accidentally share URIs with others)
+-POST can send alot more data, but it does not appear to be cacheable (from what I can tell)
+
+-if the form action is an empty string "", the browser sends the form data to the current URL   
+
+-in HTML, to create a multi-item list to select from, use the size property. multiple allows the user to ctrl+select multiple items from the list: 
+    <select size="3" multiple="multiple"> 
+        <option value="option1"></option>
+        ...
+    </select>
+
+-superglobal arrays that hold form submission data: $_GET, $_POST, $_REQUEST, $_COOKIE, $_FILES, & others
+-$_REQUEST holds the combined contents of $_GET, $_POST, and $_COOKIE
+
+-the name attribute of the form elements are used as keys within these arrays:
+    <input type="text" name="email_address" value="" /> 
+    ... 
+    $email = $_GET["email_address"]; 
+
+-for safety, never output user-input data using echo, printf, etc. - the user could put in some malicious code 
+-user input also needs to be validated correctly (chapter 20)
+
+-if form fields are empty / missing, different types of form elements have different ways of handling it: 
+    -text input: field name is sent, value is "" 
+    -password: field name is sent, value is "" 
+    -checkbox: nothing is sent 
+    -radio button: nothing is sent 
+    -select pull-down menu: impossible to select nothing, 1st option is sent
+    -select list: nothing is sent 
+    -mult-select list: nothing is sent 
+
+-generally, check for the presence of the field before using it: 
+    if (isset( $_POST["field_name"])){
+        ...
+    }
+
+-some form inputs, like checkboxes, send multiple items in one field
+-to make these inputs work in your PHP script, you must add [] after the fields name within the HTML: 
+    <input type="checkbox" id="box1" name="field_name[]" value="..." />
+    <input type="checkbox" id="box2" name="field_name[]" value="..." />
+    <?php 
+        $array_of_values = $_POST["field_name"];            // notice the brackets aren't used within the key itself  
+    ?>
+
+-combining the form and form handler on one page allows you to redisplay the form for error correction, and dynamically create the form elements 
+-you will literally loop through the $_GET or $_POST array and check each field submission, and redisplay the form accordingly 
+
+-to use a hidden field to store information between forms, dynamically insert data into it with PHP: 
+    <input type="hidden" name="hidden_field" value="<?php echo $hidden_value ?>" /> 
+
+-you can upload files to the server using a form 
+-submitted files are stored in the superglobal multidimensional array $_FILES: 
+    <form action="form.php" method="post" enctype="multipart/form-data">   // you must use POST and specify this MIME type when submitting files 
+        <input type="file" name="input_file" value="" /> 
+    </form>
+    ... 
+    <?php
+        $file_name = $_FILES["input_file"]["name"]              // the filename of the uploaded file. the book implies it might include a path but doesn't say 
+        $temp_name = $_FILES["input_file"]["tmp_name"]          // the full path of the temporary file on the server 
+        $type = $_FILES["input_file"]["type"]                   // states the files MIME type - image/jpeg, video/quicktime, etc. 
+        $error = $_FILES["input_file"]["error"]
+        $size = $_FILES["input_file"]["size"]
+    ?>
+
+-the returned error value is an integer from 0-8 which means a variety of different things, including: 
+    0 - success 
+    1 - file was bigger than the max file size specified by upload_max_filesize in php.ini
+    4 - no file was uploaded 
+
+-generally you do want to set upload_max_filesize in php.ini to avoid overwhelming the server with large files 
+-within the PHP script itself you can limit the max upload size by adding a hidden field called MAX_FILE_SIZE (php.ini is still alot more secure):
+    <input type="hidden" name="MAX_FILE_SIZE" value="10000" />
+
+-the file is stored in a temporary folder on the server, and should be moved before use 
+-PHP provides a function move_uploaded_file() to do this 
+-the basename() function should also be used - it extracts the filename from the path and protects against malicious code insertion (like ../)
+
+    move_uploaded_file($_FILES["input_file"]["tmp_name"], basename($_FILES["input_file"]["name"]); 
+
+-I do not know what the difference is between using move_uploaded_file and some other move file function 
+
+-when a form submission is complete you can redirect the user to a page with header("Location: page_name.html") (i.e. a verification or thank you page)  
+-include the header at the top of the php script, before any code: 
+    <?php 
+        if (isset($_POST["submit_button"])){
+            header("Location: page_name.html"); 
+            exit; 
+        }
+        ...
+    ?>
+_____________________________________________________________________________________________ 
+CHAPTER 10 - QUERY STRINGS, COOKIES, AND SESSIONS:
+
+-hidden fields are flawed in 3 ways: 
+    1) hidden fields are insecure (their values can be edited by a hacker) 
+    2) all the data has to be sent repeatedly between requests 
+    3) handling large amounts of data with hidden fields is cumbersome
+    4) common uses: multi section forms, specifying max file size, small amounts of temporary data, etc.
+-query strings are mostly flawed in the same ways: 
+    1) query strings are insecure - they are visible in the URL box and can be edited directly 
+    2) the data has to be maintained in the URL across multiple requests 
+    3) query strings are also limited to ~1024 characters of data depending on the browser 
+    4) common uses: search specifiers, identifying the selected topic in a forum, tracking which blog post to display, small amounts of temporary data, etc.
+-cookies: 
+    1) a cookie can store up to 4KB of data, and browsers can hold ~30 cookies. The cookie is stored it in the browser itself 
+    2) all the cookie data must be sent from the browser to the server on each new webpage request, and this can be alot more data than other methods 
+           the cookie can last as long as you specify they last, but default is until the browser closes. They can also be deleted or turned off by the user 
+    3) somewhat more secure but can still be hacked. (one security feature is browsers will only send cookies to the website that created them) 
+    4) common uses: user preferences, non critical long term data of moderate size (remember cookie support can be turned off by the user)
+-sessions: 
+    1) sessions store the data on the server & associate a session ID with it. the session ID is stored in a cookie in the browser. 
+           when the browser requests a new page, it sends the session ID as a cookie and this is used by the server to access the session data 
+    2) the problem of passing alot of data back & fourth repeatedly is basically solved with sessions
+    3) session IDs are very hard to break, & the session data itself doesn't have to be sent in each request. Sessions can be used for authentication
+    4) comm uses: login, halding senssitive data or large amounts of data 
+
+-query string format (added to end of URL): ?key1=value1&key2=value2 ... 
+
+-you don't have to use a forms GET to use a query string, you can build your own URL / query string & embed the link in a page
+-regardless, the field information always in $_GET array
+-if building the query string manually you must manually encode '&' as '&amp;' in XHTML (not sure about HTML)
+-only the following are allowed in query strings: letters numbers - _ . ! ~ * ' ( ) 
+-use URL encoding to transmit other characters (in URL encoding spaces are encoded with +, reserved characters are HEX codes preceded by %): 
+-use the PHP functions urlencode() and urldecode() for this: 
+    $query_string = "?key1=value1&amp;key2=value2";        // you must use &amp; despite also using urlencode(), it's an XHTML markup issue apparently 
+    $query_string = urlencode($query_string); 
+    $url = $base_url . $query_string; 
+    echo "<a href="{$url}" />
+
+-http_build_query() combined with htmlspecialchars() is an easier way to build query strings: 
+    $query_fields = array(
+        "field1" => "value1", 
+        "field2" => "value2",
+        ...
+    );
+    $query_string = htmlspecialchars( http_build_query( $fields ));
+
+-cookies are sent as HTTP headers from the server to the browser
+-There are multiple fields in a cookie header: 
+    name -      the cookies name 
+    value 
+    expires -   how long the cookie lasts. if set to 0 or omitted it lasts until the browser closes 
+    path -      the path the browser will send the cookie back to. if unspecified, defaults to the webpage it was received from. 
+                    if specified, folders / files within that path on the server will receive the cookie 
+                    use "/" to make the cookie available to all URLs on the site
+    domain -    by default, cookies are only sent back to the exact machine from where they're received. you can change this behavior by setting domain
+                    the author says, when using setcookie(), it's a good idea to specify the domain name with a dot (.) unless it's a hostname - not sure why
+    secure -    if specified, indicates to only send the cookie over https connections
+    HttpOnly -  if specified, only HTTP scripts running on the web server can access the cookie - javascript running on the client cannot 
+
+-though you can send cookies by setting the Set-Cookie header, PHP provides an easier way with setcookie() 
+-setcookie() takes the 7 arguments listed above: 
+    setcookie(name, value, expires, path, domain, secure, HttpOnly); 
+
+-setcookie() only requires the name to be set, but usually you'll set the first 4: 
+    setcookie("fontsize", 3, time()+(60*60*24*365), "/");                       // this cookie will last for 1 year from now  
+    setcookie("fontweight", 3, 0, "/", "", false, true);                        // this cookie will expire when the browser is closed 
+
+-to update an existing cookie, just call setcookie() again with the same cookie name 
+
+-to access a cookies contents, use the $_COOKIE array 
+-make sure to validate the information in the cookie array, because malicious code can be injected into cookies 
+-note that when setting a cookie the cookies information will be available on the next page request, not the current one 
+
+-to delete a cookie, call setcookie() with an expires name in the past 
+    setcookie("fontsize", 3, time() - 3600, "/");
+
+-PHP stores each sessions data in a temporary file on the server. the location of these files can be found with the following: 
+    ini_get("session.save_path");           // searches php.ini
+
+-ini_get() reads from php.ini 
+-ini_set() writes to php.ini
+
+-create a session by calling session_start() at the top of the script: 
+    session_start();                        // generates a new SID and sends it to the browser as a cookie called PHPSESSID, or uses the existing SID 
+                                                    // if a session already exists. the current sessions data will be in the $_SESSION array
+    $_SESSION["field_name"] = $new_data;    // add new data into this array / read old data from it 
+    ...
+    $old_data = $_SESSION["field_name"]; 
+
+-the author says to ensure any modified session data gets written to the server, place the following at the end of the script: 
+    session_write_close(); 
+    header("Location: current_page.php"); 
+
+-by default sessions end when the browser closes 
+-sometimes you might want to end a session immediately, like if an order has been completed 
+-end a session immediately with the following: 
+
+    if (isset($_COOKIE[session_name()])){                       // destroy the PHPSESSID cookie first 
+        setcookie(session_name(), "", time()-3600, "/"); 
+    }
+    $_SESSION = array();    // reset the current pages $_SESSION array (so that it can't be accessed elsewhere in the script)
+    session_destroy();      // delete the session data on the server 
+
+-PHPs session_name() function allows you to have multiple sessions at the same time, read the docs for more information 
+
+-If the user disables cookies, this interferes with your ability to use sessions. 
+-to get around this problem, PHP provides a constant named SID 
+-if the browser supports cookies, SID will be empty; otherwise it will contain a string like: "PHPSESSID=b8306b025a76a250f0428fc0efd20a11" 
+-you can manually pass this session ID in a query string between pages for continued access to the session ID
+-the PHP engine will automatically pick up a query strings key of PHPSESSID and handle the session data like normally: 
+
+    <?php session_start() ?>                            // you must call session_start() before SID will be set 
+    <a href="page.php?<?php echo SID; ?>">link</a>
+
+-alternatively, you can embed the SID in a hidden field. 
+-if using hidden fields, the author mentions calling session_ID() as an alternative method of getting the SID. I don't know why the change, he doesn't say
+
+-you can change sessions behavior with the following keys in php.ini, most of which are cookie related properties: 
+    session.cookie_lifetime             how long the session will last in seconds, defaults to 0 (session ends when browser closes)
+    session.cookie_path                 subdirectory of site where the session is active, defaults to "/"
+    session.cookie_domain               change if you want more than one host on the same domain to access the session cookie, defaults to ""
+    session.cookie_httponly             set to true to prevent javascript from handling the session cookie 
+    session.auto_start                  if set to true, you don't have to call session_start anymore; PHP will automatically start a session when run 
+                                            note that if you set this to true you can't store objects in sessions, because the classes won't be defined yet 
+-use ini_set() to alter the above properties, or alter them manually 
+-to store session data in a database rather than a temporary file, read the docs: www.php.net/manual/en/function.session-set-save-handler.php 
+
+-PRG (post response get) pattern: a design pattern used to avoid duplicate post requests upon browser refresh. 
+    check for a POST at top of page & send a redirect header (a GET request) to either the same page or a different page
+___________________________________________________________________________________________________________ 
+CHAPTER 11, FILES & DIRECTORIES
+
+-with PHP you work with files / directories located on the web server 
+-although Linux paths use /, and Windows paths use \, PHP on Windows usually converts paths from / to \ 
+-ocasionally you do need to explicitly insert \ into paths, and you must use \\ to do so
+
+-to check if a file exists first before using it: 
+    file_exists("pathname");            // returns true if exists, or false otherwise
+
+-to check the size of a file on disk: 
+    filesize("pathname");               // returns size in bytes, or false if error 
+
+-a files available properties vary depending on the OS. On UNIX systems there are multiple time-related properties and functions for them: 
+    fileatime();        // return timestamp of when the file was last accessed
+    filectime();        // when the file was last changed 
+    filemtime();        // when the file was last modified 
+
+-to convert a timestamp to a date; 
+    getdate(timestamp); 
+
+-to extract a filename or foldername from a path: 
+    $filename = basename("pathname"); 
+    $foldername = basename("pathname");
+    $filename = basename("pathname/filename.txt", "txt");         // the 2nd argument will remove that extension from the filename 
+
+-file handles are pointers associated with an open file. Their data type is "resource": 
+    $file_handle = fopen("pathname", "r"); 
+
+-you can even open a file for reading on a remote Web or FTP server (but you can't write to it): 
+    $remote_file = fopen("https://www.site.com/index.html", "r"); 
+    $remote_file = fopen("ftp://ftp.example.com/index.txt", "r"); 
+
+-the second argument to fopen can be: r, r+, w, w+, a, a+ 
+    r+:     open it for reading & writing. file pointer is placed at start of file
+    w+:     open it for reading & writing. existing file content is lost, & if file doesn't exist PHP will create it 
+    a+:     open it for reading & appending. 
+
+-you can also add b to the 2nd argument, and the data will be read as binary. 
+-this binary flag is useful on windows for reading files with some end line issues.
+-it is also useful for adding custom code to handle newlines differently depending on the OS: 
+    $binary_file = fopen("pathname", "rb"); 
+
+-PHP_EOL is a constant that contains the OSs endline; again useful in dealing with these endline issues. 
+
+-to manually close a file, freeing up memory quicker: 
+    fclose($file_handle); 
+
+-there are several functions for reading / writing to files: 
+    
+    fread($file_handle, 10)                 // read a string of x chars 
+    fwrite($file_handle, "string", 10)      // write a string. returns # of chars written. optional 3rd arg limits total chars written 
+    fgetc($file_handle)                     // read 1 char at a time 
+    feof($file_handle)                      // return true if eof has been reached  
+        
+        while (!foef($handle)){
+            $line = fgets($handle); 
+        }
+
+    fgets($file_handle, 200)                // read a line, including the endline char. optional 2nd arg limits max chars to read
+    fgetcsv(#file_handle, 1000, ",")        // read a line of CSVs. can specify max total chars & delimiter (comma is default)
+    str_getcsv("string")                    // read a line of CSVs from a string instead of from a file 
+    
+        // the following functions read the whole file in at once. if the file is too large, read the file in small chunks instead
+    file("path", FILE_IGNORE_NEW_LINES)     // read the whole file into an array of lines 
+                                            // 2nd optional arg is bitwise constants: FILE_IGNORE_NEW_LINES, FILE_SKIP_EMPTY_LINES, others 
+    
+    file_get_contents("path", null, null, 10, 100);     // read the whole file into a single string
+                                                        // 2nd optional arg can be FILE_USE_INCLUDE_PATH, 3rd optional arg sets a context 
+                                                        // 4th / 5th optional args are starting index & total chars read 
+    file_put_contents("path", $string,)     // write a whole string to a file.
+                                            // 3rd argument can be FILE_USE_INCLUDE_PATH, FILE_APPEND, LOCK_EX (mutex locks the file)
+    fpassthru($file_handle)                 // display contents of a file starting from current file pointer position. return total read
+    readfile("path")                        // display contents of a file using a path. return total read 
+                                            // 2nd optional arg can cause it to search the include path 
+                                            // readfile is useful for sending binary files (i.e. images, pdfs) to the browser, apparently
+
+        // the following functions adjust the file pointer 
+    fseek($file_handle, -100, SEEK_END)     // move file pointer to specific offset 
+                                            // 3rd optional arg specifies what the offset is from, can be: SEEK_SET, SEEK_CUR, SEEK_END 
+                                            // SEEK_SET is default and is the beginning, SEEK_END is the end, SEEK_CUR is current location 
+                                            // returns 0 if success, -1 if failure. do not use with remote files
+    ftell($file_handle)                     // return current file pointer position 
+    rewind($file_handle)                    // reset file pointer to start 
+
+
+-the chmod() function can change file permissions, if you have ownership of the file & the OS is not windows: 
+    chmod("path", 0644);        // the 2nd argument is an octal number, which begins with 0 
+
+-to interpret the 3 digits in the octal number of chmod: 
+    1st digit: owner
+    2nd digit: user group   
+    3rd digit: everyone else 
+
+    0: no privileges 
+    1: e (execute) 
+    2: w (write)
+    3: w/e 
+    4: r (read) 
+    5: r/e 
+    6: r/w 
+    7: r/w/e 
+
+-to read the contents of folders you need read / execute permissions 
+-to create / delete files in folder you need write / execute permissions
+
+-the following code will return the current permissions of a file: 
+    substr( sprintf("%o", fileperms("filename")), -4); 
+
+-to copy, rename, & delete files: 
+    copy("copy_from_path", "copy_to_path"); 
+    rename("original_file", "new_file"); 
+    unlike("filename");                       // unlink is the delete function 
+
+-verify the file exists with file_exists() before using these 3 functions, because they raise warning errors if it doesn't
+
+-to work with folders you get a folder handle, similar to a file handle. 
+-to get a folder handle, use opendir(): 
+    $folder_handle = opendir("foldername");             // returns false if fails to open 
+
+-you can also close the folder handle: 
+    closedir($folder_handle); 
+
+-folder handles maintain their own internal pointers to a list of files/folders and the current folder / parent folder. 
+-you can read the next file in the folder with readdir(): 
+    $filename = readdir($folder_handle);
+
+-"." and ".." are links to the current / parent folder within the list: 
+    while ($file = readdir($folder_handle)){
+        if ($file != '.' && $file != ".."){
+            echo $file . "\n"; 
+        }
+    }
+
+-there are also functions to manipulate folders: 
+    rewinddir($folder_handle)       // move the folder pointer to the beginning of the list  
+    chdir("new_path")               // change the current directory. this is the place PHP uses for relative paths or files w/ no path 
+    getcwd()                        // returns the current directory. typically this is the folder the script running is in 
+    mkdir("foldername", 0688)       // 2nd optional arg sets permissions             
+    rmdir("foldername")             // you need permissions to remove the directory 
+    dirname("path")                 // return the folder portion of the path 
+
+-PHP also provides an alternative means of working with folders - folder objects: 
+    $folder_obj = dir("path");              // dir() returns a folder object 
+    $folder_handle = $folder_obj->handle    
+    $folder_path = $folder_obj->path 
+    $folder_obj->read()                     // same as readdir() 
+    $folder_obj->rewind()                   // same as rewinddir() 
+    $folder_obj->close()                    // same as closedir() 
+
+-to tell whether a path is a file or folder: 
+    is_dir("path")
+    is_file("path")
+
+    // example code searching through a folder 
+    $folder_handle = opendir("path"); 
+    while ($file = readdir($folder_handle)){
+        if ($file != "." && $file != ".."){
+            if (is_dir( "path" . "/" . $file)){
+                $file .= "/"; 
+            }
+            echo $file; 
+        }
+    }
+___________________________________________________________________________________________________________ 
+CHAPTER 12, INTRO TO MYSQL 
+-to decide whether to use a database in an application, ask questions like: how much data, how often is it accessed / modified, 
+    how many users will need access, how large will the data grow, how bad would it be to lose it or see it corrupted 
+
+-embedded databases: databases embedded in the application, always runs on the same machine as the program and isn't networked. 
+    examples: SQLLite, dbm, dBase 
+-client/server databases: designed for use over networks, many applications can work simultaneously with the same data. 
+    examples: MSSQL, DB2, Oracle, MySQL, PostgreSQL, etc. 
+
+-MySQL fields can be a variety of data types. 
+-since encodings vary - i.e. UTF-8 often uses 3 bytes per character - the max capacity of fields will often be less than listed, apparently: 
+    TINYINT                             // 1 byte integer (-128 to 127 or 0 to 255 if UNSIGNED)
+                                            // place UNSIGNED after, i.e.: TINYINT UNSIGNED 
+    SMALLINT                            // 2 bytes (-32768 to 32767 or 0 to 65535 if UNSIGNED)
+    MEDIUMINT                           // 3 bytes (-8388608 to 8388607 or 0 to 16777215 if UNSIGNED)
+    INT                                 // 4 bytes (-2147483648 to 2147483647 or 0 to 4294967295 if UNSIGNED)
+    BIGINT                              // 8 bytes (-9223372036854775808 to 9223372036854775807 or ... if UNSIGNED)
+
+    FLOAT                               
+    DOUBLE 
+    DECIMAL(precision, scale)           // same as double, but fixed point rather than floating point
+                                            // precision specifies total digits allowed, scale specifies total digits to right of decimal 
+    BIT                                 // 0 or 1
+
+    DATE                                // 1 Jan 1999
+    DATETIME                            // 23:59:59, 1 Jan 1999
+    TIMESTAMP
+    TIME                                // 23:59:59 (range is -838:59:59 to 838:59:59 apparently)
+    YEAR                                // 1901 to 2155 only
+
+    CHAR(n)                             // 0-255 string of chars (of fixed length, so the field is the same amount of memory every time)
+    VARCHAR(n)                          // 0-65535 string of chars (and field is variable length rather than fixed length, apparently)
+    BINARY(n)                           // 0-255 string of bytes
+    VARBINARY(n)                        // 0-65535 string of bytes
+    TINYTEXT                            // 0-255 text field 
+    TEXT                                // 0-65535 text field (TEXT is a BLOB, in contrast with CHAR/VARCHAR, apparently)
+    MEDIUMTEXT                          // 0-16777215 text field
+    LONGTEXT                            // 0-41294967295 text field 
+    TINYBLOB                            // 0-255 byte BLOB: Binary Large Object (i.e. just an unformatted thing in memory)
+    BLOB                                // 0-65535 byte BLOB
+    MEDIUMBLOB                          // 0-16777215 byte BLOB (16MB)
+    LONGBLOB                            // 0-41294967295 byte BLOB (4GB)
+
+    ENUM                                // field contains a value from a predefined list of up to 65535 different values 
+    SET                                 // field contains zero or more values from a predefined list of up to 64 different values 
+
+-formats for specifying datetimes in MySQL: 
+    YYYY-MM-DD, YY-MM-DD
+    YYYY-MM-DD HH:MM:SS, YY-MM-DD HH:MM:SS
+    YYYYMMDD / YYMMDD 
+    YYYYMDDHHMMSS / YYMMDDHHMMSS 
+
+-according to stackoverflow, a difference between TINYTEXT and CHAR is: 
+    TINYTEXT: MySQL allocates (up to?) 256 bytes in the table and stores any remaining data in 2,000 byte chunks in a separate, hidden table
+    CHAR: you must declare the fixed size (up to 256), MySQL will always use this amount of space to store each record (padding with spaces) 
+
+-VARCHAR fields save disk space over CHAR, assuming the strings are not all the same size. 
+-CHARs are processed more efficiently
+
+-database index: a fields data that's been presorted, used for quick access to values in that field
+-database indexing increases read speed, but requires more processing during writes, so you must be discriminate in which fields to index
+
+-common SQL statements: 
+    SELECT
+    INSERT          // insert data into a table 
+    REPLACE         // overwrite existing data in a table 
+    UPDATE          // update data in a table 
+    DELETE          // delete data in a table
+
+    CREATE          // createa a database, table, or index 
+    ALTER           // modify the structure of a table 
+    DROP            // delete an entire database or table 
+
+-NULL propagates throughout operations - if you do arithmetic and one of the fields is NULL, the result will be NULL 
+
+-to configure the MySQL 8.0 root user (google for different versions):
+    https://dev.mysql.com/doc/refman/8.0/en/resetting-permissions.html
+    I just ran the MySQL command line tool and typed in command on that page:
+        open a command prompt & navigate to MySQL command line tool. In WAMP this is typically in C:\wamp\bin\mysql\mysqlX.X\bin
+        type the following:
+            mysql -u root
+            ALTER USER 'root'@'localhost' IDENTIFIED BY 'MyNewPass';
+
+-PHP scripts in deployed applications shouldn't use the root user, though it is ok to use root for development / testing. 
+-Instead, create a new user with limited access and use it in the scripts. 
+-If you're running your site on a hosted server, you should be provided a username/password
+
+-on non-Windows systems, MySQL stores a log of all mysql commands used, including those prior to setting passwords. 
+-On a live server this is a security problem. 
+-After setting the root password, delete '.mysql_history' from the home directory to fix this. 
+
+-now create a database & table. Run the MySQL command line tool again: 
+    mysql -u root -p 
+    CREATE DATABASE database_name; 
+    SHOW DATABASES;
+    USE database_name;                                      // change the current database
+    CREATE TABLE table_name(
+        field1 SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT, 
+        field2 VARCHAR(30) NOT NULL, 
+        field3 VARCHAR(30) NOT NULL, 
+        PRIMARY KEY (field1),                               // set the tables primary key 
+        KEY (field2),                                       // create an index for field2. can also use the keyword INDEX instead of KEY 
+        FOREIGN KEY (field3) REFERENCES table2(field1)      // how to create create a foreign key 
+    );
+    SHOW TABLES;                                            // list tables in the current database 
+    EXPLAIN table_name;                                     // show the structure of a given table 
+
+    INSERT INTO table_name VALUES(value1, value2, value3);  // insert values of fields in the order they were created 
+    INSERT INTO table_name(field2) VALUES(value2);          // insert partial data with this syntax to utilize the auto-increment feature 
+
+    SELECT * from table_name; 
+
+    SHOW TABLES; 
+    DROP TABLE table_name; 
+    SHOW DATABASES; 
+    DROP DATABASE database_name; 
+
+-There are also statements like UPDATE, DELETE, and ALTER TABLE. Read more about SQL for better understanding
+
+-There are 2 PHP extensions used to connect to MySQL through PHP: mysqli and PDOs 
+-mysqli is more complicated, in depth, and can be more efficient 
+-PDOs (PHP Data Objects) are much simpler to use, and work with databases other than just MySQL
+-both extensions come pre-installed with WAMP
+
+-example using PDOs, reading data w/ error checking: 
+    try{
+        $database_source_name = "mysql:host=localhost;dbname=database_name";            // if host isn't specified, localhost is assumed 
+        $connection = new PDO($database_source_name, $username, $password); 
+        $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);           // causes PHP to use PDOException objects
+        
+        $select_statement = "SELECT * FROM table_name"; 
+        $results = $connection->query($select_statement);                               // query sends a SELECT statement 
+        foreach ($results as $row){
+            echo $row["field1"] . $row["field2"] . "\n"; 
+        }
+
+        $connection = null;                                                             // this is how you close the database connection
+    }
+    except (PDOException $e){
+        echo $e->getMessage(); 
+    }
+    
+-database errors are often very hard to track down & fix.
+-PDO can be set to return database errors as descriptive PDOException objects, as seen above. 
+_______________________________________________________________________________________________________________________________________________
+CHAPTER 13, RETRIEVING DATA FROM MYSQL
+
+-if you save a .sql file with SQL commands in the same folder as the mysql command line tool, you can run the script w/ the source keyword: 
+    source file.sql 
+
+-password fields in mySQL should always be CHAR(41) in MySQL (older version, however) because returned password() calls are always 41 chars
+
+-MySQL character types have an attribute that dictates how they are compared (called a collation). 
+-the BINARY keyword changes the collation to perform a binary comparison. 
+-the UNIQUE keyword only allows one occurrence of the value in the field: 
+    CREATE TABLE table_name(
+        username VARCHAR(30) BINARY NOT NULL UNIQUE,    // one way of making the field unique 
+        email VARCHAR(50) NOT NULL,
+        UNIQUE KEY (email)                              // another way of making the field unique and indexed
+    );
+
+-ENUM fields save storage space - data is inserted as integers, not strings. they also help ensure valid data:  
+    CREATE TABLE table_name(
+        gender ENUM('m', 'f')
+    );
+
+-TIMESTAMP is different than other fields. The current time is automatically inserted into TIMESTAMP fields when you add data to the table. 
+-Likewise, when a row is updated, the TIMESTAMP field is updated automatically. 
+-Note that TIMESTAMP values are stored in UTC time & translated automatically according to your servers timezone. 
+
+-The 5 aggregate functions in MySQL are: COUNT(), SUM(), MIN(), MAX(), AVG(): 
+    SELECT COUNT(*) FROM table; 
+    SELECT SUM(field1) FROM table2; 
+
+-DISTINCT will eliminate any rows in the result set that are exact duplicates of other rows in the result set: 
+    SELECT DISTINCT field1 FROM table1 WHERE field2 > 100; 
+
+-GROUP BY can be used in combination with aggregate functions: 
+    SELECT field1, count(field2) FROM table_1 GROUP BY field1; 
+
+-to JOIN tables use DISTINCT and WHERE to specify the primary/foreign key be equivalent. 
+-to avoid duplicate column name errors use namespace.table syntax when selecting from multiple tables: 
+    SELECT DISTINCT table1.primary_key, table1.data, table2.data FROM table1, table2 WHERE table1.primary_key = table2.foreign_key
+
+-to avoid having to write out long namespaces you can use aliases: 
+    SELECT DISTINCT t1.primary_key, t1.data, t2.data FROM table1 AS t1, table2 AS t2 WHERE t1.primary_key = t2.foreign_key
+
+-you can also use aliases to rename columns in the result set: 
+    SELECT field1 AS x, count(field2) AS y FROM table1; 
+
+-there are many more SQL commands beyond what's listed here 
+
+-two unusual comparison operators in MySQL: 
+    <>                  // same as !=, can use either
+    <=>                 // NULL-safe version of =, will not propagate NULL to the result 
+
+-there are a wide variety of MySQL functions as well. Some of these include: 
+    now()                                   // current date and time 
+    curdate() 
+    curtime() 
+    pow(3, 2)                               // 3^2 
+    substring("a_string", 2, 4)             // _str    <- note that MySQL starts w/ index 1, not index 0
+
+-example function usage: 
+    SELECT now(); 
+
+-it's common in applications to store a MySQL account/password in a file for connecting, and save the file outside the servers root folder
+
+-to keep a MySQL connection open for reuse throughout the application: 
+    $connection->setAttribute(PDO::ATTR_PERSISTENT, true);          // if the 2nd arg is false, which is default, a new connection is 
+                                                                    // opened every time a new PDO object is created in the application
+    
+-the SQL_CALC_FOUND_ROWS keyword returns the number of rows that would return without the LIMIT clause. 
+-this is often used with paging using LIMIT, where you need to know the max row count
+-MySQL can prepare a query before executing it, speeding up repeated queries in some cases (no further detail given):
+
+    $database_source_name = "mysql:host=localhost;dbname=database_name";            // if host isn't specified, localhost is assumed    
+    $connection = new PDO($database_source_name, $username, $password); 
+    $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);           // causes PHP to use PDOException objects 
+
+    $select_statement = "SELECT SQL_CALC_FOUND_ROWS * FROM table ORDER BY field1 LIMIT :start_row, :total_rows"; 
+    $preparation = $connection->prepare($select_statement);                         // prepare the query 
+    ...
+    $total_rows = 10; 
+    $start_row = 30; 
+    ... 
+    $preparation->bindValue(":start_row", $start_row, PDO::PARAM_INT);              // replace the placeholders with real values 
+    $preparation->bindValue(":total_rows", $total_rows, PDO::PARAM_INT);            
+    $preparation->execute();                                                        // run the query 
+
+    $results_array = $preparation->fetchAll();                  // fetchAll returns all the rows that were fetched as an array of rows
+
+    $preparation->query("SELECT found_rows() AS total_rows");   // remember SQL_CALC_FOUND_ROWS? you must run a 2nd query here get that data. 
+    $row = $preparation->fetch();                               // fetch returns a single row, rather than an array of rows 
+
+-the :variable_name syntax is a placeholder syntax for prepared query strings. Replace the placeholder using the bindValue method. 
+-notice the bindValue method takes a PDO datatype as the 3rd argument. Common PDO datatypes include: 
+    PDO::PARAM_INT 
+    PDO::PARAM_BOOL 
+    PDO::PARAM_NULL 
+    PDO::PARAM_BLOB 
+    PDO::PARAM_STR 
+
+-notice the bizarre requirement of running a 2nd query for SQL_CALC_FOUND_ROWS, which isnt a prepared query. 
+-Why did it work this way? That's beyond this book apparently. read a different book to get better information on this 
+-the author does say that since we didn't need placeholders we didn't need to use a prepared query, though he doesn't say much more 
+_______________________________________________________________________________________________________________________________________________
+CHAPTER 14, MANIPULATING MYSQL DATA WITH PHP
+
+-INSERT, UPDATE, and DELETE statements all work exactly like SELECT does with PDOs: either call query(), or prepare & execute the statement 
+
+-an alternative to bindValue() is bindParam(), which will bind the variable itself to the query string. If the variable changes after 
+    the string has been created, the string will also change. 
+
+_______________________________________________________________________________________________________________________________________________
+CHAPTER 15, USING PEAR
+
+_______________________________________________________________________________________________________________________________________________ 
+MISCELLANEOUS NOTES: 
+
+-to use console.log in PHP: 
+    function console_log($message) {
+        echo '<script type="text/javascript">' .
+        "console.log(' {$message} ');</script>";
+    }

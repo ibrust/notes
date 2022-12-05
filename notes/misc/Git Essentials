@@ -1,0 +1,499 @@
+-git is a DVCS (distributed version control system). other examples are Bazaar, Mercurial.
+-in contrast, there are CVCS's (centralized version control systems) like CVS (concurrent version system), SVN (subversion), team foundation server, perforce helix
+-with centralized systems, you rely on the remote server being up (it's the centralized source).
+-with the distributed approach, you create repositories on your machine and push them to other places, often a main host
+
+-the following will display the help options of git:
+  > git
+  OR
+  > git --help
+
+-additionally, any git command followed by --help will open a man page for that specific command
+
+-git needs to know who you are, because every modification made in a repository must be signed with the name & email of the author
+-to tell git who you are, you can use the following commands:
+  > git config --global user.name "ian rust"
+  > git config --global user.email "ibrust777@gmail.com"
+
+-to create a repo from one on github: 
+  > git clone remote_repo_url .
+  > git remote add origin remote_repo_url 
+
+-to create a new repository on the local machine:
+  > git init
+
+-to cause the repository to include a file in the next commit, & track a file for future modifications (though you have to add it every time for each commit apparently):
+  > git add "filename"
+  OR
+  > git add .         (this will add all new or modified files, apparently. be weary of adding undesired files with this command, though)
+
+-to check the status of the repository; what's been added, the branch you're on, how to unstage items, etc.:
+  > git status
+
+-to save added changes to the repository:
+  > git commit --message "commit message explanation"
+  OR
+  > git commit    (this will open up VIM where you have to type the commit message)
+
+-here is an even faster way of doing commits. again you must be careful with this method, you can easily add more files than you wish:
+  > git commit -am "message explanation"      (the a in -am means add all files that have been added previously and modified since the last commit; m is for message)
+
+-lets say you accidentally made a commit under a global email / username, but you want to use a local one or system wide one for this commit instead. you can amend the commit:
+  > git config --local user.name "ian rust 2"                     (with --local, now commits from just this repo are signed in this fashion)
+  > git config user.email "ibr2a@mtmail.mtsu.edu"                 (it always defaults to use --local if you don't specify --global, --system, or --local)
+  > git commit --amend --reset-author                   (now you reset the author of the commit you're currently on. git will open VIM and prompt you to modify the commit message)
+
+-to verify the commits are configured the way you want them, this shows all commits in reverse chronological order:
+  > git log
+  OR
+  > git log --format=fuller                             (use this for more detailed information)
+  OR
+  > git log --format=raw                                (this actually shows a tree as well - author says he will talk about this more later)
+
+-"git log" will show a commit code for each commit - a hash that can be used to refer to that specific commit
+-more detailed logs have both an author and a committer separate - that's because sometimes your commit is carried to the top of some branch and then committed further, or something
+
+-the following command does the same thing git log --format=raw does, except here you specify the initial hash characters of a particular commit
+-this is meant to show there are different ways of doing the same thing in git. some commands are simple and streamlined, others are complicated and rarely used:
+  > git cat-file -p a74m3               (-p means "print nicely". like git log --format=raw, this prints an object. the last parameter is the initial hash input characters)
+
+-there are 4 kinds of git objects: commits, trees, blobs, and annotated tags
+-the tree is a container for blobs and other trees - basically it's like a folder
+-blobs are just files interpreted in binary - any kind of file is interpreted by git as a blob
+
+-earlier git cat-file -p a74m3 printed out a tree with a hash (we were printing out commit). we can use the same command to print that tree out:
+  < git cat-file -p t377p         (printing out the trees hash now)
+
+-the tree will contain trees and blobs. you can print out specific blobs using their hashes as well. When you do, you'll just see the contents of those specific files.
+
+-apparently the blobs are compressed before they're stored into a Git repository (does this make them unusable? that's a bit confusing for local repositories. are the blogs separate from the files)
+
+-the SHA-1 hash associated with these objects is what's used to identify if anything changed in the object (file, folder, etc.)
+-there's a rarely used git command that allows you to output the SHA-1 hash associated with any object:
+  < echo "banana" | git hash-object --stdin           (here --stdin allows echo's output to be piped into git)
+
+-if an object is the same, it will have the same hash in any repository
+-infact, apparently if you have two different files with the same contents, git will only create 1 blob for them, because it uses this mechanism to create the blobs (I think...)
+
+-where does git store all these objects? in the .git/objects/ folder there are some strangely named subfolders - named using the 1st 2 characters of the object hashes
+-these folders are where the various git objects are located, indexed using their first 2 hash characters for faster access
+-these are the compressed objects referred to earlier - compressed using zlib. the git cat-file -p command actually decompresses the objects before displaying them
+
+-essentially, this is a simple file-system database of these objects
+
+-if you have many files in your repository, the following command will just print one line for each of them:
+  > git log --oneline
+
+-if you examine subsequent commits after the 1st one, you will see they also have a parent object with a hash. this references the previous commit
+-you can trace these parent commits to the root commit (initial commit)
+
+-in new commits, entirely new versions of any modified objects are created, while references are maintained to old unmodified ones
+
+-git distinguishes branches using labels, i.e. names. The name is the means by which you reach & manipulate the branch - otherwise it is unreachable
+
+-the following command allows you to examine the labels & graph of a commit. you will see something like (HEAD -> master) pointing to the most recent repository:
+  < git log --online --graph --decorate     (graph will show a graphical representation of multiple branches; decorate will print out labels attached to the commits)
+
+-so the (HEAD -> master) points to the leaf of the current brnach. In git, the head points to the leaf and you can iterate backward via the parent reference
+-each branch has its own head & label in this fashion
+
+-.git/refs/heads has a list of files for all the branch heads. in each file is the hash of the most recent commit for the branch. that's how git tracks branch heads
+
+-the following creates a new branch
+  < git branch branch_name
+
+-the following deletes a branch:
+  < git branch -D branch_name
+  OR
+  < git branch -d branch_name           (this version will warn you if the branch isn't fully merged you delete it - so that you don't lose anything)
+
+-afterwards if you git log again, you will see: (HEAD -> master, branch_name). The head is pointing to master, but you are also located at the root of your new branch.
+-this command will not check out the new branch, it will only create one
+-to change to a different branch, use the following command:
+  < git checkout branch_name
+
+-now if you git log again, you will see: (HEAD -> branch_name, master).
+-this HEAD you are printing out is actually a file located in .git/HEAD. it contains something like:
+  ref: refs/heads/berries         (this is actually just a reference to the berries branch text file - the commit object the head currently points to is derived from that file)
+
+-as you grow the branch with future commits, notice how "git log --oneline --graph --decorate" continues to show the past divergence point from the master branch or other branches
+-after adding new commits and changing files, you can switch back to an old branch.
+-when you switch back to an old branch, git will trace back from one commit to the next & make changes to the files, reconstructing the files in the working directory
+
+-to see all branches including those outside your current branch, use the --all command:
+  < git log --online --graph --decorate --all
+
+-there's a quick way to switch branches. This moves you to the branch you were on before you switched to the current one:
+  < git checkout -
+
+-to undo a commit, or delete a commit, you simply make it unreachable. use the reset command to do this. This command actually just moves the branch head to somewhere else:
+  < git reset --hard master       (now your current branch head is at the same place as the master branch head; the old branch structure is unreachable and discarded)
+  OR
+  < git reset --hard ef6c32       (hash code of a previous commit)
+
+-a branch is unreachable if no head points to it or is its parent, and so it is deleted by garbage collection. But not immediately, so sometimes you can recover a commit if you remember its hash
+
+-One pattern you might follow is to create a new branch pointing to your current commit, and then reset your old branch to a prior place. This is useful if you decide to branch something
+-There are shortcut commands for pointing your branches head to a previous commit. HEAD is a reference variable to the head. You can combine it with ^ and ~ to move back:
+  < git reset --hard HEAD^        (go back 1 step)
+  < git reset --hard HEAD^^^      (go back 3 steps; ^ is additive)
+  < git reset --hard HEAD~3       (go back 3 steps; ~ lets you specify how many steps)
+
+-you can also use the HEAD reference to check out a previous commit. This is called moving into a "detached head" state
+-a detached head state is an experimental state where you moved the head to a prior commit. You make changes and new commits, but none of them are saved to the branch.
+-you can then save these "detached head" changes to a new branch if you so desire:
+  < git checkout HEAD^                        (checkout a detached head for the previous commit)
+  ...
+  < git branch new_branch_name hash_code      (save all the experimental, detached head changes of the given commit by creating a new branch)
+  OR
+  < git chekcout -b new_branch_name           (not sure why the authors code differed from the code the git message recommended)
+
+-when in a detached head state, the .git/HEAD file now contains the commits hash, not a reference to the branch
+-if you don't want to keep the experimental changes you make in the detached state, you can simply discard them by checking out an existing brnach
+
+-git maintains a reference log of every commit, reset, checkout; any change to the tips of branches or HEADS
+-view the reference log with the following command:
+  < git reflog show
+
+-you can use this reference log to checkout a currently unreachable commit, because it has a list of all the hashes of every commit - even the old, unreachable ones.
+-note that this reference log is cleared after 90 days (I'm assuming those unreachable commits are also cleared after 90 days?)
+
+-you can show only the reference log changes for a specific branch:
+  < git reflog show branch_name
+
+-tags are fixed labels. Unlike branches, where the label moves around some, tags are fixed to a specific commit:
+  < git tag tag_name            (this will tag your current commit with a name)
+  OR
+  < git tag tag_name hash_code  (attach the tag to a particular commit via its hash)
+
+-tags are useful to give meaning to particular commits. For example, particular version releases.
+-tags are stored in .git/refs/tags, and they're just files with the hashes of particular commits in them
+-adding the -d command deletes a tag instead:
+  < git tag -d tag_name
+
+-there's a second kind of tag called an "annotated tag", which allows you to attach a message to the tag
+-the following command will create a tag, then open VIM and prompt you to enter a message to associate with the tag:
+  < git tag -a tag_name
+
+-an annotated tag is actually a git object (like branches, blobs, commits) associated with its commit. It had to be made an object to contain that message, apparently
+-there's more you can do with tags, type git tag --help to read more
+
+-in git, the staging area (also called the index) is what you add files to via "git add", before you commit them
+-in git, the working tree (also called working directory) is that hierarchical structure of commits and branches that you move through
+-in git, the HEAD commit (i.e. HEAD) is the last commit / tip of current branch... (or in cases of detached heads, wherever the HEAD is pointing)
+
+-it's staging area and working tree information that you examine with "git status"
+-of all files that have been modified, "git status" indicates which have been staged (added) and which have not been
+-for files that have not been staged, "git status" asks if we want to stage them or discard their modifications
+
+-the following command will stage new and modified files only, rather than all files (like "git add ." and "git add -A")
+  < git add --ignore-removal .
+-you can also add all files within a specified directory, or use wildcards like * to specify the files
+
+-what happens if you change a file, stage it, but then change it again? only the first modification is staged. If you commit, the staged content is all that will be saved
+
+-in the above case, the working tree version of the file differs from the staging area version. there's a command that allows you to examine such differences:
+  < git diff                                      (compare working tree vs staging area)
+  < git diff HEAD                                 (compare working tree vs previous commit)
+  < git diff --cached HEAD                        (compare previous commit vs staging area. HEAD is previous commit, --cached is staging area)
+
+-the + and - symbols in the output of git diff indicate additions or removals between the old (staged) file and new (working tree) file
+
+-so what git commit does is it uses changes from the staging area to create a commit, and moves the HEAD to the new commit in the working tree
+________________________________________________________________________________________________
+-to undo adds; i.e. remove the added file from the staging area:
+  < git reset HEAD file_name            (overwrite the staging area with the current commits version of the file)
+  OR
+  < git reset -- file_name              (-- and HEAD seem to be interchangeable...?)
+
+-to delete modifications made to the working tree for a given file, use the following command (you'll lose the modification permanently, it's only in the working tree):
+-it isn't clear how this command interacts with staged changes - whether it reverts the file to the added state or the initial commit state
+  < git checkout HEAD file_name         (overwrite the working tree with the current commits version of the file? Or is it the staging area that overwrites? author isn't clear)
+  OR
+  < git checkout -- file_name 
+
+-you can use the . for the file_name to restore the working tree to the current commit: 
+  git checkout -- . 
+
+-the author has a diagram where reset is used before checkout to completely return to the initial commit state. It isn't clear whether this is necessary for a complete wipe, but worth remembering
+-the -- is not mandatory in 99% of cases, you could just do git reset file_name. It's required if you have a file & branch with the same name; -- specifies to work with files
+
+the following resets all changes to a particular commit, perhaps to a branch:
+  < git reset --hard master                 (reset both the working tree & staging area to the master branch, cleaning up the staging area)
+________________________________________________________________________________________________
+
+-there are 4 states files can be in:
+  untracked: when you create a new file in the repository
+  tracked: when you add it to the staging area
+  unmodified: when you commit the file. In this state the version in the working tree is the same as the version in the HEAD commit
+  modified: when you change it after it's been committed
+
+-note that when you change branches, your working tree & staging areas get overwritten with that new data. You could lose modifications that have not been committed.
+-rather than allowing you to lose those changes by switching branches, git will force you to commit, stash, or remove them before switching. you can only switch in a clean state.
+________________________________________________________________________________________________
+-remember: git reset is all about moving HEAD, and the branch ref.
+-assume you have a detached head from the master branch, with 2 modifications to the working tree, 1 staged and 1 not. run the following command:
+  < git reset --soft master
+-this command moves from the detached head to the master head, but it doesn't change to the masters working directory or staging area - it retains those from the detached head
+-run git diff commands to compare the old working trees & staging areas with the master head:
+  < git diff --cached HEAD          (examine the staging area vs masters head)
+  < git diff HEAD                   (examine the working tree vs masters head)
+-this command is useful for comparing changes between two commits, because it only overwrites the head (presumably you have to change the head back somehow...?)
+
+-a similar command, --mixed, changes both the head and the staged area, but not the working directory:
+  < git reset --mixed master
+
+-finally, the --hard option just overwrites all 3 areas: the head, staged area, and working tree. It is a complete move to a different commit, basically.
+-remember that to exit this detached head state you have to actually check out the master branch again
+________________________________________________________________________________________________
+-there is a command called git rebase that allows you to rewrite history
+-here is an example of using an "interactive rebase". It will open VIM w/ directions where you can do a variety of things to the commits
+  < git rebase -i HEAD~2                (-i is for interactive rebase; HEAD~2 specifies the 2 most recent commits)
+-Things you can do with interactive rebases include:
+  combine 2 or more commits into one
+  discard previous commits
+  reorder commits
+  changes messages
+
+-here's a summary of the commands listed in the interactive rebases VIM file and what they do:
+  pick => retain the commit in the repository, and retain its current form
+  reword => change the commit message
+  squash => if you squash a commit, it will be removed but its changes will be made part of the previous commit
+  fixup => same as squash but also lets you specify a new log message
+  exec => run a shell command, specified on the remainder of the line. can be useful to do things you forgot to do between commits, like rerun some tests
+  drop => remove commit from the repository; same result as just deleting the line for the commit in the VIM editor
+
+-git executes the commands specified in the VIM editor from top to bottom once you save & close the file
+
+-the rebase command can also be used to:
+  change the starting point of a branch (this operation can minimize ramifications that would come about through using git merge here)
+  split a branch
+
+-to change a branches starting point to be at the tip of the master, checkout the branch you want to move, then type the following:
+  < git rebase master
+-you will likely get a merge conflict to resolve when you do this. read the directions for details. you have 3 options:
+  1) < git rebase --continue           (once you've fixed the merge conflicts for a given patch, type this to continue - more detail below)
+  2) < git rebase --skip               (skips the application of a single patch & moves to the next - more detail below)
+  3) < git rebase --abort              (abort the entire rebasing operation)
+
+-during this operation, git creates patches for the origin branches commits and applies them to the target commit, in effect adding all commits on top of the target.
+-while constructing the patches, it compares each commit in the branch with the target commit, looking for conflicts.
+-the git rebase --skip command skips the application of one of these patches, moving to the next patch
+
+-note: after fixing merge conflicts, before typing git rebase -continue, you have to manually add the modified files to the staging area for that patch to work (I think?)
+-there's more complexity to this process - find additional resources for more details
+________________________________________________________________________________________________
+-you can also merge branches in git
+  < git merge target_branch
+
+-note, the above will merge all the commits of the target branch into the current branch 
+-usually you want to squash the commits in the target branch before merging, so that you only merge 1 commit into the master: 
+  < git merge --squash target_branch 
+
+-also note that, after the merge, you will need to commit it! importnat info this book did not mention. 
+________________________________________________________________________________________________
+
+-when merging branches, if there are no conflicts, git will simply move the target branch to the top of the origin branch and the operation will be finished
+-when merging conflicts occur, git is supposed to guide in assembling a new commit called a "merge commit". the shell prompt should (but doesn't?) contain the word MERGING
+-apparently you can type "git diff" to examine the conflicts. you'll see separators denote the areas where the merge conflicts occur
+-to fix the merge you must edit the file appropriately (however you wish to resolve the conflict), and then add and commit it in the typical way
+-after the merge is finished, the resulting HEAD commit will have 2 parents for the 2 branches that were merged. In this way git remembers that you merged the two branches
+
+-I think git has been changed with new ways of doing these merges. there is one command that opens a UI (though it wasn't helpful in my case): 
+  < git mergetool 
+
+-there is another merge scenario called "fast forwarding", where the items in one branch are directly behind the items of another
+-In such a scenario, git simply moves the label of the branch that's behind to the top, alongside the label of the branch that's in front
+-in these cases there will not even be a "merge commit" created, it isn't necessary. But some people want a merge commit created even in this case, so there's a special command:
+  < git merge --no-ff target_branch
+-git will open VIM and ask you to specify a commit message afterwards, apparently (though the author has bee wrong many times, so we'll see if this happes)
+-though not commonly used, with the above method you will be able to see a merge occurred on your graph (if that's useful). but the graph will be more complicated.
+
+-note the author undid all these merges repeatedly, after they finished, with the simple command: 
+  < git reset --hard HEAD^
+
+-to select one version of a file over another during a merge conflict (maybe the file is giant and you don't want to edit it): 
+  to select the other file: 
+    < git reset -- filename 
+    < git checkout MERGE_HEAD -- filename 
+  to select your file: 
+    < git reset -- filename 
+    < git checkout ORIG_HEAD -- filename
+
+-*It still isn't clear how to properly abort a merge while it's in progress. there was git reset --abort, and some other commands, but they didn't seem to work very well. 
+________________________________________________________________________________________________
+
+-sometimes you don't want to merge branches, but just apply certain changes from a commit to another branch. this is common if you fixed a bug in a side branch, for example
+-this command will pick a commit from a target commit and apply it to the origin branch:
+  < git cherry-pick target_hash
+
+-with this method you likewise will probably need to resolve merge conflicts appropriately, add then and commit them
+-similar commands during merge exist here as well, such as:
+  < git cherry-pick --abort
+  < git cherry-pick --continue
+
+-if you want to get really advanced, you can track the commit you cherry picked from with the following command, which will open up VIM with a suggested message:
+  < git cherry-pick -x target_hash
+-if you use -x, do not add -m to your commits during merge resolution
+________________________________________________________________________________________________
+
+-common protocols to access a remote git repository with are SSH and the git:// custom protocol.
+-you can apparently set up remote folders on your machine to access remote git repositories; folders can implement remote communication protocols
+-the command for cloning a remote repository is the following:
+  < git clone repository_name .             (the . is specifying the current folder for the destination)
+
+-git uses origin as the default name for a remote repository
+-git status will show the remote branches as well as your local branches
+-after cloning, you can check out remote branches with their labels. git will inform you that a local branch has been set up to track the remote branch, and notify you of changes.
+-you'll be notified of such remote changes when you use output commands like git status
+
+-if you do a commit to this local copy branch it will only modify the local repository. to modify the remote repository as well, you must push the changes after:
+  < git push remote_repo_name target_branch
+    i.e.
+  < git push origin target_branch
+
+-git will only send reachable, changed objects to the remote
+-usually a copy of a remote repository is managed as a bare repository
+
+-sometimes you have to force push if your repo has gotten out of sync with the remote repo: 
+  < git push -f remote_repo target_branch 
+
+-you won't typically work directly on a bare repository. it contains only the .git folder; it doesn't have a checked out working tree or a HEAD reference.
+-the author says instead the remote repository is the one that's normally configured with working trees, staging areas, etc.
+-there is one difference with this remote repository, despite it being normally configured: it can't push to remote checked out branches. that would screw up work the dev is doing
+-so you push from the checked out branch up to the remote; but not in the reverse direction.
+________________________________________________________________________________________________
+-git can also pull code - retrieve updates from the remote and copy them to the local
+-git pull actually is a combination of git fetch and git merge
+-you can use git fetch and git merge individually instead of using git pull to inspect the fetched files before you merge them
+-git will tell you you're up to date with remote repositories despite their being changes in them. you have to git fetch the remote repo to track the changes, apparently
+  > git pull remote_repo branch_to_merge_into
+  i.e.
+  > git pull origin master
+-apparently you should be located in the branch you wish to merge into when executing this command - the author indicates this, but doesn't explain why. maybe to manage merges? I don't know, author sucks.
+
+-git fetch only downloads remote objects that have been updated; you can call it from anywhere
+-after running git fetch, use git status to examine how in sync you are with the remote branches. this will also tell you if the merge can be fast-forwarded
+-afterwards you can just do a manual merge on the relevant branches:
+  < git fetch
+  < git status
+  ...
+  < git merge origin master
+________________________________________________________________________________________________
+-git stores remote branch labels similarly to how it stores local ones, in .git/refs/remotes
+-there's a command called git remote that allows you to do things to the remote repo: add, remove, rename, list, & more. read something else for more details
+  > git remote ...
+
+-usually you create the remote repository on github, and then just clone it locally using the clone URL on the github repo page.
+-note that public repos are free while private ones cost $
+-the github repo will come with a README.md... edit it and describe your project for the public
+
+-when you use git push without further specification, a git credentials manager might pop up. you need credentials to access this remote repository
+-git push without further specification will send all local commits & related objects that haven't been uploaded to the remote repo
+  > git push
+
+-you can also push a new branch to the remote repository:
+  < git push -u remote_repo local_branch_name                   (-u in this command tells the local repo to track changes to this branch in the remote repo)
+  i.e.
+  < git push -u origin new_branch
+
+________________________________________________________________________________________________
+-the following command shows the remotes currently configured in your repository:
+  < git remote -v
+-by default you will see 2 URLS for the origin: one for fetches and another for pushes. they're URLs to the same place by default, but can be reconfigured
+-with the git remote command you can add, update, and delete remotes - read further for details
+
+-tracking a branch (the -u option) is often useful when collaborating with coworkers - it helps keep the local & remote in sync
+
+-the following command gives even more detailed information on a specific remote repository:
+  < git remove show origin
+-this command shows which branches are being tracked. it also shows the correspondence between remote & local branch labels (which dont always match)
+________________________________________________________________________________________________
+-you can also create a local repository, configure it, and then push it to an empty github repository - the reverse operation
+-navigate to github and manually create an empty repository (no README.md or anything) to receive the local repo
+-remember to create a README.md for the remote repo
+
+-to publish the local repository:
+  1) add the empty remote repo to the local repo's list of remote repos
+    < git remote add origin remote_repo_URL
+  2) push the local repo to that newly added remote repo
+    < git push -u origin master
+________________________________________________________________________________________________
+-there are two noteworthy forms of social collaboration facilitated by github: forks and pull requests
+
+-forking a repository is just creating a clone on your github of some other persons github repository. you can track changes to their repo while adding your own
+-to fork a repository, go to github, navigate to a repo, find the "fork" button, and click it. you will now have your own forked version of the repo
+-after cloning the repo, you must run the following command to add the original repo to the remote repos list, so you can track changes to it:
+  < git remote add upstream URL_of_original_repo                  (the original repo is referred to as an "upstream" repo)
+
+-pull requests can be used to suggest changes to the upstream repo - you can't push to it directly
+-pull requests are also often used for code reviews
+
+-to make a pull request go onto github, to your forked repo, and press 'new pull request'. Note: pull requests can only be made from separate branches (new branches? author sucks).
+________________________________________________________________________________________________
+
+-the git config command edits some of gits internal configuration files
+-there are 3 configuration levels, in order from broadest to most local: system, global (only for one user), repository 
+-each configuration level has its own configuration files  
+-configurations specified at lower levels are used preferentially over configurations at the levels above 
+
+-system level configurations effect every user on the system
+-global level configurations effect a specific user globally 
+-repository level configurations effect only that repository 
+
+-the system config file is at: 
+  windows: C:\Program Files\Git\etc\gitconfig
+  Linux: /etc/gitconfig 
+  MacOS: /usr/local/git/etc/gitconfig 
+-system wide configurations are edited using the --system option and requires admin privileges 
+
+-the global config file is at: 
+  windows: C:\Users\<username>\.gitconfig 
+  linux: ~/.gitconfig 
+  MacOS: ~.gitconfig 
+-global configurations are edited using --global 
+
+-the repository config file is at: 
+  windows: C:\<repository_folder>\.git\config 
+  linux: ~/<repository_folder>/.git/config 
+  MacOS: ~/<repository_folder>/.git/config 
+-repository configurations are edited using --local or, if you don't specify an option, they will default to being repository level 
+
+-to list all currently in use configurations: 
+  < git config --list 
+
+-you can filter this list: 
+  < git config --list --system        (show only system configurations in use) 
+  < git config --list --global        (show only user level configurations in use) 
+  < git config --list --local 
+
+-you can also directly edit the configuration files (sometimes people from stackoverflow will reference lines from these files instead of a config command)
+________________________________________________________________________________________________
+-you can configure git to autocorrect
+-git implements autocorrect strangely: it opens up a VIM editor after you enter the mistake, informs you of the mistake, and counts down until correcting it (unless you ctrl+C out)
+  < git config --global help.autocorrect 10           <- autocorrect commands. 10 is how many tenths of a second git will wait before suggesting a correction. 
+
+-look in the config file and you'll see the following: 
+  [help]
+    autocorrect = 10 
+-git config file commands are in the form: section.parameter_name (i.e. help.autocorrect) 
+
+-remember git push without further specification will send all local commits & related objects that haven't been uploaded to the remote repo
+-you can override this default git push behavior, making it safer and causing it to never do this: 
+  < git config --global push.default nothing                (do nothing with the default push command)
+-now you'll have to use the form that specifies the branches: 
+  < git push -u remote_repo local_branch_name 
+
+
+
+-page forgotten
+
+
+________________________________________________________________________________________________
+MISC: 
+-to show the files you've changed between commits: 
+  < git diff --name-only HEAD HEAD~3                // to know how far back you want to look use git log
+
+- to merge all their or our changes 
+  < git merge <branch> -X theirs
+  < git merge <branch> -X ours

@@ -1,0 +1,614 @@
+
+
+-objective-C is a superset of C, and most of the core language syntax up until objects is identical.
+
+-objective-C has #include, #import, and @import 
+-#import is a minor improvement to #include, it handles the duplicate inclusion problem automatically and is more efficient 
+-@import is a "module import". this avoid link errors that can occur with #import, and makes the include process more encapsulated / scalable
+-#import link errors occur due to not adding the library / framework in the xcode build phases or something. @module automatically handles this
+-modules are, basically, separately compiled. Their APIs are pulled into the file using @import, the text isn't pasted in.  
+-so this doesn't let the API be changed by any local context
+-you can even import submodules - i.e. @import module.submodule. so here you only get part of the API of the module 
+-all you do is opt in to using modules via a build setting (which is defaulted). with this, #import automatically translated to @import
+-all IOS frameworks are available as modules. 
+
+-objective-C files use the .m extension for the implementation files and .h for the public interface (similar to C)
+-all objective-C programming is done with the Foundation framework, apparently 
+-methods are called by sending messages to classes/objects using the [class/obj method] syntax. 1st arg is the class or object, 2nd is the method 
+
+    // the code in this book only creates simple console applications
+    #import <Foundation/Foundation.h>                           
+
+    int main(int argc, const char* argv[]){                     
+        @autoreleasepool {                              // no idea what this is for 
+            NSDate* current_date = [NSDate date];               // NSDate is the foundation class for handling dates. this calls the class constructor 
+            NSLog(@"date objects address: %p", current_date);       // NSLog is foundations improved printf statement, it works similar to printf 
+            NSLog(@"current date: %@", current_date);               // %@ in NSLog asks an object for its description - covered more later 
+            
+            // a method of NSDate which returns seconds since 1970. notice this calls an object method; the previous call was a class method 
+            double seconds_since_1970 = [current_date timeIntervalSince1970];
+            NSLog(@"seconds since 1970: %f", seconds_since_1970);
+
+            NSDate* later_date = [current_date dateByAddingTimeInterval: 1000000];  // this is a method call w/ an argument of 1 million seonds. add 1 million seconds to current_date
+
+            // NSDate is a typical date class, NSCalendar handles converting to nonlocale dates & other compatibility issues. read details
+            NSCalendar* calendar_date = [NSCalendar currentCalendar];   // create a calendar object from a date object 
+            NSLog(@"calendar date: %@", calendar_date); 
+
+            // the following NSCalendar method can retrieve a specified date attribute from an NSDate object. This call gets its day of the week 
+            unsigned long day_of_week = [calendar_date ordinalityOfUnit:NSDayCalendarUnit, inUnit:NSWeekCalendarUnit, forDate:current_date]; 
+            NSLog(@"day of week: %lu", day_of_week); 
+        }
+        return 0;
+    }
+
+-note that if you call a class method off an object, or an object method off a class name, you will get an error
+
+-every class has methods called init & alloc. alloc returns a pointer to a new instance that needs initializing, and init initializes an instance
+-you can also nest these messages. init and alloc, when used, are always used nested together:
+
+    NSDate* current_date = [[NSDate alloc] init];               // this does exactly what [NSDate date] did; date is a 'convenience method'
+
+-objective-C has both NULL and nil. NULL is used for pointers to any traditional C type, nil is used for pointers to any objective-C object
+-sending messages to nil does not produce an error, but it will do nothing and return a garbage value or 0 depending on the data type (old guy says primitives return 0)
+
+_____________________________________________________________________
+-if you need a pointer to an unknown type of object, use the id keyword:
+
+    id pointer1;            // no * is needed in the declaration. is will point to any type of object
+
+-obj-c uses dynamic binding for all message sends - the method or property is looked up at runtime
+-technically all pointers (i.e. NSString*) are treated like id at runtime, but they're type checked at compile time. except id, which is not type checked
+-if you send a message to the wrong type of object, your program crashes. this happens often when using id, because it isn't type checked. 
+-so when using id you need to do type checking 
+
+-there's some strange pointer behavior w/ polymorphism: 
+    @interface Vehicle
+    - (void)move; 
+    @end 
+    @interface Ship : Vehicle 
+    - (void)shoot;
+    @end 
+    
+    Ship* s = [[Ship alloc] init]; 
+    Vehicle* v = s;                         
+    [v shoot];              // this generates a warning at compile time but it works fine at runtime. though v is only typed as a vehicle, it's actually a ship. 
+
+    NSString* string1 = "hello"; 
+    Ship* s2 = (Ship*)string1;
+    [s2 shoot];                     // compiler won't warn you but this will crash here - nonexistent typecast checking for pointers, apparently 
+    [(id)string1 shoot];            // another way of faking out compiler, and this will crash also 
+
+-there are old methods for initializing some classes using class methods instead of alloc/init. This is an old way of manually doing reference counting before ARC
+-NSString & NSArray have the method mutableCopy, which returns an id pointer to an NSMutableString or NSMutableArray
+-unless a method has the word copy in it, you can generally assume it's returning a pointer to the same object 
+-methods called off nil objects return nil. nils integer value is 0, so if the method returns an int it returns 0. 
+-if the return type of the method is a struct, you get an undefined struct - a garbage value. the struct is being returned to you on the stack, you might get stack garbage or something else 
+
+-common uses of id include iterating through an array of mixed objects, or giving a view or model a generic pointer to any controller (promotes loose coupling)
+-there are 2 general ways of making id more safe: introspection and protocols 
+
+-the syntax for declaring an id with a protocol is: 
+    id <UIScrollViewDelegate> scroll_view_delegate;    // this tells id that it responds to this set of protocol methods - gives a little type checking to id
+
+-NSObject has some introspection methods - ways of finding out what kind of object a thing is. 3 of them are: 
+    // isKindOfClass - is the object the class or a child of the class?
+    // isMemberOfClass - is the object the actual class?
+    // respondsToSelector - does this object respond to a certain method? 
+    
+    if ([obj isKindOfClass:[NSString class]]){              // class is a method of NSString that returns a type Class
+        NSString* s = (NSString*) obj; 
+        ...
+    }
+
+-an @selector is an identifier for a method name. for example, if 2 completely different classes have a method called 'shoot', they have the same selector regardless
+
+    if ([obj respondsToSelector:@selector(shoot)]){
+        [obj shoot];
+    } else if ([obj respondToSelector@selector(shootAt:)]) {    // notice the weird : syntax in the method name. this form is for one argument apparently 
+        [obj shootAt: var1]; 
+    } else if ([obj respondToSelector@selector(shootMultiple:total:)]) {        // this form is for 2 arguments apparently
+        [obj shootat:var1 total:3];                                           // notice you don't put commas between multiple arguments in the method calls
+    }
+
+-when you specify a selector somewhere in your code, a typedef is added for it: 
+    SEL shootSelector = @selector(shoot); 
+    SEL shootAtSelector = @selector(shootAt:); 
+    SEL shootMultipleSelector = @selector(shootMultiple:total); 
+
+-the following NSObject methods actually take these selector parameters. you could use this to dynamically choose which method to perform, for example: 
+    [obj performSelector:shootSelector]; 
+    [obj performSelector:shootAtSelector withObject:target];        // this can handle selectors with just 1 argument, and the argument must be an object, apparently
+
+-the following NSArray methods also take a selector: 
+    [array makeObjectsPerformSelector:shootSelector];               // all objects will perform the selected method 
+    [array makeObjectsPerformSelector:shootAtSelector withObject:target]; 
+
+-the target/action mechanism defined in UIControl (which many UIKit classes inherit from) also uses a selector 
+
+_____________________________________________________________________
+
+-note that all objective c objects are put in the heap (primitives are implemented with C)
+-you can create object literals with the @ syntax, apparently: 
+    NSLog(@"%@", [@"Value" substringFromIndex:1]);          // @"Value" creates an object literal. output is "alue"
+
+-heap memory is often limited on apple devices (such as phones or watches), and programs aren't given much, so correct object destruction is important
+-objective-C uses automatic reference counting using tracking mechanisms inserted during compilation
+-if you want an object to be reclaimed immediately, set any pointers referencing it to nil
+-objects with variables referencing delegated objects or cyclical references are still problematic and will be addressed later (use weak)
+-note that automatic reference counting only applies to objective-c objects; malloc & free can still be used as desired
+
+-NSString is the objective-C string class. There are a variety of useful NSString methods, read the documentation for more details
+-in XCode, go to Help > Documentation and Api Reference and search for NSString to see the documentation 
+
+    NSString* string1 = @"hello there!";            // the @ symbol denotes an NSString literal 
+    NSString* string2 = @"\u2661";                  // NSStrings can contain unicode 
+
+    // to create a string dynamically you must use NSString's stringWithFormat method: 
+    NSString* string3 = [NSString stringWithFormat: @"the date is: %@", current_date];  // you can still use % placeholders with stringWithFormat
+
+    NSInteger string_length = [string1 length];     // length returns an NSInteger. NSInteger is equivalent to an unsigned long int, apparently 
+
+    if ([string1 isEqualToString: string2]){        // isEqualToString, an NSString method that compares 2 strings 
+        printf("never reached here");
+    }
+
+    NSString* capitalized_string = [string1 uppercaseString]    // uppercaseString capitalizes the string & returns the result 
+
+-for info on dealing with substrings read about NSRange as well (the author doesn't cover it well) 
+
+    // the following code searches a string for a substring and tests whether it was found or not 
+    NSString* string4 = @"dog, cat, bat, rat, mouse"; 
+    NSString* string5 = @"rat"; 
+    NSRange search_result = [string4 rangeOfString: string5] 
+    if (search_result.location == NSNotFound){                  // NSRange.location will be NSNotFound if the string isn't found 
+        NSLog(@"couldn't find the rat!");
+    }
+    else{
+        NSLog(@"found the rat!"); 
+    }
+
+-explore the documentation thoroughly. there's 'sample code', 'developer guides', & many other things. 
+
+-NSArray is the objective-C array - it's an array of pointers to objects 
+-NSArray has its own object literal syntax (as does NSString): 
+    NSDate *current_date = [NSDate date]; 
+    NSDate *tomorrow = [now dateByAddingTimeInterval: 24.0 * 60.0 * 60.0];
+
+    NSArray *two_dates = @[current_date, tomorrow];                 // NSArray object literal syntax 
+    NSLog(@"first date in array: %@", two_dates[0]);                // access array elements with usual syntax 
+
+-some NSArray methods: 
+    - (NSUInteger) count; 
+    - (id)objectAtIndex:(NSUInteger)index; 
+    - (id)lastObject; 
+    - (id)firstObject; 
+    - (NSArray*)sortedArrayUsingSelector:(SEL)aSelector;                                // give it a selector that is basically for a sorting callback 
+    - (void)makeObjectsPerformSelector:(SEL)aSelector withObject:(id)selectorArgument; 
+    - (NSString*)componentsJoinedByString:(NSString*)separator;
+
+-some NSMutableArray methods (in addition to inheriting all methods from NSArray): 
+    - (id)array;                                        // shorthand for [[NSMutableArray alloc] init] 
+    - (id)arrayWithCapacity:(NSUInteger)numItems;       // alternative initializer. numItems is an estimate of how many items the array will hold 
+
+    - (void)addObject:(id)object; 
+    - (void)insertObject:(id)object atIndex:(NSUInteger)index; 
+    - (void)removeObjectAtIndex:(NSUInteger)index; 
+
+-NSArrays are immutable: you can never add or remove elements (similar to C arrays). 
+-NSArrays have a count method to get the length of the array 
+-there's also an optional for-in loop to iterate over arrays
+
+    NSUInteger array_size = [two_dates count]; 
+    for (int x = 0; x < array_size; x++){
+        NSLog(@"%@", two_dates[x])
+    } 
+    for (NSDate* one_date in two_dates){
+        NSLog(@"%@", one_date)
+    }
+
+-NSMutableArray is the mutable equivalent of NSArray (it's a subclass of NSArray apparently): 
+
+    NSMutableArray* mutable_dates_array = [NSMutableArray array];         // the array method is the classes initializer... it calls [[NSMutableArray alloc] init] basically 
+    [mutable_dates_array addObject: current_date];                        // not sure if literal object syntax can work for NSMutableArray... probably not but author doesn't say
+    [mutable_dates_array addObject: tomorrow];  
+    [mutable_dates_array insertObject: [NSDate date] atIndex:0]           // insert a 3rd date at index 0                   
+    [mutable_dates_array removeObjectAtIndex: 0]                          // remove it again 
+
+-if you are using the for-in loop you cannot add/remove items (not sure if author means you lack an index or if there's some serious bug involved, sounds like it's a bug)
+
+-prior to object literal syntax, programmers had to initialize arrays using the arrayWithObjects method
+-you must manually insert nil at the end of the argument list for this method to denote when the array ends 
+-they also didn't have the [] index accessor syntax, and instead used the objectAtIndex method to access elements:
+
+    NSMUtableArray* old_array = [NSArray arrayWithObjects: current_date, tomorrow, nil]; 
+    NSLog(@"%@", [old_array objectAtIndex: 0]);
+
+_________________________________________________________________________________________________________
+-there's a for-in loop syntax: 
+    NSArray*  array = @["one", "two", "three"]; 
+    for (NSString* string in array){                // the string variable here is merely casting that array value to a type - there's no typechecking
+        ...
+    }
+    ... 
+    NSArray* array2 = @[@1, "two", @3, "four"];   
+    for (id obj in array2){                         // for mixed arrays you'd use id and introspection
+        if ([obj isKindOfClass:[NSString class]]){
+            ...
+        } else if ([obj isKindOfClass:[NSNumber class]]){      // not positive those array constants will be type NSNumber but I think so...
+            ... 
+        }
+    }
+
+-NSNumber is a wrapper around various number types - int, float, double, BOOL, enums
+-typically you'd wrap these primitives to put them in an NSArray 
+-literal syntax for creating an NSNumber can be @ or @()
+
+    NSNumber *three = @3
+    NSNumber *raw_value = @(your_enum_variable); 
+    NSNumber *boolean_value = @([card match:@[otherCard]]);         // even enums & boolean expressions can be made into NSNumber literals
+
+-NSValue is a wrapper around some non-object, non-primitive types (like C structs)
+
+-the old guy says a good way to wrap up a struct is to turn the struct into a string - you can put it in an array as a string. 
+-there are c functions in IOS that turn most of the structs in IOS into strings and back apparently 
+-so the old guy seems to believe turning the struct into a string is more usable, while wrapping it with NSValue is probably better for performance 
+
+-NSData - the objc equivalent of Data in Swift. Just binary data 
+
+-NSSet / NSMutableSet / NSOrderedSet / NSMutableOrderedSet - hashed structures, useful for efficiency. It stores NSObjects 
+
+-NSDictionary / NSMutableDictionary - another hashed structure. The keys & values are both NSObjects
+-NSDictionary again has its own object literal syntax: @{key:value, ...} 
+
+    NSDictionary* colors = @{@"red":[UIColor redColor], @"green":[UIColor greenColor]};     // notice the keys are themselves NSString literals 
+    UIColor* red = colors[red];                                                             // the key is an NSObject that must implement hash and isEqual
+
+-the old guy recommends using NSStrings as the key when possible because NSObjects implementation of hash & isEqual is poor - a pointer is the key and == is isEqual
+
+-NSDictionary methods include: 
+    - (NSUInteger)count; 
+    - (id)objectForKey:(id)key; 
+
+-NSMutableDictionary methods also include: 
+    - (void)setObject:(id)anObject forKey:(id)key; 
+    - (void)removeObjectForKey:(id)key; 
+    - (void)removeAllObjects; 
+    - (void)addEntriesFromDictionary:(NSDictionary*)otherDictionary
+
+-looping through a dictionary looks like this: 
+    for (id key in dictionary1){                        // you're looping through the keys here 
+        id value = [dictionary1 objectForKey:key];      // you're using the key to get the value here 
+        ...
+    }
+
+-any combination of only the following is called a property list: NSArray, NSDictionary, NSString, NSNumber, NSDate, NSData 
+
+-many APIs throughout IOS expect a property list as an argument. 
+-for example, this message can only be sent to an NSArray or NSDictionary that's a property list: 
+    - (void)writeToFile:(NSString*)path atomically:(Bool)atom; 
+
+-NSUserDefaults also only stores property lists 
+
+-NSRange - this is actually a C struct that describes a range of some sort - in a string, an array, etc.: 
+    typedef struct {
+        NSUInteger location;            // starting location 
+        NSUInteger length;
+    } NSRange; 
+
+-NSNotFound - this is a constant that the value of ranges location is set to when a search doesn't find anything: 
+    NSString* word = @"hello there!"; 
+    NSString* word2 = @"dino"; 
+    NSRange range = [word rangeOfString:word2];
+    if (range.location == NSNotFound){
+        ...
+    } 
+
+-since obj-c doesn't put structs in the heap, NSRange isn't declared with a pointer. 
+-NSRangePointer is a special pointer for pointing to a range. Use this to pass a range by reference (some methods want this - NSEqualRanges(), NSMakeRange())  
+
+-NSAttributedString is not a subclass of NSString 
+-each character in NSAttributedString has a dictionary of attributes associated with it (though consecutive characters can share dictionaries)
+-NSAttributedString is immutable - you can't modify the attributes 
+
+-the following NSAttributedString method returns a dictionary of all the attributes of a character at the specified index 
+-you also pass it a pointer to a range, and it will fill in how many subsequent characters share the attributes. you can pass NULL if you aren't interested: 
+
+    - (NSDictionary*)attributesAtIndex:(NSUInteger)index effectiveRange:(NSRangePointer)range;  
+
+-this NSAttributedString method returns an NSString, allowing you to use normal NSString methods 
+-this just returns a pointer to NSAttributedStrings internal data structure, so it might be randomly deallocated. If you want it to persist, make a copy of it: 
+
+    - (NSString*)string; 
+
+-NSMutableAttributedString has a few more methods: 
+
+    - (void)addAttributes:(NSDictionary*)attributes range:(NSRange)range;
+    - (void)setAttributes:(NSDictionary*)attributes range:(NSRange)range;
+    - (void)removeAttribute:(NSDictionary*)attributes range:(NSRange)range; 
+
+-similarly, NSMutableAttributedString is not an NSMutableString. Thus if you want to actually add or remove characters you must get its internal data structure
+-modify this internal data structure will automatically change the NSMutableAttributedString 
+-altered characters will also automatically be given relevant attributes of surrounding characters in the NSMutableAttributedString  
+
+    - (NSMutableString*)mutableString;      // returns a mutable string 
+
+-you create a dictionary of all these attributes to use with the attributed strings in various ways: 
+
+    NSDictionary* attributes = @{
+        NSFontAttributeName : [UIFont preferredFontWithTextStyle:UIFontTextStyleHeadline],          // font type 
+        NSForegroundColorAttributeName : [UIColor greenColor],                                      // text color. be careful - this often indicates clickability
+        NSStrokeWidthAttributeName : @-5,                   // if width is negative, it means to both fill and stroke. otherwise it'd mean stroke but not fill 
+        NSStrokeColorAttributeName : [UIColor redColor],
+        NSUnderlineStyleAttributeName : @(NSUnderlineStyleNone),
+        NSBackgroundColorAttributeName : transparentYellow                                          // the string actually has a background color behind it 
+    }
+
+_________________________________________________________________________________________________________
+
+-classes are divided into .h and .m files: 
+
+    // bat.h 
+    #import Foundation 
+
+    @interface Bat : NSObject {         // NSObject is the root object of all objective-c objects 
+        int _weight;                    // the author noted that the variables were declared inside the braces while the methods weren't. 
+        int _wingspan;                  // old guy declares some variables outside the braces but they had some kind of decorators on them, not sure why 
+    }                                   // apparently _ before variables is a convention in objective-c
+
+    - (int)get_wingspan;                // notice the horrible dash syntax for declaring methods 
+    - (int)set_wingspan:(int)wingspan;  // this is how arguments are specified 
+
+    @end                                // the author states all headers start/end with @interface / @end, though he says nothing about whether there can be multiple
+
+
+    // bat.m 
+    #import "bat.h"
+    @implementation 
+
+    - (int)get_wingspan{
+        return _wingspan; 
+    }
+    - (int)set_wingspan:(int)wingspan{
+        _wingspan = wingspan; 
+    }
+
+    @end
+
+    // main.m 
+    @import Foundation 
+    #import "bat.h"
+    int main (int argc, const char* argv[]){
+        @autoreleasepool {
+            Bat* bat = [[Bat alloc] init]; 
+            [bat set_wingspan:20]
+        }
+    }
+_________________________________________________________________________________________________________
+
+-you can also use self in method implementations. you can pass messages to yourself (mostly just makes things more explicit), add yourself to an array or another object, etc. 
+
+-apparently during compilation all the .m are linked, along with many .c files
+-since objective-c has no namespacing support, people typically prefix their class names with 3 random letters - i.e. UBT_Bat instead of Bat 
+_________________________________________________________________________________________________________
+
+-properties (the decorators the old guy used) are shorthand syntax for declaring instance variables that automatically create getters / setters for you: 
+
+    #import Foundation 
+
+    @interface UBT_Bat : NSObject
+    @property (nonatomic) int wingspan;         // instance variables _wingspan and _weight are automatically declared. 
+    @property (nonatomic) int weight;           // no need to declare setters / getters or implement them in the .m file, or use brackets
+                                                // there are a variety of specifiers, like {nonatomic}, that modify the implementation of getters / setters. nonatomic is standard
+    - (int)flight_time;
+    @end 
+_________________________________________________________________________________________________________
+
+-apple & the objective-c community feel that we should always use properties, and never use the private variable names but only access the variables through getters / setters 
+
+-property attributes {} include: nonatomic / atomic, readonly / readwrite (readwrite is the default), copy, & others. no further information given 
+-pretty much always using nonatomic seems to be the consensus 
+-apparently when you declare NSString or NSArray properties you should specify the copy attribute. no further information given
+
+-the generated getters / setters have their own special . notation for access, just like a struct. whether the getter / setter is called depends on the semantics: 
+
+    Bat* bat = [[Bat alloc] init]; 
+    bat.wingspan = 20; 
+    bat.weight = bat.wingspan / 2;
+
+_________________________________________________________________________________________________________
+-the old guy added a 2nd @interface section in the .m file, in addition to the .h, and just made the .m one a private interface
+-the old guy also shows how to define a method with multiple parameters: 
+
+    @interface Bat : NSObject 
+    - (void)calculate_wingspan:weight(int) age:(float)age;          // 2nd parameter has an internal and external name, it appears 
+    - (void)calculate_wingspan;                                     // you can overload methods 
+    @end
+    ... 
+    - (void)calculate_wingspan{
+        [self calculate_wingspan:5 age:0]                          // overridden - the 2nd parameter was a labeled parameter 
+    }
+
+-the old guy says any kind of object can be an NSArray, there's no way to type check them. He says there are ways to check what kind of object is in there manually.
+
+-the old guy, in his own getter implementation, did a check for whether the property was nil and if it was he called alloc/init - i.e. 'lazy initialization'
+-lazy initialization is a common pattern in objective-c; rather than putting the initializer in the init, you defer initialization until it's accessed 
+
+-arc4random() is a c library function that gets a random int, apparently 
+
+-note that NSArray only holds objects; you have to put in string object literals instead of string literals, for example
+
+-he said that because he overrode both the setter AND the getter he had to include @synthesize within the implementation section, not sure why
+-if you put a + instead of a - before the method, it makes it a class method rather than an instance method:
+    
+    @interface Bat : NSObject
+    @property (class, nonatomic) total_bats;
+    @end
+
+    @implementation 
+    + (void)bat_count {
+        _total_bats = _total_bats + 1;              // you cannot use instnace variables within class methods 
+    }
+    @synthesize bat = _bat;                         // ??? custom getter & setter ???
+    @end
+_________________________________________________________________________________________________________
+
+    @implementation 
+    ...
+    - (instancetype) init {         // init will always return type (instancetype), which will be whatever type the object is 
+        self = [super init];        // you're also always going to have self = [super init] in the init (the only time you assign to self, he says)
+        if (self){                  // this is to ensure that, if you failed to initialize self and it was nil, that you only return nil - this is required apparently 
+            // initialization code 
+            ... 
+        }
+        return self;                // you will also always return self in init 
+    }
+    @end
+_________________________________________________________________________________________________________
+
+-the old guy defined a variable that readonly in the public API (the .h file); and then redefined it as readable in the private API (the .m file)
+-this is one of the few times you'd ever need to use readwrite - redeclaration of readwrite... since it's the default 
+    // .h 
+    @interface Bat : NSObject 
+    ... 
+    @property (nonatomic, readonly) NSInteger weight; 
+    @end 
+
+    // .m 
+    @interface Bat()                                                // notice the use of () in the private interface, instead of : NSObject
+    ... 
+    @property (nonatomic, readwrite) NSInteger weight;              // redefined property as readwrite in the private implementation
+    @end
+
+    @implementation Bat 
+    ... 
+    @end
+
+_________________________________________________________________________________________________________
+NOTES FROM BOOTCAMP CLASS: 
+
+-atomic is actually not thread safe because you can't guarantee the access order. it only guarantees you won't get a garbage value or wrong value 
+
+-apparently while (copy) specifies pass by value, the counterpart for pass by reference is either (assign) or (retain) 
+-(assign) is a weak reference to a primitive type (you'd use weak instead of assign if it's a class, because in that case it's already a pointer) 
+-(retain) is a strong reference to a primitive type (you'd use strong instead of retain if it's a class)
+
+-read about the following: 
+    although there's automatic synthesization in XCode, there are many cases where you must manually call @synthesize 
+    such scenarios include using readonly or readwrite with a custom getter / setter, using @dynamic, and others 
+    there's an ^ symbol which is some sort of closure passing syntax 
+    he used some something like this in an init, no idea why: 
+        static dispatch_once_t 
+    there was a _Nullable syntax that preceded parameters and indicated they could be NULL, or something along these lines 
+    in his objc project he created a swift file and a dialogue box asked if he wanted to create an objc bridging header
+    he says tag things with @objc if you're using them in swift ...
+
+-he wrapped his interface in NS_ASSUME_NONNULL_BEGIN and NS_ASSUME_NONNULL_END. apparently this is for Swift compatibility - swift will now assume nonnull 
+-objc and swift are both compiled to machine code apparently 
+
+_________________________________________________________________________________________________________
+-the old guy says that unless a method that returns an object has the word copy in it its probably retuning a pointer to the object
+
+-although methods will return nil if the object is nil, the exception is if it returns a struct, inwhich case the structs variables might be garbage 
+
+-although the old guy designated an init his a designated initializer, he also says the compiler isn't aware of that... so this was his convention I suppose? 
+
+-there's some sort of static const type. Not sure why you need both static and const
+    static const int GLOBAL_COUNT = 12; 
+
+-you can use #define for global variables, too. whether to use #define or static const seems arbitrary: 
+    #define GLOBAL_SIZE 6
+    
+-I prefer static const over #define for constants - the const is typed, so the compiler will check it... and the compiler can optimize for it better, most likely (because it's typed)
+_________________________________________________________________________________________________________
+-inheritance uses the following syntax: 
+
+    #import "animal.h" 
+
+    @interface Bat : Animal                 // inherit from Animal 
+    @property (nonatomic) int wingspan; 
+    @end 
+
+-to override a method, just write a new implementation for it within the .m file. you don't redeclare it in the .h file 
+-use super to call a parent class method within the child class method (useful when overriding methods): 
+
+    @implementation Bat                                     // notice you didn't need the : inheritance syntax in the .m file 
+    
+    - (void) move {
+        [super move]            // call to parents method that's being overridden
+        NSLog(@"I'M FLYING!!!")
+    }
+    @end 
+
+-all classes inherit from NSObject 
+-NSObject has many methods, but only one instance variable: its "isa pointer"
+-every objects isa pointer points to its class. when you call a method on the object, the isa pointer is used to find its class & search for the method 
+-if the system doesn't find the method, it then climbs up the class hierarchy, searing classes until it finds the method or it reaches NSObject & finds nothing
+-the system throws an error "unrecognized selector" once you reach the top of the class hierarchy & the method still isn't found
+-the first method implementation that's found is the one that gets executed - hence this is how overriding is implemented
+-when you call super on a parent method, you actually just start this search process in the parents class rather than in your class - it still searches the same way 
+
+-the placeholder in NSLog that returns an object description is @%. This actually calls the objects description method, which you can implement yourself: 
+    - (NSString*)description {
+        return [NSString stringWithFormat:@"<Bat wingspan: %d>", self.wingspan]
+    }
+_________________________________________________________________________________________________________
+
+-often if an object contains a property that's an array of objects - i.e. NSMutableArray or NSArray - than it requires custom getters, setters, & other methods 
+-with ARC, an object tracks how many references there are to it. prior to ARC reference counters were maintained manually 
+
+-in addition to alloc, there's a method dealloc that you can optionally override: 
+
+    @implementation Bat 
+    - (void)dealloc {
+        NSLog(@"deallocating %@", self) 
+    }
+    @end
+
+-note that when an object is added to an array, the array maintains an ARC reference to it; and when an object leaves an array, the object loses a reference 
+
+-the following is a custom implementation of a property array: 
+
+    // lizard.h 
+    #import "animal.h" 
+    @class Reptile;                                 // this tells the compiler that the reptile class exists without having to import it here. 
+                                                    // it doesn't need importing here because it's not instantiated or inherited, only used in a method declaration
+    @interface Gecko : Animal {
+        NSMutableArray* _legs;                      // notice that without @property the declaration is within brackets 
+    }
+    @property (nonatomic, copy) NSArray* legs;      // a redundant property declaration. 
+                                                    // through this method the private property is NSMutableArray, while the public property is NSArray 
+    - (void)addLegs:(Reptile*)reptile;              // custom function for adding legs - often you want something like this with an array property 
+    @end 
+
+    // lizard.m 
+    #import "animal.h" 
+    #import "reptile.h" 
+
+    @implementation Gecko 
+    - (void)setLegs:(NSArray*)legs {
+        _legs = [legs mutableCopy];                             // mutableCopy is an NSArray method 
+    }
+    - (NSArray*)legs{
+        return [_legs copy];                                    // copy is another NSArray method 
+    }
+    - (void)addLegs:(Reptile*)reptile{
+        if (!_legs){
+            _legs = [[NSMutableArray alloc] init];              // lazy initialization of the array 
+        }
+        [_legs addObject:[reptile get_reptiles_legs]];          // strange class where you get a reptiles legs, but oh well 
+    }
+    @end 
+
+_________________________________________________________________________________________________ 
+
+
+-chapter 22, pg 161 
+-old guy objc lecture 5 
+
+
+
+
+
+
+

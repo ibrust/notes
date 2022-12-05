@@ -1,0 +1,557 @@
+CHAPTER 1, INTRODUCTION: 
+
+-code written in XCode's playground is not compiled, it's reevaluated from top to bottom 
+    when the source changes to allow for better testing/debugging
+
+-the operators === and !== are also part of Swift, & test whether two "instance variables" (or constants) point to the same exact object 
+-conditional expressions do not require surrounding ()
+-conditional expressions must evaluate to type bool 
+
+-using Swift, in macOS an Int is 8 bytes by default. 
+-In IOS you compile the program to target old 32bit Iphones or 64bit Iphones, and Int will be 4 or 8 bytes 
+-Int.max & Int.min will tell you what the current max/min value of Int is 
+-You can also use the explicit types: Int64, Int32, Int16, Int8, UInt64, UInt32, UInt16, UInt8, Int, UInt
+-Swift is strongly typed. You cannot add an Int8 to an Int32, you must typecast a variable: 
+    let a: Int32 = 200 
+    let b: Int8 = 50 
+    let c = a + Int32(b) 
+
+-due to the need for manual type conversion it's often recommended to use Ints unless you have a reason not to (performance?)
+
+-Swift also provides "overflow arithmetic operators". These allow overflow (instead of triggering an error, values wrap around): &+, &-, &*
+
+-There are 3 explicit floating point types: Float, Double, Float80 (80 bit floating point) 
+-Double is the default inferred from floating point literals 
+-be mindful that while floating point numbers are sometimes slightly imprecise and can cause problems in comparisons, 
+    print() may round these numbers 
+
+-the fallthrough keyword causes the switch statement to fall through until it finishes a case without a fallthrough
+
+
+-Swift's switch allows you to use conditionals in the case statements. also you can bind the test value locally in the case statement:
+    switch test_statement{
+        case _ where test_statement % 2 == 0:               // _ is a placeholder that can be anything. use _ if you only want the conditional test
+            ...
+        case var bound_value where bound_value % 3 == 0:    // bind the value to a local variable. 
+            bound_value /= 3                                // you would only ever do this if you wanted to alter the tested value within the case 
+            ...
+    }
+
+-some special syntax is associated with case in the switch statement. 
+    the if-case statement allows you to use this improved syntax within a normal if statement
+-there is a bizarre use of = instead of == for comparisons, apparently, and commas instead of &&. why they'd do this who knows:
+
+    if case 400...417 = status_code, 500...505 = status_code {
+        print("unspecified error")
+    }
+
+-there's a syntax for simplifying nested ifs similar to the above:
+    if test_condition1 == true, test_condition2 == true {       // the same as nested if statements 
+        ... 
+    }
+
+-repeat-while has taken the place of do-while:
+
+    var i: Int = 0 
+    repeat {
+        ...
+        i += 1
+    } while i < 10
+
+-more swift types: String, Character
+-String types consist of multiple Character types 
+-Character types are unicode: 
+    
+    var string1 = "hello!"
+    for x: Character in string1.characters {    // .characters is required to access the Character array of a String, apparently 
+        print("'\(x)'")                         // why the strange syntax to print the variable? It could be another Swift hangup, who knows - not the author 
+    }
+
+    print("\u{1F60E}")                          // unicode character in swift 
+    print("\u{0061}\u{0301}")                   // a complex unicode character - this prints just 1 character, it combined the 2 unicode characters, apparently...
+
+    for x in string1.unicodeScalars {           // this allows you to look at each individual unicode character in a String 
+        print("\(x.value))                      // This will output UInt32's corresponding to the unicode character's hex code 
+    }
+
+-some unicode characters have both a complex and simple form. They evaluate as equal to one another.
+-you do not access individual characters in a String using brackets [], you use String's properties and methods.
+
+-Due to using a mix of simple & complex unicode, Swift can't easily randomly access individual character indices, 
+    because it doesn't know where they begin.  
+-Swift uses a subclassed type String.CharacterView.Index to iterate through & access w/ brackets the individual characters in a string.
+-String has a startIndex property which returns an object of type String.CharacterView.Index for the 1st character in the string
+-String also has String.index() which takes an input String.CharacterView.Index and an Int offset, and returns an offset String.CharacterView.Index
+
+    let string1 = "hello!"                                                      // this entire design is a complete mess 
+    let index_type = string1.startIndex 
+    let offset_index_type = string1.index(index_type, offsetBy: 4) 
+    let actual_character = string1[offset_index_type]                           // o 
+
+-String.CharacterView.Index types also work with the range operator ... which is used to get slices of a string 
+
+    let range_of_index_types = index_type...offset_index_type 
+    let range_of_characters = string1[range_of_index_types]                     // hello
+
+-you can access slices of arrays: 
+
+    let array1 Array<String> = ["string1", "string2", "string3", "string4"] 
+    let arraySlice = array1[0...2]
+
+-arrays can be compared with == (they will match if the same elements are in the same order)
+
+-dictionary keys must be hashable. Swift's basic types (String, Int, Float, Double, Bool) are all hashable 
+-dictionaries return optional values, even if their values are not optionals:
+
+    var dict1: Dictionary<String, Double> = [:]                     // [:] is an empty dictionary. You could also assign to a filled dictionary 
+    var dict2 = Dictionary<String, Double>()
+    var dict3: [String:Double] = [:] 
+    var dict4 = [String:Double]() 
+    var dict5 = ["key1", 12, "key2", 15]                            // this approach uses type inference 
+    let dict6 = ["key1", 12, "key2", 15]                            // dictionaries can be immutable as well 
+
+    var size = dict5.count
+    let value1 = dict5["key1"]                                      // the return type is Int?, not Int
+    
+    dict5["key2"] = 17                                              // simple way to change a keys value 
+    let old_value: Int? = dict5.updateValue(14, forKey: "key1")     // updateValue() returns an optional of the old value & changes it to a new one
+    dict5.updateValue(22, forKey: "key2")                           // you don't have to assign the return value  
+
+    dict5["key3"] = 27                                              // to add a new value just directly set a new key 
+    dict5["key4"] = 99
+
+    let deleted_value = dict5.removeValue(forKey: "key3")           // removeValue() also returns an optional 
+    dict5.removeValue(forKey: "key4")
+    dict5["key2"] = nil                                             // this is another way to delete key/values, apparently                              
+
+    for (key, value) in dict6 {                                     // dictionaries return a tuple when you loop through them 
+        print("\(key) | \(value)")                                  
+    }
+    for key in dict6.keys {                                         // if you only need the key, use the .keys property. same for values  
+        print(key)
+    }
+
+    let array_of_keys = Array(dict6.keys)                           // the Array constructor can take a dictionaries keys or values 
+    let array_of_values = Array(dict6.values) 
+
+
+-Sets (like dictionaries) are unordered, cannot contain duplicates, and their elements must be hashable 
+
+    var set1 = Set<String>()
+
+    set1.insert("value1") 
+    let returned_tuple = set1.insert("value2")          // insert() returns an optional tuple: (inserted: true, memberAfterInsert: "value2") 
+    set1.insert("value3")                               // inserted indicates whether the insertion succeeded (false if duplicate? author doesnt say)
+
+    var set2 = Set(["value4", "value5", "value6"])      // alternative initialize syntax - notice the type inference
+    var set3: Set = ["value7", "value8", "value9"]
+
+    for element in set2 {
+        print(element) 
+    }
+
+    let boolean_value = set3.contains("value5")         // contains() returns a boolean indicating whether the set contains the item 
+
+    var combined_set = set2.union(set3)                 // combines the 2 sets 
+    var intersected_set = set2.intersection(set3)       // gets common elements of 2 sets 
+
+    var is_disjoint = set2.isDisjoint(with: set3)       // returns true if there are no common elements
+
+
+-functions support variadic parameters, nested functions, can be first class, and can return multiple values using tuples: 
+
+    func print_words(words: String...){                 // ... allows for zero or more parameters (called variadic parameters) 
+        for word in words {                             // always use ... at the end of the argument list 
+            print("the word is: \(word)") 
+        }
+    }
+    print_words(words: "cat", "splat", "hat")           // specify variadic parameters in a comma separated list 
+
+    func crazy_number(_ var1: Int, _ var2: Int){
+        for x in 1...10 {
+            var1 = scramble_number(var1) 
+            var2 = scramble_number(var2) 
+        }
+        return var2 - var1
+
+        func scramble_number(_ var1: Int) -> Int {      // swift supports nested functions 
+            var1 = (var1 * (var1 + 13)) - (var1 + 21) 
+            var1 = (var1 / (var1 - 13)) + (var1 - 21)
+            return var1
+        }
+    }
+    crazy_number(112, 322)
+
+    // multiple values can also be returned in tuples. note the syntax for passing / returning array parameters
+    func sort_numbers(_ numbers: [Int]) -> (even_numbers: [Int], odd_numbers: [Int]) {
+        var even_numbers = [Int]() 
+        var odd_numbers = [Int]() 
+        for num in numbers {
+            if num % 2 == 0 {
+                even_numbers.append(num) 
+            } else {
+                odd_numbers.append(num) 
+            }
+        }
+        return (even_numbers, odd_numbers)          // note this is a named tuple as defined in the signature 
+    }
+
+    // to create first class functions you must specify the "function type" - a type that represents the functions signature: 
+    let first_class_function: ([Int] -> ([Int], [Int])) = sort_numbers            // left part is the parameters, right part is the return values 
+
+-functions that return nothing actually have an implied -> Void return type. Void is a 'typealias' for (), apparently. these are all equivalent: 
+    func function() { ... }
+    func function() -> Void { ... }
+    func function() -> () { ... }
+
+-swift calls anonymous functions "closures"
+-both named functions and closures have the "save surrounding scope" mechanism. it's not clear whether this works in the global scope
+-note that closures are reference types. the saved state is the state surrounding their declaration used within the closure.
+
+-the following wrapper trick allows you to create multiple copies of a function or closure each with a distinct state saved: 
+
+    func outer_function(_ input_state: Int) -> (Int) -> Int {
+        var saved_state = input_state
+        func inner_function(_ param1: Int) -> Int {                 // a new inner function is created each time the outer function is called 
+            saved_state += param1
+            return saved_state 
+        }
+        return inner_function
+    }
+    var value1 = 100
+    let bound_function = outer_function(value1) 
+    value1 = bound_function(50)                             // 150
+    value1 = bound_function(25)                             // 175
+    var value2 = 100 
+    let bound_function2 = outer_function(value2) 
+    value2 = bound_function2(25)                            // 125
+
+-there's conflicting or missing information here - the book says regular functions save state also, but the Stanford professor says only closures and 
+    classes are reference types and that the saved state is put on the heap. 
+-there's also strange information on how the state is saved. the professor implies that changes to the saved state will be later reflected in the closure
+-you'll have to read more in depth on these issues to figure it out 
+
+-the fact closures are reference types, and their saved state is placed on the heap, can sometimes create reference cycles, so beware 
+-if you save the state of an object that has a reference to your closure (direct or indirect), you've got a memory cycle 
+-you would use the 'unowned' keyword to break a cycle like this (i.e. strong, weak, unowned references) 
+
+-swift is designed to support functional programming through strong typing, the let keyword (for immutability), and first class functions
+-it's probably worth studying functional programming while learning swift 
+-swift provides common higher-order functions (functions that have a function parameter) used in functional programming: map(), filter(), reduce() 
+-map() transforms an arrays contents using a callback & returns a new array 
+-filter() filters an array using a callback, and returns a new array with the values that passed the test 
+-reduce() reduces the values in an array to a single element using a callback 
+
+    let numbers = [12, 33, 2, 98, 5, 77] 
+
+    // all 3 of these functions have  a callback as the final parameter, so you can use the trailing inline callback syntax 
+    let mapped_numbers = numbers.map {
+        (x: Int) -> Int in 
+        return x * 2 - 3
+    }
+
+    let filtered_numbers = numbers.filter {
+        (x: Int) -> Bool in 
+        return x > 10 
+    }
+
+    let reduced_numbers = numbers.reduce(0) {           // the 1st argument is the initial value that you start with, the callback is the 2nd argument
+        (accumulator: Int, next_value: Int) -> Int in 
+        return accumulator + next_value                 // this callback will just sum up the array
+    }
+
+-as? is often used in conditional casting, either with type Any, AnyObject, between parents / children, or casting to protocols: 
+
+    let var1: parent_type = child_type()
+    if let var2 = var1 as? parent_type {
+        var2.var2method()
+    }
+
+-if you wanted to access individual characters of an NSAttributedString, which is an old objective-C type, you must use NSRange: 
+    let swift_string = "hello there!" 
+    var mutable_attributed_string = NSMutableAttributedString(string: swift_string) 
+    let swift_range = swift_string.startIndex..<swift_string.indexOf(" ") 
+    let nsrange_object = NSRange(swift_range, in: swift_string) 
+    mutable_attributed_string.addAttribute(.strokeColor, value: UIColor.orange, range: nsrange_object)      // makes "hello" orange but not the rest 
+
+-implementing the CustomStringConvertible protocol in your class allows you to override the default of how \() will print your objects
+
+-enums have a variety of syntax: 
+
+    enum animal {
+        case dog 
+        case cat 
+        case rat 
+    }
+    var var1: animal = animal.dog               // declare & initialize an enum 
+
+    var var2: animal = .cat                     // type inference allows you to use . 
+
+    if var1 == .dog {                           // you can also use type inference in test conditions 
+        print("bark!")
+    }
+    switch var2 {
+    case .dog: 
+        print("bark!") 
+    case .cat: 
+        print("meow!") 
+    case .rat: 
+        print("squeak!")                        // notice the switch is exhaustive on the enum, so a default is not necessary 
+    }                                           // if you don't want to cover all the enums cases, use defualt 
+
+
+-swift enums can have data associated with them. this is most commonly used in storing or transmitting the enum 
+-likewise you can convert data back into an enum using the enum constructors automatically provided rawValue parameter: 
+
+    enum animal: Int {                  // associate data of type Int with each enum 
+        case dog                        
+        case cat                        // by default, Int data will be associated with the cases in ascending order from 0
+        case rat                        // String data, in contrast, will associate a string of the case name 
+    }
+    enum fish: Int {
+        case swordfish = 10             // if desired you can explicitly specify the data to associate with the case 
+        case whale = 20 
+        case trout                      // you can specify the data of some and not others if desired. unspecified cases get the default value
+    }
+
+    var var1 = fish.swordfish 
+    print("\(var1.rawValue)");          // use .rawValue to access the data 
+
+    var var2 = animal(rawValue: 2);     // recreate a rat 
+
+
+-enums can have methods in swift 
+-all methods in swift have a self argument which refers to the calling instance:
+
+    enum lightbulb{
+        case on 
+        case off 
+        func surface_temp(ambient_temp ambient: Double) -> Double {
+            switch self {
+                case .on: 
+                    return ambient + 150.0 
+                case .off: 
+                    return ambient 
+            }
+        }
+        mutating func flip_light_switch(){                              // notice if you reassign self you must mark the function as mutating 
+            switch self {
+                case .on: 
+                    self = lightbulb.off 
+                case .off: 
+                    self = lightbulb.on 
+            }
+        }
+    }
+    var bulb = lightbulb.off 
+    bulb.flip_light_switch()                                            // the method is called off the individual object, which becomes self  
+    let ambient_temp = 77.0 
+    var bulbs_temp = bulb.surface_temp(ambient_temp: ambient_temp)
+
+
+-the above specified values are static, but you can also associate 1 or more values dynamically 
+-there's also a bizarre switch syntax that allows you to unpack and use these dynamically associated values in methods 
+-you can create recursive enums by associating data of the same type. if you do this, you must use the indirect keyword to move the enum to the heap:
+
+    // enums dynamic data association 
+    enum shape {
+        case square(side: Int)                                  // the syntax is similar to constructors 
+        case rectangle(width: Int, length: Int)
+        case point 
+    }
+    var square1 = shape.square(side: 10)                        // the arguments are required 
+    var rectangle1 = shape.rectangle(width: 8, length: 12) 
+
+    // bizarre syntax of unpacking associated data with let 
+    func area() -> Double {
+        switch self { 
+            case let .square(side: side): 
+                return side * side 
+            case let .rectangle(width: w, height: h):       // let syntax - swift is binding values using pattern matching
+                return w * h                                // notice the variable name comes after the : here. why...? just another swift oddity 
+            case .point: 
+                return 0 
+        }
+    }
+
+    // recursive enums moved onto the heap with indirect 
+    indirect enum family_tree {
+        case no_known_parent 
+        case one_known_parent(parent_name: String, parent_ancestors: family_tree) 
+        case two_known_parents(dad_name: String, dad_ancestors: family_tree, mom_name: String, mom_ancestors: family_tree)
+    }
+    // you can use indirect on specific cases for optimization purposes
+    enum family_tree {
+        case no_known_parent 
+        indirect case one_known_parent(parent_name: String, parent_ancestors: family_tree) 
+        indirect case two_known_parents(dad_name: String, dad_ancestors: family_tree, mom_name: String, mom_ancestors: family_tree)
+    }
+
+-main.swift is the typical entry point of the application, apparently. 
+-import foundation --> this brings in classes mainly designed to work in & with objective-C 
+
+-structs & enums are passed by value in Swift (in contrast with class objects)
+-structs & classes have a variety of syntax: 
+
+    struct rat {
+        var legs: Int = 4                               // 4 is a default value here
+        var tail: String = "long" 
+        var color: String = "white" 
+        var speed: String = "stationary"
+
+        mutating func walk(){                           // swift structs can have methods 
+            speed = "walking"                           // struct & enum methods must be marked mutating if any of their data is changed (this does not apply to classes)
+        }                                               // this is because structs/enums are pass-by-value, and the compiler needs to know if the data must be checked at run time 
+    }
+
+    var rat1: rat = rat()                   // this will call the default constructor provided for the struct. classes do not get a default constructor, but structs do 
+    rat1.walk()
+
+
+    class bat: animal {                                 // inherits from animal
+        var wings_length: String = "20 inch"            // default value 
+        var color: String
+        var speed: String 
+
+        static var bat_population = 0
+
+        static func population_count() {
+
+        }
+
+        final override func eat(){                      // final means it can't be overriden further by children 
+            speed = "fast"
+            super.eat()                                 // calls the parents eat 
+        }
+
+        func init(_ input_color: String, _ input_speed: String, _ input_wings_length: String?){
+            bat_population += 1
+            color = input_color 
+            speed = input_speed 
+            let unwrapped = input_wings_length {        // not sure if this is the right way to handle the default value issue or not. maybe multiple constructors? book doesn't say much
+                wings_length = input_wings_length 
+            }
+        }
+        func fly() { 
+        }
+    }
+
+    var bat1: bat = bat("black", "stationary", "30 inch") 
+    bat.fly() 
+
+
+-the author claims that methods are implemented as nested functions, and you can actually treat them as first-class objects as well: 
+
+    let fly_the_bat = bat.fly           // type is: (inout bat) -> () -> () ... or something like that, check the playground. the last () means it returns nothing 
+                                        // remember that inout designates the parameter as pass by reference
+    fly_the_bat() 
+
+-so with a mutating method (required w/ a struct or enum) the first parameter referring to self is designated inout, otherwise it's just regular pass by value 
+
+
+-remember this suble memory cycle: 
+    class cat {
+        private var eat = {     // variable references a closure, which saves the state of self 
+            self.get_up() 
+            ...
+        }
+        private func get_up(){ ... }
+    }
+
+    class rat {                 // here is the fix - point a weak pointer to self 
+        private var eat = { [weak weak_self = self] in 
+            weak_self?.get_up() 
+            ...
+        }
+        private func get_up(){ ... }
+    }
+
+-you can nest classes / structs / enums within eachother, apparently
+-classes, structs, and enums can all have properties
+-properties can be stored, computed, lazy, and observed 
+-stored properties can be given a default value
+-lazy variables are set to a closure, and their value is computed when they're first accessed
+-computed properties, in contrast, use a closure that contains a getter and optional setter. They are recalculated every time they're accessed
+-there are also property observers, which are closures called every time the properties value is changed. 
+-you cannot use a property observer on a computed property (though you can respond to changes in the getter / setter anyway), but you can observe inherited properties. 
+-there are two ways to observe a property: willSet and didSet 
+-willSet is called when a property is about to change, didSet is called when the property has changed
+-didSet will include 1 argument for the property's previous value, and willSet gives you 1 argument of the property's new value 
+
+-use lazy variables if an assignment operation requires data that's not yet initialized (like self), or to defer intensive processing:
+
+    class bat {
+        // property observer
+        var age: Int = 0 {
+            willSet(new_age) {
+                print("happy birthday number \(new_age), bat!")
+            }
+        }
+        var hours_since_meal: Int
+
+        lazy var wingspan: String = {             // lazy variable set to a closure 
+            switch self.age {                     // swift wants to know that self is fully initialized, so it demands the variable be marked lazy 
+                case 0...1: 
+                    return "small"
+                case 2...5: 
+                    return "medium" 
+                case 6...10: 
+                    return "large" 
+            }
+        }()                                       // () is placed at the end of a lazy closure 
+    
+        // computed property
+        var hungry: String = {                    // note that you must use var to declare a computed property, even if it only has a getter 
+            get {
+                switch hours_since_meal{
+                    case 0...4: 
+                        return "not hungry" 
+                    case 5...8: 
+                        return "moderately hungry" 
+                    default: 
+                        return "very hungry"
+                }
+            }
+            set(new_value){
+                switch new_value{
+                    case "just_ate": 
+                        self.hours_since_meal = 0   // you can set other properties from within a computed property 
+                }
+            }
+        }                                           // there is no () at the end of a computed property 
+
+        init(_ age: Int){
+            self.age = age
+            self.hungry = "just ate"
+        }
+    }
+
+-there is also a shorthand getter syntax, where you just return something in one layer of braces. This is for if you are only implementing a getter by itself 
+
+-Swift also supports static variables and static methods. And it supports class variables / methods too, though it isn't obvious what the essential difference is 
+-static variables must be directly assigned an initial value (they are not initialized in init) 
+-subclasses can't override their parents static methods / properties, but can override methods / properties preceded by the class keyword. read online for details
+
+-the access levels are: 
+    open -                  visible and subclassable wherever the module is imported 
+    public -                visible wherever the module is imported 
+    internal (default) -    within the same module
+    fileprivate -           within source file 
+    private -               within defining scope 
+
+-access control for a function can't be less restrictive than access control placed on its parameters 
+
+-you can also independently declare access controls for the setting of properties. note that setter access can't be less restrictive than getter access: 
+    public(set) 
+    internal(set) 
+    fileprivate(set) 
+    private(set) 
+
+    var internal private(set) variable1 = 10            // sets getter & setter access separately. getter access is internal, but setter access is private 
+    var private(set) variable2 = 20                     // you can leave off internal since it's the default, and the same thing results 
+
+
+
+-page 205, chapter 17 
+
+

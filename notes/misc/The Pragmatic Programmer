@@ -1,0 +1,325 @@
+Mostly these are just philosophical points
+_____________________________________________________
+CHAPTER 1 - PRAGMATIC PHIOSOPHY
+-code rot spreads - not only by forming dependencies, it also sets a standard of laziness for the team 
+-speak out what you're doing before conversing with others so that you can explain it better
+-think about questions very critically before you ask them (I think this depends on who you're asking but generally it's probably sound advice)
+-instead of proposing a big change, create a small change and show people a tangible result. You get them comfortable with it, sneaking your change in gradually.
+-Try to keep an eye on the big picture of your project, most software disasters occur when people lose track of the big picture / get tunnel vision
+-it is important to draw the line between good enough and perfect. don't sacrifice requirements, but don't golden-toiletseat the code. 
+    especially when you have deadlines, cashflow constraints, etc. bearing down on you 
+-similarly, releasing early & getting user feedback is preferable to waiting for release (the author says this but there are quality standards to meet) 
+-you don't want to overembellish or overrefine your code, you should know when to stop adding complexity and move forward 
+    he talks about 'feature bloat' (more features than you'd ever want) and mentions that with modularization (many layers) comes added complexity / time investment
+-for building knowledge the author suggested 2 novelties: participation in groups or seminars (i.e. pycon), and using dead time to laern (i.e. podcasts in car)
+-know the audience you're talking to & cater your explanations to what they are interested in - i.e. marketing people are interested in how a tech effects sales
+    though this varies depending on the individual you're talking with as well - i.e. parivesh understands programming
+-learn how to make documents of various forms - charts, word documents, documentation (i.e. confluence). prioritize documentation
+-when creating documentation engage others involved to get their feedback early on
+-make sure that you listen to people and they feel you are listening. do not overbear with your opinion. 
+-use comments, it unifies code & documentation. Make the comments about high level commentary, things beyond the code, documenting APIs, etc. 
+-avoid attacking people. only say it if you would say it in person, do not be desensitized to how you treat people online 
+-try not to quickly respond to things online before you read them thoroughly. you don't have to respond to everything, hold back until you know what to say 
+_____________________________________________________
+CHAPTER 2 - PRAGMATIC APPROACH 
+-ETC - easy to change. the author claims this is what fundamentally defines good design, and various design principles are all special cases of ETC 
+-ask yourself if your code could be easily replaced. If it is, it's ETC
+
+-code must change throughout the development process, so maintenance (i.e. refactoring) is a part of the development process from the beginning 
+-when you have duplication in the requirements, or in the code, this creates maintenance problems - you must make changes in multiple places
+-DRY - don't repeat yourself. 
+-If a change in one ~necessitates~ a change in the others than you have repeated yourself.
+
+-yet if two functions with the same bodies contain different information this does NOT violate DRY - it's a coincidence
+    if two pieces of code should vary independently they do NOT violate dry
+    recognize the idea of the code and whether its use case indicates it would likely need changing in multiple places
+
+-the author even claims that you shouldn't have to change both code & its documentation separately, or a database schema & the structure holding it
+    it seems any necessity of making changes in multiple places violates DRY, both on the code level & beyond
+-redundant comments violate DRY
+-redundant data structures that duplicate information violate DRY. use computed properties / functions to avoid such duplication
+    for example: start, end, & length - length can be computed from start & end
+-he says you may duplicate data when caching, but be sure to keep the cached object well encapsulated & managed internally
+
+-use accessor functions to minimize coupling to the data structures. keep the data private. 
+
+-whenever your code interfaces with something external - an API, service, datasource, etc. - this inevitably introduces a DRY violation 
+    both things have to have knowledge of what's represented at the interface. however, there are strategies to mitigate this: 
+    1) for internal APIs, try to create a shared API in a neutral format - and have both sides use the same API 
+    2) for public APIs, they are often documented formally using OpenAPI, & you can use OpenAPI tools to import their API spec & integrate it into your own API
+        try to create your public APIs with OpenAPI as well 
+    3) many datasources provide tools to introspect their data schema. with this, instead of creating the data structures to contain their data you can 
+        generate them directly from their schema 
+    3b) an alternative to writing fixed data structures is to just stick all the received data into a dictionary and parse through it as needed. 
+        with this approach you need to also implement a table-driven data validation layer to ensure the expected data is there. 
+        some API documentation tools can generate this layer automatically 
+
+-having multiple developers on a project leads to code duplication. strong communication is the only real way of mitigating this. standup & slack help 
+    good folder structure can also mitigate this, but watch for incorrect placement of categorically ambiguous code 
+
+-orthogonality is another ETC concept. in linear algebra it means two vectors are independent (i.e. x, y, & z are orthogonal). 
+    in computing it means that two systems or layers are independent (or loosely coupled / decoupled) - one is free to change without effecting the other 
+-when systems are interdependent (or tightly coupled) a change in one system necessitates a change in another system 
+-to maintain orthogonal systems make your components encapsulated, and with single well-defined purposes (single responsibility)
+-the single responsibility principle makes components recombinable & this increases productivity 
+-orthogonal systems are also easier to test because their components can be tested in isolation 
+-many different words are used to describe orthogonal systems: layered, component-based, modular, loosely coupled, etc. 
+
+-the typical way to design an orthogonal system is to use a layered architecture 
+
+-design to carefully protect against potential changes in external dependencies. this also includes real things... domain names, telephone numbers, IDs, etc. 
+-also be careful when using toolkits or libraries. If use of the library necessitates changes to your code you're now dependent on it. 
+    sometimes you can add layers between your code & these third party dependencies to keep your code loosely coupled 
+
+-every time you access global data you create ties to other code that shares the data. be leery of doing this, even with singletons 
+-the author recommends the strategy pattern as a way of avoiding code duplication across similar functions 
+
+-orthogonal code is easy to isolate & unit test. If you have to import alot to write your unit tests it's a sign you have alot of dependencies 
+-when you fix a big, take note of how many places you need to modify code at. This is another indication of how orthogonal your system is 
+
+-do not assume critical decisions are cast in stone - they may need to be reversed at some point 
+-many of these principles will allow you to change critical decisions as requirements change - and this is often necessary. For example, 
+    you may learn your database doesn't scale well enough to handle your project. If you had a layer of abstraction between the database 
+    & your implementation you can switch databases much easier  
+
+-code, architecture, deployment, and third party integration all need to be flexible (not just code & architecture)
+
+-server side architectures have continued to change over the years. In order:
+    1) giant machines
+    2) load balanced clusters of commodity hardware 
+    3) cloud-based virtual machines running applications 
+    4) cloud-based virtual machines running services 
+    5) containerized versions of the above 
+    6) cloud-supported serverless applications 
+    7) a move back to giant machines for some tasks 
+
+-architecture continues to evolve. if your code is ETC it's easier to port it to a different server side architecture. 
+
+-when working on projects where you're trying something new or requirements are unclear, rather than producing loads of documentation up front,
+    make a simple backbone that establishes all the apps layers. this gives clarity on what's possible, & helps refine requirements 
+-the backbone isn't disposed of, you continue to add layers of functionality onto it / refine it 
+-this backbone approach is not the same as prototyping. in prototyping you only create a small throwaway demo without all essential layers
+
+-the alternative to the backbone development approach is a modular approach - heavy use of requirements, dividing the code up into modules, 
+    & developing them separately until at the end they get pieced together (at walmart we used a hybrid approach, plugins that also had test apps)
+
+-the backbone approach has a number of advantages over the modular approach:
+    1) product managers / users get to see the backbone working earlier & give feedback, allowing you to make early adjustments  
+    2) it provides structure & guidance for developers, they just have to add layers around this existing backbone  
+    3) you can integrate continuously rather than all at once at the end
+
+-the modular approach scales better, though. At scale I like Walmarts hybrid approach - the plugins architecture, with each plugin having a test app
+
+-the point of prototyping is to save time / reduce cost, and if properly used they can save enormously 
+-prototyping can be done in a variety of ways - in code, on paper, with an interface builder, etc. 
+-consider prototyping anything that carries risk - that hasn't been tried before, is critical to the final system, etc. 
+-common things to prototype: 
+    architecture                                <- UML?
+    new features in an existing system          <- code, UI builder, drawing? 
+    structure or contents of external data      <- sequence diagram? anything else? 
+    third party tools or components             <- ? 
+    performance issues                          <- ? 
+    UI design                                   <- UI builder or drawing 
+
+-since you're gona throw the prototype away consider using a higher level language like python to write it or glue something together
+    you can prototype architecture, but unlike creating a backbone you are ignoring all details and plan to throw the prototype away
+-when prototyping architecture ask yourself the following questions: 
+    1) are the layers well defined & appropriate 
+    2) are there any sources of duplication 
+    3) are interface definitions acceptable 
+    4) does every module have access to the data it needs at the time it needs it 
+
+-make it clear to people that the prototype is not going to be used, that it will be thrown away 
+
+-remember that designing with a particular language may effect how you conceptualize the design. the language may also suggest a particular design over another 
+-try to write code (variable / function names, etc.) using the problem domains language
+-some frameworks also exist that help you program more in the domain language
+    many web frameworks have a routing facility that will help you write the routing to different web page URLs in URL language 
+    ansible is a tool that configures software, typically on remote servers. it takes as input a YAML specification file.
+        YAML is a more textual & readable alternative to JSON or XML
+-notice that the web framework routing code is written within your application, while the YAML file is read by ansible. 
+    This is an example of an internal vs. external domain language 
+-internal domain languages can take advantage of features in its host language, & this is typically more powerful. but it also limits you to the syntax of your host language
+-external domain languages allow you to use any syntax you want, as long as you can parse it. ansible used YAMLs parser, but you could write your own.
+    other external domain languages are JSON, CSV, XML. Use existing domain languages unless there's a clear, significant benefit of writing your own (like complex problem domain)
+-prefer internal domain languages unless you're creating an API or your language needs to be written by non-programmers
+-the way to write an internal domain language is to just use descriptive functions / methods. 
+    if you're using a specific framework (like for routing) this is what it's done. you can do the same with your code - a bunch of orthogonal functions to create a language 
+    if you name the methods carefully your code can even read like a language (if the domain is very complex then maybe it's worth doing - this is all part of 'domain driven design')
+
+-the ability to intuitively estimate is important for guiding your development decisions 
+-one way of improving your estimates is to ask someone who has already done the task for their estimate 
+-when estimating, be sure to first get a clear picture of the problem & its scope. build a mental model of the solution, work out the details, & break the task up into components
+    there are always what-ifs, so the estimate is a range qualified by various uncertainties 
+    but remember good estimates are always based on experience. So it's preferable to use an iterative development process to continually refine estimates 
+    often you must explain to management that iterative estimates are the best way to give accurate estimates & coordinate, and that flexibility in scheduling is necessary
+-when asked for an estimate the first thing you should say is "I'll get back to you". Time will allow you to form a more accurate estimate
+_____________________________________________________
+CHAPTER 3 - THE BASIC TOOLS 
+
+-the author advises that you develop skill in a set of tools, and continually add to your toolset, letting need drive acquisition 
+
+-the author notes the utility of plain text. many external languages (HTML, JSON, XML, YAML) and protocols (HTTP, SMTP, IMAP) are in plain text format. 
+    the power of plain text is the text has meaning & it can be read. in contrast, a binary file can't be interpreted without an application to parse it. 
+-there are some significant benefits to using plain text over binary: 
+    1) the data remains useful after the original application that generated it is no longer useful (and IMO in todays data science landscape this is increasingly relevant)
+    2) almost every tool can use plain text, but they can't all use binaries. plain text is like glue between components  
+    3) dummy data in testing can be easily modified if it's plain text. if tests output plain text this can be analyzed more easily also 
+    4) in a heterogeneous environment plain text provides a common communication standard
+-UNIX & some other systems maintain a binary form of certain databases for optimization, & then a plain text form as a configurable interface to the binary
+
+-among its numerous uses, the shell is very adept at manipulating plain text files. 
+-if you do all your work in GUIs instead of the shell you are missing out on alot of power. 
+    you wont be able to automate common tasks, combine tools into custom macro tools, & grow skill beyond the limit of the GUI 
+
+-though you can't use only one editor, use a small number and work toward fluency in all of them. I think visual studio & VIM are the ones I like 
+-rather than learning all the editors commands, learn the ones that are practical and useful. 
+    search for solutions - whenever you're doing something repetitive look for ways to use the editor to do it. 
+    then after you learn a new editor technique make a deliberate effort to use it repeatedly 
+    the author lists some challenges to perform in your editor at the bottom of page 81 - make sure you can do all these
+
+-some of my ideas / things to do: 
+    1) I'm gona get a UNIX system without a GUI to force myself to get familliar with the shell. I want to see if the same is possible for Windows powershell 
+            This should actually lead to lifestyle change as well, so I definitely want to do it 
+    2) I'm gona read on visual studio / vim and write down commands that seem useful. same for bash / powershell. 
+            then I'll write a program that lists one editor &/or shell technique at the top every time I open a terminal. 
+            then I can make a habit of trying it out / being reminded of it
+    3) the author recommends using only the keyboard - no mouse - for a week. you'll need notes for this one too - you can incorporate them into your terminal reminder program 
+    4) try configuring the shell command prompt to display a shortened directory name & version control status information
+
+-include everything you create in version control 
+-even include OS configuration files, documents, & everything else in version control. If your harddrive fails you'll be able to restore your machine very quickly 
+-make sure you study Git thoroughly, including all the Github integrations like build pipelines, continuous integration / deployment, team communication tools, etc. 
+
+-set compiler warnings as high as possible - don't waste time debugging things the compiler could have found for you (javascript's strict comes to mind) 
+-in the beginning, find out as much information as possible about the bug and see if you can reproduce it. if a third party found the bug you may need to interview them 
+-make sure you know all the basic debugging techniques in your IDE - how to move up & down the call stack, examine the data on the stack, set breakpoints, etc. 
+-it can help to take notes of little clues you find & where they are so you can look back at them later & think about it 
+-you can use binary search techniques in debugging in a few ways: 
+    1) if the bug was introduced by something small in a dataset, chop the data in half repeatedly until you isolate the stray piece of data 
+    2) if the bug was introduced somewhere across a release cycle, binary search the commits to development over the past week until you find the one that introduced the bug 
+    3) you can sometimes binary search through a long stacktrace to see where a problem first manifests (assuming you have access to the debugging data you need throughout the trace) 
+-stepping through the program is also useful. print statements are another powerful technique if you don't have time to step through or your program is concurrent 
+
+-when you find a bug - ask yourself why your tests did not catch it 
+    if the bug was propagated through multiple level sof data parsing, add some data validation to the lower layers
+    bugs should show up early, they shouldn't spread through the system
+    if the bug took a long time to fix than figure out why & make fixing it easier next time. maybe use better test hooks or write a log file analyzer 
+    if the bug was a result of someones bad assumption than mention it to the team & find some way of preventing that bad assumption from recurring 
+
+-use sed, awk, or python for more advanced text manipulation 
+-the authors give examples of text manipulation scripts they used to write the book. they wrote a build system for the book in Ruby. among other things, there's markup 
+    in the text that is used to build the index (they dont have to try to maintain the index in multiple places). they also have a script that updates their webpage with 
+    newer versions of the book. 
+-so you can see the use of scripts helps promote basic coding principles like DRY. I'm also reminded of the various scripts we used in the build-phases / git pushes at walmart
+
+-have some means of taking notes during meetings, leaving yourself reminders, recording debugging values / other important information, fleshing out ideas, etc. 
+    even if you have to resort to a small physical notepad like grandpa used (like if you are standing during meetings / don't always have your laptop with you) 
+_____________________________________________________
+CHAPTER 4 - PRAGMATIC PARANOIA
+
+-defensive programming - a programming style where you distrust all code & guard against errors in every way imaginable
+    the author says you should even guard against your own code 
+
+-design by contract (DBC) - the design technique focusing on documenting (and negotiating) the rights & responsibilities of software modules
+-an API contract has the following elements: 
+    1) preconditions - what must be true for the API to be called. often this means the data that is passed to the API 
+    2) postconditions - what the API is guaranteed to do  
+    3) invariants - things guaranteed to be unchanged by the API 
+-if the API fails to fulfill the contract an error is returned, and these can also be defined in the contract 
+
+-rather than merely validating input, consider actively raising an exception which will alert programmers to the invalid input. 
+    (this may be something you could do in debug builds but then in real builds handle the error gracefully. a macro could be used to substitute in the appropriate code) 
+
+-when designing by contract, be lazy: be strict in what you'll accept as input, and promise as little as possible in return. 
+
+-contrast DBC with TDD / defensive programming / unit testing: 
+    DBC defines the parameters for success or failure in all cases, unit testing targets one specific case at a time 
+    DBC is part of the program, whereas TDD / unit testing is only part of the test suite 
+    TDD does not focus on testing invariants
+    defensive programming violates DRY when everyone is redundantly doing their own API validation. DBC's contractual guarantees make this extra validation unnecessary 
+
+-you can implement DBC with comments & unit tests, & this alone will make your code more reliable 
+-you can also use assertions to implement some of DBC, but this usually won't achieve full enforcement for a few reasons
+    1) overridden methods will often screw up the contract assertions
+    2) you often need redundant code to implement assertions for both preconditions and postconditions 
+    3) libraries & frameworks aren't designed to support contracts
+
+-DBC assertions will cause your code to crash early, which allows you to debug it at the source of the problem 
+-some languages like Java, C, C++, Swift, Objective-C will propagate NaN, NULL, or nil throughout your application rather than crashing immediately. 
+    you crash or bugs arise much later and the problem is harder to diagnose 
+
+-the author seems to believe that the caller is responsible for implementing DBC, but this seems like a massive DRY violation. 
+    I think I'd rather put the precondition / postcondition assertions in the function itself 
+
+-one use of a default clause in a switch statement is to make an assertion that a condition thought to be impossible has occurred 
+
+-the author prefers not to use try statements w/ error catching; instead he prefers to let the error occur & the code crash. 
+    the catching of error statements is more verbose & more tightly coupled to predefined error cases he says. 
+        (I'm not sure yet if I agree - depends on how the try propagates other errors)
+
+-there is some conflict of values between crashing early & defensive programming. Which should you do - let it crash, or be robust against crashes? It isn't clearly articulated. 
+    (maybe have your own code crash early, but also code defensively against crashes from outside sources?) 
+
+-use assertions only to check cases that could / should never happen
+    for example, assert(result != nil) - if the result should never be nil this can be useful to prevent propagation of nils throughout the application
+    assertions can also be useful for checking that an algorithm works (testing the algorithms post condition) 
+-don't use assertions in place of real error handling - where the result could plausibly be nil. 
+    for example, you wouldn't use them on code that relies on 3rd parties
+-the author also acknowledges that sometimes you should catch the assertion error rather than terminating (seemingly contradicting his earlier statement about try / catch?) 
+
+-make sure your assertion code has no side effects associated - it should not alter your program in any way 
+
+-the author tells a story of a company that left their assertions in their production code. 
+    they crafted very readable, high quality alerts that displayed with the assertion to inform the user of the problem. 
+    the user feedback meant they were able to make their product very stable & reliable. this was a complex application that by its nature was failure prone
+    (you would do this with diagnostics & user alerts rather than program ending failures though) 
+
+-resources include things like: memory, transactions, threads, network connections, files, timers, windows, etc. 
+-the function responsible for allocating a resource should be responsible for deallocating it. 
+    otherwise you have tight coupling across functions. it also becomes possible you forget to deallocate the resource, & this can exhaust memory / lead to crashes 
+-some modern languages have methods to open a resource within a block scope (i.e. pythons with statement) and automatically deallocate at the end of scope. use these methods 
+
+-if you need to use multiple resources in a routine then deallocate them in the opposite order inwhich you allocated them 
+    this avoids accidental screwups when one resource contains references to another 
+-when allocating the same set of resources in different parts of the code (something I'd prefer not to do) always allocate them in the same order 
+    this avoids a possible deadlock (i.e. process A claims resource 1 and is about to claim resource2, while processB claims resource2 and is about to claim resource1)
+
+-also be mindful of files your program creates - temporary files, caches, logs, debug files, etc. - they need to expire or get cleaned up eventually also 
+
+-another approach to allocating / deallocating resources is to encapsulate the resource in classes, & use the destructor to clean up the resource. 
+    then when the object goes out of scope it's automatically cleaned up (seems convenient - probably want to use singletons here in many situations) 
+
+-some languages have a 'finally' clause as part of its error handling which can be used to deallocate resources after exceptions, and will run regardless of the exception thrown 
+    thing = allocate_resources()        // be sure to open the resource before the try statement - if trying to open the resource fails you dont want to then deallocate it 
+    try 
+        process(thing) 
+    finally 
+        deallocate(thing) 
+
+-what happens to resources in an aggregate data structure when you deallocate the top level structure? you may need to manage this yourself. 
+    there are 3 options, and which policy to use is circumstantial: 
+        1) the top level structure is responsible for freeing any resources in lower level structures 
+        2) the top level structure is deallocated & resources are orphaned 
+        3) a data structure refuses to deallocate itself if it contains any substructures 
+
+-the author says to write decorators for all resources you use & use them to track all allocations & deallocations
+    especially in long running programs this will allow you to do diagnostic logging periodically 
+-also learn to analyze your program using tools for detecting memory leaks 
+
+-since software development is unpredictable & you cant see too far into the future, always work on small tasks & solicit feedback regularly  
+-some examples of planning too far ahead: 
+    estimating completion dates months in the future 
+    planning a design for future maintenance rather than writing your code to be replaceable (for example, moving the MonoType into paymentsUIShared too early) 
+    guessing users future needs (though sometimes I think their needs are self-evident) 
+    guessing future tech availability 
+
+
+
+pg 129, CH 5 
+
+
+
+
+
+

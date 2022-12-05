@@ -1,0 +1,102 @@
+CHAPTER 1 / 2
+
+-always consider whether your push notification will annoy the user before adding it 
+-the user can opt out of notifications, and there is also no guarantee they will even be delivered. So design with that in mind 
+
+-the author is claiming push notifications can be scheduled both remotely and locally 
+-local "push notifications" are typically based on things like time or location, apparently 
+-for both local & remote push notifications the process is the same: 
+    1) ask the user for permission to receive notifications 
+    2) configure the push notifications UI in a variety of optional ways
+    3) optionally take action based on what the user did with the notification 
+
+-common actions a push notification may perform: 
+    1) display message
+    2) play sound
+    3) update badge icon of the app 
+    4) show image or play movie 
+    5) prompt user to select from multiple options 
+    6) any custom functionality a UIViewController can implement 
+
+-remote notification: the common form of push notifications inwhich a cloud service, usually a web server, pushes it to the client
+
+-there are also silent, background remote notifications. These may just update some information. For example, a news feed app might silently push new stories 
+
+-Apple Push Notification Service (APNS) - this is a convoluted system built with TLS that mediates between the cloud and the client 
+
+-the workflow appears to be as follows: 
+    1) the client registers with APNS. 
+        this is done in application(_:didFinishLaunchingWithOptions:) using registerForRemoteNotifications 
+    2) the client receives as "device token" which uniquely identifies that specific device 
+        APNS will call application(_:didRegisterForRemoteNotificationsWithDeviceToken:) upon completion, or emit an error via application(_:didFailToRegisterForRemoteNotificationsWithError:)
+    3) the client sends this device token to the cloud, and the cloud will keep track of the device token 
+        the token is typically sent to the provider in binary or hex format, apparently (not encrypted?)
+    4) the cloud sends device tokens to APNS, requesting a push notification be performed 
+    5) APNS sends the push notification to the client 
+
+-the author warns not to cache the device tokens on the client due to various hangups: your app might be used on different devices or may need to be restored from a backup 
+
+-local notifications (I'm assuming he's referring to push notifications and not the NotificationCenter, but that isn't made clear) are scheduled w/ the timer or w/ geotracking 
+__________________________________________________________________________
+CHAPTER 3 
+-payload: the data pushed in a remote notification
+-the cloud service constructs the payload & sends it to the APNS, along with 1 or more device tokens 
+-the payload is structured as JSON 
+-there are a few keys in the payload defined by apple - some mandatory, some optional. the rest you can add yourself 
+-the max payload size is 4KB for typical remote notifications 
+
+-payload_json["aps"]: the "aps" dictionary key in the payload encapsulates everything defined by apple. It references a dictionary which contains any of apples keys 
+
+-payload_json["aps"]["alert"]: common key used to specify the message that appears. contains a couple subkeys: title & body, most notably. body contains the message.  
+-there are difficulties in getting messages localized properly. If you store localized strings on the client, you'll need to either know which messages you intend to send or 
+    you'll need to push a new version of your app with new strings when you send new messages. Alternatively you can localize your messages on the server, but this requires 
+    custom code on the server (often more complicated than letting IOS do it). 
+-if you do choose to localize messages on the client, instead of using the title & body keys you'll want to use title-loc-key, title-loc-args, loc-key, and loc-args (read docs) 
+
+-payload_json["aps"]["alert"]["thread_identifier"]: IOS will group all notifications with the same value at this key into one group in the notification center (whatever that means). 
+-it's good to use a guaranteed unique ID for the thread identifier 
+-be aware that your users can, for whatever reason, turn off notification grouping in their settings. I have no idea why they would want to, but they can. 
+
+-payload_json["aps"]["badge"]: app icons have a number that indicates how many awaiting messages, notifications, etc. there are 
+-setting the badge key to 0 clears it. otherwise you have to track how many notifications have been viewed & so fourth, & maintain the badge number. 
+-tracking the correct badge number on the server is difficult, and can be done with server extensions (CH10). 
+
+-payload_json["aps"]["sound"]: set this to the string "default" and it will play the default IOS sound. alternatively you can specify the name of a soudn file in the app bundle 
+-acceptable formats for the sound file are: Linear PCM, MA4, uLaW, aLaw. Mac has an afconvert tool that converts sound files into these formats: 
+    $ afconvert -f caff -d LEI16 filename.mp3 filename.caf 
+-You can also play a "critical alert", but to do this you need to specify a dictionary as the keys value, rather than a string: 
+    {
+        "aps": {
+            "alert": {
+                "title": "Trump is at it again", 
+                "body": "he insulted the queen of england by refusing to eat oyster stew" 
+            }
+            "sound": {
+                "critical": 1,                          // setting critical to 1 specifies this is a critical alert 
+                "name": "filename.caf",                 
+                "volume": 0.75                          // volume ranges from 0 to 1 
+            }
+        }
+    }
+
+-other keys in the aps dictionary will be discussed later. they do things like set it as a background notification, custom notifications, user interface stuff, & grouping stuff
+
+-everything outside the aps dictionary is your custom data 
+__________________________________________________________________________
+
+-the cloud can send HTTP headers to APNS in addition to the payload & device tokens 
+-apns-collapse-id: an HTTP header that specifies to collapse multiple notifications into one when a newer one supercedes and old one 
+-you add a unique identifier to this headers field and it will only reduce notifications which share that id. best practice is to use a guaranteed unique id 
+-note that if you use a 3rd party delivery service (?) they will have to provide a for you to identify this header 
+
+-apns-push-type: as of IOS13 you must add this header to specify which type of push notification is being sent. exlamples include: alert, background 
+
+-apns-priority: specifying a value of 10 will send the notification immediately. this is appropriate for an alert, sound, or badge update. 
+-any notification which includes the content_available key must specify a priority of 5, apparently. notifications with 5 priority may be grouped and delivered in batches
+-if not specified, the default value is 10. 
+__________________________________________________________________________
+CHAPTER 4 
+
+
+
+

@@ -1,0 +1,13 @@
+====================
+CHAPTER 1
+====================
+
+Since javascript isn't statically typed you must use JSLint or another linter 
+also be sure to use strict mode. Linters usually expect the code to be strict compliant anyway 
+
+javascript tends to favor object composition over inheritance due to its historical lack of support for classes 
+
+====================
+CHAPTER 2
+====================
+

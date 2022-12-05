@@ -1,0 +1,6 @@
+
+nc google.com 80                    <- simple HTTP 1.0 request to a URL
+GET / HTTP/1.0\r\n\r\n
+... 
+
+

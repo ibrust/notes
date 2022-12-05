@@ -1,0 +1,384 @@
+// FRENCH SICILIAN, NORMAL LINE
+1. e4 c5 2. Nf3 e3 3. d4 cxd4 4. Nxd4 Nf6 
+
+    ===============================================================================================
+    ===============================================================================================
+    SICILIAN, FOUR KNIGHTS 
+    5. Nc3 Nc6 
+
+        // these lines can transpose w/ the taimanov in alot of places 
+        ==========================================================================
+        // FOUR KNIGHTS, COBRA VARIATION 
+        6. Ndb5 Bc5                           // +0.25 - sveshnikov is +0.12 but cobra is more concrete, alot less common, and has a higher winrate 
+
+            -----------------------------------------
+            7. Nd6+ Ke7 
+
+                ---------------
+                8. Bf4 e5 
+
+                    9. Nf5+                     // 91.5%
+
+                    9. Nxc8+ Rxc8 
+
+                ---------------
+                8. Nxc8+ Rxc8 
+
+                    9. Bd3 
+
+                    9. Be2 
+
+                    9. Bg5 
+
+                ---------------
+                8. Nc4 d5 9. exd5 exd5 
+
+                    10. Nd2 
+
+                    10. Qe2+ 
+
+                    10. Na3 
+
+            -----------------------------------------
+            7. Bf4 O-O 
+
+                ---------------
+                8. Bc7 Qe6 
+
+                    9. Bd6 
+
+                    9. Nd6 
+
+                ---------------
+                8. Bd6 Qb6 
+
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            7. Be3 
+
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            7. Be2 
+
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            7. Bg5 
+
+        ==========================================================================
+        // FOUR KNIGHTS, EXCHANGE VARIATION
+        6. Nxc6 bxc6                          // +0.15
+
+            ------------------
+            7. e5 Nd5                   // 63% - main line 
+                ---------
+                *8. Ne4 Qc7
+                    9. f4 Qb6           // f4 is pretty much forced here 
+                                        // ideas in this position: dislodge knight w/ f5, unclog center w/ c5 & Bb7
+                                        // Be7 can also help to recapture if the knights get traded after f5 
+
+                        10. c4 Bb4+ 
+
+                            11. Ke2 f5 
+
+                                // your knight remains attacked & it can be hard to find a good place for it
+                                12. Nf2 Ba3 
+
+                                    13. Kf3 Ne7 
+
+                                        // taking is the only way for white to save the b pawn 
+                                        // there are more mainline moves beyond this in the book, but wait until you need them to learn them 
+                                        14. Be3 Bc5 15. Bxc5 Qxc5
+
+                                12. exf6 Nxf6
+
+                                    // the king & knights position make Bc5 not possible, forcing the queen to retreat. 
+                                    // queen now guards the knight on f6 as well. capturing with the g pawn would loosen blacks position 
+                                    13. Be3 Qd8 
+
+                                        // again the book goes deeper but if you reach this point reread more in the book 
+                                        14. Nd6+ Bxd6 15. Qxd6 Bb7 
+
+                                // taking the knight is a big mistake 
+                                #12. cxd5 fxe4                          // -4.28
+                                    13. Be3 Ba6+ 14. Kf2 Bc5            // you might trade down but the 2 past pawns will actually win the game 
+                            
+                            // any other move is a big mistake 
+                            #11. Bd2 Qe3+ 12. Be2 Qxe4 13. cxd5 exd5        // -1.75
+                            #11. Nd2 Nxf4                                   // -2.27 
+
+                        10. Bd3 Be7     // Bd3 gives black time to play Be7 & recapture a knight trade better 
+
+                        10. Qf3 Bb7     // -0.04
+
+                ---------
+                8. Nxd5 cxd5            // -0.02 - Nxd5 is not good, it solves blacks d6 problem & gives a strong center 
+                                        // you win material at least a pawn in most of these lines, they're very tricky too 
+
+                    9. Bd3 Qc7          // there aren't any other good moves for white here. this is the only lightsquare bishop move. 
+
+                        10. Qe2 Bb4+ 
+                            // the only good move. Not easy to play for white here. 
+                            // there's more continuation in the book but for now this is enough
+                            *11. Kf1 Bc5 
+
+                            #11. c3 Bxc3+ 12. bxc3 Qxc3+ 13. Qd2 Qxe5 14. Qe2 Qxa1      // big mistake, queen wins the center pawn and the rook
+                            #11. Bd2 Bxc3+ 12. Kxd2 O-O                                 // +0.38 
+
+                        // you win a pawn in this variation 
+                        10. Bf4 Rb8 
+                            11. Qc1 Bc5
+                                12. O-O Bd5                      // wins a pawn 
+                                12. c3 Qb6 
+                            #11. Rb1 Rxb2 12. Rxb2 Qc3+          // -0.27 
+                            11. O-O Rxb2                         // gives up b pawn but gets lead in development 
+
+            ------------------
+            7. Bd3 d5                  // +0.03, 24% - black has equalized 
+                ---------
+                *8. O-O Be7              // 5. Bd3 can transpose into this
+
+                    // from here white has alot of options, but you castle in almost all cases except for 3, 2 of which are forced. 
+                    // from here just play freely. there are some more lines for this in the book if you ever get that advanced, keep it simple for now
+                    9. Qe2 O-O         // +0.04 
+                    9. Re1 O-O         // +0.03
+                    9. b3 O-O           // +0.02
+                    9. e5 Nd7           // -0.01 
+                    9. Qf3 O-O           // +0.03
+                    9. Bf4 O-O           // +0.02
+                    9. f4 O-O           // -0.14
+                    9. exd5 cxd5        // -0.12 
+            
+                    9. Bg5 Nxe4 10. Bxe7 Nxc3 11. Qg4 Kxe7 12. bxc3 Kf8        // -0.05 
+
+                ---------
+                8. exd5 cxd5 
+
+                    9. O-O Bc4                  // take the diagonal that points to the king 
+
+                ~~~~~~~~~
+                ~8. e5 Nd7 
+                    
+                    9. f4 Qh5+ 10. g3 Qd8       // open up weaknesses with a check on the kingside 
+
+            ------------------
+            7. Bg5 h6                  // -0.15, ~5% - bad move but it's sometimes played at lower level 
+                8. Bh4 Rb8              // -0.77, notice Qa5 as a possible followup 
+                    9. e5 Rb4 
+                    9. Qc1 Qb6          // Qc1 prevents Qa5 from working 
+                8. Bxf6 Qxf6            // -.50
+                *8. Bf4 Qb6                // -.15 - the only good move but lost a tempo in making it 
+
+            ~~~~~~~~~~~~~~~~~~
+            // for the other uncommon 7th moves you just push d5
+            ~7. Be2 d5             // -0.08, 2.5%
+            ~7. Be3 d5             // -0.21, 1%
+            ~7. a3 d5              // -0.02, 1%
+
+        ==========================================================================
+        6. Be2 Bb4                          // +0.06
+
+            ------------------
+            // the only semi-good variation, white sacrifices a pawn & just castles 
+            *7. O-O Bxc3 8. bxc3 Nxe4            // 27%, +0.05
+
+            ------------------
+            // white just gives you a strong center
+            7. Nxc6 bxc6                    // 26%, -0.03
+
+                // here there are tons of moves with none standing out as too common, so play it intuitively 
+                // just always push d5 unless they attack something of yours 
+                *8. Qd3 d5
+                8. e5 Nd5 
+                8. Bd3 d5 
+                8. O-O d5                   // interestingly you don't take the pawn, you just push your own pawn. Qd4 would be problematic if you took
+                8. Qd4 Qb6                  // responses to O-O and Qd4 are the only less than obvious moves 
+                8. Bd2 d5
+                8. f3 d5
+                8. Bf3 d5
+                8. Bg5 h6 
+
+            ------------------
+            7. f3 d5                       // 18.5% 
+
+                ---------
+                *8. Nxc6 bxc6               // 54%, -0.17 
+
+                    9. O-O O-O 
+                    9. exd5 exd5            // cxd5 would allow for Qd4 which can tie black in some knots. this instead opens the e file for the rook 
+
+                ---------
+                8. exd5 Nxd5                // 23%, -0.17 - play is fairly straightforward from here 
+
+                ~~~~~~~~~
+                ~8. Bg5 Qa5                 // 4.3%, -0.25 
+                ~*8. a3 Bxc3+               // 1.4% - the top engine move but almost never played 
+
+                #########
+                #8. O-O Bc5                 // 10.6%, -5.10 - huge mistake, traps & loses the knight 
+                ~#8. e5 Nxe5 
+                ~#8. Bb5 O-O                // -0.83 
+
+            ------------------
+            7. Bf3 O-O                     // 8.8%
+
+                8. O-O Ne5 9. Bf4 Nxf3     // apparently trading the knight for bishop is advantageous here despite the bishops awkward placement 
+
+            ------------------
+            // again play from is here is fairly straightforward, if you ever need it there's more of this line in the book 
+            7. Qd3 d5                    // 8.2%
+
+            ~~~~~~~~~~~~~~~~~~
+            // there are some followup lines in the book for these moves but I think they'll be playable intuitively, look them up if you ever need them 
+            #7. Bg5 Qa5                    // 7.5%, -0.64 -  mistake but not too uncommon at 2200 still 
+            #~7. Nbd5 Nxe4                  
+
+        ==========================================================================
+        6. Be3 Bb4                          // +0.01
+
+        ==========================================================================
+        6. g3 Qb6                            // +0.20 - Bb4 is another option the engine prefers (+0.09), but Qb6 has a higher winrate & 
+                                            // more chances for white to go wrong. it's also alot less common 
+            ------------------
+            *7. Nb3 Bb4 8. Bg2 d5               // +0.20, 50% (but few games)
+                                                // 7... Be7 is another option followed by d6 shortly after. it scores slightly better. 
+                                                // 7... Bb4 8. Bg2 Qa6 is also another option (in the book too), but am choosing this one for now 
+                --------
+                // this is a bad move that equalizes immediately, now you have strong pressure on the pinned knight 
+                // still about a third of master players on lichess did this 
+                #9. exd5 Nxd5 
+
+                --------
+                // castling frees whites knight from its pin 
+                9. O-O Bxc3 
+
+                    // to score even you must accept the isolated pawn to open up the bishop 
+                    10. exd5 exd5 11. bxc3 O-O 
+
+                        12. Bg5 Bg4 
+                            13. Qd3 Ne5 
+                                14. Qd4 Ned7            // +0.21
+
+                    10. bxc3 O-O 11. exd5 exd5 - transposes w/ 10. exd5 exd5 11. bxc3 O-O - can't take dxe4 because Ba3 would stop you from castling
+
+
+            ------------------
+            ~#7. Nxc6 bxc6                   // -0.10, 32% (but few games)
+
+            ------------------
+            ~#7. Ndb5 Bc7                    // -0.19, 13.6% (but few games)
+
+
+
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        ~6. a3 ?        // Be7?
+
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        ~6. Bg5 Bb4 
+
+            ----------------------------------------------------------------------
+            7. Nxc6 bxc6            // 59% 
+
+                #8. e5 Qa5 9. exf6 Qxf6             // -0.91, mistake but very common. take the bishop, not the knight 
+
+                8. Bd3 h6 
+
+                    9. Bh4 d5 
+
+                        10. e5 g5 11. Bg3 Nd7 
+
+                    9. Bd2 e5 
+
+                8. Qd4 c5
+
+                8. Qf3 h6 
+                    9. Bh4 d5                       // -0.06 
+                    9. Bxf6 Qxf6 10. Qxf6 gxf6      // -0.36
+
+                ~8. a3 Bxc3+            // +0.02, ruins pawn structure, equalizes
+
+            ----------------------------------------------------------------------
+            7. Ndb5 h6              // 10.5%, -0.16
+
+                ------------------------------------------------------------------ 
+                // the best of bad options 
+                *8. Nd6+ Ke7                // -0.15 
+
+                    *9. Bf4 e5           // -0.15 
+
+                        10. Nf5+ Kf8 
+                            11. Bd2 d5 12. exd5 Bxc3 13. Bxc3 Nxd5          // the book goes a little further then this, but this is enough for now 
+
+                    9. Bxf6 gxf6        // -0.15
+
+                        10. Nc3 d5 
+
+                    #9. Bh4 Bxd6        // fails to protect the bishop, loses immediately
+                
+                ------------------------------------------------------------------
+                // after bishop moves the center pawn will fall 
+                #8. Bf4 e5              // -0.38. note - that does not say d5, d5 loses the game 
+                    9. Be3 Nxe4         
+
+                ------------------------------------------------------------------
+                #8. Bxf6 Qxf6 
+                    *9. a3 Bc5          // -0.30, but the best line for white 
+
+                    #9. Nc7+ Kd8         // -7.07, white can take the rook but loses his own and his knight is trapped, completely losing 
+
+                ------------------------------------------------------------------
+                // again once the bishop moves the center pawn falls 
+                8. Bh4 g5 9. Bg3 Nxe4 
+
+
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            // lots of less common moves here - accounting for over 25% of moves
+            ~7. a3 ?                    // 5.1%
+            ~7. f3 ?                    // 4%
+            *~7. Qd3 ?                  // 3.8
+            ~7. Be2 ?                   // 3.5
+            ~7. Bc4 ?                   // 2.6%
+            ~7. f4 ?                    // 2.6% 
+            ~7. Bxf6 ?                  // 1.9%
+            ~7. Qd2 ?                   // 1.9% 
+
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // rare & bad 6th moves, but still worth knowing some considering how soon in the move order they are 
+        ~~6. f3 Bb4
+        ~~6. Nb3 Bb4
+        ~~#6. f4 Bb4 
+
+        ~~6. Bc4 Qc7
+        ~~6. Bb5 Qc7 
+
+        ~~6. Bf4 Bc5            // see if this transposes into the cobra variation, it isn't the highest scoring move 
+
+
+    ===============================================================================================
+    ===============================================================================================
+    // FRENCH SICILIAN, NORMAL LINE w/ 5. Bd3 
+    // look for transpositions 
+
+    5. Bd3 Nc6 
+
+        ===============================================================================================
+        6. Nxc6 bxc6
+
+            7. O-O d5
+
+                8. Nc3 Be7 - transposes w/ the main exchange line 5. Nc3 Nc6 6. Nxc6 bxc6 7. Bd3 d5 8. O-O Be7 
+        
+        ===============================================================================================
+        6. Be3 ? 
+
+        ===============================================================================================
+        6. Nb3 ? 
+
+        ===============================================================================================
+        6. c3 ?
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    5. f3 d5 
+        6. exd5 Nxd5            // -0.19 
+        6. e5 Nfd7              // -0.08 
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #5. e5 Qa5+ 

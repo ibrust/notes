@@ -1,0 +1,1005 @@
+------------------------------------------------------------------------------------
+------------------------------------CHAPTER 1---------------------------------------
+------------------------------------------------------------------------------------
+my testing in this book was conducted on a BSD system (Darwin)
+______________________________________________________
+// TERMINAL CONTROL CHARACTERS
+control characters for the terminal: 
+    ctrl+d - the shell instructs the running process that input is ended. it will actually terminate the shell process itself if you use it at the shell prompt 
+    ctrl+g - rings a bell 
+    ctrl+i - tab 
+    ctrl+m - alternative to the enter key 
+    ctrl+c 
+    ctrl+u - line kill (discards the line of input)
+    ctrl+s - suspend a processes output (not sure of the details). useful for preventing something important from going offscreen, apparently
+    ctrl+q - resume a processes output (again not sure of the details)
+
+______________________________________________________
+// MISC TERMINAL COMMANDS
+    date
+    who                 - who is using the computer
+    who am i            - your username 
+    mail                - can read mail apparently. not sure what email system is being used here. there are details if you're ever interested
+
+    cat <file1> <file2>         - cat can concatenate multiple files & print their contents 
+    less <filename>             - show the file in a scrollable form
+
+    wc <file1> <file2>          - print line, word, & character counts of file(s)
+        69760  140992 1998523 schema.json
+    wc -l                       - print only line counts 
+
+    tail -<number> <file>       - print the last <number> lines of a file, or default of 10 
+    tail +<number> <file>       - print the remainder of the file starting at line <number> 
+
+    cd                  - cd by itself returns you to your personal directory located in /usr 
+    rmdir <directory>   - this will only remove an empty directory 
+    pr <file>           - this prepares a file for printing by adding footers, headers, margins, & formatted text. read about its various options if you want to use it 
+    echo "print this"   - the echo command just outputs the argument to the console 
+
+______________________________________________________
+// LS
+ls is an important UNIX function, and has about 40 commands, most of which are worth knowing:
+    ls [options] [file/path]
+    ls                  - list files in current directory 
+    ls <filename>       - list a specific file 
+    ls -l               - long description format: file mode | # of links | owner name | group name | file size | month/day/hour/minute last modified | pathname 
+                                for directories it also lists the total blocks used by files within on a separate line 
+    ls -l <filename>    - long description of a specific file
+    ls -l -t            
+    ls -lt              - you can combine multiple options 
+
+                // SORTING OPTIONS 
+    ls -t               - sort by time last modified
+    ls -rt              - reverses the order of a sort (combines with -t or -S)
+    ls -ut              - sort by time of last access (always combined with -t)
+    ls -Ut              - sort by file creation time (always combined with -t)
+    ls -ct              - sort by time when file status was last changed (always combined with -t)
+    ls -S               - sort by size 
+
+                // DIRECTORY RELATED OPTIONS 
+    ls <pathname>       - list files at a specific path 
+    ls -R               - recursively list subdirectories 
+    ls -d               - directories are listed as plain files (not searched recursively) 
+    ls -A               - list all entries except for . and .. (this is always set for the superuser) 
+    ls -a               - include directory entries whose name begins with a dot (.) 
+
+                // SYMBOLIC LINK HANDLING 
+                // -H, -L, and -P all override one another - the last one specified is the one used 
+    ls -H               - symbolic links on the command line are followed. this option is assumed none if -F, -d, or -l are specified 
+    ls -L               - follow all symbolic links to final target. list the file or directory rather than the link itsel
+    ls -P               - list the link itself rather than the object the link references 
+
+                // OUTPUT FORMATTING OPTIONS
+                // -1, -C, -x, and -l override one another - the last one specified is used
+    ls -C               - force multi-column output (the default behavior if output is to a terminal). note: overrides -l 
+    ls -x               - same as -C, but columns are filled in horizontally instead of vertically (test it and look). note: overrides -l 
+    ls -1               - force output to be one entry per line (the default if output is NOT to a terminal). note: overrides -l 
+
+                // -B, -q, and -w override one another - the last one specified is used
+    ls -B               - force printing of non-printable characters in file names 
+    ls -q               - force printing of non graphic characters to be ? (the default behavior if output is to a terminal)
+    ls -v               - force unedited printing of non-graphic characters (the default behavior if output is NOT to a terminal) 
+    ls -w               - force raw printing of non-graphic characters (the default behavior if output is NOT to a terminal) 
+
+                // FILE ANNOTATION OPTIONS 
+    ls -p               - display '/' after each directory path 
+    ls -F               - display '/' after each directory path, * after each executable, @ after each link, = after each socket, % after each whiteout, | after each FIFO 
+    ls -%               - display '%' after dataless files (whiteout?), and don't materialize dataless directories when listing them 
+
+                // LONG FORMAT SPECIFIC OPTIONS (must combine with -l)
+    ls -lh              - use suffixes for unit sizes (i.e. kilobyte, megabyte) 
+    ls -lO              - include the file flags 
+    ls -l@              - display extended attribute keys and sizes 
+    ls -le              - print the access control list (ACL) associated with the file, if present 
+    ls -lo              - omit group id 
+    ls -lT              - display complete date/time information
+
+                // MISC OPTIONS
+    ls -i               - print the inode# for each file 
+    ls -G               - enable colored output (equivalent to defining CLICOLOR in the environment)
+    ls -m               - stream output, listing files in CSV format 
+    ls -n               - display user or group names as numbers rather than converting them to names. this turns on long priting (-l) automatically 
+
+    ls -s               - display the # of blocks used by each file in units of BLOCKSIZE (environment variable) or 512 bytes by default. 
+    ls -ks              - combined with -s, prints the file sizes in kb instead (so this overrides BLOCKSIZE or the default 512)
+
+some example commands: 
+    ls /                - output everything in the root directory 
+    ls /usr             - list what's in the /usr directory
+    
+    ls -l 
+    total 4296
+    drwxr-xr-x@   6 vn51hvk  staff      192 May  4 00:23 Walmart.xcodeproj
+    drwxr-xr-x    4 vn51hvk  staff      128 May  3 20:51 Carthage
+
+______________________________________________________
+// SORT 
+    sort <filename>             - sorts the lines in the file alphabetically & prints them 
+
+common sort options: 
+    -r                              - reverse sort order 
+    -n                              - sort in numerical order, ignoring blanks 
+    -nr 
+    -f, --ignore-case               - ignore case when sorting 
+    -b, --ignore-leading-blanks     - ignore leading blank characters 
+    -R, --random-sort               - random permutation of the inputs except that equal keys sort together. the hash function used for comparison is chosen randomly 
+    -d                              - only consider letters, numbers, & blanks in the sort 
+______________________________________________________
+// GREP
+    grep <pattern> <file ...>       - searches a file for a regex pattern, prints each lines occurrence
+    grep -v <pattern> <file ...>    - searches for all lines without the pattern 
+
+more noteworthy grep options: 
+    -R, -r                      - recursively search subdirectories listed 
+    --include-dir               - if -R is specified, only directories matching a given filename pattern are searched. 
+    --include                   - includes directories matching a given filename pattern in the search. 
+    --exclude-dir               - if -R is specified it excludes directories matching a given filename pattern from the search. 
+    --exclude                   - excludes directories matching a given filename pattern from the search. 
+                                    --exclude patterns take priority over --include 
+    -w, --word-regex            - the expression is searched for as a word (as if surrounded by [[:<:]] and [[:>:]])
+    -E                          - interprets pattern as an extended regex - i.e. force grep to behave as egrep (why not just use egrep?)
+    -e, --regexp=<pattern>      - specify a pattern used during the search (looks like this can be used to specify multiple regex's)
+    -S                          - if -R is also specified, all symbolic links are followed during the recursive search. The default is to not follow symbolic links 
+    -s                          - silent mode. nonexistent and unreadable files are ignored & their error messages suppressed 
+    -A <number>                 - print <number> lines of trailing context for each match 
+    -C <number>                 - print <number> lines of leading AND trailing context for each match 
+    -U, --binary                - search binary files, but do not attempt to print them
+    -m <number>                 - stop reading the file after <number> matches 
+    -o, --only-matching         - print only the matching part of the lines 
+
+-grep regex's overlap with some shell metacharacters, so enclose them in single quotes: 
+
+    grep "ian" <file>                   - find all occurrences of my name in a file
+    grep "\.jpg" <file>                 - quotation marks prevent shell from misinterpreting the pattern
+    grep -v -e "foo" -e "bar <file>     - find all lines that don't contain foo or bar 
+    egrep "19|20|25" <file>             - simple regex, look for any of those numbers 
+
+    file1="The Unix Programming Environment"
+    grep '^-awk' $file1                     - ^ looks for the pattern at the beginning of lines 
+    grep '$C' $file1                        - & looks for the pattern at the end of lines 
+    grep '[A-Z]' $file1                     - [A-Z] find lines with capitalized letters 
+    grep '[^0-9]' $file1                    - [^0-9] find lines without numerical digits 
+    grep '^.awk' $file1                     - . is the equivalent of ? in the shell - it matches one character 
+    grep '[a-zA-Z]*' $file1                 - * applies to the previous character or metacharacter, & matches any repeating number of them 
+
+    ls -l | grep '^.......rw'               - list all files where user has rw permissions  
+    ls | grep 'Push.*tutorials'             - * applies to the . here - any number of characters (including zero) can be between Push and tutorials
+
+-egrep and fgrep are modern updates of grep. both are alot faster than grep.
+
+-egrep supports true regular expressions:
+    
+    parenthesis () can group expressions
+    | is an or operator
+    + matches 1 or more occurrences of the previous character (unlike * which matches 0 or more)
+    ? matches 0 or 1 of the previous character
+
+-both egrep and fgrep have an -f option, where you can specify a file that contains a list of patterns to match (each line is a pattern)
+    since the file is not interpreted by the shell there is no need for single quotes around the patterns within it 
+
+-fgrep interprets no metacharacters, but can search efficiently for thousands of words in parallel
+-fgrep is typically used for things like searches of libraries, bibliographic references, databases, filesystems, etc. 
+
+-there's also a zgrep series of functions that accept files compressed with gzip() or compress()
+
+-GREP_OPTIONS environment variable can be used to specify default options 
+-grep exits with 0 if it found lines, 1 if it found nothing, >1 for error 
+
+______________________________________________________
+// FILE COMPARISON 
+
+cmp and diff are two commands used for comparing files. cmp works on binary, and is typically used to check that the files are the same. It's also faster than diff. 
+diff works only on text and by default it prints out the line differences
+
+    cmp [options] <file1> <file2>       - compare 2 files byte by byte 
+
+noteworthy cmp options: 
+    -b, --print-bytes           - print differing bytes 
+    -l, --verbose               - output byte numbers & values for differing bytes 
+    -n <limit>                  - compare at most <limit> bytes 
+    -s, --silent                - output nothing, yield exit status only 
+
+
+    diff [options] <file1> <file2> 
+
+noteworthy diff commands: 
+
+    -i, --ignore-case           - ignore case in comparison 
+    --from-file=<file1>         - compare <file1> to all operands. <file1> can be a directory 
+    --to-file=<file2>           - compare <file2> to all operands. <file2> can be a directory 
+    -t                          - expand tabs to spaces in output (mysterious that this was selected. does it avoid tabs vs spacing diff issues, ...? Doesn't read like it)
+    -u <number>                 - output <number> (default 3) lines of unified context 
+    -r                          - recursively compare any subdirectories found 
+    --label <label>             - use <label> instead of filename 
+    -w, --ignore-all-space      - ignore all whitespace 
+    -b, --ignore-space-change   - ignore spaces in the amount of whitespace
+
+if the input file is "-" diff will read that file from stdin instead
+regarding the mysterious -t option, apparently the spacing between columns is 8 spaces with -t on. tabs may also be too wide. 
+they suggested this command to reduce tabs to 4 spaces:
+    diff -t <(expand -t4 file1.txt) <(expand -t4 file2.txt)
+
+______________________________________________________
+
+in UNIX it's a "rule" that wherever you can use a filename you can use a pathname (whether it's practical or always supported I'm not sure)
+
+when you run a command by typing its name, UNIX first searches the current directory, then /bin and /usr/bin
+these various UNIX user-level programs (ls, who, etc.) are located in /bin 
+
+______________________________________________________
+// SHELL FILENAME MATCHING
+
+the shell supports regex's for use in filename matching
+
+    cat *.txt           - cat any .txt file
+    ls S*
+    ls [a-z]*           - list any file starting w/ lowercase letters 
+    ls ?                - list files with 1 character of any type in the name 
+    ls '?'              - bypass regex shell interpretation, list file named "?" (is that even a valid name?)
+    ls \?               - bypass regex shell interpretation
+    ls /usr/*/file      - regex's can be used within pathnames as well. * won't do a recursive search of folders, only on the level it's specified 
+
+the use of ls * also lists directory contents. It seems there is a special format ls uses for printing a directory 
+
+______________________________________________________
+// SHELL IO REDIRECTION 
+
+output redirection w/ > will overwrite the contents of old files, so beware
+to append to the file, use >> instead of > 
+
+    cat file1 > file2                       - file1 overwrites file2
+    cat file1 >> file2                      - file1 is appended to file2 
+
+there's also input redirection, where the program will use the file as input: 
+
+    program.py < inputfile 
+
+io redirection is the shell changing stdin of the program. 
+UNIX user-level programs default to using stdin if no filenames are specified as arguments. 
+if filenames are specified they're opened & read instead (and there may be a list of files) 
+
+one technique is to chain commands using temp files
+
+    who > temp 
+    sort < temp                             - display the sorted list of users 
+
+pipes implement the same behavior without you having to create the temporary file yourself
+
+    who | sort                              - display the sorted list of users 
+
+pipes are just a chain of one programs output into another programs input
+the programs in a pipe all run simultaneously
+stderr was created to avoid passing errors along the pipeline. stderr isn't rerouted by pipes and is still printed to the terminal
+
+______________________________________________________
+// RUNNING COMMANDS 
+
+separate two commands by semicolon (;) for the shell to run them sequentially: 
+
+    who; date 
+
+run a process in the background using ampersand (&) 
+the command will run as a separate process from the shell, in the background, with its own PID. the PID is printed after running the command 
+w/ one ampersand (&), all commands in a pipeline will run on separate processes in the background. However, only one PID (the last process) will be printed to the terminal 
+it's often useful to combine this with > to redirect output into a file - so that its output wont interrupt you while you're doing other things 
+
+    ls -R /* > output &                     - list every single file in the file system 
+    pr file1 | sort &                       - pr & sort both run on their own separate background processes 
+
+if you need to terminate the background process: 
+
+    ps                              - ps shows PIDs of all processes that have controlling terminals. top, in contrast, shows all processes in real time 
+    kill <PID> 
+
+to wait for all background processes started w ampersand (&) to finish: 
+
+    wait                            - if wait doesn't return immediately, background processes are still running
+
+if you close the terminal its children will also be killed - including any background processes. to prevent this use the nohup command (no hangup)
+this command doesn't appear to work in mac OS, but it may work on other systems: 
+
+    nohup ls -R /* > output & 
+
+to run your command at lower scheduling priority (so it won't block other commands), use nice. nohup automatically calls nice: 
+
+    nice <command> & 
+
+you can also tell multiple commands to run at a specific time in the future using the at command 
+it's often useful to combine at with an input redirected file containing a list of commands: 
+
+    at 3am < file_listing_commands
+
+    at now + 1 minute                   
+    open /Applications/TextEdit.app         - at prompts for a series of commands       // I could not get this to actually run on mac - it's scheduled, just doesnt run
+    ctrl+d                                  - ctrl+d signals the end of input
+
+______________________________________________________
+// FIND
+search for files with the find command: 
+
+    find [-L | -P] [-Edsx] [-f path] [expression]
+
+the search expression is composed of primaries and operands. operands are standard logical operands used on the primaries
+
+            // OPTIONS 
+    -f                  - specify a file hierarchy to search 
+
+    -E                  - use extended regex's rather than regular regex's 
+    -d                  - cause find to do a post-order search or directories (preorder is the default) 
+    -s                  - cause find to search the directories in alphabetical order 
+    -x                  - prevent find from descending into directories with a device number different than where the search began (so no mounted filesystem search, etc.)
+
+    -L                  - use the file symbolic links resolve to for evaluating the search criteria, rather than the link itself
+    -P                  - use symbolic links for evaluating the search criteria, rather than the files they resolve to (this is the default)
+
+            // PRIMARIES 
+    -name <filename>            - find the filename. remember you can use UNIX shell pattern matching in the filename 
+    -atime <number>             - file was accessed <number> days prior. you can change it from days to another metric, like minutes 
+    -mtime <number>             - file was modified <number> days prior 
+    -size <number>              - specifies the file is <number> blocks in size  
+    -user <name>                - specifies the files owner is user <name> 
+    -group <name>               - specifies the files group is group <name> 
+    -type <filetype>            - specifies the files type is: f=regular file, d=directory, l=symbolic link, p=FIFO, & more 
+    -exec <utility> <arguments ...>         - true if the <utility> program returns 0 value as its exit status 
+    -execdir <utility> <arguments ...> {}   - same as exec, except that {} is replaced with as many pathnames as possible for each invocation of <utility>
+    -xattrname <name>                       - true if the file has an extended attribute with the specified <name> (what are extended attributes?)
+    -print                      - always true, prints the pathname of current file to stdout 
+    -newerXY <file>             - true if file is newer than the evaluated XY parameters. XY are replaced with a, b, c, or m: 
+                                            a (last access time) | b (inode creation time) | c (change time) | m (modification time) 
+    -prune                      - don't descend into subdirectories 
+
+            // OPERANDS 
+    \! <expression>                                         - negation. notice \ is necessary to escape the character at the command line 
+    -not <expression>                                       - another way of doing negation 
+    <expression> -and <expression> 
+    <expression> <expression>                               - another way of doing and - it's considered to be implied when expressions are neighboring 
+    <expression> -or <expression>   
+    \( <expression \)                                       - you can use parenthesis
+
+some examples: 
+    find /bin -newerct '1 minute ago' -print
+            Print out a list of all the files in bin whose inode change time is more recent than the current time minus one minute.
+    find / \! \( -newer file1 -user wnj \) -print
+            Print out a list of all the files which are not both newer than file1 and owned by user "wnj"
+    find / \( -mtime +7 -atime +30 \)
+            find all files modified more than 7 days ago and accessed more than 30 days ago
+______________________________________________________
+
+the stty command can be used to configure the terminal, but it's complicated. read the man page for more details 
+
+on UNIX you can specify configuration commands to run upon startup in the .profile file. this is not available on Mac it seems, and I'm not sure which versions have it. 
+examples of what you might put in .profile: 
+
+    who | wc -l                 - tell you how many users are logged into your system 
+    /usr/games/fortune          - draw a fortune cookie (not there on Mac)
+
+many properties of the shell are set by shell variables, and you can change their values
+
+    PS1="$: "                   - PS1 is the shells prompt character 
+    HOME                        - HOME is the name of your home directory. changing it breaks some applications, best to just leave it unless you really look into things 
+    PATH=.:/bin:/usr/bin:/usr/ian/games         - PATH is probably the most important shell variable
+
+remember "." is the current directory; thus we are setting the current directory as first in the search path 
+It was at one point common practice to set the path in .profile. I'm not sure how commonm that is any more, or if the other variables should be set in .profile either. 
+another way of setting path is using the current value: 
+
+    PATH=$PATH:/usr/ian/games       - invoke the shell variables using $ 
+
+you can et new shell variables to avoid typing redundant commands: 
+
+    games=/usr/ian/games 
+    cd $games
+
+if you want to use these shell variables in programs you must export them: 
+
+    export PATH                     - you don't use the $ syntax with export apparently 
+
+there are many more commands in the manual, at some point you should explore the manual and see what else you can find. 
+
+------------------------------------------------------------------------------------
+------------------------------------CHAPTER 2---------------------------------------
+------------------------------------------------------------------------------------
+the od command will print the bytes in a file (they may have changed it to byte-pairs): 
+
+    od -cx <file>
+
+    -c              - interpret the bytes as characters 
+    -x              - print hex numbers below the bytes 
+    -b              - print octal numbers below the bytes
+
+-the terminal interprets special characters & adjusts its output (i.e. newlines \n, tabs \t, backspace \b, carriage return \r)
+-if you print a file to terminal that contains a backspace character (\b, octal 10) it will actually erase the next character in the file that's output 
+-od may be useful for finding strange characters such as these 
+
+-the terminal can optionally extend tabs to a certain number of spaces. use stty to turn this feature on: 
+    stty oxtabs             - expand tabs to spaces 
+    stty -oxtabs            - do not expand tabs to spaces 
+
+-to turn raw mode on and off you need to save the initial state of the terminal, apparently turning this off is buggy (in Mac OS, anyway): 
+
+    save_state=$(stty -g)               - save terminals original state
+    stty raw                            - turn on raw mode 
+    ...
+    stty "$save_state"                  - restore terminal to state before raw mode 
+
+-similarly the terminal driver echoes the ENTER key as \n + \r, but stores only \n on input. On output, \n is expanded back to \r + \n. 
+    Thus your files only contain what you put in them, no additional characters 
+
+-some non-UNIX systems store the \n + \r (the terminal needs this apparently), 
+    others store a 'record' at the end of each line that contains information like the lines character count 
+
+-in UNIX, all files are ultimately accessed through read(), which returns 0 when the end of the file is reached. 
+    Thus there need be no special character denoting EOF in UNIX.
+
+______________________________________________________
+
+-the UNIX system doesn't know what filetype a file is, but it can take an educated guess with the file command: 
+
+    file <file1> <file2>            - ascertain & list the types of files (as best as possible) 
+
+-the file command doesn't base its guess off file exensions. It reads the first few hundred bytes of the file & tries to guess what it is.
+-part of why UNIX doesn't track the file types more carefully is it doesn't want to force programs to handle files differently based on their type 
+-inspired by UNIX, the author gives general advice to think carefully before using non-textual file representations when designing programs 
+
+-the current directory is an attribute of a process 
+
+-/bin and /usr/bin is supposed to contain binary; /usr/src is supposed to contain source code; /usr/src/cmd is supposed to contain source for UNIX commands. 
+    /usr is often the top directory of the users file system. you can put your own projects in /usr/src and /usr/src/cmd 
+
+-the du (disk usage) command outputs the total disk blocks used by files in a directory: 
+
+    du 
+    du -a                                       - this recursively searches subdirectories and outputs all files / directories 
+    du -a | grep <filename>                     - this is a scrappy way of searching for a file which demonstrates grep & pipes, but you'd prefer find
+
+-the superuser (with login name root) can access any file regardless of permissions 
+-there used to be a crypt command that you could filter data through & prevent superuser from accessing, but it was considered too weak and 
+    UNIX did away with it, but never replaced it 
+
+-/etc/passwd traditionally contains the username/password entries of the format: username | encrypted-password | uid | groupid | misc | login-directory | shell 
+
+    grep -w <username> /etc/passwd
+
+-the first character in a permission field indicate the type of file: 
+
+    -rwxr-sr--          <- the first char is -, so it's a regular file 
+    drw-r--r--          <- the first char is d, so it's a directory 
+
+-the next three 3-character chunks indicate owner, group, & general access permissions 
+-the x is executable permissions. the s (the set-uid bit) also executes, but it sets permissions equal to that of the owner when it executes
+-avoid allowing write permissions for programs when the setuid bit is set - setuid will elevate permissions during execution,
+    if the user can overwrite the file and then execute it this is problematic
+
+-to change your password there's a command passwd (located in bin/passwd): 
+
+    passwd 
+    ... 
+
+-rights to remove a file are determined by the directory permissions, not permissions on the file. However, if you try to remove a protected file UNIX 
+    will prompt you for confirmation. the -f flag to rm suppresses this confirmation message: 
+
+    rm -Rf <directory>              - removes all files in a directory, suppresses confirmation messages 
+    rm -Ri <directory>              - prompts before removing subdirectories (so you can specify which subdirectories to remove). Not sure how it mixes with -f 
+
+-execute permissions in a directory mean the right to execute a search in the directory for a file 
+
+    --x             <- with these directory permissions, users can access any file they know about, but can't run ls on it or read it to see what's in there 
+    r--             <- with these directory permissions, users can run ls & see what's in the directory, but not use the contents 
+
+-chmod takes an octal number. you figure out the mode by adding 4 for read, 2 for write, & 1 for execute
+-chmod can also take a +/- argument to set global permissions 
+
+    chmod 777 <filename>            - all permissions 
+    chmod +x <filename>             - enable execution for everyone 
+    chmod -w <filename>             - disable write for everyone 
+
+-only the owner or superuser can change file permissions 
+-if a directory grants write permissions to a user they can delete the files, however, so beware who gets write permissions 
+
+______________________________________________________
+// FILE SYSTEM COMMANDS (LN, CP, MV ...)
+-the permissions information is stored in the files inode
+-the inode also contains 3 times:
+
+    ls -lu <file>                   <- time file was last used
+    ls -lt <file>                   <- time file was last modified
+    ls -lc <file>                   <- time inode was last changed (like by changing permissions)
+
+-the first two bytes in a directory entry are the inode number. this is the only link between a filename and its contents: 
+
+    ls -i                           <- display inode numbers of files 
+
+-at some point (around 1995) many UNIX systems stopped allowing directories to be read as files, so you can't use od to show the directories bytes any longer
+-regardless, the term 'link' refers to these 2 bytes linking the filename to the inode (and hence the file itself) 
+-the rm command only removes the link. it's only when the link count reduces to 0 the inode (the file) gets cleaned up
+
+-the ln command creates a link to an existing file: 
+
+    ln <old_file> <new_link> 
+
+-you can create links to files to call them by different names. for example: 
+
+    sudo ln /bin/ls /bin/list               - refer to ls via list (assuming you have access to modify the bin directory)
+
+-cp makes a separate copy of a file 
+-mv changes the directory entry name, and possibly moves it to a different directory  
+
+-mv and cp can move or copy multiple files / directories into a target directory. the last argument is the target directory: 
+
+    mv <file1> <directory1> <file2> ... <target_directory> 
+
+-cp will not descend into subdirectories unless -R is specified 
+
+    cp -R <directory1> .            - copy entire directory tree into current location 
+
+______________________________________________________
+
+top level directories and their purpose (bearing in mind this is an old book): 
+
+    /bin        - binary executables 
+    /dev        - device drivers 
+    /boot       - runs during the bootstrap startup process 
+    /etc        - various administrative files (et cetera)
+    /etc/rc     - file of shell commands that's executed after the system bootstraps (may have changed)
+    /etc/group  - lists members of each group 
+    /lib        - contains mainly parts of the C compiler (may have changed)
+    /tmp        - repository for temporary files created during execution of programs. /tmp is cleaned automatically when the system starts, 
+                    which makes using it advantageous for programs - you won't leave old files behind on system crash or accidentally 
+                    overwrite existing ones. /tmp is also often arranged on the disk for fast disk access 
+    /usr        - this is actually the user-level files, it doesn't always contain the system users files (though it sometimes does) 
+    /usr/bin    - user-level binary executables (executables considered less critical). Some systems have done away with this and put everything in /bin 
+    /usr/temp   - similar to /usr/bin - less critical temporary files 
+
+explore your machines file system, especially /usr, to get familiar with it - locations vary 
+
+______________________________________________________
+
+-inodes on peripheral devices have their first permission bit set to b (block) or c (character) 
+
+    ls -l /dev 
+
+-the author talks about how a disc is partitioned into different sections. in his example, 1 section is the root (kernel) file system 
+    & the other is the user file system. the user file system is mounted onto the root (kernel) system. 
+    Why are they kept separate? For historical reasons and ease of maintenance, he says. I don't know if this is still the case. 
+
+-the file systems are mounted to the root filesystem during the bootstrapping phase 
+-it is not possible to make a link across 2 file systems (the system may be unmounted and the link would become invalid)
+
+-filesystems have a limited size (# of blocks & inodes):
+
+    df                  - prints out the available space on all the filesystems
+
+-/dev/tty is your currently active terminal. you can actually route output to this terminal & it will show up
+    /dev/tty is especially useful if a program needs to output to the terminal while its stdout is connected with something else 
+
+    date > /dev/tty     - displays date 
+
+-to suppress output you can redirect it into /dev/null (as the mint script does) 
+-a common use of /dev/null is to reduce clutter to output only messages from stderr (diagnostics or errors) - it does not suppress stderr
+
+    time egrep -R * /usr > /dev/null             - look at all the access errors when traversing the user file system, & output the time it takes 
+
+------------------------------------------------------------------------------------
+------------------------------------CHAPTER 3---------------------------------------
+------------------------------------------------------------------------------------
+
+-the shell has 3 terminating characters: &, ;, return  
+-pipes | have higher precedence than the semicolons (;) in the shell.  You can also group commands with parenthesis: 
+
+    date; cat file1 | wc                    - only who is piped into wc 
+    (date; cat file1) | wc                  - the output of date & who is concatenated into a single stream, and this stream is piped into wc 
+
+-data flowing through a pipe can be tapped midstream and saved into a file while not interrupting the stream: 
+
+    (date; cat file1) | tea file1 | wc      - the tee command taps into the pipe & routes it into a file 
+
+-with the sleep command you can run commands in the future pretty easily: 
+
+    (sleep 3600; python program.py) &       - sleep 3600 seconds (1 hour). apparently & has higher precedence than ;, so the parenthesis are required here 
+    cat file1 | wc &                        - pipes | are commands, so & applies to the whole command - no parenthesis required 
+
+    (sleep 5; date) & date                  - combined use of & with proceeding commands 
+
+-since <, >, |, ;, & are not arguments but they're interpeted by the shell, strange syntax still works: 
+
+    echo "text" > temp 
+    > temp echo "text"              - both these commands do the same th ing. > temp reroutes the shells stdout to temp - both commands are interpreted and then execute 
+
+______________________________________________________
+
+-there are other metacharacters interpreted by the shell: 
+    *               - match any # of characters 
+    ?               - match a single character
+    [abc]           - match any single character in the set 
+    <<str           - here document: standard input follows. str is any string, and used for termination - the next occurrence of str terminates the document 
+    (...)           - runs commands in ... in a subshell 
+    {...}           - runs commands in ... in the current shell (rarely used) 
+    `...`           - backquotes (`). run commands inside `...` and insert their output where `...` is 
+    c1 && c2        - run c1, if successful run c2 
+    c1 || c2        - run c1, if unsuccessful run c2
+    $1, $2 etc.     - $1...$9 replaced by arguments to the shell script 
+    var=value       - assign to shell variable var 
+    $var            - value of shell variable var 
+    ${var}          - value of shell variable var - avoids confusion when concatenated with text
+
+-to escape the metacharacters use quotes or backslash (\)
+-the shell interprts $, `...`, and \ within double quotes, but not single quotes. so beware when escaping metacharacters 
+
+    echo "$(echo "here")"               - outputs here
+    echo '$(echo "there")'              - outputs '$(echo "there")' 
+
+-quoted strings can contain newlines: 
+    
+    echo 'hello 
+    there'
+
+-the secondary prompt, default '> ', is displayed when you need to complete a command. It's stored in the shell variable PS2 
+
+-backslash (\) at the end of a line allows the line to be continued - so you can pass long command lines to the shell 
+-note that the newline is discarded when preceded by a backslash, but retained when quotes are used 
+
+-echo prints a trailing newline by default, but this can be disabled in a few ways: 
+
+    echo -n "output text"               - disable trailing newline 
+    echo "output text\c"                - disable trailing newline 
+
+______________________________________________________
+
+-fundamentally a shell script is just a file with commands in it that is used as the shells standard input: 
+
+    echo 'date | wc' > datewc 
+    sh < datewc                                     - manual demo of using a file as the shells stdin 
+
+    sh datewc                                       - the shell takes a file argument (so you don't have to reroute the file input manually)
+
+-the shell spawns a sub-shell to execute the command. 
+-the two commands above are subtley different. when you manually reroute stdin, the input is passed from the parent shell to the subshell. 
+    but when you invoke sh with a file argument, the subshell takes the file input directly from the file 
+
+-because it's cumbersome to have to type sh to invoke the shell, the shell will automatically run a file as a shell script if it is executable
+    thus, to create a shell script, all you do is create a file of commands and make it executable: 
+
+    echo 'date | wc' > datewc
+    chmod +x datewc             - make the file executable 
+
+    datewc                      - execute the new shell command. this assumes the current directory is in your path, like it should be. if not, use PATH=$PATH:.
+
+-to make this newly created shell command accessible outside the current directory move it to somewhere in your path - such as /usr/<username>/bin, /bin, etc. 
+
+______________________________________________________
+
+-the numbers $1-$9 in the shell are the arguments passed to the file, in order:  
+
+    echo 'chmod +x $1' > xperm 
+    chmod +x xperm
+    xperm <file1>      
+
+-to allow 1-9 arguments (9 is the max) to be passed to the shell script there's a shorthand syntax: 
+
+    echo 'chmod +x $*' > xperm2                 -$* allows variable # of arguments 
+    chmod +x xperm2 
+    xperm2 <file1> ... <file9> 
+
+-arguments default to null if they are not specified 
+-there is a subtle bug in the above implementations. If you pass a quoted string as an argument and it contains a space, it will be interpreted by the 
+    sub-shell as two arguments. To prevent this, surround your argument with double quotes. The shell searches for $ in double quotes, & will insert it there: 
+
+    echo 'chmod +x "$1" "$2"' > xperm3              - doesn't work with $* (despite what the book says), but does work if the parameters are separately specified
+    chmod +x xperm3 
+    xperm2 "file name" "another file name" 
+
+-$0 in the script always refers to the name of the script
+
+______________________________________________________
+
+-the output of any program can be inserted into a command line by enclosing the invocation in backquotes `...`
+
+    echo "the time is `date`"                       - the time is Sat May 15 19:53:32 CDT 2021
+
+-you can have nested backquotes - backquotes within backquotes that the sub-shell will interpret & run, 
+    but you must escape (\) the inner backquotes to prevent the parent shell from running them
+
+______________________________________________________
+
+-when setting shell variables there must be no space around the =
+
+    PATH=$PATH:. 
+
+-conventionally predefined shell variables are uppercase while your own shell variables are lowercase 
+
+    set                     - this command displays all shell variables and what they're set to 
+
+-the value of a variable is associated with the shell that creates it, and is not automatically passed to the shells children  
+
+    x=hello
+    sh                      - spawn a sub-shell 
+    echo $x
+    ctrl+d                  - exits from the sub-shell 
+    echo $x 
+
+-this means a shell script can't change the value of a variable, because it runs in the sub-shell 
+-to get around the shell provides a command '.' (dot) that executes the commands in a file in the current shell, rather than in a sub-shell 
+
+    . script1               - execute in the current shell, where it can set that shells variables 
+
+-the '.' (dot) command only superficially executes the script - it actually just reroutes the current shells stdin & reads in the file
+    this means you dont need execute permissions to run the script when you use '.' (dot) 
+-unfortunately scripts run with '.' (dot) commands cannot take command line arguments 
+
+-the export command makes the value of a variable accessible to its subshells (the book mentions no way of making a subshell variable accessible to the parent)
+
+    x=hello 
+    export x 
+    sh 
+    echo $x
+
+______________________________________________________
+
+there's supposed to be syntax for redirecting stdin, stdout, & stderr using numbers, but I haven't gotten it to work yet: 
+
+    time wc <filename> >wc.out 2>time.out           - supposed to redirect stderr into time.out (time outputs to stderr, so time.out should contain times output)
+    time wc <filename> >both.out 2>&1               - supposed to merge stderr into the stdout stream (so both.out should contain output from time and wc) 
+
+-you are also supposed to be able to use 1>&2 to merge stdout into the stderr stream (perhaps to prevent it from disappearing down a pipe) 
+
+-the idea of a here document is that input can be contained within the shell script, not routed into it:
+
+    grep "$*" <<term 
+    <giant dictionary>                  - dictionary input defined within a script that searches the dictionary 
+    term 
+
+-apparently the shell substitutes for $, `...`, and \ in a here document - unless the terminating string is quoted or backslashed, 
+    inwhich case the here document is taken literally:
+
+    <<'term'
+    ... 
+
+    <<\term2 
+    ... 
+
+______________________________________________________
+
+-the shell has control flow statementsn like a typical programming language 
+
+-looping over a set of files is a common operation. this is one of the few control flow operations that are often done at the command line: 
+
+    for <var> in <file1> <file2> ... 
+    do 
+        <commands> 
+    done
+
+    for <var> in <file1> <file2> ...; do <commands>; done 
+
+-be careful not to use for if the command already supports multiple files 
+-note the difference between the following: 
+
+    for x in *; ...             - loops over all files in current directory 
+    for x in $*; ...            - loops over all arguments to the shell file 
+
+------------------------------------------------------------------------------------
+------------------------------------CHAPTER 4---------------------------------------
+------------------------------------------------------------------------------------
+
+-filters are a large class of UNIX programs that take input, transform it, and produce output. They can be pieced together in streams 
+-sed & awk are general purpose filters. 
+-sed & awk both follow a programming pattern similar to grep. They scan files in sequence looking for a pattern & taking an action: 
+
+    program <pattern-action> <filenames> 
+
+-sed is derived from ed (the UNIX editor). it takes a 'program' of editor commands and streams the files past them, applying the commands to the files 
+-awk includes arithmetic, variables, built in functions, and is vaguely similar to C
+
+______________________________________________________
+
+    ls | sort -f                    - sort files regardless of case 
+    ls -s | sort -n                 - sort with smallest files first 
+    ls -s | sort -nr                - sort with largest files first 
+
+-sort normally examines the entire line, but it can be told to target a specific field in the line using the +<number> syntax: 
+
+    ls -l | sort +4n                - sort by byte count (the 5th column), largest files first
+    ls -l | sort +0                 - sort by the first column 
+
+-sort can take multiple keys: 
+
+    sort +0f +0 -u <file>           - first sort regardless of case, then for any matching lines sort them by case, then discard any remaining duplicates
+
+-the u option discards duplicates, returning only unique lines 
+
+-the o option specifies a file for the output. This is useful if the file is also the input, apparently (though it seems the same as io redirection, maybe more efficient) 
+
+    sort file1 -o file1
+
+-the uniq command reads a file and discards adjacent duplicates - useful for eliminating duplicate whitespace: 
+
+    uniq "Git Essentials"           - eliminates duplicates from the file - eliminates similar whitespace, but doesn't work on varying whitespace
+
+-the comm command takes 2 sorted files (they have to be presorted) and prints in columns: lines only in file1, lines only in file2, lines in both files
+
+    sort file1 -o file1; sort file -o file2
+    comm file1 file2 
+    comm -12 file1 file2            - options 1, 2, 3 remove that column from the output. this will only output lines common to both 
+
+-the tr command translates characters in its input & outputs them. the most common use of tr is in case conversion: 
+
+    tr "A-Z" "a-z" < inputfile > outputfile             - translates all uppercase to lowercase. use double quotes - I've had strange behavior with single quotes  
+
+-the dd command copies stdin to stdout, aggregating multiple reads of data into condensed blocks for the output (dd is an old tape storage mechanism)
+-in modern times dd is useful in its ability to take the first N bytes of a stream, to overwrite or truncate a file at any point in the file 
+    (you can also use the truncate command for this), and to seek in a file. it's also suitable for handling binary data
+
+-with pipes the shell will allow you to chain multiple lines of input: 
+
+    ls | 
+    sort -f             - pipe used to separate commands across multiple lines
+
+______________________________________________________
+
+-ed is the old UNIX text editor, and is very primitive 
+-the only reason to understand ed is the fact vim, sed, the ex line editor, and grep were significantly influenced by ed 
+-the following sessions demonstrate eds usage: 
+
+// error messages 
+    ed                          - start up ed 
+    b                           - there is no b command, so you get an error 
+    ?
+    h                           - initially errors ar eonly presented as ?, but typing h will list an error description 
+    Unknown Command 
+    H                           - H will tell ed to always print error messages 
+    b 
+    ?
+    Unknown Command 
+
+// quitting 
+    q 
+    ? 
+    Warning: buffer modified
+    q                                           - q will prompt you if you have unsaved changes. If you type q a second time it will quit 
+
+    Q                                           - Q is a force quit 
+
+// command prompt 
+    ed -p$:                                     - p sets the symbol for a command prompt in ed. you can toggle it on and off with P 
+
+// basic text input     
+    $:a                                         - a, begin text input at the current line (the default behavior)
+    <lines of input text>
+    .                                           - . on its own line, end input  
+    
+    $:p                                         - p, print the current line
+    $:n                                         - n, print the current line & its line number 
+
+    $:1                                         - move to the specified line 
+    $:1n                                        - run the command at the specified line & move to that line (usually). this works with many commands 
+    $:.n                                        - . explicitly states to use the current line
+
+    $:c                                         - c, overwrite the current line 
+    <lines of input text>
+    .
+
+    $:2d                                        - d, delete line 
+    $:1,2j                                      - j, join lines 
+
+// ranges 
+    $:2,4n                                      - print lines 2 to 4 
+    $:1,$n                                      - all lines
+    $:,n                                        - all lines (shorthand syntax)
+    $:.,6n                                      - current line to line 6. note: many of these commands also change your current line 
+    $:.,$n                                      - current line to last line
+    $:-1,+1n                                    - previous line to next line (+/- specify relative lines)   
+
+    $:4kx                                       - k followed by any lowercase letter (x in this case) marks a line 
+    $:'xn                                       - you can then refer to the line using 'x in this case
+
+// moving & copying 
+    $:1,3m$                                     - move a line or range of lines to after a target line with m 
+    $:1t1                                       - copy a line or range of lines to after a target line with t
+
+// regex's 
+    $:g/<regex>/p                               - g operator selects lines using classical regex's. this command prints out the selected lines (greps precursor)
+    $:g/<regex>/n 
+    $:v/<regex>/n                               - v operator inverts the command, selecting lines that don't match the regex 
+    $:g/<regex>/m$                              - the operators following the regex can be anything. here we move the matching lines to the end of the file 
+
+// searching 
+    $:/<regex>                                  - move to the first matching line after your current line 
+    $:?<regex>                                  - move to the first matching line before your current line 
+
+// substituting 
+    $:1,3s/<regex>/x                    - substitute the first occurrence of <regex> with x (or any letter). works for a line, a range of lines, or all lines 
+    $:1,3s/<regex>/x/g                  - adding /g at the end substitutes all occurrences in the line, not just the first occurrence 
+
+// reading and writing 
+    $:w <filename>                      - write the current buffer to a file 
+    $:w                                 - after having written to a file once, you can omit the filename for the rest of the session 
+    $:1,3w <filename>                   - w can also be prefixed with a range to only write those lines 
+
+    $:W <filename>                      - W appends to the file instead 
+
+    $:r <filename>                      - read the contents of a file, inserting after the current line 
+    $:$r <filename>                     - read the contents of a file, inserting at the end of the file 
+
+    $:e <filename>                      - e or E just loads the file, overwriting the contents of the current buffer
+
+______________________________________________________
+
+-the stream editor sed is derived from ed (UNIX editor). many of seds commands are based on eds 
+-sed is like a series of filters. It goes through the files line by line and applies the commands in order
+-note: sed does not alter the original file, it simply outputs a new one
+-sed also prints the lines it matches by default
+-you must use a separate file as the output file - do not use the input file
+
+    sed <commands> <file1> <file2> ... > temp_output 
+
+-sed commands should be surrounded in single quotes to protect the metacharacters
+-the s command substitutes one set of chars with another: 
+
+    <commands> = s/<regex>/<replacementregex>/<flags>
+
+    who am i | sed 's/ .*//'        -replace the first blank & everything following it with nothing 
+    who | sed 's/ .*  / /'          -replace the first blank & everything following it, up until 2 blanks, with just a blank
+
+-you can prefix a line matching pattern to the commands 
+
+    /<lineregex>/<commands>/
+
+    sed '/./s/-/##/' < "Git Essentials" > temp1         -the /./ only matches lines that start with an alphanumeric char
+
+-preceding the command with ! will cause the command NOT to run if the line matching prefix pattern is matched
+-carrot (^) matches the start of a line, dollar ($) matches the end of a line. ^$ matches lines with no characters 
+
+    sed '/^$/!s/^/##/' < "Git Essentials" > temp1       -insert ## at the start of every line, except if the line is empty 
+
+-multiple commands to sed must be on separate lines: 
+
+    sed '/s/-/++/
+        3q'                                             - 3q here means operate on the first 3 lines and then quit
+
+-you can also put sed commands in a file and execute them: 
+
+    sed -f <commandfile> <file1> <file2> ... 
+
+-sed commands overlap with ed commands in many ways: 
+
+    sed '/<lineregex>/q'                          - print up until <pattern> is found, then quit 
+    sed '/<lineregex>/d'                          - delete every line that contains <pattern>
+
+-you can disable the default printing with -n, and you can then reenable it for specific lines with the p command (what grep does): 
+
+    sed -n '/<lineregex>/p' 
+    sed -n '/<lineregex>/!p'                      - print lines not matching the pattern 
+
+-\n doesn't work for newline, but \ followed by pressing enter does:
+
+    sed 's/$/\
+        /'                      -insert a newline after each line - strange sed syntax
+
+-you can also specify a range of lines, similar to ed: 
+-it's not clear from the book, but it looks like the syntax for a regex is to surround it with /'s
+
+    sed -n '20,30p'             - print lines 20 to 30 
+    sed -n '1,/^$/p'            - print lines 1 up until the first empty line 
+    sed -n '/^$/,/^end/p'       - print from the first empty line up until a line starting with the word 'end' 
+
+-unlike ed, sed does not support relative line numbers (+ and - symbols) 
+-the w command can be used to write to an output file. there is a way to write to multiple output files:
+
+    sed -n '/<lineregex>/w output1                          - writes matches to output1 and non-matches to output2 
+            /<lineregex>/!w output2' <file1> <file2> ... 
+
+-sometimes you must do special things with quotes to get shell variables into the command: 
+
+    ls -t | sed '/^'$1'$/q'                     - list all files newer than the filename specified in the shell variable 
+    ls -t | sed "/^$1\$/q"                      - does the same thing 
+
+-sed is used for simple stream editing tasks like the ones we've shown. it has a simple syntax & can handle arbitrarily long inputs. 
+-sed doesn't remember lines, it just processes them & discards them. It's not equipped to manipulate numbers. It only makes 1 pass. 
+-while there are advanced ways of using sed, awk is more suited for complex stream editing. 
+-while sed is based on a text editor, awk is based on the C programming language 
+
+______________________________________________________
+
+-
+
+page 114, 4.4 awk 
+

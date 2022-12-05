@@ -1,0 +1,30 @@
+the big 3: 
+react, angular, vue 
+
+historically significant: 
+angularJS, backbone, ember ... (I think I'd add jQuery here too)
+
+notable: 
+polymer, reasonML, Preact
+
+rest of the pack: 
+slim.js
+TSERS
+Etch
+cycle.js
+surplus
+AppRun
+DoneJS
+Dojo
+Stem JS
+Vidom
+
+
+additional things to look into: 
+webix
+mithril
+meteor
+
+________ 
+
+to learn in order (2019ish): angular.js, maria, vue.js, node.js, react.js, agility.js, ember.js ->> others

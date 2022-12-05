@@ -1,0 +1,3875 @@
+CHAPTER 1, OLD BOOK:
+-ECMAscript is the name of the javascript standard, it was changed for trademark reasons
+  JScript is what microsoft calls javascript, also for trademark reasons
+
+-the core javascript language doesn't include input/output. 
+  input, output, networking, storage, and graphics are handled by the host environment. usually this is a web browser, but not always.
+-the javascript console is a useful interpreter built into the browser
+-console.log("..."") will output text to the console, useful for debugging 
+-note that javascript and XHTML are case-sensitive, but HTML is not. 
+  when you are typing names of HTML tags, properties, or arguments in javascript type them in lowercase
+
+-javascript treats character returns & other unicode characters in the code as whitespace
+  use \u followed by 4 hex digits to specify a 16bit unicode letter 
+
+========================================================================================
+CHAPTER 1, INTRODUCTION, NEW BOOK 
+========================================================================================
+
+reference material for javascript: 
+  client side: https://developer.mozilla.org 
+  node.js: https://nodejs.org/api 
+
+
+javascript was originally an interpreted language (interpreted by the browser) - though chrome introduced JIT & this revolutionized its performance
+javascripts variables are untyped
+
+ES6 was introduced in 2015, and has since adopted a yearly release cadence - ES2016, ES2017, ES2018, ES2019, ES2020, etc. 
+
+strict mode enforces best practices onto the messy, legacy design of javascript. you add this directive to the beginning of a script or function: 
+  <script> 
+  "use strict";
+  ... 
+  </script>
+
+in ES6 and later the new language features require their syntax to conform to strict mode. 
+  for example, all code within an ES6 class must adhere to strict mode 
+
+javascript doesn't define any input or output functionality, but leaves that to the host environment - a browser or node.js 
+node.js also gives access to the operating system 
+
+to open the javascript console / tools in the browser try: 
+  f12 
+  ctrl+shift+I 
+  command+option+I    <- mac 
+
+you can open the console as a separate window from the browser
+to run a javascript file in the browser add script tags to an HTML file & open it with the browser:
+
+  <script src="filename.js"></script>
+
+you can open an HTML file in the browser with a URL specifying its path on the file system: 
+  file:///Users/ian/index.html 
+
+node.js also can launch a javascript interpreter or run a file: 
+
+  node                <- opens interpreter 
+  node filename.js    <- runs a javascript file 
+
+basic javascript syntax: 
+
+  x = true;         // true / false are lowercase 
+  x = null;         // null means the lack of a value 
+  x = undefined;    // undefined is a type, it means a variable has been declared but no value assigned 
+
+  obj = {
+    p1: null,
+    p2: 17 
+  };
+  points = [
+    {x: 0, y: 0}, 
+    {x: 1, y: 1}
+  ];
+
+ES2020 added support for optionals. they returned undefined if no property is there: 
+
+  obj.p3?.value1    // undefined
+
+  let primes = [2, 3, 5, 7, 11];
+  primes.length;                      // 5 
+
+  let count = 0; 
+  count++;
+  count += 2; 
+
+  let count2 = 2; 
+  count === count2;                   // this is the strict equality operator. unlike == it doesn't do type conversion when making comparisons 
+  count !=== count2; 
+
+  function double(x) {
+    return x * 2; 
+  }
+
+  let square = function(x) {          // first class function 
+    return x * x; 
+  }
+  square(17);
+
+// ES6 added arrow functions, a shorter way of defining functions. usually used with closures: 
+
+  const square2 = x => x * x;         // left of arrow is the input, right is output 
+
+  cat = {
+    legs: 4,
+    color: "orange",
+    noise: "MEOOWW!!"
+  }
+  cat.meow = function() {             // you can add methods to objects like this
+    return this.noise                 // this references the object itself (though there's weirdness involving the delegate chain that can happen)
+  }
+  cat.meow(); 
+
+  array1 = [1, 2, 3, 4, 5, 6];
+  let sum = 0; 
+  for(let x of array) {               // syntax of a ranged for loop 
+    sum += x; 
+  }
+
+  let x, y = 10;                      // declare uninitialized property / two properties on same line 
+  for(x = 0; x <= y; x++) {           // typical for loop
+    x += y;
+  }
+
+// ES6 added support for classes 
+
+  class Point { 
+    constructor(x, y) {       // constructor function 
+      this.x = x;             // the properties will be added to the objects instance 
+      this.y = y; 
+    }
+    distance() {
+      return Math.sqrt(this.x * this.x + this.y * this.y);
+    }
+  }
+  
+  let p = Point(1, 6); 
+  p.distance(); 
+
+========================================================================================
+CHAPTER 2, LEXICAL STRUCTURE
+========================================================================================
+
+variable names may begin with a letter, _, or $ 
+
+some noteworthy reserved words to avoid using in names: 
+
+  debugger 
+  set 
+  enum 
+  implements 
+  interface 
+  package 
+  arguments 
+  eval 
+  Error 
+  Infinity
+  JSON
+  Number
+  RegExp
+
+ES6 supports 32-bit unicode: 
+
+  console.log("\u{1F600}");    // outputs smiley emoji 
+
+javascript treats a newline as a semicolon only if the code on the next line cannot be interpreted as a continuation of the current line. 
+  statements that begin with: ( [ / + -  all can be interpreted incorrectly if you don't use semicolons:
+
+    var y = x + f
+    (a+b).toString()           // without semicolons, the f is interpreted as preceding the (a+b)
+
+some programmers actually place preceding semicolons before such statements to prevent code modification from introducing an error:
+  ;[x,x+1,x+2].forEach(console.log) 
+
+in arrow functions, the arrow must be on the same line as the parameters 
+
+========================================================================================
+CHAPTER 3, TYPES VALUES AND VARIABLES 
+========================================================================================
+
+some noteworthy types included in javascript: 
+  Set 
+  Map (a dictionary) 
+  RegExp 
+  Error (and its subtypes)
+
+all the types are implemented as delegate objects and can be manipulated at runtime 
+the javascript interpreter does automatic garbage collection 
+
+object types are mutable and primitives are immutable
+
+javascript has loose type conversion
+== and != do type conversions automatically, but for strict typing use === and !== (best practice is to just always use these)
+
+constants are declaled with const; let and var are both variables 
+
+ES6 added support for binary and octal literals 
+  0b1010 
+  0o777 
+
+ES6 added ** as the exponentiation operator 
+
+the Math object also has a bunch of useful properties: 
+
+  Math.round(0.6)
+  Math.abs(-5)
+  Math.ceil(.6)
+  Math.floor(.6)
+  Math.max(x, y)
+  Math.min(x, y)
+  Math.random()         <- random number 0 <= x < 1 
+  Math.sqrt(3)
+  Math.pow(3, 1/3)      <- the cube root
+  Math.sin(0)
+  Math.log(100)
+  Math.LN(10)
+  Math.PI 
+  Math.E 
+
+ES6 added these to Math: 
+  Math.fround(x)        <- round to nearest 32-bit float number 
+  Math.sign(x)          <- -1, 0, or 1 for arguments <, ==, or > 0 
+
+javascript doesn't raise errors when overflow or division by zero occurs, it just returns Infinity 
+if the number is too close to 0 javascript returns 0, or -0 if the number was negative 
+NaN (not a number) is returned for 0/0, square rooting a negative, Infinity/Infinity, and when trying to do math on non-numeric values 
+
+ES6 added these to the Number object: 
+  Number.isNaN(x)           <- checks if the number is NaN 
+  Number.isFinite(x)
+  Number.isInteger(x) 
+  Number.isSafeInteger(x)   <- is x an integer -(2^53) < x < 2^53 
+
+NaN has a strange property - it does not compare as equal to anything, not even another NaN 
+  thus you cannot write x === NaN to determine if x is NaN. instead you must use isNaN(x), Number.isNaN(x) or x != x 
+
+isNaN() is an older global function, it also returns true if the argument is not a number and can't be converted to one 
+isFinite() is another older global function, it also returns true if the argument is or can be converted to a finite number 
+-0 and +0 compare equal to one another 
+
+ES2020 added a BigInt type, an integer which can have millions of digits 
+
+  let bigInt1 = 1234567890n;              // n denotes a BigInt literal 
+  let bigInt2 = BigInt("1234567890");
+
+  let bigInt3 = bigInt1 + bigInt2;        // + - * / % ** all work with BigInt 
+  bigInt3 = bigInt3 * 2n; 
+
+you cannot mix BigInts with regular Numbers in arithmetic operations, but you can in comparison operations 
+  also, none of the Math functions accept BigInts 
+
+javascript strings are UTF-16. 
+UTF-16 uses surrogate pairs - pairs of UTF-16 characters - to specify characters outside the normal range 
+traditional javascript string functions treat all characters at 16-bit, and do not account for possible surrogate pairs (unlike Swift) 
+ES6 made strings iterable - you can use for/of loops to loop over them and do operations. this iteration is compatible with surrogate pairs. 
+
+single line strings can span multiple lines using backslash \ 
+
+  let saying = "christmas day\ 
+                will come again\
+                if we remain vigilante"; 
+
+ES6 interprets multiline strings without backslash \ as having \n inserted at the ends: 
+
+  let twoLineString = "this string will have a newline 
+                       in the middle of it"; 
+
+typically when combining HTML and javascript you use single quoted strings in one and double quoted strings in the other 
+
+  <button onclick='alert("Thank you")'>click</button> 
+
+basic string methods: 
+
+  let string1 = "moOoOo!)"; 
+
+  string1.length                        // 4 
+  string1.substring(1, 3);              // oOo
+  string1.slice(1, 3);                  // oOo same thing 
+  string1.split("O");                   // ["mo", "o", "o!"]
+
+  string1.indexOf("O");                 // 2 - first O 
+  string1.indexOf("O", 3);              // 4 - first O after index 3 
+  string1.indexOf("z");                 // -1 
+  string1.lastIndexOf("O");             // 4 
+
+  string1.startsWith("mo");             // true 
+  string1.endsWith("z");                // false 
+  string1.includes("oOoO");             // true 
+
+  string1.replace("oOoOo", "OoOoO");    // "mOoOoO!"
+  string1.toLowerCase(); 
+  string1.toUpperCase();
+  string1.normalize();                  // unicode NFC normalization - ES6 
+  string1.normalize("NFD");             // NFD normalization. also "NFKC", "NFKD" 
+
+  string1.charAt(0);                    // "m" 
+  string1.charAt(s.length-1);
+  string1.charCodeAt(0);                // returns a 16 bit number for the UTF-16 code 
+  string1.charPointAt(0);               // ES6, works with UTF-16 surrogates 
+
+  string1.padStart(3);                  // "   moOoOo!"
+  string1.padEnd(3);                    // "moOoOo!   "
+  string1.padStart(3, "*");             // "***moOoOo!"
+  string1.padEnd(3, "*");               // "moOoOo!***"
+
+  string1.trim();
+  string1.trimStart(); 
+  string1.trimEnd(); 
+
+  "*".repeat(5);                        // "*****"
+
+  string1[0];                           // "m" 
+  string1[string1.length-1];            // "!"
+
+
+
+ES6 added template literals, which are backticked strings that can conotain executable javascript codoe (similar tot shell backticked strings): 
+
+  let name = "Ian";
+  let templateString = `hello ${ name }`;       // hello Ian 
+                                                // everything within ${ } is evaluated 
+
+a regex literal is text between a pair of forward slashes. letters appearing after the 2nd slash can modify the pattern 
+
+  /[1-9][0-9]*/
+  /^HTML/                   match HTMTL at the start of a string 
+  /\bjavascript\b/i         match javascript as a word, case insensitive 
+  /\d+/g                    match all instances of one or more digits 
+
+  let text = "testing: 1, 2, 3";
+  let regex_pattern = /\d+/g;
+  pattern.test(text)              // returns true 
+  text.search(pattern)            // returns 9, position of the first match 
+  text.match(pattern)             // ["1", "2", "3"]
+  text.replace(pattern, "#")      // "testing: #, #, #"
+  text.split(/\D+/)               // ["", "1", "2", "3"]    split on non digits
+
+
+any javascript value can be converted to a boolean. 
+these are all converted to false automatically: undefined, null, 0, -0, NaN, ""
+all other values are converted to true 
+
+undefined represents a deeper kind of absence than null - it's the value of uninitialized variables and properties that don't exist 
+undefined is also returned by functions that don't actually return a value 
+undefined is also the value of function parameters for which no arguments are passed
+
+undefined represents system-level, unexpected, or error-like absence whereas null representa program-level, normal, or expected absence 
+
+despite these differences, null and undefined both indicate absence and are often used interchangeably. 
+== considers them equal but === does not 
+accessing a property or method of an undefined or null value throws a TypeError 
+
+Symbols were added in ES6 to serve as non-string property names. Previously all properties were named with strings 
+
+  let key = Symbol("name")
+  let o = {};
+  o[key] = "Ian";
+  console.log(o[key]);          // Ian 
+
+Symbol() is how you create symbols. It takes an optional string value and returns a unique Symbol value that includes the string.
+Symbol() never returns the same symbol twice, even if the input string is the same. 
+  this means you never have to worry about overwriting existing properties by using a property name that's already used. 
+In practice Symbol() is used to extend the javascript language - you can safely define new properties without breaking old code 
+
+objects & arrays are reference types, primitives are value types. 
+objects & arrays are compared by reference, not by value, so two objects or two arrays with identical properties will not evaluate as equal 
+
+in general javascript is loosely typed & does alot of automatic type conversion
+
+  10 + " objects";      "10 objects" - 10 is converted to a string & concatenated 
+  "7" * "4";            28 
+
+interesting type coercions table: 
+  value             | to string     | to number     | to boolean 
+  undefined                           NaN 
+  null                                0 
+  ""                                  0               false 
+  "abc"                               NaN             true 
+  [] (empty array)    ""              0               true 
+  [9]                 "9"             9               true 
+  ['a']               uses join()     NaN             true 
+
+generally just use ===, it doesn't do any type conversion 
+
+some interesting == comparisons: 
+
+  null == undefined       // true 
+  "0" == 0                // true 
+  "0" == false            // true 
+
+you can also do explicit type conversion to make the code clearer: 
+
+  Number("3")
+  String(false)
+  Boolean([])
+
+  816.toString()              // any value other than null and undefined has a toString() method, which converts it to a string (same as String())
+
+new creates an instance of a user-defined object or of a built-in object. 
+when invoked on these primitives it actually returns the object wrapper around the primitive: 
+
+  let num = new Number("3");          // returns the primitive wrapped with its object type.
+                                      // this is considered old practice & best avoided
+
+certain operators perorm type coercion & are sometimes conveniently used for this purpose. this looks like bad practice, though: 
+
+  x + ""        // returns String(x) 
+  +x            // Number(x) 
+  x-0           // Number(x)
+  !!x           // Boolean(x) 
+
+Number's toString() takes an optional parameter specifying the base you want the string returned as: 
+
+  let n = 17; 
+  let binary = "0b" + n.toString(2);            // "0b10001"
+  let octtal = "0o' + n.toString(8);            // "0o21"
+  let hex = "0x" + n.toString(16);              // "0x11"
+
+Number's toFixed() converts to a string with a specified number of digits after the decimal 
+
+Number() only converts base-10 strings without trailing characters or leading whitespace. 
+If you need to convert strings with any of these characteristics use parseInt() or parseFloat(): 
+
+  parseInt("3 blind mice");         // 3
+  parseFfloat(" 3.14 meters);       // 3.14 
+  parseInt("-12.34");               // -12 
+  parseInt("00FF");                 // 255 
+
+  parseInt("11 blind mice", 2);      // 3 - parseInt() takes a second parameter specifying the base of the string. 
+
+javascript has complicated object-to-primitive type coercion algorithms. objects can have a variety of primitives defined within them 
+the two main algorithms are prefer-string and prefer-number. 
+
+object to boolean is simple though - all objects convert to true, including the empty object. 
+  infact, even the wrapper object Boolean(false) converts to true - very dubious 
+
+there are two important object-conversion functions: toString() andd valueOf(). 
+  both of these are used by the prefer-string and prefer-number algorithms 
+
+the default toString() and valueOf() methods returns uninteresting results for objects. 
+javascript built in classes (such as Array, Function, Date, RegExp, etc.) define their own custom implementations of these, which are more useful: 
+
+  ({x:1, y:2}).toString();                // "[object Object]" - default implementation
+  (function(x) { f(x); }).toString()      // "function(x) { f(x); }
+  let d = new Date(2020, 0, 1);
+  d.toString()                            // "Wed Jan 01 2020 00:00:00 GMT-0800 (Pacific Standard Time" 
+
+  let d = new Date(2010, 0, 1);
+  d.valueOf();                            // 1262332800000 - returns the miliseconds since Jan 1, 1970 
+
+valueOf() is vaguely defined but supposed to return a primitive value that represents the object. 
+  for some objects (Arrays, Functions, RegExp) where there isn't a good primitive representation it just returns the object itself, 
+  and this is the default implementation.
+
+prefer-string first uses toString(), and if that doesn't work tries valueOf(), otherwise throws a TypeError. 
+prefer-number first tries coercing the result of valueOf() to a number, then it tries toString()'s result to a number, then throws a TypeError 
+
+prefer let over var in modern javascript. 
+try to give variables initial values, otherwise they will be undefined by default, and this can lead to mistakes / weird behavior
+
+  let num = 22;
+  let const = "HELLO_WORLD";
+
+variables declared at the top level have global scope 
+in Node (server-side JS) global variables only have file scope 
+in client-side JS globals are accessible throughout the HTML document, in any script tags that execute after the declaration
+
+javascript variables themselves are not typed. it's the objects they point to that have types: 
+
+  let i = 10; 
+  i = "nine";           // legal 
+
+let has block scope like you'd expect
+var has function scope - it's scoped at the level of the containing function, no matter how deeply nested they are in the function 
+
+global var's are implemented as properties of the global object. 
+  the global object can be referenced with globalThis 
+
+  var x = 2;              // global var 
+  globalThis.x = 2;       // these two statements are the same 
+
+global let's and const's are not part of the global object 
+
+it is legal to declare the same var multiple times. and this happens often, because var has function scope, so watch out. 
+  this commonly happens if you're working with multiple loops in a function. 
+
+var's are hoisted to the top of the function scope and given an undefined value until the declaration executes. 
+
+without strict mode, if you assign to a variable that hasn't been declared, it'll be declared as a global - no matter where this happens. 
+  avoid this confusion and use strict mode
+
+ES6 introduces destructuring assignment, where you can assign an array or object to a set of variables at once: 
+
+  let [x,y] = [1, 2];   // same as let x=1, y=2
+  [x, y] = [x+1, y+1];  // same as x = x+1; y = y+1
+
+  let obj = {x:1, y:2}
+  for(const [key, value] in Object.entries(obj)) {      // Object.entries returns an array of key-value pairs, 
+    ...                                                 // then destructuring receives them into [key, value]
+  }
+
+extra variables on the left of destructuring assignment are set to undefined, and extra variables on the right are ignored 
+you can also include extra commas to skip values on the right: 
+
+  [,x,,y] = [1, 2, 3, 4];       // x = 2, y = 4 
+
+you can also collect all the remaining values into the last variable using the spread operator (...) 
+
+  [x, ...y] = [1, 2, 3, 4];       // x = 1, y = [2, 3, 4]
+
+you can also destructure nested arrays: 
+
+  [x, [y, z]] = [1, [2, 3]]; 
+
+destructuring doesn't require an array on the righthand side, any iterable object will work: 
+
+  [x, ...y] = "Hello";        // x = "H", y = ["e", "l", "l", "o"]
+
+you can also destructure objects with a special syntax. you name the properties you want: 
+
+  let {r, g, b} = {r: 25, g: 37, b: 201};
+  const {sin, cos, tan} = Math              // assigns Math.sin, Math.cos, and Math.tan to 3 variables 
+
+there's a more complicated syntax for assigning properties to variables with different names, but it's probably not worth the extra complexity:
+
+  const {cosine: cos, tangent: tan} = Math                // const cosine = Math.cos, tangent = Math.tan
+
+========================================================================================
+CHAPTER 4, EXPRESSIONS AND OPERATORS
+======================================================================================== 
+
+properties appearing at the top level are looked up on the global object, and if they don't exist there a ReferenceError is thrown 
+
+undefined elements can be included inside array literals, though its bad practice. indices out of range also return undefined: 
+  let arr = [1,,3,4,,,7];
+
+in ES6 you can nest objects: 
+
+  let rectangle = {
+    upperLeft: { x : 2, y : 2 },
+    lowerRight: { x : 5, y : 7 }
+  };
+
+ES2020 added optionals. accessing properties on null or undefined via optional guards against a TypeError
+instead, the expression evaluates to undefined without any attempt to access the property. 
+since this is ES2020 make sure browsers support it, look into transpiling if necessary: 
+
+  let obj = { x: null };
+  obj.x?.y                              // doesn't throw TypeError 
+  (obj.x?.y).z                          // will throw since you circumvented the chained optional 
+  obj.x?.y.z                            // will not throw since it goes through the chained optional which short-circuits
+
+  let obj2 = { b {} };
+  obj2.b?.c?.d                          // doesn't throw - b.c is undefined and short circuits the optional 
+  obj2.b?.c                             // does throw
+
+
+  function sendAnalytics(value, logger) {
+    if (logger) {                       // you used to have to guard against null arguments 
+      logger();
+    }
+    analyticsClient.send(value);
+  }
+
+  function sendAnalytics(value, logger) {
+    logger?();                              // now with ES2020 you can just invoke the callback argument as an optional 
+    analyticsClient.send(value);            // but note this only checks the value isn't null or undefined, it doesn't verify it's a function 
+  }
+
+use new to invoke constructors: 
+
+  let agg = new DataAggregator(local, remote, ccm); 
+
+you can omit the constructors parenthesis if it takes no arguments: 
+
+  let obj = new View
+
+some interesting javascript operators: 
+
+  delete            // remove a property 
+  typeof            // determine type of operand 
+  void              // return undefined value 
+  **                // exponent 
+  <<                // shift left 
+  >>                // shift right with sign extension 
+  >>>               // shift right filling in left with zeros 
+  instanceof        // test whether instance of a class 
+  in                // test whether property exists 
+  ??                // optional syntax, chooses 1st defined operand 
+
+the precedence of ?? relative to || and && is not defined, and you're required to explicitly use parenthesis when using ?? in boolean expressions 
+the same is true when using ** in combination with the negative sign operator 
+
+  -(3**2)         // required 
+
+all numbers in javascript are floating point, there is never truncation that occurs automatically  
+
+modulus also works with floating point numbers:
+
+  6.5 % 2.1       // 0.2
+
+with +, if either operand is a string or an object that converts to a string, the operation is concatenation 
+
+  true + true           // 2
+  1 + {}                // "1[object Object]"
+  2 + null              // 2 
+  2 + undefined         // NaN 
+
+for comparisons with ===: 
+
+  if both values are null or undefined, they are equal 
+  NaN values are not equal 
+  0 and -0 are equal 
+  javascript does not do any unicode normalizations, so two identical strings encoded differently are not equal 
+  two objects with the same properties are not equal
+  two references to the same object instance are equal 
+
+for comparisons with == (which does type conversion): 
+
+  if one value is null and the other is undefined, they are equal (different than ===)
+  true == 1 
+  1 == "1"
+  objects are converted using the toString() and valueOf() method, then compared (different than ===) 
+
+
+for less than / greater than comparisons: 
+
+  "11" < 3            // false - they prefer to type convert to numbers, not strings 
+  3 < NaN             // false - NaN comparisons return false 
+
+
+the in operator expects a lefthand operand that can be used as a key - a string, symbol, or value convertible to a string.
+it also expects a righthand value that's an object.
+it evaluates to true if the object has a property with the key name: 
+
+  let point = {x: 1, y: 2}
+  "x" in point;               // true 
+  "toString" in point;        // true - object inherents toString() 
+
+  let arr = [7, 8, 9];        // an array with indices 0, 1, and 2 
+  "0" in arr;                 // true - array has an index "0" 
+  1 in arr;                   // true - numbers are converted to strings 
+  3 in arr;                   // false - no index 3 
+
+
+the instanceof operator expects a lefthand operand that's an object and a righthand operand that identifies a type of object 
+
+  let d = Date(); 
+  d instanceof Date;          // true 
+  d instanceof Object;        // true 
+
+instanceof climbs up the prototype chain until it finds a matching class. this is javascripts inheritance mechanism (i.e the type delegation chain).
+to evaluate obj instanceof type, javascript evaluates type.prototype and then looks for that value in obj's prototype chain.
+
+the && and || operator actually return the last expression they evaluate: 
+
+  obj && obj.x                // returns obj.x if obj isn't null; otherwise returns null 
+
+you can do some strange tricks with short-circuit evaluation, though it's probably not best practice: 
+
+  if (a === b) { 
+    execute(); 
+  }
+  (a === b) && execute();       // same thing 
+
+  let max = maxWidth || config.maxWidth || 500;       // assigns the first truthy (non-zero) value to max. but there's a danger...
+                                                      // if maxWidth or config.maxWidth are 0 this will not return that value, so in ES6 just use ??
+
+unlike && and ||, the ! operator returns the evaluation of the boolean expression 
+
+the assignment operator (=) returns the righthand value  
+
+  let b = 0, a = 1;
+  (a = b) === 0         // true 
+
+when multiple = are used in an expression they're evaluated right to left: 
+
+  a = b = c = 0;        // sets all values to 0 
+
+javascript has the eval() function that can execute strings of javascript that are created at runtime 
+but this is a security risk. many web browsers disable the use of eval by setting the "Content-Security-Policy" header. 
+eval() is rarely used but in very specific cases might be needed 
+eval() runs in execution context of the surrounding local environment 
+  variables & functions can come from the surrounding code, & changes effect the surrounding code 
+  though it does have its own local scope, so variables declared with let or const within eval won't show up in the surrounding environrment 
+
+there's difficulty in optimizing eval(). part of the reason is you can't know whether eval() was assigned to a variable and then executed: 
+
+  let eval2 = eval();
+  eval2(); 
+
+for this reason, any invokation of eval() by another name operates at the global scope, not the local scope inwhich it was called. 
+  this allows for local stack optimizations of eval() called under normal conditions 
+
+in strict mode eval() does a local eval with a private environment. here eval can query and set surrounding variables, 
+  but it can't define new variables or functions. 
+  strict mode also disallows overwriting eval() with a new value, and you can't create variables / methods named eval (this improves optimization)
+
+the ?? operator skips undefined or null, but not falsey values 
+
+  let x = 0; 
+  let y = x ?? 1;         // y is 0 
+
+typeof is a unary operand which can be placed before a value to check its type. it returns a string 
+
+  if (typeof value == "string") {
+    ... 
+  }
+
+  value of operand        |  returned string 
+  --------------------------------------------
+  undefined               |  "undefined"
+  null                    |  "object"             // to distinguish between null & objects you must explicitly test for null, unfortunately 
+  true or false           |  "boolean"
+  Number or NaN           |  "number"
+  any BigInt              |  "bigint"
+  any string              |  "string"
+  any symbol              |  "symbol"
+  any function            |  "function"
+  any nonfunction object  |  "object"             // returns this for all objects regardless of class 
+
+based on the return values it's best to use typeof with primitives, not objects 
+  to distinguish objects from one another there are better techniques, like the instanceof operator, the class attribute, or the constructor property 
+
+
+the delete operator attempts to delete an object property or array element 
+
+  let obj = {x: 1, y: 2};
+  delete obj.x; 
+  x in obj;           // false, property is deleted 
+
+  let arr = [1, 2, 3]; 
+  delete arr[1];   
+  1 in arr;           // false    
+  arr.length;         // still 3 
+
+a deleted property is not merely set to undefined, it ceases to exist. 
+  attempting to read it will throw an error, but you can test for it with the in operator 
+deleting an array index leaves a hole in the array. the resulting array is called a sparse array. 
+non-configurable properties can't be deleted 
+in strict mode delete will throw an error if you attempt to delete something other than a property that's configurable 
+
+await was introduced in ES2017, see CH13 for full details 
+await expects a promise as its operand 
+await is only legal within functions that have been declared asynchronous with the async keyword 
+
+the void operator appears before a single operand, which may be of any type. it evaluates the operand then discards the value and returns undefined. 
+  the author feels this operand is obscure and he can't think of a good use case for it 
+
+the comma operator (,) evaluates its left operand, evaluates its right operand, then returns the right operand 
+comma is most often used in initializations, or in loops to initialize multiple loop variables 
+
+  i=0, j=1, k=2;          // so this evaluates to 2 after everything is initialized
+
+  for(let i=0, j=10; i< j; i++, j--) { 
+    ... 
+  }
+
+========================================================================================
+CHAPTER 5, STATEMENTS
+========================================================================================
+
+a semicolon by itself actually executes an empty statement. if you accidentally leave this at the end of a for loop it ends the loop immediately: 
+
+  for(let x = 0; x < 5; x++) ;          // bug, for loop does nothing 
+    i++;                                // executes once 
+
+in a block statement, if there's only one statement to execute, you can omit the parenthesis: 
+
+  if (condition == true) i++; 
+
+  if (condition == true) 
+    i++;
+  
+  if (condition == true) {
+    i++;
+    j++;
+  }
+
+  if (condition1 == true) {
+    i++;
+  } else if (condition2 == true) {
+    j++;
+  }
+
+javascript switch uses fallthrough, so remember to add breaks.
+default is not required, and the language is interpreted, so be more careful with switches than in swift: 
+
+  switch(value) {
+  case 1: 
+    i++;
+    break;
+  case 2:
+    j++;
+    break;
+  default: 
+    k++;
+    break;
+  }
+
+there's the uncommon do/while loop: 
+
+  do {
+    i++;
+  } while (condition == true);            // the loop must always be terminated with a semicolon
+
+you don't always have to initialize a variable in a for loop: 
+
+  function tail(node, value) {                      // returns the tail of the linked list 
+    for(; node.next; node = node.next) {            // traverse while obj.next is truthy 
+      node.value = value 
+    }
+  }
+
+ES6 added the for/of loop. it works with iterable objects (arrays, strings, set, maps, etc.): 
+
+  let data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]; 
+  for (let element of data) {
+    sum += element; 
+  }
+
+note that if you modify the iterable's contents inside the loop it can effect the next iteration
+
+object's aren't iterable by default. 
+if you want to iterate through properties of an object you can use the for/in loop
+
+you can also use for/of with the Object.keys, Object.values, or Object.entries (returns both keys and values) 
+  Object.entries() returns an array of arrays. Object.values / Object.keys return normal arrays 
+  here you can safely modify the original object without effecting the loop: 
+
+  let obj = {x: 1, y: 2, z: 3}; 
+  for(let key of Object.keys(obj)) {
+    ... 
+  }
+
+  let pairs = ""
+  for(let [k, v] of Object.entries(obj)) {
+    pairs += k + v                              // pairs = "x1y2z3"
+  }
+
+strings are iterated in full, complete unicode characters, not the 8 or 16-bit elements that may comprise them 
+
+  for(let letter of "mississippi") {
+    ... 
+  }
+
+sets can be a nice way of getting only unique values 
+
+  func getUniqueWords(sentence) { 
+    let wordSet = new Set(text.split(" "));
+    let unique = [];
+    for(let word of wordSet) {
+      unique.push(word);
+    }
+    return unique
+  }
+
+maps iterator returns key/value pairs: 
+
+  let m = new Map([[1, "one"], [2, "two"]]);
+  for(let [k, v] of m) {
+    ... 
+  }
+
+ES2018 introduced a new type of iterator - an asynchronous iterator - and a for/await loop to go with it (see CH12 for details): 
+
+  async function printStream(stream) {
+    for await (let chunk of stream) {
+      console.log(chunk);
+    }
+  }
+
+of course there's the traditional for/in loop as well, which loops through the enumerable properties of an object. 
+if obj is undefined or null the loop is simply skipped:
+
+  for(let prop in obj) {              // the loop expression could evaluate differently each time if you're changing it in the loop 
+    console.log(obj[prop])
+  }
+
+for/in does not actually enumerate all an objects properties. 
+  it doesn't touch properties whose names are symbols, and it only loops over enumerable properties (CH14) 
+  so properties like the toString() method, which aren't enumerable, are skipped
+
+inherited enumerable properties are also enumerated by for/in. this means you may inadvertently list properties you don't want to 
+  for this reason, when working with objects, people prefer for/of instead 
+
+you can attach a label to a statement and return to it using break or continue 
+
+
+  mainloop: while(token != null) {
+    while(condition == true) {
+      ...
+      continiue mainloop;
+      ...
+    }
+  }
+
+yield is used in generator functions (CH12): 
+
+  function* range(from, to) {
+    for(let i = from, i <= to; i++) {
+      yield i;                              // returns value & pauses the function 
+    }
+  }
+
+the throw keyword throws an exception, like in swift 
+an expression follows the keyword, and its value gets propagated with the exception. it can evaluate to anything you want
+the Error class & its subclasses are used when the javascript runtime throws an exception, and you can use those, but don't have to 
+the Error object carries a name & message 
+
+  function factorial(x) {
+    if (x < 0) {
+      throw new Error("x must not be negative"); 
+    }
+    ... 
+  }
+
+when an exception is thrown the javascript interpreter propagates it to the nearest enclosing catch handler. 
+  if no handler is found the exception is treated as an error and reported to the user 
+
+the finally clause is optional. you can also use try/finally without a catch 
+finally contains cleanup code that's guaranteed to be executed, regardless of whether there was an error or not, or what type of error it was
+even if you return in the try block, finally is still executed 
+
+  try {
+    ...
+    throw new Error("x must not be negative"); 
+    ...
+  } catch(e) {              // the thrown expression, in this case an Error type, comes into catch as a parameter 
+    if (e instanceof NetworkError) {
+      ...
+    }
+  } finally { 
+    connection.close()
+  }
+
+ES2019 makes catch's argument optional. this was done because often you want to catch but not handle the exceptions, just to prevent them from propagating: 
+
+  try {
+    ... 
+    throw "woops"
+    ...
+  } catch {
+    return undefined;
+  }
+
+the with statements runs a block of code as if the properties of a specified object were variables in the scope of that code
+the with statement is deprecated and disallowed by strict mode, because the code inside is difficult to optimize. it'll run slower, but here it is:
+
+  let obj = {x: 1, y: 2};
+  with(obj) {
+    x++;
+    y++;
+  }
+
+ultimate it's just easier to reference the property off the object, also avoiding performance issues, so I'm not gona bother using with  
+
+the debugger statement normally does nothing, but if a debugger is attached its implementation may make use of the debugger statement 
+in practice this statement acts like a breakpoint. you add this to code as needed 
+if you have the developer tools open it's supposed to attach a debugger & this should work - it'll pause and you can print out variables, etc. 
+
+  function f(obj) {
+    if (obj == undefined) 
+      debugger; 
+    ...
+  }
+
+"use strict" is a directive, not a statement. this means it doesn't contain keywords, and it can only appear at the start of a script or function body 
+any code in an ES6 class is automatically strict 
+  this means if all your code is written as modules then it is automatically strict, and you don't need to use the directive 
+
+differences in strict mode:
+  the with statement is not allowed 
+  all variables must be declared. in non-strict mode, assigning a value to an undeclared variable implicitly adds it to the global object
+  standalone functions (not methods) have a this value of undefined. in non-strict the global object is set as the functions this value 
+  when a function is invoked with call() or apply() the first argument is the this value. 
+    in non-strict, undefined or null arguments are replaced with the global object instead, and non-object values are converted to objects 
+  assignment to non-writable properties, or attempts to create new properties on non-existent objects, throw a TypeError (in non-strict it fails silently)
+  code passed to eval() can't declare new variables or functions in the callers scope. 
+  the Arguments object (CH8) in a function holds a static copy of the values passed to the function. 
+    in non-strict the Argument object has "magic" behavior, where elements of the array and named function parameters both refer to the same value 
+  if the delete operator is followed by an unqualified identifier a SyntaxError is thrown. in non-strict the operation does nothing & evaluates to false 
+  an attempt to delete a non-configurable property throws a TypeError 
+  it's a syntax error a function to have multiple parameters with the same name 
+  octal integer literals are not allowed in strict mode apparently 
+  the identifiers eval and arguments are treated like keywords - you aren't allowed to change their value, use them as parameter or function names, etc. 
+  the ability to examine the call stack is restricted. arguments.caller and arguments.callee both throw a TypeError in a strict mode function. 
+    strict mode functions also have caller and callee properties that throw a TypeError when read. 
+
+a function declaration creates a function object and assigns it to the specified name. 
+
+  function area(radius) { 
+    return Math.PI * radius * radius;
+  }
+
+functions in a block are processed before any of the blocks code runs, behaving as if they were 'hoisted' - moved to the top of their scope 
+generator declarations use function* as their keyword 
+
+example of a simple class: 
+
+  class Circle {
+    constructor(radius) {
+      this.r = radius;
+    }
+    area() { 
+      return Math.PI * this.r * this.r; 
+    }
+    circumference() { 
+      return 2 * Math.PI * this.r;
+    }
+  }
+
+the import and export declarations are used to make values defined in one module available in another module 
+a module is a javascript file with its own global namespace. the only way values in one module can be used another is by exporting / importing:
+
+  // geometry/constants.js 
+  const PI = Math.PI;
+  const TAU = Math.PI * 2;
+  export { PI, TAU };
+
+  // vectors/utils.js
+  export function magnitude(x, y) { return Math.sqrt(x*x + y*y); }    // a compound declaration + export 
+
+  // geometry/circle.js
+  export default class Circle {       // when a file exports only 1 thing this is typically done using export default (not sure why)
+    ...
+  }
+
+  // main.js 
+  import { PI, TAU } from './geometry/constants.js';                  // import statements come in different forms 
+  import Circle from './geometry/circle.js';
+  import { magnitude as hypotenuse } from './vectors/utils.js';       // you can rename the imported function or value 
+
+========================================================================================
+CHAPTER 6, OBJECTS 
+========================================================================================
+
+objects property names can be strings or symbols, though usually they're strings 
+javascript objects inherit the attributes of the objects above it in the prototype chain 
+an objects prototype loosely refers to the object 1 level above it in the prototype chain 
+
+enumerable properties are those which are returned by a for/in loop 
+configurable properties are those which can be deleted and whether the properties attributes can be altered 
+writable properties are those whose value can be changed 
+
+by default all properties of objects you create are enumerable, configurable, and writable. 
+  many of javascript's built in object attributes aren't, however. 
+
+values in an object literal can be any expression, the result is stored in the object 
+
+  let obj = { x: point.x+2, y: point.y+2 };
+
+if an objects property name includes spaces or hyphens it can be quoted: 
+
+  let book = {
+    "book name"; "Javascript, The Definitive Guide (Rino book)"
+  }
+
+a comma after the last property in an object is actually legal
+object literals return a unique instance each time they're evaluated. thus you can safely initialize sets of objects in a loop 
+
+the new keyword creates and initializes an object from a constructor 
+  you have to use new with constructors, otherwise they won't work. not sure why, maybe something to do with memory space
+
+every object has a prototype it inherits from. 
+all objects created by object literals have the same prototype, the topmost one - Object.prototype. 
+objects created using new & constructors use the value of the prototype property of the constructor 
+  so objects created with new Array use Array.prototype 
+
+Object.create() uses its first argument as the prototype for a newly created object
+Object.create() also takes a second argument that describes the properties of the new object, which will be covered later (CH14)
+
+  let obj1 = Object.create({x: 1, y: 2});
+  obj1.x + obj1.y                             // 3
+
+  let obj2 = Object.create(null);             // create a new object that doesn't have a prototype. note this won't inherit anything from Object
+                                              // so it has basic methods like toString(), which means it won't work with the + operator
+
+  let obj3 = Object.create(Object.prototype);   // same as creating an object literal - uses Object.prototype as its prototype 
+
+one use of Object.create() is to guard against unintended modification of an object by a third party.
+  instead of passing the object directly, you pass an argument that inherits from it. 
+  writes to those properties will no longer effect the original object 
+
+
+you can also access properties of an object using [] syntax. 
+the value in the brackets must be a string, or expression that evaluates to a string, or a symbol: 
+
+  let obj1 = {x: 1, y: 2};
+  obj1["x"];                      // 1
+  obj1["z"] = 3;                  // you can also create properties in this manner 
+
+the [] syntax can do more than the dot (.) syntax because it takes a string, which can be initialized at runtime
+so anytime you don't know the property names until runtime you use the [] syntax:
+
+  let address_list = ""
+  for(let x = 0; x < 4; x++) {
+    address_list += customers[`address{x}`] + "\n";
+  }
+
+the [] syntax is powerful when combined with the for/in loop: 
+
+  for(let stock in stock_list) {
+    if stock_list[stock].priceChange < 0 {
+      ...
+    }
+  }
+
+here we're using objects like associative arrays. in ES6 the author feels the Map class is a better choice than objects for this purpose 
+
+remember that if an object doesn't have a property it will climb the prototype chain looking for it. this is javascripts form of inheritance.
+  this continues until an object is found with a null prototype, typically Object.prototype
+
+if you change a property that was inherited a new property is created on your current object & written to. 
+  the prototype chain is examined, though, to determine first if the property is writable or read-only. 
+  this means the prototype object is never changed 
+  if the property has an inherited setter method defined for, then the setter method is called off the original object, not the prototype 
+
+it is not an error to read a property that doesn't exist, it merely returns undefined 
+it is an error, however, to read a property of an object that doesn't exist (i.e. is null or undefined)
+  to guard against this error, old javascript had to use a series of if statements or short-circuiting to check the property existed 
+  now you can use optional chaining 
+there are other reasons setting a property may fail - it may be read-only, the object may not be extensible (CH14), etc. 
+remember that in strict mode these errors while setting a property will throw 
+
+
+delete does not operate on the value of the property, but on the property itself.
+delete doesn't remove properties whose configurable attribute is set to false 
+properties of the global object created by function or variable declaration aren't configurable 
+
+when deleting configurable properties on the global object in non-strict mode, you can omit the reference to the global object:
+
+  globalThis.x = 1;
+  delete x;               // in strict mode this syntax is not allowed 
+
+  globalThis.y = 2;
+  delete globalThis.y;    // this is what you have to do in strict mode 
+
+there are various ways of checking if an object has a property: 
+
+  let obj = {x: 1};
+  "x" in obj;                           // true 
+  "toString" in obj;                    // true, inherited 
+
+  obj.hasOwnProperty("x");              // true, x belongs to obj 
+  obj.hasOwnProperty("toString");       // false, x was inherited 
+
+  obj.propertyIsEnumerable("x");        // true, property belongs to obj and can also be iterated through (the method checks both these)
+  obj.propertyIsEnumerable("toString);                  // false, x was inherited 
+  Object.prototype.propertyIsEnumerable("toString);     // false, it's not enumerable 
+
+  obj.x !== undefined                   // true - faster way of checking 
+
+to distinguish between undefined & nonexistent properties this method is unsufficient, use the in operator:
+  let obj2 = {y: undefined}; 
+  obj2.y !== undefined                  // false, it's undefined 
+  obj2.z !== undefined                  // false, it doesn't exist
+
+  "y" in obj2                           // true 
+  "z" in obj2                           // false 
+
+to guard against iterating through inherited enumerable properties or methods when using for/in, do this: 
+
+  for(let key in obj) {
+    if (!obj.hasOwnProperty(key)) continue; 
+    if (typeof obj[key] === "function") continue;       // skip all methods
+    ...
+  }
+
+alternatively, you can use for/of combined with these methods to achieve a similar result more easily: 
+
+  Object.keys()                       // returns array of enumerable properties that aren't inherited, and doesn't return symbols 
+  Object.getOwnPropertyNames()        // returns array of properties that aren't inherited, and doesn't return symbols 
+  Object.getOwnPropertySymbols()      // returns array of properties whose names are symbols, and that aren't inherited 
+  Reflect.ownKeys()                   // returns all property names, including inherited, symbol, string, etc. 
+
+  let obj = {x: 1, y: 2, z: 3};
+  for (let key of obj.getOwnPropertyNames()) {
+    obj[key] += 1;
+  }
+
+when you use the above methods & others with for/of, the order inwhich properties are enumerated is consistent:
+  1) strings whose names are non-negative integers are listed in order 
+  2) strings are listed in the order they were added to the object 
+  3) symbols are listed in the order they were added to the object 
+
+for/in loops enumeration order isn't as well specified, and typically diverges when there are inherited properties 
+
+to copy an object you could use a loop, but ES6 has defined a better way with Object.assign() 
+Object.assign() copies the enumerable properties owned by the source object (or objects) into a target object
+if there are duplicate properties in the source objects, the last one in the list will be what's used
+Object.assign will also invoke any getters / setters for the properties during the operation:
+
+  Object.assign(target_object, source_object1, source_object2); 
+
+note that everything in the target object is overwritten. if you dont want this, try using your target as the last source instead: 
+
+  let target_obj = {x: 1}; 
+  let source_obj = {x: 2, y: 3}; 
+
+  Object.assign(target_obj, source_obj);                // {x: 2, y: 3}
+
+  Object.assign({}, source_obj, target_obj);            // {x: 1, y: 3}
+
+another way to copy properties is with the spread operator (...)
+
+  target_obj = {...source_obj};                         // {x: 2, y: 3}
+
+  target_obj = {...source_obj, ...target_obj};          // {x: 1, y: 3} 
+
+
+JSON.stringify() and JSON.parse() serialize and restore an object:
+
+  let obj = {x: 1, y: {y1: 2, y2: 3}};
+  let string_obj = JSON.stringify(obj);
+  let obj2 = JSON.parse(string_obj);
+
+both can take an optional second argument, a list of which properties to operate on 
+
+NaN and Infinity get serialized to null 
+Dates get serialized to a timestamp, then parse() leaves them in string timestamp form and doesn't restore the original Date object 
+Function, RegExp, Error and undefined can't be serialized. they're simply omitted from the output string  
+
+JSON.serialize() only serializes enumerabble properties belonging to the object 
+
+most of what's inherited from Object.prototype are methods - the main methods used by objects 
+
+here's a list of important Object properties, most of which we've covered so far: 
+
+  Object.entries()                      // returns an array of key-value pairs
+  Object.keys()
+  Object.values()
+  Object.create()
+  Object.prototype
+  Object.propertyIsEnumerable()
+  Object.keys()
+  Object.getOwnPropertyNames()  
+  Object.getOwnPropertySymbols() 
+  Object.assign() 
+  Object.toString()
+  Object.valueOf()
+  Object.toLocaleString()
+
+
+javascript invokes toString() whenever it needs a string - during concatenation, when type converting objects, etc. 
+the default implementation is not very informative: 
+
+  let string = { x: 1, y: 2}.toString();           // "[object Object]"
+
+for this reason classes often define their own implementation of toString() 
+you can even define an implementation on an object directly: 
+
+  let obj = {
+    x: 1,
+    y: 2,
+    toString: function() { return `(${this.x}, ${this.y})`; }
+  }
+  String(obj);            // "(1, 2)"
+
+
+the default toLocaleString() method doesn't do any localization, it simply calls toString(). you have to implement it 
+if your class uses javascripts built in types you can use their toLocaleString() implementations within yours. 
+  Date and Number have toLocaleString() implementations. 
+  invoking toLocaleString() on an Array calls toLocaleString() on each element 
+
+  let obj = {
+    x: 1000,
+    y: 2000,
+    toLocaleString: function() { return `(${this.x.toLocaleString()}, ${this.y.toLocaleString()})`; }
+  }
+  obj.toLocaleString()            // "(1,000, 2,000)"
+
+valueOf() & any other inherited methods are overridden in the same manner 
+
+Object.prototype does not define a toJSON() methdod, but stringify looks ffor toJSON() on any object it's serializing 
+  if the method exists it's invoked, and its return value is serialized instead of the object 
+  thus you can customize how an object serializes
+
+ES6 added a shorthand syntax for initializing object properties using predefined variables: 
+
+  let x = 1, y = 2; 
+  let obj = { x, y };           {x: 1, y: 2}
+
+ES6 also allows you to initialize property names dynamically, something that previously required the bracket syntax [] after initialization: 
+
+  const property_name = "p1";
+  function computedPropertyName() { return "p" + 2; }
+  const symbol_name = Symbol("p3")
+
+  let obj = {
+    [property_name]: 1,                     // use the square bracket syntax within the object literal 
+    [computedPropertyName()]: 2,            // the expression within the square brackets is evaluated, the result is the property name 
+    [symbol_name]: 3
+  }; 
+
+one use for this dynamic naming is if you're interacting with a REST API that expects certain property names, but they may change over time. 
+  if you can introspect the REST API responses to attain the required property names you can set them dynamically 
+
+if the object is from a third party library it is good practice to define computed property names using symbols 
+  this ensures the name won't conflict with existing property names 
+
+ES2018 added support for using the spread operator (...) to copy properties into an object literal
+again, duplicate properties are overwritten by the last object in the list: 
+
+  let obj = {x: 1, y, 2}; 
+  let obj2 = {z: 3}; 
+  let obj3 = {...obj, ...obj2};
+
+ES6 added support for not having to explicitly name functions defined in object literals:
+
+  let square = {
+    area: function() { return this.side * this.side; },         // old way 
+    side: 10
+  };
+  let new_square = {
+    area() { return this.side * this.side; },                   // new way
+    side: 10
+  };
+
+you can also use symbols or variables for the function name: 
+
+  let string = "area1";
+  const symbol = Symbol("area2");
+
+  let obj = {
+    [string](x) { return x * x; },
+    [symbol](x) { return x * x * x; }
+  };
+
+there are cases you need this - to make an object iterable (usable with for/of) you must define a method that uses Symbol.iterator as its key 
+
+objects can have getters/setters. the getter/setter must be named teh same, and they define a new property by their name 
+if only a getter is defined the property is read-only; only a setter and it's write-only (attempts to read it return undefined)
+
+  let obj = {
+    _total: 0,
+    get total { return this._total; },
+    set total(value) { this._total = value; }   // total is read/write
+  }
+  obj.total = 33.21;                            // getters/setters are accessed like regular properties 
+
+getters/setters are inherited 
+
+========================================================================================
+CHAPTER 7, ARRAYS
+========================================================================================
+
+javascript arrays are untyped and one can hold different types of elements 
+javascript arrays use 32-bit indices, so the max array size is (2^32)-1, 4294967295
+
+arrays can be sparse, meaning there are holes in them
+arrays are objects, and array indices are just property names are strings accessed via integers 
+
+arrays inherit from Array.prototype 
+most of Array.prototype's methods are generic - they'll not only work with arrays, but also array-like objects 
+
+ES6 introduced typed-arrays. they have a fixed length, fixed numeric element type, and are for high performance byte-level access
+
+there are many ways of creating arrays: 
+
+  let array_literal = [1, ["dog", 3], true, 3+3, {x:1, y:2}];
+
+  let sparse_array = [1,,3,,,6];          // not good practice, but possible...
+  sparse_array.length;                    // 6 
+
+you can use the spread operator to initialize arrays using any iterable object, but note it only creates a shallow copy: 
+
+  let array1 = [1, 2, 3];
+  let array2 = [...array1, 4, 5]; 
+  array1[0] = false 
+  array2[0] == false      // true 
+
+you can also create arrays using the Array() constructor, though it's easier just to use an array literal: 
+
+  let array1 = new Array();                               // empty array 
+  let array2 = new Array(10);                             // create an array w/ 10 uninitialized values (kind of useless) 
+  let array3 = new Array(1, 2, 3, 4, "string5");          // 2 or more arguments or a single non-numeric argument and it creates 
+                                                          // an array with those elements added 
+
+Array.of() is an alternative to the above syntax, but unlike the above it can initialize arrays with 1 numeric element: 
+
+  let array1 = Array.of(1);       // [1] 
+  let array2 = Array.o(1, 2, 3);  // [1, 2, 3] 
+
+array-like objects are objects with integers properties. as a result they emulate arrays
+
+Array.from was introduced in ES6. it constructs a new array using an iterable or array-like object. again the values are shallow-copied
+Array.from also can take a callback as its second argument, which maps the input objects properties to new properties:
+
+  let array1 = Array.from({"1": 1, "2": 2, "3": 3});              // [1, 2, 3]
+
+  let array2 = Array.from(array1, x => x + x);                    // [2, 4, 6]
+
+when you write to a new index, javascript automatically converts the index number to a string and creates a property with that name. 
+this even works with regular objects, though unlike arrays they won't maintain their own length property: 
+
+  let obj = {};
+  obj[2] = 17;
+  
+  obj["2"];               // 17 
+
+if you set a negative integer on an array javascript will convert the number to a string and treat it like any other property:
+
+  let array1 = []; 
+  array[-1] = -1
+  array["-1"];          // -1 
+  array.length;         // 0 
+
+since indices are just properties, arrays don't do any bounds checking. querying an out of bounds index just returns undefined 
+
+note that in a sparse array the missing elements aren't undefined, the properties simply don't exist
+
+if you manually set an arrays length property to a lower number, any array elements beyond the length are automatically deleted:
+
+  let array1 = [1, 2, 3, 4, 5];
+  array1.length = 2;
+  array1;                         // [1, 2]; 
+
+Array.push() adds elements to the end of the array. it can take multiple arguments & will push them all 
+Array.unshift() inserts a value at the beginning of the array.  
+Array.pop() removes an element at the end & returns it
+Array.shift() removes an element at the beginning 
+Array.splice() is a more elaborate method for inserting, deleting, or replacing elements 
+
+note this strange behavior of unshift: 
+
+  let a = [];
+  a.unshift(1);
+  a.unshift(2);       // [2, 1]
+  a = [];
+  a.unshift(1, 2);    // [1, 2]
+
+as of ES6 the easiest way to loop through an array is with for/of: 
+
+  let letters = [..."hello there"];   // ["h", "e", "l", "l", "o", " ", "t", "h", "e", "r", "e"]
+  let string = "";
+  for(letter of letters) {
+    string += letter;
+  }
+  string;                         // "hello there"
+
+  let string2 = "";
+  for([index, letter] of letters.entries()) {
+    if (index % 2 == 1) { 
+      string2 += letter;
+    }
+  }
+  string2;                      // "el hr"
+
+
+for/of will return undefined for missing elements in sparse arrays 
+
+there's also Array.forEach() which is useful for doing functional programming 
+unlike for/of, forEach() is aware of sparse arrays and doesn't invoke the function for missing elements: 
+
+  let string3 = "";
+  letters.forEach(letter => {
+    string3 += letter.toUpperCase();
+  });
+  string3;                              // "HELLO THERE"
+
+if you want to skip over missing array elements in a loop do the following: 
+
+  for (let x = 0; x < array1.length; x++) {
+    if (array1[x] === undefined) continue; 
+  }
+
+some Array.protocol methods modify the array, others don't. Some return a new array, others don't. You have to know the method 
+
+some other common Array.protocol iteration methods. callbacks aren't called on missing elements: 
+
+  let numbers = [1, 2, 3, 4, 5];
+  let mapped_array = numbers.map(x => x * x);                 // returns a new array 
+  let filtered_array = mapped_array.filter(x => x < 10);      // returns a new array 
+
+here's a trick to close gaps in a sparse array, and remove undefined elements: 
+
+  let dense_array = sparse_array.filter(x => x !== undefined && x !== null); 
+
+find() and findIndex() are like filter, but they stop once the first matching element is found. 
+find() returns that element, whereas findIndex() returns its index. 
+
+  let letter_h = ["a", "l", "h", "f", "j"].find(x => x === "h"); 
+
+every() returns true if all array elements evaluate to true in your callback 
+some() returns true if at least one array element evaluates true in your callback (the equivalent of swift's contains/where):
+
+  let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  numbers.every(x => x < 10);           // true 
+  numbers.some(x => x == 0);            // false 
+
+if invoked on empty arrays, every() returns true and some() returns false (this is apparently a "mathematical convention")
+
+includes() returns true if the array contains a specified value (the equivalent of swift's contains)
+  includes() can be used to test for NaN, unlike other search methods - it uses a special comparison to evaluate NaN 
+
+reduce() and reduceRight() combine the array elements into a single element, passing them through your callback
+the second argument for an initial value is optional. if not included the first element in the array is the initial value: 
+
+  numbers.reduce((x, y) => x + y, 0);           // starts at 0, adds each number. result is 45 
+  numbers.reduce((x, y) => x * y, 1);           // starts at 1, multiplies by each number. result is 9! 
+
+reduceRight() works the same as reduce, except it starts at the end of the array and works backwards. 
+  results of some operations, like exponentiation, change based on which direction you iterate in 
+
+flat() just flattens an array. when called with no arguments, it flattens it by 1 level. you can pass a number to specify more levels: 
+
+  [1, [2, [3]]].flat();         // [1, 2, [3]]
+  [1, [2, [3]]].flat(2);        /// [1, 2, 3] 
+
+flatMap() is just a combination of map() followed by flat(). 
+  flatMap() is useful if map() is generating array outputs, maybe to organize the output into groups. 
+  the best use case I've encountered for this is my capOneRewards array reduction scheme 
+
+concat() is called off an array. It adds a list of elements to the array and returns a new array 
+if you don't need a new array you probably can use push/pop/shift/unshift instead
+concat() will also flatten array arguments by one level - so it immitates a concatenation operation:
+
+  let numbers = []
+  let new_numbers = numbers.concat(1, 2, 3, [4, 5]);        // [1, 2, 3, 4, 5]
+
+slice() returns a subsection of an array. its two arguments are the start index & index after the end of the subsection 
+  the second argument is optional 
+  you can also use negative numbers as arguments, which specify the length from the end of the array  
+
+splice() can delete elements, insert elements, or do both at the same time 
+splice() works on the array, it doesn't return a new one 
+the first argument specifies the index where the operation begins 
+the second argument specifies the number of elements to delete
+  if the second argument is omitted, all elements after the starting index are deleted 
+  splice() returns the deleted values 
+any number of additional arguments may follow, and they'll be inserted into the array at the starting index
+
+  let numbers = [1, 2, 3, 4, 5, 6, 7];
+  numbers.splice(4, 3);                 returns [5, 6, 7]; array is now [1, 2, 3, 4]
+
+fill() sets an arrays elements, or a slice of an array, to a specified value 
+  the first argument is the specified value
+  the second optional argument is a starting index
+  the third optional argument is the index after the end of the slice 
+
+copyWithin() copies (not moves) a slice of an array to a new position in the array. it is intended to be a high performance method. 
+  the first argument is the destination index to which the first element will be copied 
+  the second argument is the index of the first element to be copied. if omitted, 0 is used 
+  the third argument is the index after the end of the slice to be copied. if omitted, 0 is used 
+
+  let numbers = [1, 2, 3, 4, 5]; 
+  numbers.copyWithin(1);                // [1, 1, 2, 3, 4] - array was copied to the right by one index 
+  numbers.copyWithin(2, 3, 5);          // [1, 1, 3, 4, 4] - last 2 elements [3, 4] were copied starting at index 2 
+
+indexOf() and lastIndexOf() do what they sound like 
+  they search for matches using the === operator
+  they take an optional second argument that specifies where to begin the search 
+
+sort() is an in-place sort. by default it sorts in alphabetical order. it takes an optional callback for changing the search rule. 
+the callback has 2 parameters.
+if the callback returns a negative number the first parameter is placed first in the array, otherwise the first parameter is placed second
+
+  let numbers = [1, 2, 3, 4, 5];
+  numbers.sort(function(x, y){
+    return x+y;
+  });
+
+  let animals = ["Ant", "dog", "cat", "Mouse", "Rat", "moose"];
+  animals.sort(function(x, y) {
+    return x.toLowerCase() < y.toLowerCase() ? 1 : -1             // case-insensitive sort 
+  });
+
+reverse() returns a new array with the elements reversed 
+
+  [1, 2, 3, 4, 5].reversed();             // [5, 4, 3, 2, 1]
+
+join() converts all the elements in an array to strings, then concatenates them 
+join() is the opposite of String.split(), which breaks a string down into an array 
+you can specify an optional separator as the argument. if none is specified, a comma is used 
+
+  [1, 2, 3].join();           // "1,2,3"
+  [4, 5, 6].join("-");       // "4-5-6"
+
+Array's toString() method is implemented by default as a simple call to join() 
+
+the Array class has 3 static functions that are invoked off the constructor:
+
+  Array.of()                // of() and from() are factory methods for creating new arrays, and have already been covered 
+  Array.from() 
+  Array.isArray()           // indicates whether the argument is an array 
+
+you can iterate through array-like objects the same way you can arrays 
+read-only array methods typically work on array-like objects 
+a number of methods for working with the DOM (such as document.querySelectorAll()) return array-like objects 
+
+since array-like objects don't inherit from Array.protocol you need to use Function.call() on them to invoke array methods 
+array-like objects don't maintain a length property 
+in practice I think I'll just use Array.from() to get a real array copy
+
+  let obj = {"0": "a", "1": "b", "2": "c", length: 3};
+  Array.prototype.join.call(obj, "+");                    // "a+b+c"
+  Array.prototype.map.call(obj, x => x.toUpperCase(););   // ["A", "B", "C"]
+  Array.from(obj);                                        // ["a", "b", "c"] - get a real array copy 
+
+strings are read-only arrays of UTF-16 chars, though Array.isArray() still returns false for strings (it's a string) 
+similarly to array-like objects, you can still use some array methods on them (but use the string methods when possible). 
+since strings are immutable you can't use methods that modify arrays in-place, though:
+
+  let string = "javascript";
+  Array.prototype.join.call(string", " ");        // "j a v a s c r i p t";
+
+========================================================================================
+CHAPTER 8, FUNCTIONS
+========================================================================================
+
+javascript functions are objects. you can set properties and even invoke methods on them 
+javascript functions are closures, they have access to variables in the scope inwhich they are defined 
+
+there are some specialized functions covered in later chapters - function* (generators, CH12) and async function (CH13)
+
+function syntax: 
+
+  function sum(x, y) {                                    // formal function declaration 
+    return x + y;
+  }
+
+  const square = function(x) { return x * x; };           // function expression, assigned as a first class function 
+                                                          // using const for first class function assignments is good practice
+
+  let tenSquared = (function(x) { return x * x; }(10));   // function expression, kept anonymous and immediately invoked 
+
+  const difference = (x, y) => { return x - y; };         // arrow function 
+
+  const difference2 = (x, y) =>  x - y;                   // compact arrow function 
+
+  const inc = () =>  counter++;                           // arrow function w/ no args
+
+in a traditional function declaration the name of the function becomes a variable whose value is the function itself 
+  these declarations are hoisted to the top of the scope 
+prior to ES6 you could only nest functions within other functions. now you can define them within loops & other blocks  
+
+function expressions do not declare a variable, and it's up to you what to do with the expression 
+function expressions obviously aren't hoisted since they have to be evaluated first 
+
+arrow functions also do not have a prototype property 
+note that with arrow functions the arrow must be on the first line, otherwise it's a regular assignment 
+also, if you're returning an object literal in a one line arrow function you'll have to put the object literal in parenthesis 
+  otherwise the curly braces are misinterpreted as the function body 
+
+if a function returns nothing then the return value is undefined 
+
+javascript functions can also be invoked via methods call() and apply()
+
+in non-strict mode the invocation context (what the this pointer refers to) of nested functions (not methods) is thd global object, 
+  but in strict mode their invocation context is undefined.
+  nested arrow functions are different, they inherit the this pointer from the containing function where they're defined 
+here's a trick for determining whether you're in strict mode: 
+
+  const inStrict = (function() { return !this; }());
+
+methods invocation context is always the invoking object instance. the this pointer is used to reference properties from within methods
+it's a common mistake to assume 'this' within a nested function in a method will refer to the object:
+
+  // this is considered a flaw in the javascript language 
+  let obj = {
+    m: function() {
+      let self = this;              // saves 'this' in the methods invocation context - the workaround of the bug 
+      this === obj;                 // true
+      f();
+
+      function f() {
+        this === obj;               // false - 'this' is global or undefined 
+        self === obj;               // true - self is the outer 'this' value - the workaround for accessing this here 
+      }
+    }
+  };
+
+in ES6, another workaround for the above code problem is to convert f() into an arrow function
+  though note that arrow functions aren't hoisted, so you'd need to move it to the top of method m 
+another workaround is to call the bind() method of the nested function to defifne a new function that is implicitly invoked on the object:
+
+  const f = (function() {
+    this === obj;
+  }).bind(this);
+
+when you write a method that doesn't have a return value, consider returning the this pointer - doing so allows for method chaining on the object 
+
+constructors (preceded by new) are different then other functions - they have different invocation contexxt, arguments, and return values 
+
+a constructor creates a new, empty object instance that inherits from the constructors prototype 
+a constructors this pointer actually refers to the newly created object instance 
+  that is even true if the constructor is called off another object 
+
+constructors usually don't use return. instead, the new object is initialized with the this pointer 
+  but they can optionally return an object and that object will be used as the instance 
+  if the constructor returns a primitive or undefined value then that's just ignored 
+
+Function.prototype has the call() and apply() methods, which invoke the function and let you specify which this pointer to use 
+  call() passes its argument list to the function 
+  apply() take an array of arguments and passes that to the function 
+
+some javascript language features invoke functions implicity: 
+  1) accessing getters or setters 
+  2) when an object is used in a string context toString() is called. likewise valueOf() is called in a number context 
+  3) looping over an iterable object triggers a number of iterator methods (CH12) 
+  4) a tagged template literal is a function invocation in disguise (CH14) 
+  5) proxy objects (CH14) have their behavior completely controlled by functions. any operation on these will cause a function invocation 
+
+javascript does no type checking on function invocations, and doesn't even check the number of arguments passed 
+
+when functions are invoked with missing arguments they get a default value of undefined, but you can set a default value manually: 
+
+  func getPropertyNames(obj, arr) {         // remember to put intentionally optional arguments at the end of the parameter list 
+    arr = arr || [];
+
+    for(let property in obj) { 
+      arr.push(property); 
+    }
+    return arr 
+  }
+
+in ES6 you can set default values in the parameter list: 
+
+  func getPropertyNames(obj, arr = []) {
+    for(let property in obj) { 
+      arr.push(property); 
+    }
+    return arr 
+  }
+
+in ES6 you can use the variadic operator to pass any number of arguments: 
+
+  func max(first, ...rest) {                        // rest here is an array. if nothing is passed rest will be []
+    let maxValue = first;
+    for(let n of rest) { 
+      if (n > maxValue) {
+        maxValue = n;
+      }
+    }
+    return maxValue;
+  }
+  max(1, 10, 100, -2, 3, 1000, 4, 5, 6);            // 1000 
+
+prior to ES6, to write variadic funtions, the arguments array was used 
+the Arguments object is an array-like object that allows arguments to be retrieved by index 
+
+  function max(x) {                             // why was x used here? the author doesn't say. was a mistake, or something weird related to arguments? 
+    let maxValue = -Infinity;
+    for (let i = 0; i < argumnents.length; i++) {
+      if (arguments[i] > maxValue) {
+        maxValue = arguments[i]; 
+      }
+    }
+    return maxValue; 
+  }
+
+arguments is hard to optimize, especially outside of strict mode. avoid using it 
+  if you encounter old code that uses arguments you can often replace it using an ES6 variadic parameter 
+
+you can also use the spread operator (...) in function calls to pass arguments. it spreads out the array into individual arguments: 
+
+  let numbers = [1, 10, 100, -2, 3, 1000, 4, 5, 6];
+  Math.min(...numbers);                                 // -2
+
+note that the spread operator (...) is not a true operator, it is only specifically used in function invocations and array literals
+
+the spread operator is often useful in passing arguments into variadic parameters 
+
+in ES6 you can also use decomposition of arrays or objects in function parameters
+each property in the array/object parameter becomes an individual variable: 
+
+  function vectorAdd([x1, y1], [x2, y2]) {
+    return [x1 + x2, y1 + y2];
+  }
+  vectorAdd([1, 2], [3, 4]);                    // [4, 6]
+
+  function vectorMultiply({x, y}, scalar) {
+    return {x: x * scalar, y: y * scalar};
+  }
+  vectorMultiply({x: 1, y: 2}, 2);              // {x: 2, y: 4}
+
+there's also a strange syntax where you can destructure multiple objects with the same property names:
+
+  function vectorAdd({x: x1, y: y1}, {x: x2, y: y2}) {        // the name following the : is what will be used in the function 
+    return {x: x1 + x2, y: y1 + y2};
+  }
+  vectorAdd({x: 1, y: 2}, {x: 3, y: 4});
+
+you can also define default parameters in destructured arguments: 
+
+  function vectorMultiply({x, y, z = 0}, scalar) {
+    return { xx: x * scalar, y: y * scalar, z: z * scalar}; 
+  }
+  vectorMultiply({x: 1, y: 2}, 2);                            // {x: 2, y: 4, z: 0} 
+
+when using destructuring array parameters you can use the spread operator at the end of the array: 
+
+  function merge([...args], ...args2) {
+    return [...args, ...args2];                   // not sure what ... does here if the array is empty. returns nothing? 
+  }
+
+in ES2018 you can also use the spread operator when you destructure an object, initializing local variables for all properties of the object: 
+
+  function vectorMultiply({x, y, z=0, ...props}, scalar) {
+    return {x: x * scalar, y: y * scalar, z: z * scalar, ...props };
+  }
+
+often you want to add type checking to your functions since javascript does none. it's better to fail quickly & know where the error occurred: 
+
+  function sum(arr) {
+    let total = 0; 
+    for(let element of arr) {
+      if (typeof element !== "number") {
+        throw new TypeError("array element is not a number");
+      }
+      total += element 
+    }
+    return total
+  }
+
+when a function needs a static variable that persists across invocations it's often convenient to use the function object itself:
+
+  uniqueInteger.counter = 0;              // initialize the variable on the function object 
+
+  function uniqueInteger() {
+    return uniqueInteger.counter++; 
+  }
+
+you can also use this technique to cache results, which can be useful for performance: 
+
+  function factorial(n) {
+    if (Number.isInteger(n) && n > 0) {
+      if (!(n in factorial)) {                  // treating the factorial like an iterable 
+        factorial[n] = n * factorial(n - 1);    // and here treating it like an array 
+      }
+      return factorial[n]; 
+    } else {
+      return NaN; 
+    }
+  }
+  factorial[1] = 1;                             // initializes cache to hold this base case 
+
+when writing reusable code you can use functions as namespaces since they define their own local variables & don't use the global object 
+  though I think this is an old technique, modules / classes are a better choice here 
+
+to write an immediately invoked function expression you must wrap it in parenthesis, otherwise the javascript parser reads it as a declaration: 
+
+  (function() {
+    ...
+  }());
+
+function objects contain a reference to the scope in which the function definition appears. this is the mechanism of closure 
+  I always thought copying of primitives occurs here but the author states it's a reference to the scope, and shows that functions can share scope
+
+the closure mechanism can be used to create variables that persist across invocations. 
+this is more secure than defining a static property on the function object, because the variable can't be changed anywhere else in the code: 
+
+  let uniqueInteger = (function() {             // this outer function is used to create a local scope 
+    let counter = 0;
+    return function() { return counter++; }     // the inner function saves this local scope through closure 
+  }()); 
+  uniqueInteger(); 
+
+you can also create a first-class function that acts as a factory of these closures. each invocation will return a new, separate scope
+functions can also share their surrounding scope: 
+
+  function counter() {
+    let n = 0; 
+    return {
+      count: function() { return n++; }
+      reset: function() { n = 0; }
+    }
+  }
+  let c = counter(), d = counter(); 
+  c.count();                          // 0
+  d.count();                          // 0 - they count independently 
+  c.reset();                          // reset() and count() methods share the same state 
+  c.count();                          // 0 
+  d.count();                          // 1 - d was not reset 
+
+you can also combine this technique with getters and setters 
+you can also use the parameters for the closures local state:
+
+  function counter(n) {                   // the caller sets the initial value which gets closed over
+    return {
+      get count() { return n++; }, 
+      set count(m) {
+        if (m > n) 
+          n = m
+        else 
+          throw Error("count can only be set to a larger value");
+      }
+    }
+  }
+
+  let c = counter(1000);
+  c.count;                  // 1000
+  c.count;                  // 1001
+  c.count = 2000;           // 2000
+
+while using two closures that share a local scope is a notable technique, most commonly this sharing of scope is a source of bugs:
+
+  function buggyFunctions() {
+    let funcs = [];
+    for(var i = 0; i < 10; i++) {
+      funcs[i] = () => i;               // all these functions share a reference to the same function scope, i will be 10 for all of them by the end 
+    }                                   // using let or const instead of var solves this, because they are block scoped - each iteration of the loop
+    return funcs;                       // defines a block that is independent of the others, with a new set of variable bindings for i  
+  }
+
+it's also important to remember, when writing closures, that the this pointer is actually a javascript keyword, not a variable 
+  thus you can't capture through closure the this pointer 
+  so if you need to access this within a closure you must use either an arrow function (its this pointer is the surrounding function scope), 
+  call bind(), or assign this to a variable in the surrounding scope and capture that variable 
+
+the length property of a function specifies the number of parameters in its parameter list 
+  if the function has a variadic parameter it isn't counted as part of length 
+
+the name property of a function specifies the name used when it was defined, 
+  or the name of the variable or property that an unnamed function was first assigned to 
+  this property is mostly useful when debugging or generating error messages 
+
+all functions except for arrow functions have a prototype property that refers to its prototype object. each function has a different prototype object. 
+  when a function is used as a constructor, the newly creted object inherits properties from the functions prototype object 
+
+call() and apply() allow you to indirectly invoke a function as if it were a method on some other object 
+this first argument is the object on which you are to invoke it - the this pointer will refer to it 
+for call(), any remaining arguments are passed to the function that's being invoked 
+for apply(), its second argument is an array containing the arguments passed to the function being invoked 
+
+  func.call(obj, arg1, arg2); 
+  func.apply(obj, [arg1, arg2]);
+
+arrow functions inherit their this pointer from where they're defined, and that cannot be overridden by call() and apply() 
+
+prior to ES6, before the spread operator, you had to use apply() and its array to pass an arbitrary, unspecified number of arguments determined at runtime
+
+the main purpose of bind() is to bind a function to an object. 
+when you invoke bind() on a function and pass an object to it, a new function is returned 
+  invoking the new function calls the old function as a method on the object 
+
+  function func(y) { return this.x + y; }         // this function needs to be bound 
+  let obj = { x: 1 }; 
+  let bound_func = func.bind(obj); 
+  bound_func(2);                                  // 3
+  let obj2 = { x: 10, bound_func }; 
+  obj2.bound_func(2);                             // still 3 - the function remains bound to obj 
+
+again arrow functions execution context can't be overridden with bind() 
+
+bind() can also be used to perform currying - where the arguments passed are permanently bound too 
+this currying does work with arrow functions
+
+
+  let sum = (x,y) => x + y;
+  let curried_sum = sum.bind(null, 1);          // the first parameter x is curried (i.e. permanently bound) to 1
+  curried_sum(3);                               // 4 - the input argument is passed to y, the only empty parameter 
+
+  let f(y,z) { return this.x + y + z; }
+  let g = f.bind({x: 1}, 2);                    // permanently bind both the this pointer & the y parameter  
+  g(3);                                         // 6 
+
+the name property of a bound function is the functions original name prefixed by 'bound' 
+
+toString() called off a function should return a meaningful description of it, useful in debugging 
+
+the Function() constructor allows functions to be created at runtime 
+note that calling Function() within a loop is extremely inefficient since, unlike regular functions, it'll create a new function every time 
+the functions created by Function() do not use lexical scoping. instead, they are always treated like top-level functions. 
+
+  const sum = new Function("x", "y", "return x+y;");          // the last argument is the function body, prior arguments are parameters 
+
+Function() is ultimately alot like eval(). it differs in that it's globally scoped and defines new variables and functions in its own private scope. 
+
+========================================================================================
+CHAPTER 9, CLASSES
+========================================================================================
+
+classes used prototype based inheritance (different than statically type class-based inheritance)
+
+to implement classes pre-ES6 you had to know more about the internals. 
+
+in javascript, a class is a set of objects that inherit from the same prototype object 
+you can define a prototype object then call Object.create(), which creates an instance with a specified prototype 
+usually instances require further initialization, so Object.create() is not enough. you need a function that both creates and initializes an object 
+
+  // a hacky way of implementing an initializer with a factory function 
+  function range(from, to) {
+    let r = Object.create(range.methods);           // r inherits from our custom prototype object 
+    r.from = from; 
+    r.to = to; 
+    return r; 
+  }
+
+  // custom prototype object. hacky place to put the prototype oobject - defined off the function itself - but it works I suppose 
+  // these methods use the ES6 shorthand syntax for defining methods, which is why we don't see the function keyworod anywhere 
+  range.methods = {
+    contains(x) { return this.from <= x && x <= this.to; },   // this.from accesses the object that invokes the prototypes method 
+    *[Symbol.iterator]() {                                    // generator which makes class instances iterable. works on numeric ranges only 
+      for(let x = Math.ceil(this.from); x <= this.to; x++) {
+        yield x;
+      }
+    },                                                              // notice the use of , in this ES6 syntax 
+    toString() { return "(" + this.from + "..." + this.to + ")" }   // string representation of the range 
+  }
+
+  let r = range(1, 3);
+  r.contains(2);            // true 
+  r.toString();             // "(1...3)"
+  [...r];                   // [1, 2, 3]
+
+you'd rather use javascripts built in constructor mechanism for creating classes 
+the prototype property of the constructor is what's used as the prototype of the new object 
+  remember that while all objects have a prototype, only function objects have a prototype property 
+  hence all objects created with the same constructor inherit from the same prototype, and are thus members of the same class 
+
+constructors don't create or return the object - that's handled by the new keyword. They just initializes the this pointer:
+
+  // pre-ES6 way of creating classes 
+  function Range(from, to) {            // a constructor function. convention is to capitalize these 
+    if (new.target == undefined) return new Range(from, to);      // some guard against new.target being undefined in the constructor invocation 
+    this.from = from;
+    this.to = to;
+  }
+
+  Range.prototype = {                   // create the constructors prototype object, i.e. its class. this is mandatory
+    contains(x) { return this.from <= x && x <= this.to; },  
+    *[Symbol.iterator]() { 
+      for(let x = Math.ceil(this.from); x <= this.to; x++) {
+        yield x;
+      }
+    },
+    toString() { return "(" + this.from + "..." + this.to + ")"; } 
+  }
+
+  let r = new Range(1, 3);    // constructors are always invoked with new 
+  r.contains(2); 
+  r.toString(); 
+  [...r]; 
+
+as you can see, constructor functions are what define the classes.
+
+you should always invoke constructors with new - invoking them on their own causes unexpected behavior 
+within a function body you can tell whether the function was invoked with new via the new.target property. 
+  if new.target is defined, new was used in the invocation
+  ES6 classes won't allow their constructors to be invoked without new 
+
+constructors automatically use the prototype property as the prototype for the new object, thus it is mandatory for you to define it 
+
+ES6 won't let you use arrow functions for defining methods or constructors. 
+  arrow functions don't have a prototype property so they can't be used
+  also their this pointer refers to the context inwhich they're invoked, so they'd be useless as methods anyway 
+
+you can define two constructors for the same class, just set their prototype properties to the same object 
+note that the name of the constructor is used as the name of the class. instanceof uses the constructor name as the righthand operand: 
+
+  let r = new Range(1, 3);
+  r instanceof Range                        // instanceof evaluates true if r inherits (directly or indirectly) from Range.prototype
+
+  function Strange() {}
+  Strange.prototype = Range.prototype;
+  new Strange() instanceof Range;           // true 
+
+if you want to evaluate the prototype of an object directly, without passing through its constructor name, use isPrototypeOf()
+if we used a factory function instead a constructor (bad practice) we'd have to use isPrototypeOf()
+
+  range.methods.isPrototypeOf(r);           // evaluates whether range.methods is the prototype of the object r 
+
+while we've been setting the prototype property manually, this isn't actually necessary
+  any regular function (excluding arrow, generator, and async) can be used as a constructor, and automatically has a prototype property defined for it 
+  the value of this property is an object that has a single constructor property, which references the function object. 
+
+  let F = function() {};
+  let p = F.prototype; 
+  let c = p.constructor; 
+  c === F;                  // true - there's a circle of references here 
+
+as a result, new objects typically inherit a constructor property that refers to their constructor (i.e. the function that created them): 
+
+  let o = new F();
+  o.constructor === F;      // true 
+
+so when you manually set the prototype property of a function you're actually overwriting the predefined prototype object for that function 
+but when you overwrote the protocol property you didn't add a constructor property. add one to keep the behavior consistent: 
+
+  Range.prototype = {
+    constructor: Range, 
+    contains(x) { return this.from <= x && x <= this.to; }
+  }
+
+in older code some people would define the prototype then add methods to it one at a time: 
+
+  Range.prototype.contains = function(x) {
+    return this.from <= xx && x <= this.to;
+  }
+  Range.prototype.toString = function() {
+    return "(" + this.from + "..." + this.to + ")";
+  }
+
+ES6 classes have streamlined alot of this: 
+
+  class Range {
+    constructor(from, to) { 
+      this.from = from; 
+      this.to = to; 
+    }
+  
+    contains(x) { return this.from <= xx && x <= this.to; }
+    *[Symbol.iterator]() { 
+      for(let x = Math.ceil(this.from); xx <= this.to; x++) {       
+        yield x;
+      }
+    }
+    toString() { return "(" + this.from + "..." + this.to + ")"; }
+  }
+
+ES6 doesn't alter anything under the hood. the Range object created above is still a constructor function. 
+
+notice the constructor keyword, an ES6 class specific thing. the resulting function is actually given the class name
+if the class doesn't need initialization you can omit the constructor function and a default constructor will be provided 
+notice that commas aren't needed for separating methods in ES6 classes, and you don't need the function keyword 
+
+to define a subclass use the extends keyword: 
+
+  class Span extends Range {
+    constructor(start, length) {
+      if (length >= 0) {
+        super(start, start + length);
+      } else {
+        super(start + length, start);
+      }
+    }
+  }
+
+there's also such a thing as class expressions: 
+
+  let Square = class { constructor(x) { this.area = x * x}; }
+  new Square(3).area;           // 9 
+
+the only real use for these the author can think of is a function that takes a class as an argument and returns a subclass 
+
+all code within an ES6 class is in strict mode 
+ES6 class declarations are not hoisted 
+
+you define static methods in an ES6 class using the static keyword 
+static methods are properties of the constructor function rather than the prototype object 
+note that you don't use the this pointer in static methods, it doesn't make sense to do so
+
+  class SPFBinRange {
+    static getMatchingBinRange(binRange) {
+      ...
+    }
+  }
+  SPFBinRange.getMatchingBinRange("41365");
+
+you can also use getters/setters in ES6 classes 
+
+ES6 classes didn't include any syntax for declaring variables, only methods 
+  there is currently (as of 2020) an effort to change this, and Chrome supports the new syntax, but it's still being standardized 
+  meanwhile, to define a property for the class you must set it in the constructor function or in one of the methods 
+  and to define a static property you must set it outside of the class definition 
+  though I'm willing to bet as of 2022 this has been standardized, or at least you can transpile to use it:
+
+  // old way of creating variables 
+  class Buffer {  
+    constructor() {
+      this.capacity = 4096
+      this.buffer = new Uint88Array(this.capacity);
+    }
+    get bufferCapacity() { return this.capacity; }    // remember getters are accessed like properties - that's the nice thing about them 
+  }
+  Buffer.size = 0;                                    // old static variable declaration 
+
+
+  // new proposed way 
+  class Buffer { 
+    static size = 0; 
+    #capacity = 4096;                         // this code will still be run within the constructor, it's just syntactic sugar as they say 
+    buffer = new Uint8Array(this.capacity);   // note you must still use the this pointer to refer to these variables 
+
+    get bufferCapacity() { return this.capacity; }
+  }
+
+
+note the # preceding the capacity variable. it's part of the new syntax - it makes the variable or method private (they're public by default)
+  you can only use # with the new variable declaration syntax, it won't work in the constructor
+the same applies to the new static variable declaration syntax
+
+javascripts inheritance mechanism is dynamic - if the properties in the prototype change, the inherited properties change 
+this means you can globally add methods / properties to classes simply by adding to the prototype object:
+
+  Buffer.prototype.toString = function() { return String(capacity) + "capacity buffer"; }
+
+even javascripts built-in classes are open to modification in this manner. 
+this is often used to add new language features to old versions of the language: 
+
+  if (!String.prototype.startsWith) {               // if this method isn't defined, define it
+    String.prototype.startsWith = function(s) {
+      return this.indexOf(s) === 0;
+    };
+  }
+
+you can even add properties to Object.protocol and change all objects behavior. 
+avoid doing this since it pollutes the global namespace, it could effect behavior in packages and who knows where else.
+  remember that properties are visible in for/in loops (though you can use Object.defineProperty() to make it non-enumerable)
+
+pre-ES6 subclassing was done in the following manner: 
+
+  function Span(start, span) {      // constructor 
+    this.from = start;
+    this.to = start + span;
+  }
+
+  Span.prototype = Object.create(Range.prototype);        // inherit from Range
+                                                          // this actually creates a wrapper around the Range prototype 
+                                                          // the wrapper serves as Spans prototype object, so you can still define things on Span 
+
+  Span.prototype.constructor = Span;                      // ensure you don't inherit the Range constructor
+
+  Span.prototype.toString() = function() {                // override toString()
+    return `(${this.from}... +${this.to - this.from});    // the runtime will find this one and won't climb the prototype chain 
+  }
+
+prior to ES6 there wasn't a simple way to invoke methods in the superclass. ES6 added the super keyword 
+
+example of ES6 subclassing: 
+
+  class EZArray extends Array {
+    get first() { return this[0]; }
+    get last() { return this[this.length - 1]; }
+  }
+
+  let arr = new EZArray();
+  arr instanceof Array;           // true 
+  arr.push(1, 2, 3, 4);
+  arr.pop();
+  arr.first();                    // 1 
+  arr.last();                     // 3
+  arr[1];                         // 2
+  Array.isArray(arr);             // true 
+  EZArray.isArray(arr);           // true 
+
+  Array.prototype.isPrototypeOf(EZArray.prototype);       // true 
+  Array.isPrototypeOf(EZArray);                           // true 
+
+notice that even static methods like isArray() are inherited in ES6
+
+another example of ES6 subclassing: 
+
+  class TypedMap extends Map {
+    constructor(keyType, valueType, entries) {
+      if (entries) {
+        for(let [k, v] of entries) {
+          if (typeof k !== keyType || typeof v !== valueType) {
+            throw new TypeError("TypedMap initialized with wrong dataa type); 
+          }
+        }
+      }
+      
+      super(entries);                 // call superclasses constructor
+
+      this.keyType = keyType;
+      this.valueType = valueType;
+    }
+
+    set(key, value) {                                         // override the array set method 
+      if (this.keyType && typeof key !== this.keyType) {
+        throw new TypeError("`${key} in TypedMap is not of type ${keyType});
+      }
+      if (this.valueType && typeof value !== this.valueType) {
+        throw new TypeError("`${value} in TypedMap is not of type ${valueType});
+      }
+
+      return super.set(key, value);       // return whatever the superclass method returns 
+    }
+  }
+
+in ES6 classes the author says you must ~always~ call the superclasses constructor within your constructor 
+  if you don't define a constructor the default constructor simply passes all arguments along to its superclasses constructor 
+you cannot use this in your constructor until after calling super() (superclasses must initialize themselves before subclasses do)
+
+remember that new.target identifies the constructor new was used with. 
+  so, when you instantiate a subclass, new.target in your superclass constructor will refer to the subclasses constructor 
+  a well designed superclass shouldn't need to know which subclass invoked it, but this is still useful for error logging using new.target.name 
+
+ES6 doesn't have a formal mechanism for defining abstract classes or methods, but you can emulate them by just not including an implementation: 
+
+  class AbstractSet {
+    contains(val) { throw new Error("Abstract method contains"); }
+  }
+
+  class RangeSet extends AbstractSet {
+    constructor(from, to) {
+      super();
+      this.from = from;
+      this.to = to;
+    }
+    contains(val) {
+      return val >= this.from && val <= this.to; 
+    }
+  }
+
+========================================================================================
+CHAPTER 10, MODULES
+========================================================================================
+
+ES6 defines modules using import and export keywords 
+modules provide a private namespace, and are used to keep the global namespace clean.
+
+before modules were added in ES6 javascript had no such namespace mechanism
+  people instead had to rely on the weak modularity of classes, objects, and closures 
+
+require() was one way of implementing modularity pre-ES6. this was adopted by Node and is a fundamental part of its programming environment 
+  the author stays practically speaking you still need code bundling tools such as webpack, Parcel, and require() 
+
+using classes and objects for modularity is still a useful technique in javascript to avoid polluting global, but it doesn't go far enough
+  in particular it offers no way of hiding implementation details. for example, parent classes are accessible via the prototype chain 
+  private methods / variables were only introduced recently 
+
+one way of hiding implementation details in pre-ES6 was to use closures, since local variables & nested functions are private.
+  here's how a programmer might leverage this mechanism to hide a classes or libraries implementation details:
+
+  const Dog = (function() {
+    // private properties / methods go here
+    const legs = 4;
+
+    return class Dog extends Animal {       // the returned class expression provides the public API 
+      constructor(name) {
+        super();
+        this.name = name;
+        this.timeUntilMeal = 100;
+      }
+      func walk(direction) {
+        this.timeUntilMeal -= 10;
+      }
+      func feed() {
+        this.timeUntilMeal += 100;
+      }
+    }
+  }());
+
+  const statsModule = (function() {
+    const sum = (x, y) => x + y;          // private methods
+    const square = x => x * x;
+
+    function mean(data) {                 // 2 public functions that will be "exported"
+      return data.reduce(sum)/data.length;
+    }
+    function stddev(data) {
+      let m = mean(data);
+      return Math.sqrt(
+        data.map(x => x - m).map(square).reduce(sum)/(data.length-1);
+      );
+    }
+
+    return { mean, stddev };              // "export" the public functions 
+  }());
+
+code bundling tools such as webpack, Parcel, and require() leverage the above mechanism to create modules. 
+they take a set of files, wrap the content of each in an immediately invoked function expression, and track the return value of each:
+
+  const modules = [];
+  function require(moduleName) { return modules[moduleName]; }
+
+  modules["dog.js"] = (function() {
+    const exports = [];
+    exports.Dog = class Dog extends Animal { ... };
+
+    return exports;
+  }());
+
+  modules["stats.js"] = (function() {
+    const exports = [];
+
+    const sum = (x, y) => x + y;              // these module tools just need a syntax for telling what should be exported vs. hidden
+    const square = x => x * x;
+    exports.mean = function(data) { ... };
+    exports.stddev = function(data) { ... };
+
+    return exports;
+  }());
+
+  const stats = require("stats.js");
+  const Dog = require("dog.js");
+
+  let dog = new Dog("java");              // notice the returned class IS the constructor function - an eccentricity of javascript 
+  dog.walk();
+  dog.feed();
+
+  let average = stats.mean([10, 20, 30]);
+
+
+in Node each file is a module with its own namespace. everything in a file is private unless it's exported, and must be imported to be accessed 
+Node modules export by setting properties on the Exports object:
+
+
+  const sum = (x, y) => x + y;                                    // private methods 
+  const square = x => x * x;
+
+  exports.mean = data => data.reduce(sum)/data.length;            // public methods 
+  exports.stddev = function(d) {
+    let m = exports.mean(d);
+    return Math.sqrt(d.map(x => x - m).map(square).reduce(sum)/(d.length - 1));
+  };
+
+to export a single thing, like one class, you can also replace the module.exports object entirely:
+
+  module.exports = class Dog extends Animal {
+    ...
+  };
+
+by default exports and module.exports refer to the same object 
+another approach is to export at the end an object that contains everything:
+
+  const mean = data => data.reduce(sum)/data.length;
+  const stddev = function(d) {
+    let m = mean(d);
+    return Math.sqrt(d.map(x => x - m).map(square).reduce(sum)/(d.length - 1));
+  };
+
+  module.exports = { mean, stddev };
+
+
+Node imports a module with the require() function:
+
+  const http = require("http");               // to import a node module or a system installed package you don't need a path 
+
+  const Dog = require("./Dog.js");            // to import a file from code you've written you need a relative path 
+
+  const { stddev } = require("./stats.js");   // to import specific things from a module use this destructuring assignment syntax
+  let sd = stddev(data);
+
+
+it used to be common to modularize web-based javascript using a bundling tool like webpack 
+  now that ES6 javascript has built in module support this isn't needed, but alot of pre-ES6 code still does it 
+
+in ES6 modules, top-level declarations don't get added to the global object.
+  instead each file has its own private context and can import / export into it
+
+in ES6 modules the this pointer is undefined in top-level code (it isn't set to the global object like in Node / traditional javascript)
+
+code inside an ES6 module is automatically in strict mode 
+
+Node 13 added support for ES6 modules (so it now supports two kinds of modules)
+
+use the export keyword to export something in an ES6 module:
+
+  export const PI = Math.PI;
+  export function degreesToRadians(d) { return d * PI / 180; }
+  export class Circle {
+    constructor(r) { this.r = r; }
+    area() { return PI * this.r * this.r; }
+  }
+
+likewise you can export things in one group at the end:
+
+  export { PI, degreesToRadians, Circle };                // this isn't actually an object literal, it's a specific syntax for export 
+
+
+if you're exporting only one thing you can use the default keyword. this makes them slightly easier to use:
+
+  export default class Dog extends Animal {
+    ...
+  }
+
+you can rename values you're exporting with this exact syntax:
+
+  export {
+    layout as calculatedLayout,     // note this isn't an object literal and hence these aren't expressions, so they couldn't be evaluated dynamically
+    render as renderLayout
+  };
+
+regular exports can only be done on declarations that have a name. 
+default exports can be done on anonymous functions, class expressions, or object literals.
+  so when you see the braces {} after a default export this is actually an object literal being exported 
+
+a module can only have one default export, and usually this is only used if there's the only one thing being exported by the module 
+
+
+use the import keyword to import items exported by other modules:
+
+  import Dog from "./Dog.js";                 // import the default export - here Dog becomes the exported Dog class 
+
+  import { mean, stddev } from "./stats.js";  // import multiple items - remember these will all behave like constants 
+
+  import * as stats from "./stats.js";        // import everything and assign it all to the stats object 
+
+  import Histrogram, { mean, stddev } from "./stats.js";        // if modules have both default & additional exports (uncommon) use this syntax 
+
+  import "./analytics.js";              // import a module and run it right when it's imported. it may run code to set up event handlers, for example
+                                        // modules like this may export nothing, or you may be ignoring what they export and just running them
+
+  import { render as renderImage } from "./imageutils.js";      // if two modules import items of the same name you can rename them
+  import { render as renderUI } from "./ui.js";       
+
+the identifier to which the imported value is assigned is a constant
+the import string is interpreted as a URL (browsers) or filepath (Node) relative to the module that imports it 
+  it can be a relative (starts with ./ or ../) or absolute path (starts with /), or even a URL with a protocol and hostname
+  according to ES6 it can't be just a string with no preceding / such as "dog.js" though 
+    but many bundling tools sidestep this prohibition and lookup the file for you
+
+note that the import / export statements can only appear at the top level (this makes it much easier for the compiler to analyze the code)
+
+one way to use modules is to combine and export other modules:
+
+  import { mean } from "./stats/mean.js";
+  import { stddev } from "./stats/stddev.js";
+  import Dog from "./Dog.js";
+  import * as animals from "./animals.js";
+  export { mean, stddev, Dog, animals }
+
+javascript provides a shorter way to do this called re-exporting:
+
+  export { stddev as StdDev } from "./stats/stddev.js";   // rename the export 
+  export { default as Dog } from "./Dog.js";              // when exporting default items you must give them a name 
+  export { mean as default } from "./stats/mean.js";      // this will export mean as your default export 
+  export * from "./animals.js";
+
+as of 2020 people still use bundling tools like webpack because they tend to lead to better performance, apparently. 
+  this is not always true because small modules can have better browser-cache utilization than large bundles, apparently 
+  and this may change as networks evolve and ES6 modules are better recognized by compilers 
+
+ES6 modules are added to a webpage using this tag, which marks the main entry point of an ES6 module program: 
+
+  <script type="module"> ... </script>          // just for the main entry point, the modules being imported don't require it 
+
+only ES6 compliant browsers will run scripts with type="module", old browsers will skip it.
+ES6 compliant browser also support a nomodule syntax that tells them to ignore the script. 
+  older browsers don't recognize it and run it anyway, allowing code to be targetted at pre-ES6 browsers: 
+
+  <script nomodule> ... </script>
+
+use tools like Babel and webpack to translate your code for older browsers and run that less efficient code using nomodule tags 
+ 
+module scripts are executed only after the loading of HTML is finished 
+  this is the same way scripts marked with the defer attribute are executed 
+set the async attribute on a module script to cause it to execute before the HTML is loaded
+  note this will also change the order inwhich scripts execute (they usually execute from top to bottom in the document)
+
+there are also differences in how cross-origin loading is handled for regular and module scripts 
+  a regular script will load a javascript file from any server 
+  a module script can only load modules from the same server the HTML document came from or other servers if correct CORS headers are in place
+one consequence of this is it makes it difficult to test ES6 modules using file: URLs, and you'll probably have to setup a static webserver instead 
+
+sometimes developers use the .mjs extension for their module scripts to denote the difference. 
+  web browsers don't care about the extension, but the webserver may need configuration to associate these with the correct MIME type 
+  Node does rely on the .mjs extension to tell which module system to use
+
+
+the ES6 module syntax we've seen so far is static. they require the browser to wait for all files to arrive before they run the code 
+for better performance there is also a dynamic import() syntax that returns a promise and executes once the file arrives 
+
+  import("./stats.js").then(stats => {
+    let average = stats.mean(data);
+  });
+
+you can also use async/await to achieve this:
+
+  async analyzeData(data) {
+    let stats = await import("./stats.js");
+    return {
+      average: stats.mean(data),
+      stddev: stats.stddev(data)
+    };
+  }
+
+you can also use expressions for the module specifies with import() - you aren't limited to compiled string literals 
+
+bundling tools like webpack can also use import() 
+  typically these tools will lookup all static imports and assemble one giant file of them 
+  but if you use import() it won't do this, and you can break up the monolithic file into smaller bundles if you place import() strategically
+
+within ES6 modules there's also a special object import.meta 
+  this object contains metadata on the currently executing module 
+  the url property of this object is the url from where the module was loaded 
+the main use of import.meta is to refer to resources (images, data, etc.) stored in the same directory, or relative to, the module 
+  the URL() constructor makes it easy to resolve a relative URL against an absolute URL like import.meta.url 
+
+  // loads localizable strings files stored in the modules directory (obtained via import.meta.url) 
+  function localStringsURL(locale) { 
+    return new URL(`localizableStrings/${locale}.json`, import.meta.url);
+  }
+
+========================================================================================
+CHAPTER 11, THE JAVASCRIPT STANDARD LIBRARY
+========================================================================================
+
+while objects are alot like maps / sets, they're limited to strings and they inherit methods like toString() which complicate their use 
+  for this reason ES6 added official Map and String classes 
+
+the argument to the Set constructor can be any iterable object: 
+
+  let set1 = Set("Mississippi");        // ["M", "i", "s", "p"]
+
+  set1.size;                            // 4
+  set1.add(true);    
+  set1.has("M");                        // true - has() checks membership                    
+  set1.delete("M");                     // ["i", "s", "p", true]
+  set1.has("M");                        // false 
+  set1.clear();                         // [] 
+
+Set's add() only adds one element - if you pass an array it adds the whole array as one element. you can chain add() to add multiple elements:
+
+  set1.add([1, 2, 3]);                  // [[1, 2, 3]] - an array was added, not its elements 
+  set2.add(1).add(2).add(3);            // [1, 2, 3] - add the elements individually 
+
+Set membership is based on strict equality ===. so a Set can contain both 1 and "1", it considers them distinct
+  thus to delete an object you have to pass to delete() an actual reference to the object
+
+compared to an Array's includes() method, Set's has() method is much faster since the Set is a hash structure 
+
+Sets are also iterable: 
+
+  for(let val of set1) {
+    ...
+  }
+
+Sets can easily be converted to arrays or argument lists using the spread operator ...
+
+  let set1 = Set([1, 2, 3]);
+  let arr = [...set1];    
+  Math.max(...set1);              // convert the set to a list of arguments 
+
+one peculiarity about Javascript Sets is the order inwhich elements were inserted is remembered.
+  when you iterate over the Set the elements are traversed in the order they were added in 
+
+Sets also define a forEach() method:
+
+  set1.forEach(n => { n * n; });      // 1, 4, 9 
+
+
+the argument to the Map() constructor is an iterable object that yields two element arrays in the form [key, value]:
+
+  let m = new Map([
+    ["one", 1],
+    ["two", 2]
+  ]);
+
+  let m_copy = new Map(m);          // you can also use the Map() constructor to copy maps 
+
+Object.entries() is an easy way to convert an object into the correct format for Map():
+
+  let obj = {x: 1, y: 2};
+  let m2 = new Map(Object.entries(obj));
+
+  m2.size;              // 2 
+  m2.set("three");      
+  m2.get("one");        // 1 
+  m2.has("four");       // false 
+  m2.delete("one");
+  m2.clear(); 
+
+  m2.set("one", 1).set("two", 2).set("three", 3);
+
+again keys in Maps are checked using ===, so objects or arrays will all be treated as different keys regardless of their content:
+
+  let m3 = new Map();
+  m3.set({}, 1);
+  m3.set({}, 2);
+  m3.size;                // 2
+  m3.get({});             // undefined 
+
+Maps are iterable, and each iterated value is a two-element [key, value] array 
+if you use the spread operator with a Map you get an array of arrays 
+
+when iterating a map with for/of use destructuring assignment: 
+
+  for (let [key, val] of m3) {
+    ... 
+  }
+
+again javascript remembers the insertion order of Maps and they're iterated in insertion order
+
+there are some convenience methods for accessing keys, values, or both:
+
+  [...m3.keys()];           // ["x", "y"]
+  [...m3.values()];         // [1, 2]
+  [...m3.entries()];        // [["x", 1], ["y", 2]]
+
+Maps also have a forEach() which actually delegates to Arrays forEach(): 
+
+  m3.forEach((value, key) => {        // note the value comes before the key in the parameter list. With an Array this second parameter would be the Array index 
+    ... 
+  })
+
+WeakMap is a variant of Map that only hold sweak references to its keys. 
+  why the keys specifically? I guess if you wanted to use objects as keys then this would be the way. it's strange, you'd think it was the values, but no. 
+
+  let john = { name: "John" };
+
+  let weakMap = new WeakMap();
+  weakMap.set(john, "Smith");
+
+  john = null;
+
+WeakMap keys can only be objects or arrays 
+WeakMap only implements the get(), set(), has(), and delete() methods. it doesn't have keys(), values(), forEach(), etc. because it isn't iterable (this would require references)
+WeakMap also doesn't have a size property 
+
+WeakSet likewise only holds weak references to its members
+  it also only allows objects / arrays as members, and only implements add(), has(), and delete(). it has no size property 
+
+ES6 added TypedArray, which is a lower-level, more optimized version of Array that only handles numerical data. 
+
+TypedArrays aren't subclasses of Arrays. Array.isArray() won't evaluate true them.
+Nonetheless they implement many of the same methods as Array plus some of their own
+  though methods that change the length of the array are not implemented (push(), pop(), shift(), unshift(), splice())
+  methods like sort(), reverse(), fill(), map(), slice(), etc. that don't change the length do work 
+
+There are 11 kinds of TypedArrays: 
+
+  Int8Array()
+  Uint8Array()                // unsighed byte array with rollover - i.e. if you assign a value outside of 0-255 it will store the modulus of that value 
+  Uint8ClampedArray()         // unsigned byte array without rollover (requires extra type checking, but this is required by the HTML canvas when manipulating pixel colors)
+  Int16Array()
+  Uint16Array()
+  Int32Array()
+  Uint32Array()
+  BigInt64Array()
+  BigUint64Array()
+  Float32Array()
+  Float64Array() 
+
+the simplest way to construct a TypedArray is by passing the number of elements you want it to hold, but it also have from() and of() factory methods (similar to Array):
+
+  let arr1 = new Uint8Array(20);                                  // 20 byte array, all values initialized to 0 
+  let arr2 = new Uint8ClampedArray.of(255, 255, 255, 0;)          // 4 byte array with 4 initial values
+  let arr3 = new Uint32Array.from(arr2);                          // from() takes 1 or more iterable objects 
+  let arr4 = new Uint32Array(arr2);                               // to initialize using only 1 iterable object you don't need from() 
+
+there's also an ArrayBuffer type, which is an unformatted chunk of memory (much like mmap) 
+to create an ArrayBuffer pass in the number of bytes
+you can't use the memory until you associate it with a particular TypedArray format. 
+  to do this, call a TypedArray constructor and pass the ArrayBuffer as the first argument
+  as the second argument you can also specify an offset in bytes from the start of the buffer, and a length (in elements, not bytes) as the third argument. 
+    this allows you to specify where the formatted memory section starts and ends 
+    if you omit the length argument your array will use all the available memory from its starting location 
+
+  let buffer = new ArrayBuffer(16*1024);
+  let arr1 = new Uint16Array(buffer, 0, 1023);    // create 1023 16-bit ints 
+  let arr2 = new Uint8Array(buffer, 1023*16);     // last 16-bits as 2 separate bytes 
+
+remember to keep the memory alignment correct - I'd probably just use multiples of 64 for safety 
+
+the author says he tested Uint8Array and it ran 4 times faster / used 8 times less memory 
+
+TypedArrays also have a few of their own unique methods:
+
+  let arr1 = new Uint8Array(8);
+  let pattern = new Uint8Array([0, 1, 2, 3]);
+
+  arr1.set(pattern);                // you use an Array or TypedArray as a pattern in the initializer 
+  arr1.set(pattern, 4);             // [0, 1, 2, 3, 0, 1, 2, 3] - here we specified an offset of 4 for the beginning of the pattern
+
+  arr1.slice(5);                    // [0, 1, 2, 3, 0]
+
+  let last2 = arr1.subarray(arr1.length - 2, arr1.length);         // [2, 3] - gets the last 2 elements 
+
+note that slice() returns a new TypedArray, while subarray() returns a section of the existing TypedArray 
+
+every TypedArray is implemented on top of an ArrayBufffer internally, and has 3 properties that relate to the underlying buffer: 
+
+  arr1.buffer;                        // the ArrayBuffer 
+  arr1.buffer === last2.buffer;       // the subarray has the same underlying buffer 
+  last2.byteOffset;                   // 7 - this subarray starts at byte 7 of the underlying buffer 
+  last2.byteLength;                   // 2 - this subarray is 2 bytes in size 
+  last2.buffer.byteLength;            // 8 - the underlying buffer is 8 bytes in size 
+
+some people share the same buffer between multiple arrays. this seems messier than the other approach so I'd rather not: 
+
+  let int8Array = new Uint8Array(1024);
+  let int32Array = new Uint32Array(int8Array.buffer);
+  let float64Array = new Float64Array(int8Array.buffer);
+
+note that TypedArrays used the endianness of the underlying hardware (endianness is the order inwhich the bytes are arranged in a sequence of 16, 32, or 64 bits).
+  today most CPU architectures are little-endian while many network protocols and binary file formats are big-endian 
+
+you can test the endianness of your hardware with the following: 
+
+  let isLittleEndian = new Int8Array(new Int32Array([1]).buffer)[0] === 1;
+
+to be safe, when working with external data, use Int8Array or Uint8Array to view the data as an array of individual bytes. this way you don't have to worry about endianness 
+but if you must use larger byte sizes the DataView class can specify the byte ordering to read an ArrayBuffer with:
+
+  let arr1 = new Uint32Array(1024);
+  arr1[0] = 17;
+
+  let view = new DataView(arr1.buffer, arr1.byteOffset, arr1.byteLength);
+  let firstInt = view.getInt32(0, false);                              // if the second argument is false or omitted getInt32() reads as big endian, otherwise it's little endian 
+
+  view.setUint32(8, int, false);                                       // if the 3rd argument is false or omitted write in big endian, otherwise it's little endian 
+
+with TypedArrays and DataViews you have the tools needed to work with any kind of data format 
+
+read about javascripts regular expressions with the RegExp() object starting on page 281
+
+javascript has a built in Date class:
+
+  let now = new Date();                               // with no arguments it uses the current time 
+  let epoch = new Date(0);                            // 0 refers to midnight, Jan 1, 1970 GMT 
+
+  let century = new Date(
+    2100,                 // year 
+    0,                    // month - january. one quirk is 0 is the first month
+    3,                    // day 
+    2,                    // hour 
+    4,                    // minute 
+    7,                    // second 
+    5                     // millisecond 
+  );                      // Jan 3, 2100 at 02:04:07.005 local time 
+
+omitting any fields from the Date() constructor defaults them to 0 
+
+the multi-number constructor will use the local computers timezome
+use the Date.UTC() constructor to specify UTC time instead 
+dates will still print in your local time, apparently. to get around this convert the date to a string using toUTCString() or toISOString()
+
+if you a pass a string to the Date() constructor it will try to parse it:
+
+  let century = new Date("2100-01-01T00:00:00Z");       // a string in ISO format 
+
+there are various getters / setters for modifying the years, months, days, hours, minutes, seconds, etc. of a date object. 
+  there are different getters/setters for UTC time, too.
+  you can also pass additional arguments to the setters - i.e. the year setter also lets you modify month, day, hour, etc.: 
+
+  century.setFullYear(century.getFullYear() + 1);
+  century.getDate();
+  century.getDay();
+
+you can also initialize a date using a timestamp.
+the static Date.now() returns the current timestamp:
+
+  let futureDate = Date(Date.now() + 30000);
+
+  let startTime = Date.now();
+  reticulateSplines(); 
+  let endTime = Date.now();
+
+getTime() returns the dates timestamp, and setTime() sets it with a timestamp 
+
+there's a timestamp with more precision than Date.now() called performance.now(). it's not part of javascript, but browsers and Node both implement it
+performance.now() is not an absolute timestamp, it's a timestamp of how much time has passed since the webpage loaded or since the Node process started: 
+
+  const { performance } = require("perf_hooks");
+
+allowing high-precision timestamping enables websites to fingerprint visitors, so browsers (notably Firebox) may reduce the precision of it by default. 
+  there are ways to reenable this precision, though (in Firefox you can set privacy.reduceTimerPrecision to false) 
+
+you can use comparison and mathematical operators with Dates (because the class implements valueOf()). these methods account for overflow & increment the whole date correctly:
+
+  let d = new Date();
+  d.setMonth(d.getMonth() + 3, d.getDate() + 14);
+
+the following methods convert a date to a string:
+
+  let d = new Date();
+  d.toString();
+  d.toUTCString();
+  d.toDateString();
+  d.toTimeString();
+  d.toLocaleString();
+  d.toLocaleDateString();         // "1/1/2020"
+  d.toLocaleTimeString();         // "5:10:30 PM"
+  d.toISOString();
+
+there's also a static Date.parse() method, which takes a string and returns a timestamp. 
+  this method is guaranteed to work with input in formats output by toISOString(), toUTCString(), and toString()
+
+
+any type of value can be thrown or caught, but the Error class is traditionally used 
+  the nice thing about Error is it captures the stack trace from where it's created 
+  even if the exception is uncaught you'll see the stack trace with the error message in the browsers debug panel 
+
+there are several built in subclasses of Error: EvalError, RangeError, ReferenceError, SyntaxError, TypeError, URIError.
+  while these are used by the runtime, there are times when throwing these in your own code is appropriate 
+
+you can also create your own Error subclass:
+
+  class HTTPError extends Error {
+    constructor(statusCode, statusText, url) {
+      super(`${statusCode} ${statusText} ${url}`]);
+      this.statusCode = statusCode
+      this.statusText = statusText 
+      this.url = url
+    }
+    get name() { return "HTTPError"; }
+  }
+
+  ... 
+  throw new HTTPError(404, "Not Found", "http://example.com");
+
+
+JSON.stringify() and JSON.parse() serialize and deserialize 
+
+  let obj = {a: "yes", b: 10, c: [true, false, null]}; 
+  let serialObj = JSON.stringify(obj);
+  let copy = JSON.parse(serialObj);
+
+you can pass a 2nd argument to parse()
+  this is a callback that is invoked on every primitive in the JSON (not on the arrays or objects, but the primitives) 
+  its return value is what the primitive deserializes as 
+
+you can pass a 2nd and 3rd argument to stringify(). 
+  its 2nd argument can be a callback or an array of string. 
+    the callback behaves the like the one passed to parse(), though if it returns nothing or undefined the property will not be included in the serialization
+    the array of string specifies a list of properties names - these are the properties that will be serialized, and no others. 
+      the returned serialized string will also contain the properties in the order they were specified in the array 
+  the third argument is used to make the resulting JSON human readable. 
+    If you pass a number it will indent each level by that many spaces. 
+    if you pass a string of whitespace it'll indent using that instead
+
+if JSON.stringify() is asked to serialize something not part of the JSON format it looks for the method toJSON(), calls it, and serializes its return value 
+
+
+the javascript Internationalization API has 3 classes: 
+  Intl.NumberFormat
+  Intl.DateTimeFormat 
+  Intl.Collator 
+
+these classes can be used to format numbers, currencies, dates, times, and to compare strings 
+  but they do not handle the translating of language, that's done in other ways 
+
+As of 2020 Node doesn't come with this API, so you'll need a package installed to use them there (though you're less likely to need them there)
+
+Intl.NumberFormat's constructor takes two arguments - the locale, and an object with formatting details. 
+  if the locale is omitted or undefined the systems locale will be used 
+Intl.NumberFormat.format() outputs the formatted string:
+
+  let euros = Intl.NumberFormat("es", {style: "currency", currency: "EUR"});
+  euros.format(10);           // "10,00 €"
+
+  let pounds = Intl.NumberFormat("en", "style: "currency", currency: "GBP");
+  pounds.format(1000);        // "£1,000.00"
+
+
+here are a few interesting properties the 2nd argument to the constructor (the object) can have: 
+
+  style                                                         value can be "decimal", "currency", "percent"
+  currency                                                      if style is currency this property is required to specify the type of currency as a 3 letter ISO currency code 
+  currencyDisplay                                               if style is currency this property specifies how the currency is displayed. 
+                                                                  value can be "symbol", "name", or "code" 
+                                                                  "name" spells out the currency name, "symbol" shows the currency symbol, "code" shows the 3 letter ISO code 
+  useGrouping                                                   set to false if you don't want thousands separators (or whatever equivalent the locale uses) 
+
+
+Intl.DateTimeFormat works similar: 
+
+  let d = new Date("2020-01-02T13:14:15Z");
+  Intl.DateTimeFormat("en-US").format(d);                                           // "1/2/2020"
+
+  let opts = { weekday: "long", month: "long", year: "numeric", day: "numeric" };
+  Intl.DateTimeFormat("en-US", opts).format(d);                                     // "Thursday, January 2, 2020" 
+  Intl.DateTimeFormat("en-ES", opts).format(d);                                     // "jueves, 2 de enero de 2020"
+
+interesting properties the 2nd Intl.DateTimeFormat() argument can have: 
+
+  year                                use "numeric" for a 4 digit year or "2-digit" for a 2 digit one 
+  month                               use "numeric" for a possibly shorter number like "1" or "2-digit" for "01". 
+                                        you can also use "long" for a full name, "short" for a short name like "Jan", and "narrow" for a very short one like "J"
+  day                                 "numeric" for one or two digits, or "2-digit" for always 2 digits 
+  weekday                             "long", "short", "narrow"
+  era                                 "long", "short", "narrow" - specifies whether a date should be formatted with an era, such as CE or BCE 
+  hour, minute, second                "numeric" for one or two digits, or "2-digit" for always 2 digits 
+  timeZone                            specifies the desired time zone the date should be shown in. if omitted, the local time zone is used. 
+                                        "UTC" is always recognized, IANA timezone names such as "America/Los_Angeles" are also acceptable 
+  timeZoneName                        "long", "short" - specifies if the time zone should be displayed in long or short format 
+  hour12                              boolean specifies whether to use 12 hour time or 24 hour. the default is locale dependent 
+
+
+sorting strings in non-english languages is more complicated than it seems, non-english languages have weird alphabet rules. 
+  to sort strings in a localized order use Int.Collator. it works similar to the other classes:  
+
+  const collator = new Int.Collator().compare;
+  ["a", "z", "A", "Z"].sort(collabor);                                            // ["a", "A", "z", "Z"]
+
+  const filenameOrder = new Intl.Collator(undefined, { numeric: true }).compare;
+  ["page10", "page9"].sort(ffilenameOrder)                                        // ["page9", "page10"]
+
+  const fuzzyMatcher = new Int.Collator(undefined, {                              // finds the strings that loosely match the target string ... interesting 
+    sensitivity: "base",
+    ignorePunctuation: true
+  });
+  let strings = ["food", "fool", "FØØ Bar"];
+  strings.findIndex(s => fuzzyMatcher(s, "foobar") === 0);                        // 2
+
+interesting properties the 2nd Int.Collator() argument can have:
+
+  usage                               specifies how the collator is to be used. default is "sort", but can also be "search". "sort" uses stricter comparison rules then "search"
+  sensitivity                         specifies whether to be sensitive to letter case and accents when comparing. values can be "base", "accent", "case", "variant" 
+                                        "base" ignores case and accents, considering only the base letter for each character 
+                                        "accent" considers accents but ignores case 
+                                        "case" considers case but ignores accents 
+                                        "variant" considers both case and accent
+                                        if usage is "sort" the default sensitivity is "variant". if usage is "search" the sensitivity is locale-dependent
+  ignorePunctuation                   set to true to ignore spaces and punctuation when comparing strings 
+  numeric                             set to true if the strings are integers or contain integers and you want them to be sorted in numerical instead of string order 
+                                        i.e. 10 coming after 9 
+  caseFirst                           specifies which letter case should come first. can be "upper" or "lower". 
+                                        the default is locale dependent, and some implementations ignore this property
+
+
+console.log() works in both browsers and Node. in Node it prints to the terminal via stdout 
+there are also a number of other console methods that are useful: 
+
+  console.debug(), console.info(), console.warn(), console.error() -
+      all these do the same thing as console.log(), except in Node console.error() prints to stderr instead 
+
+  console.assert() - if the first argument evaluates true then the method does nothing. otherwise they're output to the browser console or to stderr 
+
+  console.clear() - clears the browser console or terminal in Node 
+
+  console.table() - if your argument is a short array of objects this will output it in a very readable format 
+
+  console.trace() - similar to console.log() but also outputs a stack trace. prints to stderr in Node 
+
+  console.count() - similar to console.log(), but also tracks & indicates how many times the string argument passed to it has been logged 
+  console.countReset() - takes a string argument and resets the consoles counter for that string to zero 
+
+  console.group() - similar to console.log(), but also sets the consoles internal state to print subsequent output in an indented format 
+  console.groupCollapsed() - the same as console.group(), but in a browser the group will be collapsed by default 
+  console.groupEnd() - resets the indentation caused by the most recent console.group() / console.groupCollapsed() call 
+
+  console.time() - takes a string argument & starts a timer associated with that string 
+  console.timeLog() - takes a string argument & prints out the elapsed time since the timer started for that string 
+  console.timeEnd() - same as console.timeLog(), but it also ends the timer 
+
+
+the URL class parses a URL & lets you changed search parameters or alter paths without worrying about escape characters or syntax 
+  
+  let url = new URL("https://google.com:8000/path/name?q=term#fragment");
+
+  url.href                  // "https://google.com:8000/path/name?q=term#fragment"
+  url.origin                // "https://google.com:8000"
+  url.protocol              // "https"
+  url.host                  // "google.com:8000/"
+  url.hostname              // "google.com"
+  url.port                  // "8000"
+  url.pathname              // "/path/name"
+  url.search                // "?q=term"
+  url.hash                  // "#fragment"
+
+  url.search = "q=test";                                            // all properties are read/write except origin, which is read only 
+  url.pathname = "api/search";
+  url.href = "https://facebook.com:8000/path/name?q=IanRust"        // setting href changes the whole URL 
+
+  let ftpUrl = new URL("ftp://admin:1337!@ftp.example.com/");
+
+  ftpUrl.origin             // "ftp://ftp.example.com"
+  ftpUrl.username           // "admin"
+  ftpUrl.password           // "1337!"
+
+URL's search property is just a string. if you're working with long queries with multiple parameters, this can unwieldy 
+  an alternative is to use URL's seaarchParams property, which references a URLSearchParams object:
+
+
+  let url = new URL("https://google.com/path");
+
+  url.searchParams.append("q", "term");               // add a search parameter 
+  url.searchParams.set("q", "x");                     // change the search parameter to a different value 
+
+  url.searchParams.get("q");                          // "x"
+  url.searchParams.has("q");                          // true 
+
+  url.searchParams.append("opts", "1");
+  url.searchParams.append("opts", "&");               // add a second search param with the same name 
+  url.searchParams.get("opts");                       // "1" - get the first value
+  url.searchParams.getAll("opts");                    // ["1", "&"] 
+
+  url.search                                          // "?opts=1&opts=%26&q=x"
+
+
+the above URL object is not part of ECMAScript, but it's implemented by Node & all browsers except IE 
+  prior to the URL objects adoption, a number of legacy functions were used to escape characters within URLs 
+
+  encodeURI(), decodeURI()          // these encode the entire URL, and won't escape / ? or #. 
+                                    // for this reason they can't be used if your query parameters contain these characters 
+
+  encodeURIComponent()              // these do escape / ? or #, and are meant to be used on just specific parts of URLs (like the query string) 
+  decodeURIComponent()
+
+avoid using these old URL functions, and just use the URL object 
+
+
+setTimeout() and setInterval() both ask the browser to invoke a callback after a specified time interval 
+  setTimeout() is a one time invocation 
+  setInterval() invokes the function repeatedly on an interval 
+
+
+  setTimeout(() => {
+    ... 
+  }, 1000);               // the 2nd parameter is the number of milliseconds to wait before invoking 
+
+  setInterval(() => {
+    ... 
+  }, 1000);
+
+note that the milliseconds default to 0 if you don't specify a second argument 
+  but this is no guarantee the function will execute immediately. It's placed on the eventQueue & executed asynchronously 
+
+clearTimeout() and clearInterval() tells the browser to cancel the execution of these scheduled callbacks. 
+  they take 1 parameter, which is the return value of setTimeout() or setInterval() respectively. 
+  don't worry about what this object is, its usually a number but its implementation details vary:
+
+  var counter = 0
+  let clock = setInterval(() => {
+    counter += 1; 
+  }, 1000);
+
+  setTimeout(() => {
+    clearInterval(clock) 
+  }, 20000);
+
+
+========================================================================================
+CHAPTER 12, ITERATORS AND GENERATORS 
+========================================================================================
+
+ES6 introduced iterable objects. Arrays, Sets, Maps, and strings are all iterable objects 
+
+ways of iterating over them include: 
+
+  for(let i of [1, 2, 3]) {                                 // for/of loops 
+    ... 
+  }
+  let m = new Map([["one", 1], ["two", 2]]);
+  for(let [k, v] of m) {
+    ... 
+  }
+
+  let chars = [..."abcd"];                                  // the spread operator 
+  let keys = [...m.keys()];
+  let values = [...m.values()]; 
+
+  let [r, g, b, a] = Uint8Array.of(255, 0, 255, 128);       // destructuring assignment 
+
+a number of built-in functions and constructors that previously worked with Arrays were rewritten in ES6 to work with iterators too: 
+
+  new Set("abc");     // ["a", "b", "c"]
+
+
+internally javascript uses 3 structures to perform iteration: 
+  the iterable object             // implements a method named Symbol.iterator that returns an iterator 
+  the iterator                    // has a next() method 
+  the iteration result object     // stores the result of an iteration. has the properties 'value' and 'done' 
+
+here's how for/of over an iterable object could be implemented internally: 
+
+  let iterable = [99];
+  let iterator = iterable[Symbol.iterator]();
+  for(let result = iterator.next(); !result.done, result = iterator.next()) {
+    ... 
+  }
+
+the iterator itself is actually iterable, which can sometimes be useful too: 
+
+  let list = [1, 2, 3, 4, 5];
+  let iterator = list[Symbol.iterator]();
+  let head = iterator.next().value;           // head == 1
+  let tail = [...iterator];                   // tail == [2, 3, 4, 5]
+
+you can make your own classes iterable in two ways: with or without using generators.
+here's how to do it without generators: 
+
+  class RangeOfNumbers {
+    constructor(from, to) {
+      this.from = from;
+      this.to = to;
+    }
+    has(x) { return typeof x === "number" && this.from <= x && x <= this.to; }
+    toString() { return `{ x | ${this.from} <= x <= ${this.to} }`; }
+
+    [Symbol.iterator]() {
+      let nextNumber = this.from;
+      let lastNumber = this.to;
+      return {
+        next() {
+          return (nextNumber <= lastNumber) ? { value: nextNumber++ } : { done: true };
+        }
+      }
+    }
+  }
+
+  for(let x of new RangeOfNumbers(1, 10)) {
+    ... 
+  }
+  [...new RangeOfNumbers(1, 3)];                  // [1, 2, 3] 
+
+
+it is also useful to modify functions to take / return iterables. here's an example implementation of map() that does this: 
+
+  function map(iterable, closure) {
+    let iterator = iterable[Symbol.iterator]();
+    return {      // this object is both an iterator and iterable 
+      [Symbol.iterator]() { return this; },
+      next() {
+        let v = iterator.next();
+        if (v.done) {
+          return v;
+        } else {
+          return { value: closure(v.value); }
+        }
+      }
+    }
+  }
+
+  [...map(new RangeOfNumbers(1, 3)), x => x * x)];    // [1, 4, 9]
+
+
+note that iterators / generators use a streaming approach to processing. 
+  so lets say you need to split a giant string into individual words 
+  if you called split() the entire string has to be processed before the first word is used, and you'll need the entire split array (lots of memory used) 
+  with the iterator you could just call next() once and get the first word, as needed, saving lots of memory / processing time 
+
+
+sometimes iterators should do cleanup at the end of iteration - i.e. close open files. However, iterators don't always run all the way to the end. 
+  for example, you can break out of a for/of loop, and destructuring assignment only returns the number of variables as there are variables in the calling code. 
+  for this reason, iterators can implement a return method that ensures necessary cleanup is performed. 
+  google for details on how to implement this method if its required
+
+
+generators are much easier to implement than custom iterators, and are the preferred approach 
+to create a generator you use ES6's function* syntax: 
+
+  function oneDigitPrimes() {
+    yield 2; 
+    yield 3; 
+    yield 5;
+    yield 7;
+  }
+
+generator functions return a generator object, which is a special type of iterator. 
+  you then call next() off the generator object & it runs the generator function until it encounters yield 
+
+  let primes = oneDigitPrimes();
+  primes.next().value;              // 2
+  primes.next().value;              // 3
+  primes.next().value;              // 5
+  primes.next().value;              // 7 
+  primes.next().done;               // true 
+
+
+generators are iterable, and can be used like other iterables: 
+
+  [...oneDigitPrimes()];            // [2, 3, 5, 7] 
+
+  let sum = 0; 
+  for(let prime of oneDigitPrimes()) {
+    sum += prime;
+  }
+
+
+you can also make generator function expressions:
+
+  const seq = function*(from, to) {
+    for(let i = from; i <= to; i++) {
+      yield i;
+    }
+  }
+  [...seq(3, 5)];             // [3, 4, 5]
+
+
+in classes or object literals just put an * before the method name: 
+
+  let obj = {
+    x: 1, y: 2, z: 3,
+    *g() {
+      for(let key of Object.keys(this)) {
+        yield key; 
+      }
+    }
+  }
+
+  [...obj.g()]            // ["x", "y", "z", "g"]
+
+
+note that there is no way to write a generator function using the arrow function syntax 
+
+generators make it alot easier to define iterable classes by replacing [Symbol.iterator]() with *[Symbol.iterator]() 
+
+  class RangeOfNumbers {
+    constructor(from, to) {
+      this.from = from;
+      this.to = to;
+    }
+    has(x) { return typeof x === "number" && this.from <= x && x <= this.to; }
+    toString() { return `{ x | ${this.from} <= x <= ${this.to} }`; }
+
+    *[Symbol.iterator]() {
+      for(let x = this.from; x <= this.to; x++) {
+        yield x;                                      // you dont have to worry about the iterator internals, the yield statement simplifies the code
+      }
+    }
+  }
+
+
+note that some generators can generate values infinitely, and if you use these with the ... operator it will exhaust all memory & crash the system 
+  in a for/of loop you have to break the loop on some condition 
+
+ES6 has a yield* keyword that simplifies the syntax for making a generator yield all its values, useful in some cases: 
+
+  function* yieldAll(...iterables) {
+    for(let iterable of iterables) {
+      yield* iterable; 
+    }
+  }
+
+  [...yieldAll("abc", oneDigitPrimes())]        // ["a", "b", "c", 2, 3, 5, 7]
+
+note that yield and yield* can only be used within generator functions. 
+
+unlike iterators, generators allow you to pause computation, yield intermediary results, and resume later
+
+generators can also have return statements 
+  void returns simply end execution as you'd expect 
+  with return statement that return values, the final call to the iterators next() will return both a value and done as true.
+    note however that this final return value will be ignored by a for/of loop and spread operators, so better to avoid using it 
+
+also, remember that yield can also be used as an expression - a call to next() can take one argument, which becomes what yield is evaluated as:
+
+  function* incrementor() {
+    let x = 1
+    while(true) {
+      x += yield x;
+    }
+  }
+  let generator = incrementor();
+  generator.next(2).value;              // 1
+  generator.next(2).value;              // 3
+  generator.next(2).value;              // 5
+  generator.next(2).value;              // 7
+
+
+while you can't define a custom return method for doing cleanup like you can with iterators, 
+  you can use the finally block after try/catch within the generator function to ensure cleanup is always executed 
+
+the author feels that generators are complicated and difficult to read, and sinc async await now encapsulates their main use case, should generally be avoided. 
+  I'm not sure if I agree or not, we'll see. 
+
+
+========================================================================================
+CHAPTER 13, ASYNCHRONOUS JAVASCRIPT
+========================================================================================
+
+javascript programs are almost always event-driven, rather than compute-bound (i.e. running continuously until a result is computed)
+
+callbacks are the most basic way of handling asynchronous events. 
+
+  setTimeout(() => {                                        // timers 
+    ... 
+  }, 1000);
+
+  let saveButton = document.querySelector("#saveButton");   // user input events 
+  saveButton.addEventListener("click", function() {
+    ...
+  });
+
+  let request = new XMLHttpRequest();                       // network events 
+  request.open("GET", "https://www.google.com");            // XMLHttpRequest has now been mostly replaced by the fetch() API, covered later 
+  request.send();
+
+  request.onload = function() {
+    if (request.status == 200) {
+      ...
+    }
+  }
+  request.onerror = request.ontimeout = function(e) {
+    ...
+  }
+
+Node has many APIs that take callbacks:
+
+  const filesystemAPI = require("fs");
+
+  filesystemAPI.readFile("config.json", "utf-8", (err, text) => {
+    if (err) {
+      ...
+    } else {
+      ... 
+    }
+  });
+
+
+Node also uses the on() function to register events instead of addEventListener():
+
+  const httpsModule = require("https");
+
+  function fetchFrom(url) {
+    request = httpsModule.get(url);
+
+    request.on("response", response => {        // event is fired when the response headers have been received 
+
+      response.setEncoding("utf-8");
+      let body = "";
+      response.on("data", chunk => {            // event is fired when a chunk of the response body is read 
+        body + chunk; 
+      });
+
+      response.on("end", () => {                // event is fired when the response is complete 
+        if (response.statusCode === 200) {
+          ...
+        } else {
+          ...
+        }
+      });
+    });
+
+    request.on("error", (err) => {
+      ...
+    });
+  }
+
+a promise object represents the result of an asynchronous operation that is guaranteed go arrive (or return an error) in time. 
+
+you register one or more callbacks with the promise, and these are invoked when the result arrives 
+
+one problem with regular callbacks is they end up deeply nested, with callbacks inside callbacks. 
+  promises allow this deeply nested logic to be re-expressed as a chain of promises 
+
+regular callbacks also make error handling difficult, since exceptions aren't propagated back to the caller. 
+  to get around this the caller has to carefully track and propagate errors with callback arguments and return values, but this is tedious 
+  in contrast, promise chains correctly propagate errors 
+
+one limitation of promises is they only represent one asynchronous operation, not repeated operations. 
+  so you could use a promise to implement setTimeout(), but not setInterval() since setInterval() is called repeatedly at an interval 
+  for the same reason you wouldn't use a promise to handle a click event, as this can be called repeatedly 
+  in this cases you'd still resort to using regular callbacks 
+
+
+  getJSON(url).then(data => {       // getJSON() returns a promise. 
+    ...                             // then() executes a callback when the promise is fulfilled 
+  });
+
+  let promise = getJSON(url2);
+  promise.then(data => {            // call then() multiple times, each callback will be invoked when the promise is fulled 
+    ...
+  });
+  promise.then(data => {
+    ...
+  });
+
+
+to handle errors you can pass a second callback to then():
+
+  getJSON(url).then(data => { 
+      ... 
+    },
+    error => {
+      ...
+    }
+  );
+
+here's how to construct a promise:
+
+  let promise = new Promise(function(successCallback, errorCallback) {
+
+    /* request goes here */ 
+
+    if (response.statusCode == 200) {
+      successCallback("success");
+    } else {
+      errorCallback("error");
+    }
+  });
+
+  promise.then(
+    function(value) { ... },
+    function(error) { ... }
+  );
+
+
+in synchronous code, when an error is thrown, it's propagated out to the caller where a catch statement can handle it. 
+  in asynchronous code the caller is no longer on the callstack, so an error can't be propagated out.
+  an error could occur in the promise or in the callbacks, neither will be propagated to the caller.
+
+thus the problem with using a second callback is errors within the success callback won't be handled. 
+  so instead of passing a second callback, people use catch():
+
+  promise.then(
+    value => { ... }
+  ).catch(
+    err => { 
+      if (err instanceof NetworkError) {
+        ...
+      }
+    }
+  );
+
+catch is the equivalent of chaining another then() call, but passing null as the first callback & only implementing the second callback.
+
+fetch() is a promise-based API that replaced XMLHttpRequest. 
+  the promise is fulfilled when the HTTP response begins to arrive and the status / headers are available:
+
+  fetch("/api/user/profile").then(response => {
+    if (response.ok && response.headers.get("Content-Type) === "application/json") {
+      // what can we do here? we don't have the response body yet 
+    }
+  });
+
+when the promise returned by fetch() is fulfilled, it passes a response object to then()'s first callback.
+  this response object gives access to headers / status, but also defines methods like text() and json() for accessing the response body. 
+  but although the initial promise is fulfilled, the body hasn't arrived yet. 
+  so text() and json() actually return promises. 
+
+  fetch("/api/user/profile").then(response => {
+    response.json().then(data => {
+      ...
+    })
+  });
+
+but now we're nesting promises, just like callbacks, which defeats their purpose.
+  so instead what we can do is chain the promises:
+
+  fetch("/api/user/profile")
+  .then(response => {
+    return response.json()
+  })
+  .then(json => {
+    ...
+  });
+
+promises can be fulfilled or rejected. once a promise is fulfilled or rejected, it is settled. until then, the promise is pending. 
+remember that the promise is an actual value. if the promise is fulfilled, the value is also passed to the first callback 
+  if the promise is rejected, the value is also passed to the second callback. 
+promises can also be resolved, which is distinct from it being fulfilled. here's an example:
+
+  function c1(response) {
+    let p4 = response.json()
+    return p4;
+  }
+  function c2(data) {
+    ... 
+  }
+
+  let p1 = fetch("/api/user/profile");
+  let p2 = promise1.then(c1);
+  let p3 = promise2.then(c2);
+
+the promises value is resolved to be the return value of the callback. 
+  normally, if the callback returns synchronously, the promise is also fulfilled at the same time it's resolved. 
+  but if the callback returns a promise, like in this example where c1 returns p4, the promise p2 is resolved but not yet fulfilled. 
+
+
+ES2018 added a finally() clause to promises. 
+  finally() is guaranteed to be invoked when the promise you called it on settles, regardless of whether it's fulfilled or rejected 
+  finally() also returns a promise object. 
+  the promise will be whatever value the preceding promise passed into finally(), 
+    except if an exception is thrown within finally() - then that error will be propagated instead
+
+remember that if an exception occurs in a long promise chain subsequent promises will be skipped until the exception gets handled 
+  if you have a way of recovering from errors it might make sense to insert a catch() in the middle of the chain
+  sometimes retrying the operation makes some sense (though I'd rather just set the timeout of the connection):
+
+    queryDatabase()
+      .catch(e => wait(500).then(queryDatabase))          // retry the query again, maybe a queue was filled up 
+      .then(processData)                                  // (in that case it may cause more congestion though, maybe not really such a good practice)
+
+
+Promise.all() is used to execute multiple asynchronous operations in parallel
+  it takes an array of promise objects as its input and returns a promise 
+  the returned promise will be rejected if any of the inputs are rejected... otherwise it'll be fulfilled with an array of fuifilled promise values
+
+
+  conost urls = ["https://www.google.com", "https://www.facebook.com", "https://www.lichess.com"];]
+
+  promises = urls.map(url => fetch(url).then(r => r.text()));
+
+  Promise.all(promises)
+    .then(bodies => {
+      ...
+    })
+
+
+the input array to Promise.all() can also contain non-promise values, which will just be propagated along to then()
+
+if any single promise fails, Promise.all() rejects. The operations aren't transactional, and some of the operations may be finished or still in flight.
+  to fix these problems, ES2020 introduced Promise.allSettled()
+  Promise.allSettled() never rejects its returned promise, and doesn't fulfill until all the input promises are settled (either rejected or fulfilled). 
+  the promise resolves to an array of objects, each of which has a status property of "fulfilled" or "rejected". 
+    if the promise was fulfilled, the object will have a value property for the promised value. 
+    if the promise was rejected, the object will have a reason property with the error value 
+
+sometimes you may want to run multiple promises at once, but only care about the first one to fulfill. 
+  for this use Promise.race(). it returns the first fulfilled or rejected promise in its input array. 
+
+
+here are some ways of creating promise-returning functions, a useful technique:
+
+  function getJSON(url) {
+    return fetch(url).then(response => {
+      return response.json();                     // json() returns a promise, which fetch() resolves to
+    });
+  }
+
+  function fetchTenderPlan() {
+    return getJSON("orchestra/cxo/fetchTenderPlan").then(data => {
+      return data.tenderPlan
+    });
+  }
+
+  function wait(duration, successCallback) {
+    return new Promise(function(successCallback, errorCallback) {
+      if (duration < 0) {
+        errorCallback(new Error("wait duration < 0"));
+      }
+      setTimeout(successCallback, duration);
+    });
+  }
+
+sometimes you have synchronous special cases within an asynchronous, promise-returning function. 
+  in these cases you can return promises from the static methods Promise.resolve() or Promise.reject().
+  these methods take a value and immediately resolve or reject w/ that value in the caller 
+  this way the caller can handle your return value in a uniform way
+
+there's also a technique that uses Promise.resolve() to create a promise chain of an arbitrary length defined at runtime:
+
+  function fetchSequentially(urls) {
+    const bodies = [];
+
+    function fetchOne(url) {
+      return fetch(url) {
+        .then(response => response.text())
+        .then(body => {
+          bodies.push(body);
+        })
+      }
+    }
+
+    let p = Promise.resolve(undefined);       // creates an initial promise which we'll then chain off of in a loop 
+    for(url of urls) {
+      p = p.then(() => fetchOne(url));
+    }
+
+    return p.then(() => bodies);
+  }
+
+
+async/await can be used to make promises read more like procedural code:
+
+  async function fetchTenderPlan() {
+    let response = await fetch("orchestra/cxo/fetchTenderPlan");
+    let data = await response.json();
+    return data.tenderplan;
+  }
+
+  fetchTenderPlan().then(tenderPlan => {
+    ...
+  })
+
+await can only be used within an async function 
+async always precedes a function. 
+  it works with any kind of function, including inline expressions, arrow functions, and ES6 methods 
+
+await functions always return a promise. 
+note that the code within the async function is asynchronous, it just reads like it's synchronous. 
+
+the return value of an async function will be a promise. 
+  even if you return a normal value, a promise resolved to that normal value will be returned 
+
+because async functions return a promise, you can also await the return values. 
+  hence you can use async/await in nested functions or function hierarchies. 
+  you only have to handle the promise in a traditional way at the top level.
+
+to await a set of concurrently executing async functions you'd use Promise.all():
+
+  let [response1, response2] = await Promise.all([fetchTenderPlan(url1), checkoutPaymentGroups(url2)])
+
+
+here's how async functions are implemented internally:
+
+  // regular async function 
+  async f(x) { 
+    return x + 1;
+  }              
+
+  // a returned promise that resolves to your invoked function
+  function f(x) {
+    return new Promise(function(resolve, reject) {          
+      try {
+        resolve((function(x) {
+          return x + 1;
+        })(x));
+      } 
+      catch {
+        reject(e)
+      }
+    })
+  }
+
+the await keyword is a marker that the interpreter uses to break a function body up into a sequence of separate sub-functions, 
+  each which gets passed to the then() method of the await-marked promise that precedes it.
+  the result is all operations are executed in sequence. 
+  just remember that the awaited operations are still asynchronous. 
+
+like promises, async/await are not suitable for repetitive sequences of asynchronous events, like those generated by setInterval(). 
+  there was some code earlier that could dynamically chain promises, but it was complex, wasn't streaming, and wouldn't work for an unbounded sequence
+to address this, ES2018 introduced asynchronous iterators. 
+  they're similar to regular iterators, but are promise-based and are used with the new for/await loop.
+  like await, for/await must be used within async functions. 
+
+Node 12 made its readable streams iterable using for/await, allowing you to read chunks of data in a stream:
+
+  const fileSystem = require("fs");
+
+  async function parseFile(filename) {
+    let stream = fileSystem.createReadStream(filename, { encoding: "utf-8" });
+    for await (let chunk of stream) {
+      ...
+    }
+  }
+
+the way this works is the asynchronous iterator produces a promise, and the for/await loop waits on the promise to fulfill, 
+  assigns the fulfilled value to a loop variable, and runs the body of the loop.
+
+in the above code, the for/await iterator returns on resolved promises, and the chunks are read in sequentially. 
+  but for/await can also iterate asynchronously, returning with unresolved promises. this would read in all the chunks at once. 
+  this behavior is achieved through the new asynchronous iterators 
+
+an asynchronously iterable object implements a method with the symbolic name Symbol.asyncIterator. 
+  for/await will first check whether the object it's iterating implements Symbol.asyncIterator. if it does, it will iterate asynchronously. 
+  otherwise it will check for Symbol.iterator and iterate synchronously. 
+
+javascript also supports asynchronous generators
+as with synchronous code, the easiest way to implement an asynchronous iterator is with an asynchronous generator 
+
+  // a promise-based version of setTimeout 
+  function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function* clock(interval, max=Infinity) {
+    for(let count = 1; count <= max; count++) {
+      await wait(interval);
+      yield count;
+    }
+  }
+
+  async function test() {
+    for await(let tick of clock(300, 100)) {
+      console.log(tick);
+    }
+  }
+
+note that when using async generators or async iterators to handle real events, if you're iterating sequentially, 
+  you'll often need to queue the incoming events. otherwise you might drop events if multiple events occur in quick succession 
+
+========================================================================================
+CHAPTER 14, METAPROGRAMMING 
+========================================================================================
+
+metaprogramming is writing code to manipulate other code. 
+  since javascript is dynamically typed it allows for all sorts of metaprogramming (so does python)
+
+every property has 4 associated attributes: 
+  writable              whether the value can change 
+  enumerable            whether the property is enumerated by for/in or Object.keys()
+  configurable          whether the property can be deleted or whether its attributes can be changed 
+  value                 the properties actual value 
+
+the only exception to this is getters / setters, which have a get / set property and don't have a value or writable property
+
+ordinary objects have these properties set to true, but many Javascript STL classes disable them 
+  knowing how to set these properties is important if you're implementing a library & need to control access 
+
+the methods for getting / setting these properties use an object called a property descriptor 
+
+  let obj = {"x": 1, "y", 2};
+
+  Object.getOwnPropertyDescriptor(obj, "x");          // { value: 1, writable: true, enumerable: true, configurable: true }
+
+  Object.defineProperty(obj, "z", {                   // the argument is a property descriptor 
+    value: 3,
+    writable: true, 
+    enumerable: false, 
+    configurable: true
+  });
+
+  let obj2 = {};
+
+  Object.defineProperties(obj2, {
+    x: { value: 1, writable: true, enumerable: true, configurable: true },    
+    y: { value: 2, writable: true, enumerable: true, configurable: true },
+    z: { value: 3, writable: true, enumerable: true, configurable: true }
+  });
+
+Object.getOwnPropertyDescriptor() will not work on inherited properties, 
+  you have to explicitly traverse the prototype chain to get those
+
+Object.defineProperty() / Object.defineProperties() can create new properties or change existing properties. 
+  note they will not alter an inherited property 
+  also note these methods will throw a TypeError if one of the following occurs:
+    - not extensible & you try to add a new property 
+    - not configurable & you try to change configurable or enumerable, or change writable to true (you can change writable to false)
+    - not configurable or writable, & you try to change the value. 
+        you can change the value if it's not writable but is configurable, however (since configurable lets you set / unset writable)
+
+Object.create() also accepts a property descriptor as a 2nd optional argument for setting these properties on the newly created object
+
+
+the extensible property specifies whether new properties can be added or not 
+  trying to add properties to a non-extensible object, or set its prototype, throws a TypeError 
+  you can, however, add properties to the object's prototype and it will inherit them 
+
+objects are extensible by default. 
+they can be changed to non-extensible, but can't be reverted back:
+
+  let obj = {"x": 1, "y", 2};
+
+  Object.isExtensible(obj);         // true 
+  Object.preventExtensions(obj);    // make the object no longer extensible 
+  Object.isExtensible(obj);         // false 
+
+configurable, writable, and extensible are often used in combination to prevent modification to an object 
+  javascript provides convenience methods for configuring all 3 of these properties at once:
+
+  Object.seal()               // makes the object non-extensible, and makes all of its own properties non-configurable 
+                              // this means new properties can't be added, existing properties can't be deleted or configured 
+                              // existing properties that are writable can still be set, however 
+
+
+  Object.freeze()             // does everything Object.seal() does, but also makes all properties read-only. so locks it even more tightly 
+
+  Object.isSealed()           // indicate if object is sealed or frozen 
+  Object.isFrozen() 
+
+note again that Object.seal() and Object.freeze() only effect the object passed to it, not its prototype chain. 
+  to completely lock down an object you have to seal / freeze its prototype chain also 
+
+
+remember that the prototype property is located on the objects constructor function, not the object itself
+  so you typically work with prototype using a couple methods: 
+
+  let obj = {"x": 1, "y", 2};
+  let obj2 = Object.create(obj);
+
+  // isPrototypeOf() tests whether one object is in the prototype chain of another 
+  obj.isPrototypeOf(obj2);                // true - remember Object.create()'s first argument specifies the prototype 
+  Object.prototype.isPrototypeOf(obj)     // true 
+  Object.prototype.isPrototypeOf(obj2)    // true 
+
+  // getPrototypeOf() returns the immediate parents prototype
+  Object.getPrototypeOf({});              // Object.prototype 
+  Object.getPrototypeOf([]);              // Array.prototype 
+  Object.getPrototypeOf(()=>{});          // Function.prototype 
+
+
+in ES6 now you can use the extends keyword to easily subclass the built in types:
+
+  class SwiftArray extends Array {
+    get first() { return this[0]; }
+    get last() { return this[this.length-1]; }
+  }
+
+  let arr = new SwiftArray(1, 2, 3);
+  let arr2 = arr.map(x => x * x); 
+  arr.first;                                  // 1
+  arr2.last;                                  // 9
+
+in the above example Array defines the map() method, SwiftArray inherited it 
+  should the inherited methods (like map) return instances of Array or SwiftArray? 
+  in ES6 they return SwiftArray instances. 
+    in ES6 the Array() constructor function has a property Symbol.species (as do other built-in types)
+    the constructors of extended classes inherit properties from their parents constructors. 
+      so they also have a Symbol.species property on their constructors
+    but Symbol.species is actually a getter that returns the this pointer (it points to the constructor itself)
+    ES6 tweaked built-in methods like map() and slice() to create new instances using Symbol.species
+    basically Symbol.species allows the inherited method to access the this pointer of the subclass constructor, which is then used to construct new objects 
+      how is Symbol.species accessed in the inherited method? why couldn't they just pass the this pointer? read about it if more detail is required  
+
+
+
+pg 391, 14.4.5, Symbol.isConcatSpreadable
+
+
+
+
+
+
+
+
+
+

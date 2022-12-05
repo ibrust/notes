@@ -1,0 +1,519 @@
+import UIKit
+import Combine
+
+// ----------------------------------------------
+// CHAPTER 1 - INTRODUCTION
+// ----------------------------------------------
+/*
+pretty much all applications have some level of asynchrony. A UI application is inherently asynchronous. Core data / networking APIs are asynchronous. 
+traditional ways of handling asynchrony in iOS include: notifications, timers, delegates, operations, closures, GCD
+combine is not designed to take away from well tested asynchronous APIs like timer or notifications, but integrate with them all. 
+    combine thus enables these different asynchronous APIs to integrate with one another 
+Rx.NET was the first modern data binding framework, put out by Microsoft. 
+    It was made opensource in 2012 this is where Rx.Swift, RxJS, RxPHP, & all the other Rx's (Reactive Extensions) originate from 
+Combine implements a slightly different standard called Reactive Streams. 
+Combine can be used only on iOS 13+ / Mac OS Catalina or later 
+
+the three important components of combine are publishers, operators, and subscribers 
+    publishers emit values over time to one or more interested parties (such as subscribers) 
+        regardless of the internal logic of the publisher, which can be anything, 3 types of events can be emitted
+            1) an output value of the publishers generic Output type 
+            2) a successful completion 
+            3) a completion with an error of the publishers Failure type 
+        a publisher can emit zero or more output values, and at most one completion (not guaranteed). 
+            Once it completes, either successfully or with error, it is finished emitting 
+
+        any kind of event you can think of can be represented with this simple 3 part contract, it's a universal event contract 
+        so instead of looking for the right asynchronous tool to use (notification, delegation, etc.), you can always just use a publisher instead. 
+        another advantage of publishers is the error handling is built into the contract 
+
+        the Publisher protocol is generic over those two types: 
+            Publisher.Output - the type of output value of the publisher 
+            Publisher.Failure - the type of error the publisher can throw if it fails 
+        when you subscribe to a publisher you know what values & errors to expect from it 
+
+    operators are methods declared on the publisher protocol that return either the same publisher, or a new publisher. 
+        that allows you to call a bunch of operators one after another, chaining them together.
+        operators are orthogonal. they can be combined in various ways (hence the name combine) to implement complex logic over a single subscription 
+        operators fit together like puzzle pieces: ones output must match the next ones input type, and so fourth. 
+        the are locking mechanisms around the operators that prevent race conditions between multiple data streams 
+
+    subscribers are the thing at the end of the subscription chain. 
+        they generally do something with the emitted output or completion events that arrive at the end of the chain 
+        currently combine provides 2 built-in subscribers: 
+            sink    - this subscriber allows you to provide closures to receive the output values / completions at the end of the chain 
+                        in this closure you can do literally anything you want with the chains output
+            assign  - this allows you to bind the output to some property in the data model,
+                        or bind it to a UI control to display the data on screen via a key path (?)
+
+    subscription - this term refers to both Combine's Subscription protocol and conforming objects, and the full chain of publisher > operator > subscriber 
+        when you add a subscriber at the end of a subscription it activates the publisher at the beginning of the chain 
+            this is important to remember - publishers do not emit any events until there's a subscriber attached at the end 
+        this is the declarative nature of combine - the subscriber chain is declared once, and then each time an event is published the whole chain is run through 
+
+    Cancellable - your subscription chain returns a Cancellable object. whenever you release this from memory the entire chain is cancelled & cleaned up 
+        this means you can easily 'bind' the lifespan of your subscription by storing it in a property on your view controller, for example 
+        similarly, you can just have an [AnyCancellable] collection property and fill it with all the subscriptions you want & store it as a property on your view contorller 
+
+    here are some benefits of using combine in a project: 
+        combine is integrated on the system level, giving you access to system functions that you otherwise wont be able to access (better performance) 
+        combine abstracts async operations as operators, which are orthogonal 
+            operators are more orthogonal than handlers & delegate methods, which need separate implementations for each button & gesture you handle 
+        when all your asynchronous code uses the same interface - Publisher - their recombinability takes on a life of its own 
+        custom Combine operators integrate perfectly with the rest of Combine 
+        Combines asynchronous operators are already tested. all you have to test is your business logic - provide some input and test if your chain outputs the correct result 
+
+    combine is not a framework that effects how you structure your apps architecture. it's just a contract for handling an event stream. 
+        you can use it selectively, however you wnat - with MVC or MVVM. there is no 'all or nothing' choice you must make 
+        for example - you could start by converting your data models, or adapting your network layer, or using it just in new code you write
+*/
+
+// ----------------------------------------------
+// CHAPTER 2 - PUBLISHERS & SUBSCRIBERS 
+// ----------------------------------------------
+
+/*
+the Publisher protocol defines the requirements for a type to be able to emit events containing values to subscribers
+    Publisher has an Output and Failure type, and 2 methods:  
+        subscribe<S>(_ subscriber: S)       <- called by a subscriber to attach to the publisher 
+        receive<S>(subscriber: S)           <- the implementation of subscribe() calls this, forming a two way connection. Why the separation? No further details are given. 
+
+the Subscriber protocol defines the requirements for a type to be able to receive values / a completion from a publisher
+    Subscriber has an Output and Failure type, and 3 receive() methods: 
+        receive(subscription: Subscription)                         <- the publisher calls this to give the subscriber the subscription 
+        receive(input: Self.Input) -> Subscribers.Demand            <- the publisher calls this to pass a new value. 
+        receive(completion: Subscribers.Completion<Self.Failure>)   <- the publisher calls this to pass its completion 
+
+    these methods can be used to control the stream. the number of values the subscriber will accept is set initially, and can be increased when returning Subscribers.Demand
+        note that adjustments to the max are additive every time receive(input:) is called
+
+AnyCancellable conforms to the Cancellable protocol and therefor implements a cancel() method
+    cancel() unsubscribes from the publisher. if you don't call cancel() the subscriber stays subscribed until the publisherh completes or the subscriber is deallocated 
+
+the Subscription protocol also conforms to Cancellable, and it adds a request method. Subscription defines the connection between the publisher & subscriber: 
+    request(_ demand: Subscribers.Demand)               <- the subscriber calls this to indicate it is willing to receive more values, up to a max or unlimited number 
+
+    request is called to indicate the subscriber is willing to receive more values, up until a max or unlimited amount (prevents flooding of the subscriber)
+
+this idea of the subscriber stating how many values it's willing to receive to prevent flooding is referred to as 'backpressure management' 
+    note that if you reach the limit of values a subscriber is willing to accept it will not receive a completion event, it will just immediately unsubscribe 
+
+remember the Output and Failure types of the publisher & subscriber must match for a connection to be created between them
+
+PassThroughSubject / CurrentValueSubject are both Subjects. A Subject acts as a bridge between non-combine, imperative code and combine. 
+    with both PassThroughSubject / CurrentValueSubject you can take an imperative piece of data and send it to subscribers. 
+        CurrentValueSubject is a stored property, allowing you to check the current value of the subject (the most recently sent value). 
+            in addition to sending it values you can directly assign it a value 
+        PassThroughSubject does not store its value, hence the name 
+
+What is the difference between using CurrentValueSubject and @Published?
+    from stackOverflow: 
+        "@Published is intended for use in SwiftUI. Use @Published within your ObservableObjects for your SwiftUI views."
+        "CurrentValueSubject is a subject: a value, a publisher and a subscriber all in one."
+        "Subjects can be part of a protocol, used within a class, used as subscribers, and put in top level code. @Published vars cannot"
+        "@Published automatically fires objectWillChange.send() when used inside an ObservableObject. The subjects will not." 
+        "In @Published, when the property changes, publishing occurs in the property’s willSet block, 
+            meaning subscribers receive the new value before it’s actually set on the property."
+        "One advantage on @Published is that it can act as a private-mutable, public-immutable Publisher, unlike CurrentValueSubject - useful when designing APIs"
+    the @Published property wrapper needs to synthesize properties to bridge your value to an associated Publisher. 
+        This only works with reference types - with value types you'd end up with different copies of the value / synthesized values
+
+some specific publishers / subscribers / operators: 
+    Just is a publisher that emits a single result or failure to each subscriber once and then finishes
+    
+    Future is a publisher that ~asynchronously~ emits a single result or failure to each subscriber only once
+        it invokes a closure (of type Promise) where the asynchronous work is done. 
+            public typealias Promise = (Result<Output, Failure>) -> Void
+        unlike regular Publishers, a Future executes the moment it is created - even before any subscriptions occur. while waiting for an event it accumulates subscribers
+        the promise is executed only once, and all subscribers receive the same value. 
+        If you want the Future to defer its execution, and execute the work every time its subscribed to, you can wrap the Future in a Deferred publisher
+        One common use of a Future is to wrap existing asynchronous code to turn it into a publisher
+
+    the assign subscriber (the built in alternative to sink) allows you to bind the received value to a KVO compliant property 
+    
+    the notifications API has a publisher property you can use to subscribe to any notification event 
+
+    print() is an operator you can insert in the middle of a subscription chain to output the current value being passed along 
+
+    publishers have an eraseToAnyPublisher() method that wraps them in an AnyPublisher. 
+        AnyPublisher is a generic interface that provides privacy to the underlying publisher. 
+        For example, PassthroughSubject's send() method is no longer visible after being wrapped by AnyPublisher 
+        AnyPublisher is useful because a chain of subscribers end up returning a convoluted, recursive Publisher type which you often don't want to expose. 
+    AnyCancellable is similar - this is a wrapper around a Subscription type that hides its interface
+
+questions: 
+    what's the essential difference between using AnyCancellable and Subscription? Both conform to cancellable... 
+*/
+
+
+// the below code shows how you can turn your old notification API into a publisher
+// this seems powerful for use even in new applications - notifications are accessible everywhere & there are many events defined for them
+
+    let the_notification = Notification.Name("the_notification_name")                                           // the notification has already been registered somewhere else 
+    let notification_publisher = NotificationCenter.default.publisher(for: the_notification, object: nil)       // returns a publisher, emits events when notifications occur     
+
+    let center = NotificationCenter.default         // here's the traditional way of observing notifications 
+    let observer = center.addObserver(                  
+        forName: the_notification,
+        object: nil,
+        queue: nil,
+        using: { current_notification in
+            print("notification received", current_notification)
+        }
+    )
+    center.post(name: the_notification, object: nil)
+    center.removeObserver(observer)
+
+
+// here we show the sink method - we instantly sink into the notification publisher 
+// we also show the use of cancel() by a subscription 
+
+    let the_notification = Notification.Name("the_notification_name")
+    let notification_publisher = NotificationCenter.default.publisher(for: the_notification, object: nil)
+    let center = NotificationCenter.default
+    
+    let the_subscription = notification_publisher.sink { _ in           // subscribe to the now published notification emitted from the notification center 
+        print("Notification received from publisher by subscriber.")
+    }
+    center.post(name: the_notification, object: nil)                    // emit the event from the notification center, which triggers the publisher 
+    the_subscription.cancel()                                           // instead of calling removeObserver() like with normal notification, here we cancel the subscription
+
+
+// here we show the Just subscriber in use 
+// notice sink's receiveCompletion and receiveValue
+
+    let just = Just("send_this_message")
+    _ = just.sink(
+        receiveCompletion: {
+            print("first just.sink completion: ", $0)
+        },
+        receiveValue: {
+            print("first just.sink value: ", $0)
+        }
+    )
+    _ = just.sink(                                                      // both these subscriptions will receive the event from Just one time 
+        receiveCompletion: {                                            // remember that sink actually triggers the publisher to begin emitting events. 
+            print("second just.sink completion: ", $0)                      // in this case Just was primed with a value, and that value was triggered to emit by sink. 
+        },                                                                  // but interestingly all the subscribers were able to receive a value, there was no race condition
+        receiveValue: {
+            print("second just.sink value: ", $0)
+        }
+    )
+
+
+// example of using the assign subscriber to bind the received value to a KVO compliant property 
+// notice _ is ignoring the subscription. in a project this will clean up the subscription the moment the scope exits (this example was written in playground)
+
+    class some_class {
+        var kvoCompliantProperty: String = "" {
+            didSet {
+                print(kvoCompliantProperty)
+            }
+        }
+    }
+    let the_object = some_class()
+    let the_publisher = ["cat", "rat", "bat", "dat"].publisher
+    
+    _ = the_publisher.assign(to: \.kvoCompliantProperty, on: the_object)        
+
+// assign lets you bind the published result to a KVO property
+// what about observing a KVO compliant propertly? use .publisher(for:) 
+// Here's an example from our code: 
+
+    _walletController.publisher(for: \.testHooks.loadingView.isHidden).sink(
+        receiveValue: {
+            print("first just.sink value: ", $0)
+        }
+    ).store(in: &subscriptions)
+
+
+// create a custom subscriber, conforming to the Subscriber protocol & implementing the 3 functions
+    
+    let publisher = (1...6).publisher                                       // even a range has a publisher
+    
+    final class MyIntSubscriber: Subscriber {                               // this is the class conforming to the Subscriber protocol... now it can subscribe
+        typealias Input = Int
+        typealias Failure = Never
+        
+        func receive(subscription: Subscription) {                          // triggered once, as soon as the publisher is bound to the subscriber
+            subscription.request(.max(3))                                   // max here specifies the initial total number of events to be emitted by the subscriber
+        }
+        
+        func receive(_ input: Int) -> Subscribers.Demand {                  // triggered each time a new value is delivered
+            print("Received value", input)
+            return .none                                                    // here we add .none to the max events, so this subscriber will terminate after 3 total events
+        }
+        
+        func receive(completion: Subscribers.Completion<Never>) {           // ?
+            print("Received completion", completion)
+        }
+    }
+
+    let subscriber = MyIntSubscriber() 
+    publisher.subscribe(subscriber)                                         // remember, for a publisher to emit anything the subscriber must call its subscribe() method 
+
+
+// more practical example of a custom subscriber I wrote - I think it might do the same thing as first(where:) though ...
+
+    class AfterTrue: Subscriber, Cancellable {
+        typealias Input = Bool
+        typealias Failure = Never
+        var callback: (() -> Void)
+        var subscription: Subscription?                         // this subscriber holds its own subscription - it creates a temporary retain cycle but eventually cancels it
+
+        init(callback: @escaping (() -> Void)) {
+            self.callback = callback
+        }
+        func receive(subscription: Subscription) {
+            self.subscription = subscription                            // hold onto the subscription so you can call cancel() later - it conforms to cancellable
+            subscription.request(.max(1))
+        }
+        func receive(_ input: Bool) -> Subscribers.Demand {
+            if input {
+                return .max(1)
+            } else {
+                callback()
+                cancel()
+                return .none
+            }
+        }
+        func receive(completion: Subscribers.Completion<Never>) {}      // I could never figure out why this never got called. I was observing a CurrentValueSubject... I don't know. 
+        func cancel() {                                                 // even after calling cancel() the completion never got called, so I moved the callback into receive(input:)
+            subscription?.cancel()
+            subscription = nil
+        }
+    }
+
+
+// example of using Future 
+
+    func createFuture() -> Future<Int, Never> {
+        return Future { promise in
+            promise(.success(42))
+        }
+    }
+
+    let future = createFuture()                     // Future is created - closure begins executing
+    future.sink(receiveCompletion: {
+        print($0)
+    }, 
+    receiveValue: {
+        print($0)
+    })
+    .store(in: &subscriptions)
+
+
+// example of wrapping a Future with deferred, causing it to defer its execution until it receives a subscription & execute multiple times
+
+    func createDeferredFuture() -> AnyPublisher<Int, Never> {
+        return Deferred {
+            Future { promise in
+                promise(.success(42))
+            }
+        }.eraseToAnyPublisher()                             // the author says this was only done to have a clean return type - it's optional
+    }
+
+    let future = createDeferredFuture()                     // closure is not executing yet
+
+    let sub1 = future.sink(receiveValue: { value in         // the Future executes because it has a subscriber
+        print("sub1: \(value)")
+    }) 
+
+    let sub2 = future.sink(receiveValue: { value in         // the Future executes again because it received another subscriber
+        print("sub2: \(value)")
+    }) 
+
+
+// example of PassThroughSubject 
+
+    let subscriber = MyIntSubscriber()                      // custom subscriber made earlier 
+    let subject = PassThroughSubject<Int, Never>()
+
+    subject.subscribe(subscriber)                           // you subscribe to a Subject like a normal Publisher 
+    let subscription =  subject.sink(
+        receiveCompletion: { completion in 
+            ... 
+        },
+        receiveValue: { value in 
+            ... 
+        }
+    )
+    ... 
+    subject.send(17)                                        // PassThroughSubjects enable you to publish specific values on demand
+    subject.send(32)                                        // these values may come from your imperative code - thus PassThroughSubject is a bridge from imperative to combine 
+    subject.send(completion: .finished)
+
+
+// example of CurrentValueSubject 
+
+    let subscriber = MyIntSubscriber() 
+    let subject = CurrentValueSubject<Int, Never>(0)        // notice the 0 at the end - you have to initialize a CurrentValueSubject with a value 
+
+    subject.subscribe(subscriber) 
+
+    subject.sink(receiveValue: { ... })
+           .store(in: &subscriptions)
+    ... 
+    subject.send(17)
+    print(subject.value)                                    // 17 
+    subject.value = 32                                      // in addition to sending values, you can also directly assign to the value property - an imperative style
+    print(subject.value)                                    // 32 
+    subject.send(completion: .finished)
+
+
+// more practical example of CurrentValueSubject 
+
+    class Car {
+        var kwhInBattery = CurrentValueSubject<Double, Never>(50.0)
+        let kwhPerKilometer = 0.14
+
+        func drive(kilometers: Double) {
+            var kwhNeeded = kilometers * kwhPerKilometer
+
+            assert(kwhNeeded <= kwhInBattery.value, "Can't make trip, not enough charge in battery")
+
+            kwhInBattery.value -= kwhNeeded                     // assignment to the Subject works just the way .send() does, apparently 
+        }                                                       // note that unlike PassThroughSubject, CurrentValueSubject has a stored value associated with it
+    }
+
+    let car = Car()
+
+    car.kwhInBattery.sink(receiveValue: { currentKwh in
+        print("battery has \(currentKwh) remaining")
+    })
+
+    car.drive(kilometers: 200)
+
+
+// example of the print() operator 
+
+    let subject2 = CurrentValueSubject<Int, Never>(0) 
+    subject2.subscriber(subscriber) 
+    subject2.print()                                        // outputs the current value of subject2 and passes it along 
+            .sink(receiveValue: { ... })
+            .store(in: &subscriptions) 
+
+
+// example of eraseToAnyPublisher() 
+
+    let subject3 = PassthroughSubject<Int, Never>() 
+
+    let anyPublisher = subject.eraseToAnyPublisher()        // wraps the publisher in an instance of AnyPublisher. 
+                                                            // since its type is now AnyPublisher it no longer has a send() method. So this provides access control 
+    anyPublisher.sink(receiveValue { ... })
+                .store(in: &subscriptions)                  // the public uses it like a generic publisher
+
+
+// ----------------------------------------------
+// CHAPTER 3 - TRANSFORMING OPERATORS  
+// ----------------------------------------------
+
+/*
+combine operators actually return publishers. 
+    generally they receive the upstream value, manipulate the data, & send the result downstream 
+
+unless an operators purpose is to handle errors it will propagate them downstream 
+
+publishers can emit individual values or collections of values 
+    the collect() operator transforms a stream of individual values into a collection 
+    collect() accumulates published values into an array & emits them all once the publisher completes 
+        you can also specify w/ collect() that you only want to wait until a certain number of values are received before emitting 
+
+    map() lets you do transformations on the collection 
+    there are also specific map functions for mapping into one, two, or three properties of a class using key paths 
+        map<T>(_:)
+        map<T0, T1>(_:_:)
+        map<T0, T1, T2>(_:_:_:) 
+
+several operators have a related 'try' operator - i.e. map has a related tryMap
+    these 'try' operators perform the regular operation, but also emit an error downstream if one is thrown 
+
+flatMap is typically used when your publisher emits publishers as values. 
+    it combines all the upstream events emitted by publishers, and published publishers, into a single event stream 
+    this can be performance taxing. so it takes an argument, maxPublishers, which can limit the max number of publishers to include in the stream 
+        "it might seem like Combine is simply an abstraction for performing various asynchronous operations
+            ... but combine allows enables us to construct increasingly complex data pipelines that can use multiple inputs"
+
+replaceNil(with:) - replaces all nils in the stream with the argument
+    Combining this with map({ $0! }) is good way to convert optionals to non-optionals in a stream 
+
+replaceEmpty(with:) - inserts a value if a publisher finishes without emitting any values
+
+Empty is a publisher type that immediately emits a completion event. It never returns a value.
+    let empty = Empty<Int, Never>() 
+    mainly this is used for mocking 
+
+scan(_:_:) will pass along both the previous and current events, allowing you to use them together in a closure. 
+    it is initialized with a value, which will be $0 in the initial event. 
+    there's also an error throwing tryScan 
+*/
+
+
+// example of collect() 
+
+    [1, 2, 3, 4, 5, 6].publisher
+    .collect()
+    .sink(receiveCompletion: { print($0) }, 
+          receiveValue: { print$0 })
+    .store(in: &subscriptions)
+
+    ["A", "B", "C", "D", "E"].publisher
+    .collect(2)                                         // outputs 2 values at a time (until the end when there's 1 left) - ["A", "B"] > ["C", "D"] > ["E"]
+    .sink(receiveCompletion: { print($0) }, 
+          receiveValue: { print($0) })
+    .store(in: &subscriptions)
+
+
+// example of map() 
+
+    [1, 2, 3].publisher 
+    .map({ $0 * 2})
+    .sink(receiveValue: { print($0)} )
+    .store(in: &subscriptions)
+
+
+// example of map<T0, T1>(_:_:) which uses keypaths (there's also map<T>(_:) and map<T0, T1, T2>(_:_:_:))
+
+    struct Point {
+        x: Double 
+        y: Double 
+    }
+    let publisher = PassThroughSubject<Point, Never>() 
+
+    publisher
+        .map(\.x, \.y)                              // so we're extracting the properties out of the Point type
+        .sink(receiveValue: { x, y in               // here we return a set of the extracted properties 
+            print(x, y)
+        }) 
+        .store(in: &subscriptions) 
+
+    publisher.send(Point(x: 10.5, y: 12.3))
+
+
+// example of tryMap 
+
+    Just("nonexistent_directory_name")          // Just here will pass a nonexistent directory name downstream 
+        .tryMap { FileManager.default.contentsOfDirectory(atPath: $0) }
+        .sink(
+            receiveCompletion: { print $0 },    // tryMap will output a failure completion event here 
+            receiveValue: { print $0 }
+        ).store(in: &subscriptions)
+
+
+// example of replaceNil(with:)
+
+    [1, 2, nil, 8, 5].publisher 
+        .replaceNil(with: 17)
+        .map({ $0! })                               // change stream to non-optional 
+        .sink(receiveValue: { print($0) }           // the output is an array of non-optionals. 
+        .store(in: &subscriptions)
+
+
+// ----------------------------------------------
+// CHAPTER 4 - FILTERING OPERATORS 
+// ----------------------------------------------
+
+/*
+
+
+*/

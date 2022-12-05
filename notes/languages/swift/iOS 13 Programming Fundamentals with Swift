@@ -1,0 +1,1535 @@
+=======================================================
+CHAPTER 1 - THE ARCHITECTURE OF SWIFT 
+=======================================================
+in swift everything is an object - even literals
+you can call methods off literals: 
+    17.description 
+
+every dot (.) is a message to / from an object. 
+even operators are actually messages that use operator syntax
+    1 + 2
+
+messages are an objective-c concept. it appears that any property or method access on an object is a message sent to it
+
+you can extend any object, and this includes primitives: 
+    extension Int {
+        var asString: String {
+            return String(self) 
+        }
+    }
+
+there are 3 kinds of object classes: class, struct, and enum 
+    primitives are structs 
+
+so all variables are actually references behind the scenes 
+
+executable code must always go inside a function. ultimately you are writing an iOS app, so therea ere certain functions the runtime will 
+    call, and naturally you will have places to put your executable code. 
+the only place you can have top level executable statement is in main.swift. you can use main.swift in projects, but generally do not need to 
+
+4 things can go at the top level of swift files: 
+    object declarations 
+    import statements 
+    function declarations 
+    variable declarations           // declarations at the top level are global 
+
+there are 3 levels of scope in swift: 
+    module level 
+    file level 
+    curly-brace level 
+
+a module is the top-level namespace. your app is a module and has its own namespace. that namespace's name is, by default, the name of the app.
+when you import a module all the modules top-level declarations become accessible without the need to precede them by the modules namespace name 
+
+Swift itself is defined in a module - the Swift module. You don't have to import it because your code always implicitly imports it. 
+the Swift module is where things like print() come from - print is a top-level declaration inside the Swift moduel. 
+    this explains why you're able to use print() anywhere.
+if you wanted to you could access print() through Swift.print(). You would only do this if you had defined your own print() within your local namespace 
+    (it may be useful to override some Swift top-level declarations in your projects - keep it in mind)
+
+=======================================================
+CHAPTER 2 - FUNCTIONS 
+=======================================================
+
+remember that all executable code is in functions 
+
+the omission of return in single-line functions was added in Swift 5.1 to accommodate SwiftUI. 
+    It's not really good practice and it's better to use return 
+
+though it's legal to ignore the result of a function call, you will get a compiler warning. 
+    to silence this warning use _ = funcname() or @discardableResult. you'd only do this is the function has a side effect 
+
+functions that return nothing, Void, or () all do the same thing 
+    again you only call these functions for their side effects 
+
+overloading in Swift occurs if two functions names and variables are exactly the same, 
+    but their function signatures (parameter or return types) are different: 
+        func makeNoise(_ animal: Cow) {} 
+        func makeNoise(_ animal: Dog) {} 
+
+overloading can lead to an ambiguous variable type, so watch out: 
+    func getPrimitive() -> Int {} 
+    func getPrimitive() -> String {} 
+    ... 
+    let x = getPrimitive()          // x is ambiguous
+
+variadic parameters (indicated by ...) can take as many values of its type as desired, separated by commas. 
+    The function body will receive these values as an array
+        func sayWords(_ arrayOfWords: String ...) {
+            for word in arrayOfWords { print(word) }
+        }
+        ... 
+        sayWords("hi", "my", "name", "is", "fred")
+
+a function can declare a maximum of 1 variadic parameter 
+unfortunately in Swift 5.1 there's no way to convert an array into a comma-separated list of values (a variadic parameter input) 
+    (is there a workaround for this? or do any new Swift versions address this?)
+
+you can have ignored parameters. I think this could only be useful when using some sort of API: 
+    func say(word _: String) { 
+        return "nothing"
+    }
+    ...
+    say("hello")            // "hello" is never used 
+
+UnsafeMutablePointer is a C-style pointer type often used for interfacing with objective-C. 
+
+    you can call Cocoa functions using it:
+        func getRedness(_ red: UnsaveMutablePointer<CGFloat>) { ... }           // imagine this is a real Cocoa function 
+        ... 
+        var red: CGFloat = 0 
+        getRedness(&red)                // pass it a memory address 
+
+    you may also use it while implementing a function for Cocoa to call: 
+        func popoverPresentationController(_ popoverPresentationController: UIPopoverPresentationController,
+                                           willRepositionPopoverTo rect: UnsaveMutablePointer<CGRect>,
+                                           in view: AutoreleasingUnsaveMutablePointer<UIView>) {
+            view.pointee = self.button2 
+            rect.pointee = self.button2.bounds 
+        }
+
+classes are pass by reference; structs & enums are pass by value 
+
+functions are first-class in Swift & can be used anywhere a value can be used - passed as a parameter, returned as a result, assigned to a variable, etc. 
+consider using typealias with function signatures if they get too long / cumbersome: 
+    typealias voidFunction = () -> () 
+
+you can define and immediately call closures (similar to javascript) 
+    one use of this might be to define a middle parameter in a function call. I'm not sure of other uses, the author says he'll mention them 
+        func doSomething(param1: {
+                    let obj = Object()
+                    obj.prop1 = 10 
+                    obj.prop2 = "word"
+                    return obj 
+                }(), 
+                param2) {
+            ...
+        }
+
+apparently closures can modify the variables they capture. The author even implies this applies to pass by value types. I'll have to try this in the playground- 
+    func pass100(_ f: (Int) -> ()) {
+        f(100)
+    }
+    var x = 0 
+    print(x)                    // old value 
+    func setx(newX: Int) {
+        x = newX
+    }
+    pass100(setX) 
+    print(x)                    // new value 
+
+like in javascript you can give persistent state to a function via returning it as a closure: 
+    func getCounter() -> (() -> ()) {
+        var count = 0 
+        return {
+            count += 1
+            print("count: ", count)
+        }
+    }
+    let counter = getCounter() 
+    counter()                   // 1
+    counter()                   // 2
+    counter()                   // 3
+
+
+the compiler forces you to use self in closures because the self has been captured by the closure, and the compiler wants that to be explicit 
+
+curried function: this is a function that returns a function that takes a parameter. it's named after Haskell Curry (inventor of Haskell?) 
+    so this returned function has some persistent state, and some parameterized state. 
+
+you can assign functions, or pass them as parameters, using the name of the function. but what if there are multiple implementations of that function name? 
+    in that case you should specify which function signature you're passing using the as keyword: 
+        func bark() { ... } 
+        func bark(_ loudly: Bool) { ... } 
+        ... 
+        let barkFunction = bark as (Bool) -> ()
+
+in objective-C, a selector is a function pointer. In Cocoa you often must call functions that expect a selector parameter, usually named selector: or action: 
+    to form the selector it is necessary to construct a string representing the method's objective-C name. 
+        if the string for the objective-C function name isn't formed right you will get an 'unrecognized selector' crash 
+        since this is a common mistake and error-prone, Swift has the #selector syntax to help you construct the selector 
+        with the #selector syntax the compiler validates the function reference and forms the string for you 
+        
+            @IBOutlet var button : UIButton! 
+            func viewDidLoad() {
+                super.viewDidLoad() 
+                self.button.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside) 
+            }
+            @objc func buttonPressed(_ sender: Any) { ... }
+
+        you can still crash even with the #selector syntax if you send the message to the wrong target (one that doesn't have the function) 
+        very rarely you may need to create the string manually. in this case the raw string would be "buttonPressed:". you'll probably never use this approach
+
+=======================================================
+CHAPTER 3 - VARIABLES AND SIMPLE TYPES 
+=======================================================
+
+you don't have to initialize variables or constants when they're declared
+    this is generally only good practice w/ class properties where you have initializers
+
+sometimes you want to do some computation while initializing a variable. you can use the anonymous function call method: 
+    let backgroundImage: UIImage = {
+        // draw into a context & return an image 
+    }()
+
+you cannot initialize a class property using one of the class's own methods 
+    the reason is you can't refer to self in a properties initializer because the self hasn't been created yet. 
+    you can use the anonymous function call as an initializer, but still cannot refer to self in it 
+
+// ------ GETTERS / SETTERS 
+
+the only practical way I have found of using a getter / setter is through the following pattern. 
+    trying to use the property within its own getter / setter causes a cyclical access: 
+
+        private var _x = 0 
+        public var x {                          // bear in mind this only becomes useful when you're doing more things than just directly getting / setting the property 
+            get { 
+                return _x
+            }
+            set {                               // set is optional 
+                _x = newValue                   // newValue is automatically passed 
+            }
+        }
+you can use a getter without a setter to make the property read-only 
+unlike regular properties, a computed property or getter/setter can refer to other instance variables within their scope
+
+if you wanted to add these getters & setters to every property you'd duplicate alot of code. 
+    for this reason Swift 5.1 came out with property wrappers. 
+    these are decorators that will wrap a property with a predefined getter / setter, willset / didset, etc.: 
+
+        @propertyWrapper struct debuggingProperty {         // here you define a propertyWrapper
+            private var _x: Int = 0 
+            var wrappedValue: Int {                         // I'm not sure whether wrappedValue is a necessary syntax or just the author illustrating the concept  
+                get {
+                    print(_x)
+                    return _x 
+                }
+                set {
+                    print(newValue)
+                    _x = newValue 
+                }
+            }
+        }
+        ... 
+        @debuggingProperty var x: Int                       // now you can apply the propertyWrapper to variables of this type 
+        @debuggingProperty var y: Int 
+        @debuggingProperty var z: Int 
+
+// ------ DIDSET / WILLSET
+
+these computed getters / setters aren't needed as often as you'd imagine, because didSet / willSet allow you to add functionality to a stored variable directly: 
+    var x: Int = 0 {
+        didSet {
+            print(oldValue) 
+        }
+        willSet {                       // willSet is optional
+            print(newValue)
+        }
+    }
+these didSet/willSet functions aren't called when the variable is initialized
+didSet also is not called when the stored variables value is changed within it 
+
+a good common use of didSet/willSet is to synchronize an interface with the changing of the property
+
+// ------ LAZY VARS 
+
+there are 3 types of lazy variables in Swift:
+    global variables -      automatically lazy. 
+    static variables -      automatically lazy. 
+    instance variables -    not automatically lazy, but can be marked as lazy. 
+
+notice if a property is assigned to before it's evaluated the initial value was never loaded - lazy saved memory 
+you can't have lazy lets, only lazy vars 
+
+there are two reasons you may want to use a lazy property
+    1) it takes alot of resources 
+    2) it can refer to self during initialization
+
+        class rabbit() {
+            lazy var grass_eaten: Int = self.grass_in_belly()           // lazy vars can be initialized with functions referencing self 
+            func grass_in_belly() { ... }
+            ... 
+            lazy var fear_level: Int {
+                var level = 0
+                level += self.enemy_count                               // lazy vars can also use computed vars that reference self 
+                level += self.baby_rabbits_owned
+                return level
+            }
+        }
+
+lazy instance variables, unlike statics & globals, do not initialize themselves in a thread-safe manner, 
+    so when used in a multithreaded manner they can cause multiple initializations & crashes - beware 
+
+// ------ BOOLS 
+
+nothing in Swift is coerced to a Bool 
+toggle() is a useful boolean property: 
+    
+    rabbit.isScared = true
+    rabbit.isScared.toggle()
+
+// ------ INTS 
+
+the variety of Int & Double types in Swift exist mostly for compatibility with Objective-C, according to the author
+    though they should save memory in many scenarios, i.e. image processing (assuming swift doesn't implement them on 64-word boundaries - it could be worth testing)
+
+the Int type (a struct) is an integer between Int.min and Int.max
+    Int.min and Int.max are platform-specific values. the author claims they span the full 64 bit range of twos compliment values on his machine (so they're giant numbers) 
+you can actually use leading 0s in your numeric literals for padding or whatever else
+prefix a numeric literal with 0b, 0o, or 0x for binary, octal, or hex
+
+// ------ DOUBLES
+
+the Double type is also a struct 
+it can handle about 15 decimal points of precision (64-bit floating point) 
+Doubles can be written in scientific notation: 
+    "3e2"           <- everything after e is the exponent of 10. so this is 300 
+    "3.24e3"        <- 3240 
+You can also write hex Doubles in scientific notation, but here the exponent is denoted by p and the value being raised is 2
+    0x10p3          <- 128. you multiplied 16 by 2^3
+
+there are static properties Double.infinity and Double.Pi, and an instance property isZero, among others 
+
+
+// pg 85, number coercion
+
+
+==============================================================================================================
+==============================================================================================================
+==============================================================================================================
+==============================================================================================================
+==============================================================================================================
+==============================================================================================================
+==============================================================================================================
+
+
+// SKIPPING AHEAD 
+
+=======================================================
+CHAPTER 5 - OBJECT TYPES
+=======================================================
+
+object types are enum / class / struct 
+object types declared within function bodies only exist in that scope
+
+in a class, static properties or methods can also optionally be declared using the class keyword 
+
+when you add an initializer the default on provided goes away (for classes too - they get a default init apparently)
+
+be careful not to supply meaningless default parameters, sometimes you want to enforce input of parameters 
+
+within an init you may not refer to self until all instance properties are set except if you're referring directly to an already initialized property
+a delegting init is one which calls another init 
+a delegating init can't refer to self at all until after it calls the delegate init - not even to set properties
+    so often you end up calling the delegate init at or near the top then afterwards resetting specific properties
+as a result a delegating init also cannot set a constant property because it can only refer to it after it's been set 
+
+setters aren't called during initialization
+
+you can give instance properties initial values outside of init functions, but can't refer to any other instance properties or methods when doing so. 
+    a workaround is to make the property computed or lazy - that way it's value is calculated after self is finished setting up 
+    likewise when initializing instance properties using anonymous function calls dont refer to self - our bottomsheet bug 
+        a fix to this bug is to make the var lazy 
+this restrictions dont apply to static propreties, as static initializers are lazy by default 
+    but use of a static property won't prevent anonymous function initializations that reference self introducing bugs 
+        due to a quirk in the compiler implementation 
+
+
+pg 132
+
+
+==============================================================================================================
+==============================================================================================================
+==============================================================================================================
+==============================================================================================================
+==============================================================================================================
+==============================================================================================================
+==============================================================================================================
+
+
+
+=======================================================
+CHAPTER 6 - ANATOMY OF AN XCODE PROJECT
+=======================================================
+
+XCode refers to both the application you build the app in & a large suite of utilities that comeo iwth it, 
+    such as the simulator & instruments 
+Only use letters in your project names - other punctuation can cause things to break in subtle, hidden ways 
+    if your project name has a space in it you'll need to insert hyphens for the bundle identifier, but just avoid spaces too 
+The organization name (specified when creating a new project) is only used in some machine generated comments and is irrelevant 
+The organization identifier is important, however. Ensure it is unique, because it is used to create the apps bundle identifier.
+    convention is to insert a random combination of words separted by periods - i.e. com.ianrust.strange.fishes 
+        I'm not sure why they often put com at the front, but they do. 
+the apps bundle identifier is, by default, a combination of the organization identifier and the project name 
+    the bundle identifier is used to uniquely identify the app on the app store
+
+command+1-9 selects 1 of the 9 navigation pane subtabs 
+command+0 hides/shows the navigatin pane 
+
+if you type #error or #warning("fix this") in a project this will pop up as a yield sign / build error in the issues panel 
+
+you can make some special breakpoint called a symbolic breakpoint apparently 
+
+click a subpath in the path bar above the editor & you'll see other files/folders at the same level. you can jump to different files this way. 
+command+click a subpath in the path bar and you'll see a menu with the file & its enclosing folders. 
+    click & XCode opens finder at the files/folders location
+there's also a button to the left of the path bar, to the left of the back button, which can show a history of files you've visited recently 
+
+option+click a file to open it in a 2nd editor window 
+you can focus an editor window, causing it to take up the full screen temporarily, by clicking the doubles arrow button at the top left of the window 
+
+command-shift-j, the command that finds your currently focused file in the folder hierarchy, is called 'reveal'
+
+XCode also supports separate tabs and windows. 
+    a tab doesn't just display a new editor, but an entire separate interface. You can also promote a tab to a window
+    (File -> New -> Tab) creates a new tab
+    it might be useful to try tabs, since you can set up the tabs interface specifically for viewing certain file(s)
+
+the project file is the top level item in XCodes file hierarchy (the blue icon)
+    this is the project_name.xcodeproj file on disk 
+    this file represents the project as a whole. all XCodes knowledge about the project - what it consists of and how to build it - is recorded here
+to open a project from finder you can double click the .xcodeproj file 
+
+XCodes file hierarchy contains groups (folder-like things) and files beneath the project file 
+    groups do not necessarily have direct correspondence to files on disk. files do have a real correspondence on disk 
+
+Main.storyboard and LaunchScreen.storyboard appear in Finder withni a folder called Base.lproj
+The assets catalogue, Assets.xcassets, has a special folder by the same name on disk
+the Products group and its content don't correspond to anything in the project folder. 
+    XCode generates a reference to the executable bundle generated by building each target in the project. 
+        by convention these references appear in the Products group. 
+
+avoid manipulating the contents of a project folder through the finder. Go through XCode instead. 
+
+Groups (folder-like things) provide a simplified folder interface while xcode manages the actual folders/files behind the scenes. 
+    groups may or may not be directly mapped to folders on disk
+        a group that is directly mapped is called a 'follder linked group', and has a solid folder icon 
+        a group without this direct mapping has a marked folder icon 
+
+when you create a new group, you can choose between 'New Group' and 'New Group With Folder' (or Without Folder sometimes). 
+    this indicates whether to create a linked or non-linked folder. 
+    Usually, when you create a non-linked folder, the group you created will be ignored & the files will go in the directory above 
+
+if you rename a linked folder the corresponding file on disk will be renamed also
+
+a target is a collection of parts and settings for how to build an executable from them 
+select the project file in finder & you'll see a list of targets on the left.
+    the project starts with one target, the main app target. this is the target you'll use to build & run the app 
+    the main app target contains settings that tell XCode how to build the whole project. 
+
+situations you may add additional targets include: 
+    1) adding unit tests or UI tests 
+    2) writing an application extension (not sure what an extension is)
+    3) writing a library or framework
+
+note that the project file & the target(s) are two different things, & they are edited separately
+    the project fiile has tabs for Info, Build Settings, & Swift Packages
+    the target has tabs for General, Signing, Resource Tags, Info, Build Settings, Build Phases, & Build Rules 
+
+click a target & look at its build phases. these are the phases the app goes through during compilation 
+    Compile Sources - in this phase your source code files are compiled & added to the executable 
+    Copy Bundle Resources - in this phase resources from the bundle, like assets or storyboards, are added to the executable 
+        in some cases resources aren't just copied, but transformed. 
+            assets are moved to the top level directory & a .car file is generated. 
+            .storyboard files are turned into .storyboardc files which is a bundle containing a bunch of nibs
+        if you need to add a resource to the executable (like a sound file, for exammple) you can do it here by clicking the + button 
+
+click a target & look at its build settings, another important tab for compilation. remember the project file also contains build settings
+    if you click the 'levels' tab the targets, projects, XCodes, & other build settings appear organized in columns 
+        columns on the left override columns on the right
+    you rarely need to modify the build settings, but consult the documentation for more information 
+
+build configurations are different sets of build settings applied to the build differentially 
+    by default there are two configurations, Debug and Release
+
+which configuration to use during a build is determined by the builds scheme
+a scheme connects a target (or multiple targets) with a build configuration, taking into account the purpose of the build as well
+
+new projects start with one scheme with the same name as the project
+(Product -> Schdeme) shows a list of currently available schemes 
+(Product -> Scheme -> Edit Scheme) opens up a window for editing the current scheme. there are 6 tabs here:
+    Build - here you specify which target(s) will be built when one of the 5 specified actions is performed
+    Run - determine the settings used when you run the app 
+        you can also turn on/off the thread or address sanitizers here - useful during certain debugging tasks 
+
+you can run simulated devices with different iOS versions by downloading SDKs for that version in XCode's components preferences pane 
+
+the app is stored as a bundle, a special folder format (often used for executables) used by Mac and iOS.
+to examine a bundle in finder you must control+click the bundle & select 'show package contents'
+
+from wikipedia regarding bundles: 
+    Examples of bundles that contain executable code include applications, frameworks, and plugins. This kind of bundle usually contains one file 
+        representing executable code, and files that represent resources such as nibs, templates, images, sounds, and other media. On some other systems, 
+        such as Microsoft Windows, these resources are usually included directly in the executable file itself at compile time. 
+    Examples of bundles that do not contain executable code include document packages (iWork documents) and media libraries (iPhoto Library).
+    Bundles are programmatically accessed with the NSBundle class in Cocoa, the Foundation frameworks, and with CFBundle in Core Foundation. 
+    Bundles often include an Info.plist file for metadata. The Uniform Type Identifier (UTI) for an Apple bundle is com.apple.bundle
+
+the Info.plist file in the bundle is used by the OS as a key-value store & contains important environment variable information 
+    on the app, such as the project name, names of assets used in the app, & anything else the runtime system needs to know about 
+you can move your apps Info.plist file, but you must change its named location in the Info.plist section of build settings 
+there are 3 ways of editing the Info.plist file: 
+    edit the target, in the General tab: 
+        some of these settings indirectly edit Info.plist
+    edit Info.plist directly by selecting it: 
+        there is a special .plist editor that pops up
+    edit the target, in the Info tab: the Custom iOS Target Properties section shows the same information as editing Info.plist in the editor 
+some of the Info.plist values are processed & transformed at build time, & some new key/value pairs are injected also 
+see apples documentation for a list of keys & their meanings
+
+a .nib file contains information to specify a piece of UI 
+.xib or .storyboard files are transformed into .nib files during compilation 
+    this transformation occurs during the app target's Copy Bundle Resources build phase
+    a .xib results in a single .nib file; a .storyboard results in a .storyboardc bundle containing multiple .nib files 
+
+in Info.plist there's a key "Main storyboard file base name" (UIMainStoryboardFile) that specifies the name of the main storyboard. 
+    you can change this name, the initial name Main.storyboard is not what makes it the main storyboard. 
+
+you can add resources to your project through either 
+    1) the project navigator (File -> Add Files to [Project]):
+        check 'copy items if needed', because you don't want to rely on references to items outside your project folder. 
+        if you're adding a folder you'll be asked whether to:
+            a) create groups (the folder icon will be yellow). this folder does not correspond with the folder on the OS's filesystem 
+                a folder-linked group is created. 
+                only the folders contents are copied into the top level directory during the 'Copy Bundle Resources' build phase
+                the folders contents can be accessed by name, without a path 
+                if you add more resources to the original folder they will not appear in your project 
+            b) use a folder reference (the folder icon will be blue). this folder is a reference to the folder on the OS's filesystem
+                the entire folder and its contents are copied during the 'Copy Bundle Resources' build phase 
+                the folder itself is added to the bundle, and its resources must be accessed via a path 
+                if you add more resources to the original folder they will appear in your project 
+                    this is the only real reason you'd use a folder reference
+                be sure not to put any source code in folder references, it won't be seen by the compiler
+        there's also an 'Add to Targets' checkbox. 
+            you'll always check this, it indicates you want the file added to the app during compilation (during the 'Copy Bundle Resources' build phase)
+    2) the assets folder:
+        assets folders were originally designed for images, but now they can handle any kind of file 
+        advantages to using the assets folder: 
+            a) easy support for retina screens 
+            b) images load more efficiently if stored here 
+            c) different versions of the asset can be loaded based on the device type, light or dark mode, & localization
+
+source files are compiled into the app if they are part of that targets 'Compile Sources' build phase. 
+when you create a file you specify which targets should add it to their build
+
+Cocoa refers all the apple native frameworks used for development. iOS uses Cocoa Touch 
+iOS devices store Cocoa Touch in /System/Library/Frameworks. 
+    To make Cocoa Touch available during development XCode stores copies for different devices internally. 
+    These copies are also called SDKs
+
+frameworks are linked with the project during compilation 
+
+you can create custom frameworks, which may help to modularize your code. they can also contain their own resources. 
+To create a framework: 
+    1) edit the target and choose Editor -> Add Target 
+    2) select iOS. under Frameworks & Library select iOS Framework. complete the process 
+    This will create a new target. Now your original targets source files can 'import <NewTargetName>' & use any classes or resources defined in it 
+
+you can also create packages instead of frameworks. 
+    packages are just collections of source code. 
+    packages are simpler and more efficient then frameworks, and don't require linking. 
+To create a local package: 
+    1) (File -> New -> Swift Package)
+    2) specify you want to add the package to the existing project, and make sure to add it at the top level of the project 
+    3) the initial package files appear, but aren't yet available to the main target. 
+        Edit the target, go to the General tab, and under Frameworks click the plus to add the package
+    4) 'import <NewPackageName>' in your source files
+One of the key features of packages is they can be made public. Upload your package to github and other programmers can use it in their projects. 
+    I'm not sure hjow the Swift package manager ties in here, he doesn't mention that.
+    sharing packages is easy because they're just source files. 
+    sharing frameworks is more complicated, but frameworks have the advantage of being a bundle so they can contain resources (storyboards, assets, etc.)
+
+
+when an app launches, a series of events happen: 
+    1) the OS finds the executable in the bundlle using the Info.plist key CFBundleExecutable 
+    2) the OS finds & links any necessary frameworks 
+    3) the OS finds the main in the executable & runs it
+        if it's an objective-C app this is the main function, typically located in the file main.m
+        if it's a swift app the decorator @UIApplicationMain is typically used instead, wrapping the AppDelegate
+
+the objective-c main function and the swift @UIApplication both do the same two things: 
+    1) set up the memory management environment (the @autoreleasepool and the curly braces following it) 
+    2) call the apps UIApplicationMain function
+
+though unusual, you can also create a main.swift file instead of using @UIApplication (our functional test target)
+    main.swift is given special treatment - it allowed to put executable code at the top level of the file
+    main.swift should contain the equivalent of the objective-C main: 
+
+        import UIKit
+        let customAppDelegate: AnyClass = NSClassFromString("CustomAppDelegate") ?? AppDelegate.self             // we changed the AppDelegate to a custom one 
+        UIApplicationMain(CommandLine.argc, CommandLine.unsafeArgv, nil, NSStringFromClass(customAppDelegate))   // call main 
+
+all of the above approaches end up calling the UIApplicationMain() function. 
+UIApplicationMain() sets up the apps initial instances, calls methods on those instances, and set up the initial UI. 
+
+when UIApplicationMain is called a series of events take place. Assuming for now the app uses a main storyboard:
+    1) UIApplicationMain creates the shared application instance, accessible in code as UIApplication.shared 
+    2) UIApplicationMain instantiates the AppDelegate
+    3) in iOS13, UIApplicationMain calls the AppDelegate method application(_:didFinishLaunchingWithOptions:). here you can perform certain initializations 
+    4) in iOS13, UIApplicationMain creates a UISceneSession, a UIWindowScene, and the apps SceneDelegate
+    5) if there's a main storyboard (specified in the Info.plist) UIApplicationMain loads it & finds / instantiates its initial view controller
+    6) UIApplicationMain creates the apps UIWindow & assigns it to the SceneDelegate's window property. 
+        It then assigns the windows rootViewController to the initial view controller instance
+    7) UIApplicationMain causes the apps UI to start appearing by calling the UIWindow's method makeKeyAndVisible
+    8) Just before the window appears its rootViewController fetches the UI elements (typically from nibs) its view requires. 
+        the rootViewController's viewDidLoad() function is called prior to the view being displayed 
+    9) some further AppDelegate or SceneDelegate methods may be called if they're implemented
+
+UIApplicationMain() runs until the program exits 
+
+if there is no main storyboard then things like creating a window instance, assigning the window property, creating an initial view controller, 
+    calling makeKeyAndVisible, etc. must be handled by your code. 
+to set up a project without a storyboard do the following: 
+    1) edit the target. under the General tab select "Main" in the Main Interface field and delete it 
+    2) in the Info.plist, select thee "Storyboard Name" in the "Application Scene Configuration" dictionary and press delete (and save) 
+    3) (optional) in the Project navigator, delete Main.storyboard 
+    4) in SceneDelegate.swift, edit scene(_:willConnectTo:options:) to look like the following: 
+        
+        func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+            if let windowScene = scene as UIWindowScene {
+                let window = UIWindow(windowScene: windowScene) 
+                window.backgroundColor = .white
+                window.rootViewController = ViewController() 
+                self.window = window 
+                window.makeKeyAndVisible() 
+            }
+        }
+
+the AppDelegate handles your application level events throughout its lifecycle (read for more details)
+the SceneDelegate handles events pertaining to what's on the screen (scenes were added in iOS 13 to support multiple windows for iPad)
+    methods here are called when a scene changes (read for more details)
+
+To change the name that displays under the apps icon in the phone, edit the display field at the top of the target's General tab 
+
+Be careful of changing the name of a folder linked group - XCode changes the corresponding folder on disk, 
+    but not any build settings that may depend on this name
+
+
+=======================================================
+CHAPTER 7 - NIB FILES 
+=======================================================
+
+a view draws itself into a rectangular area 
+when the app launches, the rootViewController's view & its subviews occupy the screen 
+
+a nib is a file format that specifies how to create and configure an instance of an object, usually UIView instances but not always 
+.storyboard and .xib files created in the interface builder are translated into nibs during compilation
+    these nibs get loaded when your view needs to appear visually. the nib is decoded into instructions for how to create & configure the UIView instances 
+swiftUI avoids the use of nibs altogether, and instead creates them programmatically via its framework 
+
+nibs are memory efficient: 
+    they give instructions for reconstructing the UI instead of storing images of the UI
+    they aren't loaded until they're needed
+    the objects constructed by the nib are retained as long as the program has a reference to them, then they're garbage collected 
+
+storyboards are comprised of scenes 
+when editing a storyboard, in the document outline, you'll notice scenes are the top level in their respective hierarchies. 
+    and every scene then has these 3 objects as its immediate children in the document outline:
+        1) its top level view controller
+        2) the First Responder token 
+        3) the Exit token
+objects listed in the document outline are of two types: 
+    1) nib objects - the view controller, along with its main view and subviews, compile into nibs 
+    2) proxy objects - these do not compile into nibs, at runtime these objects already exist elsewhere, they're included in the document outline for convenience 
+in a .xib file there are no scenes. 
+
+a view controllers main view is lazily loaded. if the main view is stored as a nib then upon access the nib is loaded & decoded 
+
+in code you can create a view controller from a storyboard with these methods, which rely on the VCs nibName property: 
+    UIStoryboard.instantiateInitialViewController()                 <- loads the storyboards initial VC
+    UIStoryboard.instnatiateViewController(withIdentifier:)         <- loads a specified VC 
+
+in code you can create a view from a .xib with these methods: 
+    loadNibNamed(_:owner:options:)          <- a bundle instance method, usually called off Budnle.main 
+    instantiate(withOwner:options:)         <- a UINib instance method. the nib is specified when the UINib instance is created with init(nibName:bundle:)
+for example:
+    let arr = Bundle.main.loadNibNamed("viewname", owner: nil)      // returns an array of instances created from the nibs top-level nib objects while loading
+    let view1 = arr[0] as! UIView 
+    self.view.addSubview(view1)                                     // add your nib view as a subview of the main view 
+
+sometimes a native class will make these calls internally - for example, when a tableview constructs a cell it calls these methods behind the scenes 
+
+/* alot of material on outlets was skipped here - I don't really plan on using storyboards & I'd rather learn that through videos first anyway */ 
+
+=======================================================
+CHAPTER 8 - DOCUMENTATION
+=======================================================
+
+the main documentation (for Cocoa classes & other symbols) is available in XCode under: 
+    Window -> Developer Documentation OR command+shift+0
+    search is the main means of navigating this 
+    you can open multiple tabs here w/ control+t
+the supplementary documentation (guides and sample codes) is available only online at: 
+    https://developer.apple.com/library/archive/navigation 
+
+the documentation on cocoa classes will tell you which versions of iOS support that class
+
+you can inject your own comments into a custom class's quick help (option+click) by preceding the declaration with either /// or /** */ 
+    the first paragraph becomes the summary, remaining paragraphs are part of the description 
+    a list paragraph beginning with Parameter: <paramname> will become the parameter field 
+    a list paragraph beginning with Throws: will become the throws field 
+    a list paragraph beginning with Returns: will become the returns field 
+    a list paragraph beginning with Note: will become the note field 
+
+    example: 
+        /** 
+        this is a class for bird which immitates the flying abilities of the species and the blue wings,
+        which the indians saw as sacred markings
+
+        * they can fly 
+        * they are fast in the air
+
+        * Parameter wingLength: the length of the birds wings 
+
+        * Returns: a bird instance 
+        */ 
+        class Bird { ... }
+
+command+click an import statement & you can jump to the header file for that module, which may contain some documentation 
+
+WWDC videos are found at: https://developer.apple.com/videos 
+
+=======================================================
+CHAPTER 9 - LIFE CYCLES OF A PROJECT
+=======================================================
+
+It may be necessary to make the app behave differently depending on its environment
+    compile-time dependencies: the compiler can insert different code based static information
+        Swift version
+        whether executing on a simulator (static?)
+        other custom conditions 
+    runtime dependencies: choices made based on where the app is run
+        type of device 
+        version of OS 
+        authorization (whether the app can run, what features it can use)
+        choosing different resources 
+        modify behavior based on environment variables or arguments
+
+fence off compile-time dependencies with these preprocessor directives: 
+    #if condition 
+        statements 
+    #elseif condition 
+        statements 
+    #else 
+        statements 
+    #endif 
+
+    these conditions must be made up of a limited set of reserved words. some examples: 
+        swift(>=5.1), compiler(>=5.1) 
+            the version of swift or compiler under which we're building
+            the only legal operators are >= and < 
+            the swift version depends on the swift language build setting, the compiler version depends on the version of XCode 
+        targetEnvironment(simulator)
+            whether building on a simulator or device 
+            often used to wrap code used for testing, i.e. load test data
+        canImport(UIKit) 
+            check if a module is available on the platform 
+        DEBUG 
+            the build configuration. DEBUG is setup by XCode, but you can setup others
+
+set runtime dependencies in the build settings: 
+    (Target -> Build Settings -> General -> Deployment Info)
+        the devices & iOS version the app will run on. some settings: 
+            iPhone: the app will run on iPhone, iPod touch, & run on iPad but there it runs in a reduced enlargeable window (compatibility mode)
+            iPad: the app will only run on iPad 
+                you can also check both (sometimes called a 'universal' app)
+            iOS version: earliest OS version the app will run on 
+
+if you try to use code that isn't supported on an old version you are targetting, the compiler will throw an error
+    you can then wrap the code in preprocessors tags. 
+        examine native class declaratios & they'll say something like @available(iOS, *). match that version in the condition
+
+new in iOS 13, due to the addition of scenes, the app template itself is not backward compatible & the launch process is different 
+    to make a project targetting iOS 13 backwards compatible you must wrap in preprocessor tags the SceneDelegate 
+        & parts of the AppDelegate that refer to UISceneSession. 
+        you must also declare a window property in the AppDelegate. thus on iOS 13 the SceneDelegate has the window, otherwise the AppDelegate does
+        your applications code may need to take account of these changes as well 
+
+more difficult problems arise when a method had a bug on a specific iOS version.
+
+in code, to check at runtime the device you're running on:
+    if UIDevice.current.userInterfaceIdiom == .pad {
+        ...
+    } else if UIDevice.current.userInterfaceIdiom == .phone {
+        ... 
+    }
+
+Info.plist contains two keys for configuring interface orientations: 
+    UISupportedInterfaceOrientations            <- a general set of orientations
+    UISupportedInterfaceOrientations~ipad
+you can also edit these keys in (Target -> Build Settings -> General -> Deployment Info)
+    it's not clear how to get device-specific behavior this way, so use keys for that instead 
+
+if you're using .xib files for the interface you can set up different interfaces for ipad. copy the .xib name and append ~ipad to it 
+if you're using storyboards you can set up 2 main storyboards using keys in Info.plist
+    pre iOS 13: setup two "Main storyboard file base name" keys, UIMainStoryboardFile and UIMainStoryboardFile~ipad 
+    iOS 13+: setup two "Application Scene Manifest" keys, UPApplicationSceneManifest and UIApplicationSceneManifest~ipad 
+
+you can add XCode environment variables & pass XCode arguments to your app, which will be available in the code
+    note: these variables will only be available when the project is built from XCode, not on real devices 
+        so the main use of these variables is things like testing 
+    here is where both XCode arguments & XCode environment variables for a given scheme are configured:
+        edit the scheme -> Run -> Arguments 
+        for arguments: 
+            the name of the argument but be preceded by -
+            obtain in code via user defaults 
+                -TEST1 1 
+                let test1 = UserDefaults.standard.integer(forKey: "TEST1")
+        for environment variables: 
+            obtain in code via ProcessInfo 
+                if let test2 = ProcessInfo.processInfo.environment["TEST2"], test2 == "2" {
+                    ... 
+                } 
+
+
+there are various multiple selection techniques. some interesting ones are: 
+    option + drag:                                                          grabs a rectangle of text 
+    ctrl + shift + click:                                                   add a selection to the existing selection 
+    (select symbol -> Editor -> Selection -> Select All Symbols)            grab all occurrences of this symbol
+
+there are some useful menu options under (Editor -> Refactor):
+    Extract Method:                     move the selected block of code into a new function 
+    Extract Variable:                   creates a new variable & assigns the selected expression to the variable
+    Generate Memberwise Initializer:    creates an initializer for you wiit all the properties required. Useful with classes
+
+
+MARK: TODO: and FIXME: all show up in the jump bar at the end of the file path 
+a hyphen (-) at the end (i.e. MARK:-) adds a divider
+
+(command + ctrl + left or right arrow) - shortcut for the back and forward buttons 
+
+(command + mouse over the minimap) - lists all methods & properties to the left of the minimap 
+
+the editor-level find (command + F) has a replace function that only replaces words in the current file 
+
+in the simulator: 
+    (Option + click)            - rotation gesture 
+    (Option + Shift + click)    - two fingers moving in parallel gesture 
+    Hardware                    - from this menu you can do things like rotate, shake, lock the screen, simulate low memory, incoming calls, & more 
+    Debug                       - this menu has a Slow Animations option which is useful for watching them closely 
+
+you can load an app onto the simulator without XCode by dragging a compiled .app file onto the open simulator window 
+
+----------DEBUGGING-------------
+
+instead of debugging with print() you sometimes may want to use dump(). dump is like print, but it also outputs inherited properties
+#file, #line, #column, and #function are literals useful in print() debugging 
+
+print() and dump() don't log when running without XCode, but NSLog and OSLog do. 
+    the Console application can be used to view these outside of XCode (pg 432 for more details)
+
+assert, precondition, and fatalError are methods that kill your app
+by default assert has no effect in a release build, but fatalError and precondition still work. 
+
+(ctrl + click) a breakpoint and you can configure its behavior. 
+    you can have it pause under certain conditions
+    you can have it pause until it's been hit a certain number of times 
+    you can have it perform certain actions when it is hit, like issuing debugging commands
+    you can also have it continue after it performs its action. this is one alternative to using prints for debugging 
+you can also create special breakpoints, called event breakpoints. Go to the breakpoint navigator & click the + button to create one
+here are the different types of event breakpoints: 
+    swift error breakpoint: 
+        pauses when swift errors are thrown (where your code says throw)
+    exception breakpoint: 
+        pauses when an objective-C exception is thrown
+        note: sometimes apples code throws errors & catches them, but there isn't a problem. you might catch these with exception breakpoints 
+    symbolic breakpoint: 
+        pauses when a certain method or function is called, regardless of what object called it. 
+        the method doesn't have to be your method. you can use this to probe Cocoa's behavior. 
+        A method can be specified in one of two ways: 
+            1) using objective-C method notation - i.e. -[UIApplication beginReceivingRemoteControlEvents] 
+            2) using objective-C method name - i.e. beginReceivingControlEvents 
+            if you enter the method name incorrectly the symbolic breakpoint will do nothing. 
+    runtime issue breakpoint: 
+        pauses when a runtime issue is encountered. 
+        there are four types of runtime issues
+        for all but the System Frameworks type you have to enable them in the scheme editor (read for more info)
+    test failure breakpoint: 
+        pauses whenever a test fails
+you can also set a 'watchpoint' in the debugger (only at runtime). this pauses when the variable is a certain value. 
+    not sure how this is different from a conditional event breakpoint
+    (ctrl + click the variable in the debuggers variable list -> Watch) to set a watchpoint 
+in the debug view hierarchy, when you select a view, the Size and Object inspectors will show information about that view
+
+XCode's debugger interface uses the LLDB debugger underneath. in the console when you type commands you're really communciating with LLDB 
+    see https://lldb.llvm.org for info on LLDB 
+some common LLDB commands: 
+    ty loo <type name>                          short for type lookup. dumps the types declaration, all its properties and methods
+    ty loo -l objc -- <cocoa class name>        for looking up cocoa classes the objc syntax might give better results
+    v                                           print out all variables on te stack 
+    v <variable name>                           print specific variable on the stack. doesn't work for things not on the stack, i.e. computed vars
+    po <expression>                             executes an expression & displays the value of it 
+
+------------TESTING------------
+
+Tests are bundled in a separate target. create a new target and specify (iOS -> Test -> iOS Unit Testing Bundle or iOS UI Testing Bundle)
+
+Unit tests need access to the apps internal data structures, so you must import the apps target using:
+    @testable <target name> 
+    this changes internal (explicit or implicit) to public throughout the imported module 
+
+you can also do performance testing in XCode apparently. This establishes a baseline performance measurement, and across runs it measures against the baseline
+
+UI testing revolves around these 3 accessibility classes: 
+    XCUIApplication         the UItest app instance
+    XCUIElementQuery        items like buttons and alerts
+    XCUIElement             returned by subscripting buttons and alerts 
+
+Accessibility actions are recordable 
+To create a UI test: 
+    1) place your cursor within a new test function stub 
+    2) hit the record button 
+    3) interact with the applications UI 
+    4) stop recording 
+
+you can configure your test to automatically take & retain screenshots. this is even used for things like marketing in the app store, apparently: 
+
+    let screenshot = XCUIApplication().screenshot() 
+    let attachment = XCTAttachment(screenshot: screenshot)
+    attachment.lifetime = .keepAlways                       # set how long the screenshot should persist 
+    attachment.name = "screenshot_name"
+    self.add(attachment)                                    # saves the screenshot 
+
+the accessibility inspector can be useful when writing a UI test to see the way items are accessible 
+if you type the command po XCUIApplication() into the debugger you can see the view hierarchy as seen by the accessibility system 
+giving elements fixed accessibility identifiers is better practice than referring to them by any localizableStrings assocaited 
+
+when you've built up several suites of tests, use a Test Plan to configure what tests should be run and when 
+to create a test plan go to: 
+    1) (Product -> Test Plan -> New Test Plan)
+        the test plan should not be part of any target 
+        you typically put the test plan at the top level of the project 
+    2) Edit the new test plan -> click the plus button -> select the targets containing the tests you want to use 
+    3) in the Tests pane of the test plan specify test classes and methods to be run. 
+    4) in the configurations pane specify behavior of your tests
+    5) after creating test plans you must convert your scheme to use test plans. 
+        go to (Product -> Scheme -> Convert Scheme to Use Test Plans) and add your scheme to every plan you might want to use with it. 
+    6) if you added multiple test plans you must set the current plan to use with the scheme. 
+        go to (Product -> Test Plan) and you'll see a hierarchicall menu listing the test plans attached too teh scheme. Check the right one 
+
+cleaning the target removes existing builds & clears caches 
+    sometimes when you see wrong versions of files appearing this can be helpful 
+you can do a deep clean by opening ~/Library/Developer/XCode/DerivedData and moving everything in there to the trash 
+    weird compilation, code completion or syntax coloring issues can be fixed with this 
+for a deep clean you should also remove the app from the simulator. close all simulators and run this command: 
+    xcrun simctl erase all 
+
+problems with memory management and speed won't get exposed until you run on a real device, apparently (assuming you have optimization on to begin with)
+some elaborate gestures can only be performed on a real device 
+some iOS facilities like the accelerometer & access to music are only available on a real device
+
+a Developer Program membership (which costs an annual fee) is required to run an app on a real device 
+to obtain a Developer Program membership go to https://developer.apple.com/programs 
+You will have an Apple ID associated with the Developer Program membership. you use that Apple ID to run your device, among many other things 
+    this Apple ID is also associated with one or more teams. on each team you'll have one or more roles dictating your privileges
+
+Once you get your Developer Program Apple ID enter it into XCodes account preferences pane. 
+    frorm here onward Apple will identify you through hte team name(s) associated with this Apple ID 
+
+An app that is not correctly signed for a device will not run on the device. 
+Signing an app requires two things: 
+    1) an identity - apples permission for a given team to develop, on your specific computer, apps that can run on a device. 
+        the identity consists of two parts: 
+        a) a private key - stored in keychain. 
+        b) a certificate - it contains the public key matching the private key (you told apple the public key when you asked for the certificate)
+            a machine with this certificate can be used to develop device-targetted apps under this teams name 
+    2) a provisioning profile - a virtual permission slip from apple that unites four things: 
+        a) an identity 
+        b) an app, identified by its bundle id 
+        c) a list of eligible devices, identified by their UDIDs 
+        d) a list of entitlements. these are special privileges not every app needs, like the ability to communicate with iCloud. 
+there are two types of identities, and therefor two types of certifictes and provisioning profile: 
+    a) development
+    b) distribution
+
+the only thing that belongs to you is your private key. apple keeps everything else: certifiates, provisioning profiles, registered apps on devices, etc. 
+    you communicate with applle when you need to verify or get a copy of this informmation. you do this through: 
+        a) the developer member center - a set of web pages at https://developer.apple.com/account 
+            log in & click "Certificates, Identifiers & Profiles" to access all features and information you're entitled to 
+        b) XCode - anything you can do through the website you an also do through XCode, apparently 
+
+when "Automatically Manage Signing" is checked in XCode alot of this will be handled automatically 
+    when you create a new project you'll see a list of the teams your Apple ID is associated with 
+    create the project and the computers keychain automatically creates a private key for a certificate 
+    the public key is automatically sent to apple 
+    the certificate is created by Apple, then downloaded and installed automatically 
+    but when you try to run on a device, if you haven't manually registered at the developer member center, you'll get an error. 
+        that's as far as XCode can automate things. 
+        Plug in your device and select it as the destination under (Product -> Destination). 
+            A button that says "Register Device" is supposed to appear to fix the problem. 
+            afterwards the Report Navigator should indicate the device has been registred, and a provisioning profile ha been downloaded
+            this profile is stored in ~/Library/MobileDevice/Profisioning Profiles 
+            this profile is universal across teams, and all you need to run any basic app on any device (apparently)
+        Sometimes after this you have to unplug your device & plug it back in to get XCode to recognize it & prepare for debugging 
+        once you do all this once, next time you create a project, you shouldn't have to do it again (registration is universal) 
+            provided the app doesn't require special entitlements (like access to iCloud). even so, if you turn on an entitlement for an app target 
+                (which you do in the Signing & Capabilities pane) XCode will update the provisioning profille automatically 
+        you can confirm you have the universal provisioning profile by clicking the "i" button at the right of the Provisioning Profile. 
+            the * in the popover indicates it is a universal profile, not restricted to one particular bundle ID 
+if you're interested in manual signing read page 455 
+
+there is a way to view the memory graph in XCode, which allows you to see retain cycles apparently. 
+    in the Debug panel click the Debug Memroy Graph button 
+prefer to run Instruments on a device, since you want accurate measurements 
+launch Instruments with (Product -> Profile) 
+if you want to learn about Instruments in depth, WWDC videos with "instruments" or "performance" in their name or the doocs are good resources 
+
+localization operates through localization folders with an .lproj extension in the app bundle
+the app loads resources from localization folders of a certain language corresponding with the systems language settings 
+technically any type of resource can be stored in the .lproj folders, but typically they contain text 
+text from storyboards, xibs, code, and Info.plist is internationalized in various .strings files within the .lproj folders 
+
+to get XCode to generate the .lproj folder with its .strings files for you: 
+    1) use the NSLocalizedString() class on all strings you need localized in the code 
+    2) go to (Edit the project -> Localizations section -> click the plus button) & add the languages to localize to 
+    3) while still editing the project, at the top click (Editor -> Export for Localization), check the languages again 
+           XCode will create an .xcloc bundle, which is a folder with an .xliff file in it (an XML file). 
+           As far as I can tell you'd give this bundle to a language translator and they'd do some translation & give it back to you 
+
+    4) after translations are finished (Edit the project -> at the top choose Editor -> Import Localizations, locate the .xcloc folder & import it)
+           XCode uses the .xcloc file to generate an .lproj folder with the .strings files in it. 
+
+verify your UI approprately handles changes in string size due to changing language settings 
+    there is a way to preview your app with double-length pseudocode if you are concerned about this, see pg 469 for details 
+
+There are two main kinds of distribution: 
+    Ad hoc distribution: 
+        giving a copy of the app to a limited set of known users so othey can try it on specific devices & report bugs, make suggestions 
+    App store distribution: 
+        TestFlight testing (the new way): 
+            providing people on the app store access for testing through TestFlight
+        Sale: 
+            listing the app for sale to the general public 
+
+to create a copy of the app for distribution you must first build it into an archive: 
+    1) set the build destination to "Generic iOS Device" 
+    2) confirm the scheme is using the release build (this is the default but still double check)
+    3) choose (Product -> Archive)
+    4) afterwards the archive will be located in a date folder in ~/Library/Developer/XCode/Archives 
+
+the new archive will be signed with your developers profile certificate. this can't be used to publish the app, though. 
+    before publishing the app you must obtain a distribution certificate and profile. 
+    when you export the archive to publish the app XCode will embed the distribution profile instead. 
+    if you have automatic signing enabled, then when you export the archive XCode will offer to download 
+        the distribution profile / certificate automatically 
+    once you've obbtained the distribution certificate you can see it in your keychain 
+
+your team cannot have multiple distribution identities: there can only be one distribution certificate 
+    so this complicates distribution from a computer that's different from the one that first obtain the distribution certificate 
+    beware: creating a new distribution certificate invalidates the old one, and also invalidates any old distribution profiles 
+        and the new distribution certificate won't work on your old distribution profile either! 
+    it also is difficult to install a copy of the original distribution certificate, 
+        because you need the private key for it, and that's on the old computer. 
+    so really what you must do is return to the old computer, and in the Accounts preference pane, under Manage Certifictes, 
+        ctrl+click that certificate and choose 'Export Certificate'. You'll be prompted to save the file, securing it with a password. 
+        now copy the file to the new computer, open it, and the private key / certificate should be imported into the new computers keychain.
+
+XCode should obtain the distribution profile automatically when you export the archive, 
+    but if it doesn't you can go to the apple website and do it manually. see pg 472 for details 
+
+for details on how to distribute your archive in an Ad hoc testing fashion read pg 473. 
+    the number of Ad Hoc testers is limited to 100 devvices per year per developer (not per app)
+        devices used for development are counted against this limit 
+TestFlight has many advantages over Ad hoc testing. 
+    it increases the limit of 100 devices to 10000 testers. 
+    testers download prereleased versions of the app directly from the app store through the TestFlight app, which is much simpler. 
+    the TestFlight app also manages things like communication with testers 
+TestFlight configuration is done at the App Store Connect site: https://appstoreconnect.apple.com 
+    a prerelease version uploaded to App Store Connect must be exported as if for App Store distribution (discussed later) 
+Prerelease versions of the app intended for testing require review by Apple. 
+    
+You must prepare your app before submitting it to the App Store. Apple has a lot of requirements. 
+    be sure to read Apple's 'App Store Connect Help' and the 'Icons and Images' chapter of the iOS Human Interface Guidelines 
+
+make sure to provide your app with icons. 
+    the icons must be PNGs without alpha transparency. 
+    they should be a full square. 
+    the author bellieves Apple likes simple, cartoony images with a few colors and a gentle gradient background
+    you need a variety of sizes for the icons 
+you'll also need to provide a 1024x1024 PNG or high quality JPEG icon to be displayed at the app store (the marketing icon). 
+    Apple's guidelines say it should not merely be a scaled-up version of your app's icon, 
+        but that it must not differ perceptibly from your app's icon, either, or your app will be rejected. 
+    the marketing icon should be included in the asset catalogue along with the app icons 
+you also need a launch image. 
+    in iOS7 and before, the launch image was an actual PNG in the app bundle. 
+    in iOS8+ you use a launch nib file instead. this contains a single view to be used as the launch image 
+        you construct the view using subview and autolayout 
+        by default, a new app comes with LaunchScreen.storyboard. This is where you design the launch image. 
+        the Info.plist points to this file as the value of 'Launch screen interface file base name'
+        custom fonts can't be included in the launch nib, because they aren't loaded yet 
+    eventually Apple is going to force people to use launch nibs instead of images (probably already has)
+you also need to provide 1 or more screenshots of the app when you submit it to the app store. 
+    the screenshots also need to be in a variety of sizes. 
+    the screenshots must demo actual user experience of the app or it will be rejected 
+    to obtain screenshots from the simulator choose (File -> New Screenshot)
+optionally you can submit a video preview of your app running that's up to 30 sec long 
+    you can craete this video with the following steps: 
+        1) connect the device, launch QuickTime
+        2) set the Camera & Microphone to the device using the pop-up menu next to the record button 
+        3) start recording
+some Info.plist keys are important for the correct functioning of your app and should be reviewed prior to submission:
+    1) bundle display name (CFBundleDisplayName) - name that appears under the apps icon on the device screen. 
+        the name needs to be short to avoid truncation 
+    2) Supported interface orientations (UISupportedInterfaceOrientations) - specifies the apps supported orientations. 
+        note that the first orientation listed might be the one that is launched on an iphone 
+    3) Required device capabilities (UIRequiredDeviceCapabilities) - set this key if your app should only run on certain devices 
+    4) Bundle version - your app needs a version number. the best place to set it is the General pane of the target editor. 
+        there are actually 2 versions to be aware of: 
+        4a) CFBundleVersionString - the version number. this is the user-facing string displayed in the app store. 
+            this must be incremented when submitting an update or the update will be rejected 
+            note that there's a strange quirk where a version number like 1.4 is considered lower than version 1.32 because 4 < 32
+        4b) CFBundleVersion - the build number. the user never sees this value. 
+            it is legal to increment this without incrementing CFBundleVersionString. 
+            this may be done if you are submitting new updated builds to TestFlight but not to the real App store 
+    read apples 'Information Property List Key Reference' for detailed information 
+
+to submit your app first go to https://appstoreconnect.apple.com 
+    if this is your first time submitting an app you must go to the Contracts section and complete submission of your contract. 
+    there are many steps you must go through, read Apple's App Store Connect Help document for more info, and pg 480, for more details. 
+once you've registered the app at App Store Connect and have an archived build for distribution you can export and upload it. 
+    this process is similar to Ad hoc distribution - select the archived build in the Organizer, click Distribute App, select App Store. 
+    after you finish the upload process you'll have to wait for Apples servers to process it, and then return to App Store Connect
+        where you submitted the app information. You will now be able to select the binary, save, and submit the app for review. 
+
+after the app is accepted, if you need to upload a new build just increasee the bu ild or version string and upload it 
+    then register the new version at App Store Connect later 
+
+
+=======================================================
+CHAPTER 10 - COCOA CLASSES
+=======================================================
+
+Cocoa consists mostly of Obj-C classes derived from the root NSObject 
+
+Cocoa classes have properties, delegate methods, and lifecycle methods that can be used to customize their behavior 
+
+alot of the code ends up being subclasses of UIView and UIViewController 
+typically you subclass to implement custom versions of some lifecycle method 
+most other Cocoa classes rarely need to be subclassed 
+
+categories are the Obj-C equivalent of Swifts extensions: 
+
+    // example notation for an obj-C category 
+    @interface NSString (NSStringExtensionMethodos)         // the keyword @interface denotes an obj-c category 
+    - (NSString *)substringFromIndex:(NSUInteger)from;
+    - (NSString *)substringToIndex:(NSUInteger)to;
+    // ... 
+    @end 
+
+translates to: 
+
+    extension NSString {
+        func substring(from: Int) -> String 
+        func substring(to: Int) -> String 
+        ...
+    }
+
+
+unlike subclassing, extensions actually inject the method into the base class. 
+    this means that other subclasses of the base class will have the injected method available to them. 
+protocols extensions are one way of doing finer-grained injections, where only subclasses that conform to the protocol get access to the method
+
+    // protocol extension example 
+    protocol CustomButton {
+        func customAnimation()
+    }
+    extension CustomButton {
+        func customAnimation() {
+            ... 
+        }
+    }
+    extension UIButton : CustomButton {}                // with a protcol extension only these specific subclasses get the method 
+    extension UIBarButtonItem : CustomButton {}
+
+
+Swift and obj-C both have protocols
+since classes are the onlyl obj-C object type, all obj-c protocols are seen by Swift as class protocols 
+swift protocols marked w/ @objc are implicitly class protocols and can be seen by obj-c
+
+    @protocol NSCopying 
+    - (id)copyWithZone:(nullable NSZone *)zone; 
+    @end 
+
+transates to: 
+
+    protocol NSCopying {
+        func copy(with zone: NSZone? = nil) -> Any
+    }
+
+
+Cocoa's main use of protocols is in delegation 
+
+Swift & obj-C protocols can have optional members. 
+    They're implemented using responds(to:), obj-c's introspection method, which first checks if an object member exists and then calls it. 
+    responds(to:) is called when Cocoa first encounters a type during runtime
+to create a protocol with an optional member: 
+
+    @objc protocol Animal {
+        @objc optional var horns: Int 
+        @objc optional func buttHeads()
+        ...
+    }
+
+
+informal protocols were an old obj-c technique for implementing optional protocol members before they were added to the language 
+informal protocols were implemented in one of 2 ways: 
+    1) defining a category on NSObject, making any object eligible to receive messages listed in the category 
+    2) define a protocol to which no class formally conforms; instead messages listed in the protocol are sent only to objects typed as id (AnyObject) 
+
+Swift Foundation overlays a simpler Swift interface onto traditional Foundation types - Date for NSDate, String for NSString, etc. 
+Swift Foundation types provide many conveniences that traditional Foundation types do not - protocol conformance to Equatable, Hashable, Comparable, etc. 
+in Some cases Swift Foundation types may be value types (structs) while their traditional Foundation counterparts are reference types (classes) 
+
+a Swift Range and an NSRange work very differently. a Swift range is defined by two endpoints, while an NSRange is defined by a starting point and a length. 
+    you can coerce a Swift range whose Bound type (the type of its endpoints) is Int to an NSRange
+        note that a String's Bound type is not of type Int, it is StringIndex; while NSString still uses integer indices 
+        String's elements are Character types and are actually unicode
+    you can coerce from an NSRange to a swift Range, but this results in an optional that wraps the range 
+        this is because Swift represents elements that aren't found in a range as nil, while NSRange represents them using NSNotFound
+
+
+    let swiftRange = 2..<4 
+    let oldRange = NSRange(swiftRange)                          // (2, 2) - an NSRange 
+    let oldRange2 = NSRange(location: 2, length: 2)
+    let swiftRange2 = Range(oldRange2)                          // optional wrapping Range 2..<4 
+
+    let s = "hello"
+    let swiftRange3 = s.range(of: "ell")                        // optional wrapping Range 1..<4 - range(of:) is an old method and uses an NSRange internally 
+
+    let oldRange3 = NSRange(location: 1, length: 3)     
+    let swiftRange4 = Range(oldRange3, in: s)                   // method for getting a strings Swift range using an NSRange 
+
+    let oldRange4 = NSRange(s.range(of: "ell", in: s))          // equivalent method for getting a strings NSRange from a Swift range 
+
+    let oldRange5 = (s as NSString).range(of: "ell")            // sometimes it's necessary to use old ranges to work with Cocoa classes 
+    let mas = NSMutableAttributedString(string:s)
+    mas.addAttributes([.foregroundColor:UIColor.red], range: oldRange5)
+
+
+NSRange search methods return NSNotFound when nothing is found, while Swift range search methods return nil 
+
+    let arr = ["abcdefg"] as NSArray 
+    let index = arr.index(of: "ho")
+    if index == NSNotFound {
+        ... 
+    }
+
+    let s = "hello"
+    let r = s.range(of: "ha")           // nil
+
+
+UIFont can specify a single font size for the entire string. For more nuanced styling you must use NSAttributedString 
+drawing Strings in a graphics context can be performed using the NSStringDrawing protocol on NSString and NSAttributedString 
+
+
+classes for dates include Date, DateComponents, and Calendar 
+conversion between Date and DateComponents requires the use of Calendar 
+
+    let greg = Calendar(identifier: .gregorian)
+    let component = DateComponents(calendar: greg, year: 2019, month: 8, day: 10, hour: 16)
+    let date_ = component.date 
+
+
+DateComponents provides the correct way to do arithmetic on dates:
+
+    let d = Date() 
+    let component = DateComponents(month: 1)
+    let greg = Calendar(identifier: .gregorian)
+    let d2 = greg.date(byAdding: component, to: d)
+
+
+you can express the range between two dates as a DateInterval. DateIntervals can be compared, intersected, and checked for containment: 
+
+    let greg = Calendar(identifier: .gregorian)
+    let d1 = DateComponents(calendar: greg, year: 2019, month: 1, day: 1, hour: 0).date!
+    let d2 = DateComponents(calendar: greg, year: 2019, month: 8, day: 1, hour: 0).date!
+    let interval = DateInterval(start: d1, end: d2) 
+    if interval.contains(Date()) {
+        ...
+    }
+
+
+to print out a date in a timezone other than GMT use the following: 
+
+    let d = Date() 
+    print(d.description(with: Locale.current))              // .description is a quick and simple way of getting a date string in non-GMT format
+ 
+    let d2 = Date() 
+    let formatter = DateFormatter()                         // use DateFormatter for more fine grained control over the date string
+    formatter.dateFormat = "M/d/y"
+    print(formatter.string(from: d2))                       // prints date in M/d/y format 
+
+
+    let formatter2 = DateFormatter()                        // DateFormatter can return a date string that conforms to the users timezone / language
+    let format = DateFormatter.dateFormat(fromTemplate: "dMMMMyyyyhmmaz", 
+                                          options: 0, 
+                                          locale: Locale.current)
+    formatter2.dateFormat = format 
+    print(formatter2.string(from: Date()))
+
+
+you can also use DateFormatter to parse a date string into a Date object: 
+
+    let formatter = DateFormatter() 
+    formatter.locale = Locale(identifier: "en_US_POSIX")    // "en_US_POSIX" overrides the devices locale settings, necessary for correct parsing 
+    formatter.dateFormat = "M/d/y"
+    let d = formatter.date(from: "7/31/2019")               // if the string is in the wrong format this will return nil 
+
+
+NSNumber is used in obj-c as a wrapper around its numerical scalars. 
+likewise NSValue is NSNumber's superclass, and it wraps C structs and other non-numeric C values 
+
+Swift numbers are automatically bridged to scalars or NSNumber when interfacing with obj-C
+likewise Swift structs are automatically bridged to NSValue 
+    for example, CGPoints are mapped to NSValues behind the scenes during animations 
+
+NSData is an unformatted data buffer
+NSData is immutable. NSMutableData the a mutable subclass of NSData 
+Swifts Data type is bridged to NSData but it is mutable. 
+    it also conforms to Sequence and Collection so it can be used with for ... in 
+Data is most often used when serializing / deserializing objects 
+you can transform Swift types into Data using NSKeyedArchiver then store them on the filesystem, in UserDefaults, send them over the network, etc. 
+
+    let userDefaults = UserDefaults.standard 
+    let color = UIColor.blue 
+    let archiveData = try! NSKeyedArchiver.archivedData(withRootObject: color, requiringSecureCoding: true) 
+    userDefaults.set(archiveData, forKey: "savedColor")
+
+
+for working with different unit types Cocoa has NSMeasurement, NSUnit & its subclasses like NSDimension 
+
+    let five_miles = Measurement(value: 5, unit: UnitLength.miles)
+    let six_kilometers = Measurement(value: 6, UnitLength.kilometers) 
+    let total_meters = five_miles + six_kilometers                          // total is 14046.7 meters - meters are the base unit
+    let total_feet = total_meters.converted(to: .feet) 
+
+    let formatter = MeasurementFormatter()                                  // produces a user-friendly string with correct units for locale 
+    let user_friendly_string = formatter.string(from: total_feet)           
+
+
+when doing equality comparisons using == the obj-C runtime calls isEqual(_:) behind the scenes. NSObject implements isEqual(_:)
+Swift classes don't autosynthesize isEqual(_:) by conforming to Equatable like other Swift types do 
+    therefor if a class doesn't implement isEqual(_:) it will default to use NSObjects implementation
+NSObjects implementation will only check if the instances are the same (like === does)
+    so for class equality comparisons you must override isEqual(_:) in the class 
+    you must also override the hash variable to ensure any two types that evaluate as equal also produce the same hash 
+        this enables the types to work correctly in sets, dictionaries, archives, etc. 
+
+    class Rat : NSObject {
+        var color: UIColor 
+        var length: Int 
+        init(color: UIColor, length: Int) {
+            self.color = color 
+            self.length = length 
+        }
+        override func isEqual(_ object: Any?)  -> Bool {
+            if let otherRat = object as? Rat {
+                return (otherRat.color == self.color && otherRat.length == self.length) 
+            } else {
+                return false 
+            }
+        }
+        override var hash: Int {
+            var hasher = Hasher()                   // Swift added this simpler way of implementing a hash function 
+            hasher.combine(self.color)
+            hasher.combine(self.length)
+            return hasher.finalize() 
+        }
+    }
+    var set = Set<Rat>()
+    set.insert(Rat(name: "fred", length: 8))
+
+
+the elements in obj-c's NSArray and NSDictionary types must be objects (i.e. NSNumber), while Swift's Arrays and Dictionarys can handle Swift primitives 
+
+NSOrderedSet / NSMutableOrderedSet is like an array but with no duplicates allowed; and like a set except that there is an order to the elements. 
+    They're more efficient than arrays. You can use many of the same methods you use with arrays, like indexing and iteration  
+
+NSCountedSet is a subclass of NSMutableSet but there can be duplicates. This is often called a 'bag' 
+
+the author says mutating a reference type (i.e. a class) while it's in a set will break the set - lookup will cease to operate correctly 
+    so just avoid putting any reference type in any kind of set 
+
+NSNull is a pointer to a singleton object NSNull(). 
+    this is a standin for nil when obj-c required an object and nil isn't allowed 
+    for example, nil can't be used in an obj-c collection so instead you'd use NSNull
+
+note that you can still mutate reference type elements of a constant collection
+
+a property list is a string XML representation of data 
+NSString, NSData, NSArray, and NSDictionary are the only Cocoa classes that can be expressed directly in a property list 
+    NSArray and NSDictionary can also contain elements that are those classes or NSDate / NSNumber 
+    these types are collectively referred to as property list types
+property lists are ways of serializing (i.e. archiving) values 
+NSArray and NSDictionary have write methods that return property lists. 
+you can also create an NSArray or NSDictionary from a property list, though it will be immutable by default.
+use NSPropertyListSerialization to deserialize into mutable objects / work with other classes. read the Property List Programming Guide for more info
+
+    let arr = ["Ian", "Alma", "Mom", "Dad"]
+    let fileManager = FileManager.default                           // the file manager is used to save to disk 
+    let tempDir = fileManager.temporaryDirectory
+    let file = tempDir.appendingPathComponent("filename.plist")
+    try! (arr as NSArray).write(to: file)                           // save a plist to the disk 
+
+
+Swift's Codable provides a new, easier way to serialize types. 
+every Foundation and Cocoa type conforms to Codable 
+use the new encoders/decoders with Codable to work property lists, JSON, or archives: 
+    property lists      use PropertyListEncoder and PropertyListDecoder 
+    JSON                use JSONEncoder and JSONDecoder 
+    Archives            use NSKeyedArchiver and NSKeyedUnarchiver   // in several cases Cocoa lends you an NSCoder to put some data into or pull some out
+
+
+    let arr2 = ["Ian", "Alma", "Mom", "Dad"]
+    let fileManager = FileManager.default                           // the file manager is used to save to disk 
+    let tempDir = fileManager.temporaryDirectory
+    let file = tempDir.appendingPathComponent("filename.plist")
+    let encoder = PropertyListEncoder()                             // this can also serialize non property list types that conform to Codable
+    encoder.outputFormat = .xml                                     // swift will convert any Codable non plist types into plist types automatically 
+    let data = try! encoder.encode(arr2)
+    try! d.write(to: file)
+
+
+Codable synthesizes encode(to:) and decode(from:) automatically 
+you can provide explicit implementations of encode(to:) and decode(from:) instead if you wish 
+you can map between your objects property names and the encoded key names by adding a CodingKeys enum 
+
+key-value coding (KVC): obj-c mechanism to dynamically access Cocoa instance variables using a string specified at runtime
+the basic KVC methods are setValue(_:forKey:) and value(forKey:)
+the value returned is an optional wrapping type Any
+note that attempting to access a key that isn't KVC compliant will cause a crash at runtime 
+
+    class Dog : NSObject {                  // class inherits from NSObject 
+        @objc var name: String = ""         // must be an objc variable 
+    }
+    let dog = Dog() 
+    dog.setValue("Java", forKey: "name")
+    print(dog.name)
+
+
+for nested KVC compliant properties you can specify a key path using the methods setValue(_:forKeyPath:) and value(forKeyPath:)
+
+    class DogtOwner: NSObject {
+        @objc var dog : Dog? 
+    }
+    let owner = DogOwner()
+    owner.dog = dog 
+    if let name = owner.value(forKeyPath: "dog.name") as? String {          // the chained property is specified with dot notation 
+        ... 
+    }
+
+
+in many situations you can use #keyPath to avoid crashing by accessing a nonexistent key. Swift will check if the key exists during compilation:
+
+    dog.setValue("Shnooky", forKey: #keyPath(Dog.name))
+
+
+note that Swift has a newer keypath mechanism that's strongly typed and completely safe
+the only time you should use KVC is with old Cocoa APIs 
+
+    let d = Dog() 
+    d[keyPath:\.name] = "JavaBean"      // swifts new keypath mechanism 
+
+
+every objc class inherits from NSObject. some things NSObject does: 
+
+    -manages creation, destruction, and memory                                  - i.e. alloc, copy, initialize, and dealloc 
+    -provides methods for working with class relationships and inheritance      - i.e. superclass, isKind(of:), and isMember(of:)
+    -provides methods for doing object comparison and introspection             - i.e. responds(to:), isEqual(_:)
+    -provides methods for sending messages dynamically                          - i.e. perform(_:) 
+
+
+=======================================================
+CHAPTER 11 - COCOA EVENTS
+=======================================================
+
+After the app has finished launching none of the code runs. UIApplicationMain's event loop is just waiting for events to respond to 
+    when users interact with the app the OS runtime detects that and sends an event to the app 
+    when this happens various Cocoa event handling functions get called, and they can contain your custom code 
+thus an important part of programming iOS is knowing the Cocoa events that can be sent and when, so that you can customize them 
+
+there are four very general types of Cocoa events: 
+    1) User events - triggered in response to user interaction, i.e. swipes, keyboard, taps, etc. 
+    2) Lifecycle events - i.e. app is about to move to the background, or a view controller is about to load, etc. 
+    3) Functional events - Cocoa methods you can override in a subclass to change behavior, i.e. draw(_:)
+    4) Query events - Cocoa needs information that you must provide, i.e. telling a UITableView how many rows it has 
+
+you can actually override properties as well using computed properties 
+    a common example is UIViewControllers supportedInterfaceOrientations var, whose getter is called when the orientation changes 
+        by overriding the getter you can intercept that event 
+when looking for events that can be overridden in a class dont forget to examine its parent classes and protocols 
+
+there are two main posters of notifications, Cocoa and yourself. read the docs for the various notifications Cocoa posts 
+
+there are two ways to register for notifications
+
+    addObserver(_: selector: name: object:)
+        1st parameter - the instance to send the notification to - almost always self 
+        selector - an objc method on the instance receiving the notification.
+            the designated method should take one parameter, which will be the Notification instance 
+        name - the name of the notification you're registring for. if nil you receive all notification sent from the object parameter
+        object - the object that posted the notification, usually the sender. if nil you receive all notifications sent to the name parameter 
+            if both name & object are nil you receive all notifications 
+
+
+    let mp = MPMusicPlayerController.systemMusicPlayer 
+    mp.beginGeneratingPlaybackNotifications()              // Cocoa often forces you to enable a Cocoa classes notifications (an optimization)
+    ... 
+    NotificationCenter.default.addObserver(self, 
+        selector: #selector(notificationHandler),
+        name: .MPMusicPlayerControllerNowPlayingItemDidChange,
+        object: nil))
+
+    @objc func notificationHandler(_ n: Notification) {
+        ...
+    }
+
+the downside of the  is you have to implement handlers everywhere that you want to receive the notification 
+the alternative method of registering provides a function to be executed when the notification is received 
+
+    addObserver(forName: object: queue: using:) -> NSObjectProtocol
+        queue - usually nil; a non-nil queue is for background threading 
+        forName and object - same as the previous method, they indicate the sender and receiver 
+        using - instead of providing a selector you provide a function. again it takes one parameter, the Notification itself. 
+        NSObjectProtocol - the returned value is used for unregistering 
+
+
+    let ob = NotificationoCenter.default.addObserver(
+        forName: .MPMusicPlayerControlerNowPlayingItemDidChange,
+        object: nil, 
+        queue: nil) { _ in
+            ... 
+        }
+    )
+
+
+
+pg 535, unregistering 
+
+
+
+
+
+
+
+

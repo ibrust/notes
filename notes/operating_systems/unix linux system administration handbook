@@ -1,0 +1,169 @@
+============================================================================
+CHAPTER 0 - MISC COMMANDS & TROUBLESHOOTING INFO 
+============================================================================
+
+you can mount an .iso image and access its files like this (tested in ubuntu): 
+
+    sudo mkdir /media/cdrom
+    sudo mount -o loop ubuntu-*.iso /media/cdrom
+
+============================================================================
+CHAPTER 11 - DRIVERS & THE KERNEL 
+============================================================================
+
+the linux kernel is developed separately from the various distributiosn of linux, and many of them use the same kernel
+to check the kernel version: 
+    uname -r 
+
+drivers are often compatible with a specific range of kernel verssions 
+drivers also vary in their degree of compatibility with various linux distributions 
+it can help to research whether a device is compatible with your specific distribution 
+drivers are usualy part of the kernel, they aren't user processes
+    they can be accessed from user space, however - usually through device files in /dev  
+    the kernel maps operations on these files to system calls to the driver 
+
+in /dev ls -l will show whether devices are character or block, & show their major minor device number
+
+network interfaces are device files but do not have a named file representing them in /dev
+other transient devices like cameras, printers, usb, firewire, and thunderbolt ~might~ change names in /dev between plugins
+
+when a new device is detected device files in /dev are automatically created for it; when it's removed the files are removed 
+in linux the udev userspace daemon creates the device files.
+in freebsd the kernel creates a dedicated filesystem type (devfs) and mounts it in /dev 
+both of these mechanisms listen for events for adding / removing devices & update the device files accordingly 
+
+linux and freeBSD also both have daemons for more detailed device configuration. 
+    linux uses the udevd daemon and the udevadm administrator program
+    freebsd uses the devd daemon 
+
+-------LINUX DEVICE MANAGEMENT-------
+
+    in linux, sysfs is where the systems device information is stored. udevd manipulates this data 
+
+    sysfs is a virtual filesystem available in linux. it provides detailed information about the systems available devices 
+    explore the /sys directory where sysfs is typically mounted to view this information 
+    each file in sysfs represents only one attribute of the device 
+    directories found in sys (this my vary between distributions): 
+        DIRECTORY               CONTAINS
+        block                   information about block devices such as hard disks 
+        bus                     buses known to the kernel - PCI-E, SCSI, USB, & others 
+        class                   a tree organized by functional types of devices 
+        dev                     device ifnormation split between char & block devices 
+        devices                 an ancestrally correct representation of all discovered devices 
+        firmware                interfaces to platofrm-specific subsystems such as ASPI 
+        fs                      a directory for some, but not all, filesystems known to the kernel 
+        kernel                  kernel internals such as cache and virtual memory status 
+        module                  dynamic modules loaded by the kernel 
+        power                   a few details about the systems power state, mostly unused 
+
+    device configuration information used to be haphazardly stored in /proc, but /sys is the newer & better organized place it goes
+
+    the udevadm command is the administrator interface. 
+        it queries device information, triggers events, controls the udevd daemon, and monitors udev and kernel events 
+
+    udevadm takes one of six commands as its first argument: 
+
+        udevadm info                                print device specific information 
+        udevadm trigger
+        udevadm settle
+        udevadm control                             starts and stops udevd or forces it to reload its rules 
+        udevadm monitor
+        udevadm test 
+
+        udevadm info -a -n <path to device file>    show all udev attributes related to a device. the path may be a device name (starts with /dev/), 
+                                                    a sys path (starts with /sys/), or a systemd device unit name (ends with ".device")
+
+        udevadm info --query=name /dev/block/*      gets all the device names from a directory. this is useful since the filenames are sometimes jargon
+
+        man udevadm                                 read for more info on the various commands
+
+    the output from info is formatted where you can construct rules for udev with it 
+
+    udevd relies on .rules files to manage devices.
+    default rules are in /lib/udev/rules.d, and local rules are in /etc/udev/rules.d 
+        you never edit either of these files. instead you create a new file of the same name in the custom rule directory
+
+    udevd also has a master configuration file, /etc/udev/udev.conf 
+        you generally don't need to edit this one either 
+
+    the syntax for the rules is:
+        match_clause, [match_clause, ...] assign_clause, [assign_clause, ...]
+
+    match finds the device, assign does something to it 
+    most match keys refer to device properties, which udev obtains from /sys 
+    all match clauses must match for the rule to be activated 
+
+    match keys understood by udev: 
+        ACTION                      match the event type (i.e. add or remove)
+        ATTR{filename}              match the devices sysfs filename attribute
+        DEVPATH                     match a specific device path 
+        DRIVER                      matches the driver used by a device 
+        ENV{key}
+        KERNEL
+        PROGRAM                     runs an external command, matches if return code is 0 
+        RESULT                      matches the output of the last call through PROGRAM 
+        SUBSYSTEM
+        TEST{omask}                 tests whether a file exists; omask is optional
+
+
+    there are a couple ways to insert a flash drive & check if the kernel identifies it 
+    you can check the kernel logs for the insertion event by running dmesg or journalctl. see other sections for more details 
+    you can also use this command to list all hardware network interfaces: 
+
+        sudo lshw -C network
+
+    for a usb device the easiest way is lsusb: 
+
+        lsusb               shows the devices name which you can use with udevadm
+        sudo lsusb -v       verbose output 
+
+        udevadm info /dev/bus/usb/001/007           now we get alot of info on the device. DEVPATH shows the devices path in /sys
+
+    the author uses this output to add certain rules that will trigger when the device is inserted. 
+        he verifies the inserted media contains a windows filesystems, then sets a custom mount point, and performs some cleanup whenever it's unplugged
+        see page 336 for more info 
+
+
+-------FREEBSD DEVICE MANAGEMENT-------
+
+    freeBSDs implementation of the self-managing /dev filesystem is called devfs, and devd is its uesr-level device management daemon
+    devfs can be used for automatic device configuration
+        it has different files & syntax for boot-time (/etc/devfs.conf) and dynamic (/etc/devfs/rules) configuration
+        the boot-time configurations are for static devices, while dynamic configurations are for removable devices 
+
+    in /etc/devfs.conf each line is a rule that starts with one of 3 actions: 
+
+        link                        <- set up a symbolic link to a device 
+        own                         <- change device ownership 
+        perm                        <- change device permissions 
+
+        link cd0 dvd                <- make device in /dev/cd0 also accessible from /dev/dvd 
+        own cd0 root:syadmin
+        perm cd0 0660
+
+    read the documentation for information on configuring /etc/devfs/rules (though you may be able to just configure the devd daemon)
+
+    the devd daemon is used to manage devices from a higher level 
+        it watches for kernel events relating to devices & uses the rules defined in /etc/devd.conf
+    read the devd.conf man page & read comments in /etc/devd.conf files for configuration instructions 
+
+    /etc/devd.conf rule syntax consists of statements (the rules) containing groups of substatements (details about the rule)
+    types of statements include: 
+        attach                      <- what to do when a device is inserted 
+        detach                      <- what to do when a device is removed 
+        nomatch                     <- what to do if no other statements match the device 
+        notify                      <- how to respond to kernel events about the device 
+        options                     <- coonfiguration options for devd itself 
+
+    you often do not need to configure devd since the default configuration is adequate 
+
+    automatic mounting of removable media is now handled by FreeBSDs implementation ofo autofs, not by devd. 
+        although autofs is found on mots UNIX-like OS's, FreeBSD is unusual in assigning it this task 
+    
+
+-------LINUX KERNEL CONFIGURATION-------
+
+    pg 339
+
+
+

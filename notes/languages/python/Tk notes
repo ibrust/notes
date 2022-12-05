@@ -1,0 +1,1026 @@
+https://tkdocs.com/tutorial/intro.html
+
+Tk has a long evolution, and you can do most things in many different ways. 
+    the newer ways are much superior to the old ways, and this tutorial focuses on newer ways.
+    one good indication you're working with older Tk code is it uses the archaic pack instead of grid
+there are also popular extensions to Tk, but beware as many of them are now outdated and the newer versions of TK (8.5+) provide the functionality
+
+make sure you have the latest version of Tk, many OS's have older versions 
+    ensuring Python is updated should be enough though 
+
+    import tkinter
+    tkinter.Tcl().eval('info patchlevel')
+
+####################################################
+SAMPLE APPLICATION
+####################################################
+
+ttk is a submodule of tkinter, and you actually have to import it separately
+    this was done because several classes exist in both ttk and tkinter, so separate namespaces are required
+        in some cases both the old & new versions of these duplicate classes are still used
+ttk includes the newer themed widgets added in Tk 8.5 
+
+
+    from tkinter import *                   # load the main Tk library 
+    from tkinter import ttk                 # load the new themed widgets
+
+
+this code creates a main window and the main frame widget. a frame widget is like a container view:
+
+    mainWindow = Tk()
+    mainWindow.title("Calculator")
+
+    mainFrame = ttk.Frame(mainWindow, padding="3 3 12 12")          # create the frame 
+    mainFrame.grid(column=0, row=0, sticky=(N, W, E, S))            # place the frame in the main window
+
+    mainWindow.columnconfigure(0, weight=1)                         # these 2 lines allow the frame to resize as the window is resized 
+    mainWindow.rowconfigure(0, weight=1)
+
+
+why use a frame inside the main window instead of just using the window? 
+    older Tk applications did just use the window, but the window isn't part of the new themed widgets.
+        its background color doesn't match the themed widgets 
+
+
+when you create a new widget the first parameter specifies its parent. you can also provide configuration options.
+the following code adds some text entry fields & a button to perform conversion from feet to meters:
+
+    def convertToMeters(*args):                     # *args is needed because mainWindow.bind() passes in an argument (though we don't use it here)
+        try:
+            value = float(feet.get())
+            meters.set(int(0.3048 * value * 10000.0 + 0.5)/10000.0)
+        except ValueError:
+            pass
+
+
+    feet = StringVar()
+    textEntryWidget = ttk.Entry(mainFrame, width=7, textvariable=feet)      # create a new widget. width=7 allows 7 characters to be entered.
+                                                                            # textVariable=feet will store the entered values in this variable 
+
+    textEntryWidget.grid(column=2, row=1, sticky=(W, E))                    # place text field in the frame, causing it to appear on screen
+                                                                            # sticky describes how the widget should be positioned within the grid cell
+
+    meters = StringVar()
+    ttk.Label(mainFrame, textvariable=meters).grid(column=2, row=2, sticky=(W, E))                  # you can create & add a label in 1 line 
+
+    ttk.Button(mainFrame, text="convert", command=convertToMeters).grid(column=3, row=3, sticky=W)  # create a button that triggers convertToMeters()
+
+    ttk.Label(mainFrame, text="feet").grid(column=3, row=1, sticky=W)                               # create some text labels
+    ttk.Label(mainFrame, text="is equal to").grid(column=1, row=2, sticky=E)
+    ttk.Label(mainFrame, text="meters").grid(column=3, row=2, sticky=W)
+
+
+    for child in mainFrame.winfo_children():                        # adds some spacing between the various widgets in mainFrame
+        child.grid_configure(padx=5, pady=5)
+
+    textEntryWidget.focus()                                         # focus on textEntryWidget 
+
+    mainWindow.bind("<Return>", convertToMeters)                    # if user presses return it will also call convertToMeters()
+
+
+    mainWindow.mainloop()                                   # this renders everything on screen & begins listening for user input
+
+
+the above example code works, but is very simple
+    - it doesn't have to handle rerenders or update cycles
+    - the widgets are bound directly to simple variables
+    - it doesn't have to parse and dispatch events, detect hits, or handle events on each widget 
+    - the default configurations for the widgets were mostly enough 
+    - we didn't need to handle closing or resizing of the window 
+    - we didn't need to add any platform-specific code 
+
+as applications get larger you need to use modules, classes for parts of the UI, use inheritance from various tkinter classes, & more 
+
+
+####################################################
+TK CONCEPTS 
+####################################################
+
+widgets are Tk's equivalent to views
+
+there is a widget hierarchy, and the mainWindow is the root
+    even a new window in a Tk app (often called a TopLevel) is still a child of the mainWindow 
+    so whenever you create a widget class you will always specify a parent
+
+when you create a widget you only need to assign it to a variable if you need to access it later.
+    it won't be garbage collected since it is part of the widget hierarchy 
+
+the available configuration options for a widget depend on its class, though there's alot of consistency between classes
+you can check a widgets available configuration options in the interpreter:
+
+    mainWindow = Tk()
+    button = ttk.Button(mainWindow, text="", command="buttonpressed")
+    button.configure().keys()                                           # prints out a list of configuration options 
+
+
+alot of information about widgets in your application can be introspected via winfo* methods:
+
+    def print_hierarchy(w, depth=0):
+        print('  '*depth + w.winfo_class() + ' w=' + str(w.winfo_width()) + ' h=' + str(w.winfo_height()) \
+                    + ' x=' + str(w.winfo_x()) + ' y=' + str(w.winfo_y()))
+
+        for i in w.winfo_children():                # traverse the widget hierarchy & print info for all of them 
+            print_hierarchy(i, depth+1)
+
+    print_hierarchy(mainWindow)
+
+
+here are the most useful winfo* methods:
+
+    winfo_class                             class identifying the type of widget, e.g., TButton for a themed button
+    winfo_children                          list of widgets that are the direct children of a widget in the hierarchy
+    winfo_parent                            parent of the widget in the hierarchy
+    winfo_toplevel                          the toplevel window containing this widget
+    winfo_width, winfo_height               current width and height of the widget; not accurate until it appears onscreen
+    winfo_reqwidth, winfo_reqheight         width and height that the widget requests of the geometry manager
+    winfo_x, winfo_y                        top-left corner of the widget relative to its parent
+    winfo_rootx, winfo_rooty                top-left corner of the widget relative to the entire screen
+    winfo_vieweable                         if widget is displayed or hidden (all its ancestors in the hierarchy must be viewable for it to be viewable)
+
+
+placing widgets onto the screen is handled separately by the geometry manager 
+    we achieved this earlier via the grid command
+    grid is one of Tk's many geometry managers, but generally considered the best one. 
+
+geometry management in Tk uses master and slave widgets. 
+    a master widget contains other slave widgets.
+    the geometry manager controls the master widget and decides how the slave widgets will be arranged within.
+
+
+these methods work specifically with the grid geomoetry manager to tell the master how to manage its slaves:
+
+    textEntryWidget.grid(column=2, row=1, sticky=(W, E))            # column and row are hints to the master for how it should layout the slave 
+
+    mainWindow.rowconfigure(0, weight=1)                            # indicates the rows / columns to expand if extra space is available 
+    mainWindow.columnconfigure(0, weight=1)
+
+    child.grid_configure(padx=5, pady=5)
+
+
+whenever the size of a master changes the geometry object must recalculate the slaves sizes / positions & signal them to rearrange themselves
+
+while each master can be managed by only one geometry manager (e.g., grid), different masters can have different geometry managers. 
+    grid is the right choice most of the time, but others (i.e. pack, place, canvas, text) may make sense for other use cases.
+
+
+Tk runs an event loop that receives events from the operating system - button presses, keystrokes, mouse movement, window resizing, etc.
+    just beware of blocking the event loop & freezing the UI 
+
+
+many widgets take a callback to handle user-input events related to the widget:
+
+    ttk.Button(mainFrame, text="convert", command=convertToMeters).grid(column=3, row=3, sticky=W)
+
+
+for events that don't have a widget-specific command callback associated with them, use bind() to capture any event and invoke a callback:
+
+    l = ttk.Label(mainWindow, text="Starting...")
+    l.grid()
+
+    # lambdas are used for convenience. e is the event object sent to the callback, much like in javascript
+    l.bind('<Enter>', lambda e: l.configure(text='Moved mouse inside'))
+    l.bind('<Leave>', lambda e: l.configure(text='Moved mouse outside'))
+
+    # ButtonPress is the general event category, and -1 specifies the left mouse button 
+    l.bind('<ButtonPress-1>', lambda e: l.configure(text='Clicked left mouse button'))
+
+    # <3> here is actually shorthand for <ButtonPress-3>
+    l.bind('<3>', lambda e: l.configure(text='Clicked right mouse button'))
+
+    # <Double-1> is short for <Double-ButtonPress-1>
+    l.bind('<Double-1>', lambda e: l.configure(text='Double clicked'))
+
+    # capture mouse movement (Motion), but only when the right mouse button (B3) is held down. 
+    # also notice the event object's properties e.x and e.y
+    l.bind('<B3-Motion>', lambda e: l.configure(text='right button drag to %d,%d' % (e.x, e.y)))
+
+    # you can setup bindings for sequences of input. here <ab> is equivalent to <KeyPress-A><KeyPress-B>
+    l.bind('<ab>', lambda e: l.configure(text='pressed a, then b'))
+
+
+if you setup an event on a toplevel window, if a matching event occurs anywhere in that window the binding will fire. 
+    here we setup a binding on the main application's toplevel window:
+
+    mainWindow.bind("<Return>", convertToMeters)            # if <Return> is pressed when any widget in this toplevel window has the focus, 
+                                                            # this binding will fire.
+
+also note that more than one binding can fire for an event
+    you can also change and delete these event bindings 
+
+
+here are the most commonly used events:
+
+    <Activate>                      Window has become active
+    <Deactivate>                    Window has been deactivated
+    <MouseWheel>                    Scroll wheel on mouse has been moved
+    <KeyPress>                      Key on keyboard has been pressed down
+    <KeyRelease>                    Key has been released
+    <ButtonPress>                   A mouse button has been pressed
+    <ButtonRelease>                 A mouse button has been released
+    <Motion>                        Mouse has been moved
+    <Configure>                     Widget has changed size or position
+    <Destroy>                       Widget is being destroyed
+    <FocusIn>                       Widget has been given keyboard focus
+    <FocusOut>                      Widget has lost keyboard focus
+    <Enter>                         Mouse pointer enters widget
+    <Leave>                         Mouse pointer leaves widget
+
+see https://tcl.tk/man/tcl8.6/TkCmd/keysyms.htm for a list of specifiers that can proceed these 
+
+preceding specifiers can include:
+    Button1 to signify the main mouse button being held down
+    Double / Triple for sequences of the same event
+    Control / Shift / Alt / Option / Command for when these keyboard keys are being held down 
+
+
+The events we've seen so far are operating system events. Many widgets also generate their own virtual events. 
+    These are indicated by double angle brackets around the event name
+    i.e. a listbox widget will generate a <<ListboxSelect>> virtual event whenever its selection changes.
+Tk also defines virtual events for things like <<Cut>>, <<Copy>> and <<Paste>> which are triggered in different ways for different platforms
+
+You can define your own virtual events if you want:
+
+    mainWindow.event_generate("<<CustomEvent>>")
+
+####################################################
+BASIC WIDGETS 
+####################################################
+
+-----------
+FRAME
+-----------
+a frame displays as a simple rectangle. frames help to organize your user interface, often both visually and at the coding level. 
+frames often act as master widgets for a geometry manager, managing the slave widgets contained within the frame.
+
+    frame = ttk.Frame(parent)
+
+typically the size of a frame is determined by the size and layout of any widgets within it, as arranged by the geometry manager.
+
+you can request a frame to be a certain size via the width / height configuration options, but the geometry manager has the final say.
+
+by default the units of a size are in pixels, but there are other options:
+
+    350                 // pixels 
+    350c                // centimeters 
+    350m                // millimeters
+    350i                // inches 
+    350p                // printer's points (1/72 of an inch)
+
+the padding configuration option requests extra space on the inside
+
+    frame['padding'] = 5                # 5 pixels on all sides
+    frame['padding'] = (5,10)           # 5 on left and right, 10 on top and bottom
+    frame['padding'] = (5,7,10,12)      # left: 5, top: 7, right: 10, bottom: 12
+
+
+to add a border around a frame set the borderwidth configuration option (which defaults to 0, i.e., no border) 
+then set the relief option, which specifies the visual appearance of the border. relief can be: 
+
+    flat (default)
+    raised
+    sunken
+    solid
+    ridge
+    groove
+
+
+    frame['borderwidth'] = 2
+    frame['relief'] = 'sunken'
+
+
+frames (and all themed widgets) have a style configuration option, which lets you control many aspects of appearance and behavior:
+
+    # simple example of creating a "Warning" frame with a red background and a raised border
+    s = ttk.Style() 
+    s.configure('Warning.TFrame', background='red', borderwidth=5, relief='raised')
+    ttk.Frame(root, width=200, height=200, style='Warning.TFrame').grid()
+
+many old UI configuration options in certain old Tk widgets were removed in their themed version because they weren't cross-platform compatible 
+
+-----------
+LABEL
+-----------
+
+a label is a widget that displays text or images, typically that users will just view but not otherwise interact with:
+
+    label = ttk.Label(parent, text='Name:')     # text is a simple, commonly used configuration option 
+
+    
+    textvariable = StringVar()                  # you can also configure the label to observe a variable, and update when its value changes
+    label['textvariable'] = textvariable
+    textvariable.set('New text')
+
+
+    image = PhotoImage(file='myimage.gif')      # labels can also display an image instead of text 
+    label['image'] = image  
+
+labels can also display both an image and text at the same time. you'll often see this in toolbar buttons. 
+    to do this, set the compound configuration option to one of the following:
+
+    None (default)                              # display only the image if present; if there is no image, display the text 
+    center                                      # text in the center of image
+    top                                         # image above text
+    left 
+    bottom
+    right
+
+normally it's best to change things like fonts and colors through the new themed-widgets style configuration mechanism,
+    but labels have some specific configuration options not included in style that might be useful. 
+    first see if style can satisfy your needs
+
+you can specify the label's font using the font configuration option:
+
+    label['font'] = "TkDefaultFont"
+
+here are some predefined fonts that are cross-platform compatible:
+
+    TkDefaultFont                               # default for all GUI items not otherwise specified
+    TkTextFont                                  # used for entry widgets, listboxes, etc.
+    TkFixedFont                                 # a standard fixed-width font
+    TkMenuFont                                  # used for menu items
+    TkHeadingFont                               # for column headings in lists and tables
+    TkCaptionFont                               # for window and dialog caption bars
+    TkSmallCaptionFont                          # Smaller captions for subwindows or tool dialogs
+    TkIconFont                                  # for icon captions
+    TkTooltipFont                               # for tooltips
+
+the foreground and background color of the label can be changed via the foreground and background configuration options 
+
+while the geometry manager determines a labels position, several options can adjust the label within the rectangle the geometry manager gives it.
+
+the anchor option specifies what edge or corner the label should be attached to if the rectangle given to it is larger than the label itself
+    possible values include: n, ne, e, se, s, sw, w, nw, center 
+
+while using grid you may need to adjust the sticky options. options on one widget can affect the placement of another. 
+    the geometry manager juggles space to fit all the widgets together. 
+    when debugging it can help to change the background color of each widget so you know exactly where each is positioned.
+
+you can embed \n in a labels text to make the label span multiple lines
+you can also use the wraplength option to specify a maximum line length after which the text will wrap automatically 
+
+use the justify option to align text. possible values include: 
+    center
+    left
+    right 
+
+-----------
+BUTTON
+-----------
+
+    button = ttk.Button(root, text="button name", default="active", command=callbackFunction)
+    root.bind('<Return>', lambda e: button.invoke())
+
+buttons take the same text, textvariable (rarely used), image, and compound configuration options as labels.
+
+the default button is invoked when the user presses enter 
+    to make a button the default one, set the default configuration option to 'active'. otherwise it is 'normal'
+
+The command option handles the button tap event. you can set this to a script or function
+
+    you can bind a cancel button <Key-Escape>
+
+buttons (and many other widgets) start off in a normal state, but can be put into a disabled state:
+
+    button.state(['disabled'])                      # disable button
+    button.state(['!disabled'])                     # reenable buttno
+    button.instate(['disabled'])                    # true if disabled 
+    button.instate(['!disabled'])                   # true if enabled
+    button.instate(['!disabled'], callback)         # execute callback if button is enabled
+
+the above commands are used to check a variety of state flags, not just the disabled flag. that's why the parameter is an array 
+the full list of state flags available to themed widgets is: 
+    active
+    disabled
+    focus
+    pressed
+    selected
+    background
+    readonly
+    alternate
+    invalid
+
+these state and instate methods replace the older state configuration option (which took the values normal or disabled)
+    the old configuration option is still available for themed widgets in Tk 8.5, but rewired to call the appropriate state command. 
+    it's mainly intended as a convenience, so you can specify a widget should be disabled when you first create it.
+    however, any changes made using the new state command do not update the configuration option. for this reason it is write-only 
+
+-----------
+CHECKBOX
+-----------
+
+    boundVariable = StringVar(value="metric")
+    checkbox = ttk.Checkbutton(
+        parent, 
+        text='text', 
+        command=callback, 
+        variable=boundVariable,
+        onvalue="metric", 
+        offvalue="imperial"
+    )
+
+checkboxes support the same options as regular buttons plus a few more 
+
+checkboxes can also bind to a variable which will initially be set to 1 or 0 when the box is checked / unchecked
+    you can change what the variable is set to using the onvalue and offvalue config options
+    so the above checkbox will change boundVariable between 'metric' and 'imperial'
+note that you do still need to initialize this variable, the button configuration doesn't do that 
+    if the bound variable doesn't contain either onvalue or offvalue, or doesn't exist, the checkbutton is put into a special indeterminate state. 
+    the checkbox might display a single dash in this state instead of being empty or holding a checkmark. 
+    you can check whether the checkbox is in this alterate state:
+
+        checkbox.instate(['alternate'])
+
+Tkinter supports many different types of bound variables. all these are subclasses of the base class Variable:
+
+    s = StringVar(value="abc") 
+    b = BooleanVar(value=True) 
+    i = IntVar(value=10) 
+    d = DoubleVar(value=10.5) 
+
+-----------
+RADIOBUTTON
+-----------
+
+typically you initialize multiple radio buttons at once:
+
+    boundVariable = StringVar()
+    button1 = ttk.Radiobutton(parent, text='dog', variable=boundVariable, value='doggy')
+    button2 = ttk.Radiobutton(parent, text='cat', variable=boundVariable, value='kitty')
+    button3 = ttk.Radiobutton(parent, text='raat', variable=boundVariable, value='RAAAAAT!')
+
+radio buttons work mostly the same as checkboxes except for onvalue and offvalue, which are replaced with a single 'value' option
+    each radiobutton in the set will have the same linked variable but a different value.
+    when the variable holds the matching value, that radiobutton will visually indicate it is selected. 
+
+-----------
+ENTRY
+-----------
+
+an entry widget is a single-line textfield where the user can type in a string value
+
+a width configuration option can be used to specify the number of characters the entry must be.
+
+an entry widget doesn't have an associated text or image, so use a separate label to identify them.
+
+changes in an entry widget's associated value are typically detected via textvariable.
+    unlike some other widgets the entry widget has no command callback.
+    trace_add is a built in method of Variable that allows you to register callbacks for when Variable's value changes:
+
+    def delegate(*args):
+        ...
+
+    boundVariable = StringVar()
+    nameField = ttk.Entry(parent, textvariable=boundVariable)
+    boundVariable.trace_add("write", delegate)
+
+there are a few other event registration methods for Variables
+    you can delete them with trace_remove, introspect them with trace_info, and register multiple callbacks
+    these methods also replace a now-deprecated set of older methods (trace, trace_variable, trace_vdelete, and trace_vinfo) that should not be used.
+
+there are also accessor methods you can use to get / set / delete the value 
+
+    print('current value is %s' % nameField.get())
+    nameField.delete(0, 'end')                          # delete between two indices, 0-based
+    nameField.insert(0, 'your name')                    # insert new text at a given index
+
+
+for secure text entry use the show configuration option:
+
+    passwd = ttk.Entry(parent, textvariable=password, show="*")
+
+
+validation criteria are specified via the validatecommand configuration option
+    you provide a callback that returns a boolean indicating if the entry is valid
+
+    import re
+
+    def validation_callback(newval):
+        return re.match('^[0-9]*$', newval) is not None and len(newval) <= 5
+
+    validation_callback_wrapper = (root.register(validation_callback), '%P')     
+   
+    num = StringVar()
+    e = ttk.Entry(root, textvariable=num, validate='key', validatecommand=validation_callback_wrapper)
+    e.grid(column=0, row=0, sticky='we')                                    # why is sticky not in the format (N,S,E,W) here, like elsewhere?
+
+the above code uses an event registration mechanism and percent substitution. Tk uses this for handling & introspecting events
+    usually Python's Tkinter provides higher level abstractions and you don't need to work with precent substitutions, but not with entry widgets 
+    
+    the register method (which can be called on any widget, not just root). it looks like it registers the callback, though details aren't given.
+    the percent substitution(s) will in this case contain the entered text, and will be passed to the callback as parameters
+
+here's a more in depth validation. it will validate as the user types, revalidate when the user finishes typing, show/hide an error message, 
+    and disable/enable a submit button based on the validation status:
+
+    import re
+    errmsg = StringVar()
+    formatmsg = "Zip should be ##### or #####-####"
+
+    def check_zip(newval, op):
+        errorMessageVariable.set('')
+        isValid = re.match('^[0-9]{5}(\-[0-9]{4})?$', newval) is not None
+
+        submitButton.state(['!disabled'] if isValid else ['disabled'])
+    
+        if op=='key':
+            ok_so_far = re.match('^[0-9\-]*$', newval) is not None and len(newval) <= 10
+            if not ok_so_far:
+                errorMessageVariable.set(formatmsg)
+            return ok_so_far
+        elif op=='focusout':
+            if not isValid:
+                errorMessageVariable.set(formatmsg)
+
+        return isValid
+
+    check_zip_wrapper = (root.register(check_zip), '%P', '%V')
+
+    zipVariable = StringVar()
+    frame = ttk.Frame(root)
+    frame.grid(column=0, row=0)
+
+    ttk.Label(frame, text='Name:').grid(column=0, row=0, padx=5, pady=5)
+    ttk.Entry(frame).grid(column=1, row=0, padx=5, pady=5)
+    ttk.Label(frame, text='Zip:').grid(column=0, row=1, padx=5, pady=5)
+
+    entryWidget = ttk.Entry(frame, textvariable=zipVariable, validate='all', validatecommand=check_zip_wrapper)
+    entryWidget.grid(column=1, row=1, padx=5, pady=5)
+
+    submitButton = ttk.Button(frame, text="Submit")
+    submitButton.grid(column=2, row=1, padx=5, pady=5)
+    submitButton.state(['disabled'])
+    
+    errorMessageLabel = ttk.Label(frame, font='TkSmallCaptionFont', foreground='red', textvariable=errorMessageVariable)
+    errorMessageLabel.grid(column=1, row=2, padx=5, pady=5, sticky='w')
+
+
+Notice that the validate configuration option has been changed from key to all. 
+    that arranges for the validatecommand callback to be invoked on not only keystrokes but other triggers. 
+    the trigger is passed to the callback using the %V percent substitution. 
+    the callback checks whether op is 'key' (for keystroke) or 'focusout' (for finished entering text). you can also check for 'focusin'
+
+
+if the validatecommand ever generates an error (or doesn't return a boolean), validation will be disabled for that widget. 
+the validation callback can modify the entry, e.g., change its textvariable. 
+you can validate the widget at any time by calling its validate method, which returns true if validation passes (here %V is set to forced)
+
+there is also an invalidcommand configuration option (which works like validatecommand) that is called whenever validation fails. 
+    similarly the entry's invalid state flag is automatically updated when validation fails
+
+here are other percent substitutions you can use: 
+    %d          # differentiate between insert and delete
+    %s          # get the entry's contents prior to editing
+    %i          # index where an insert or delete occurs
+    %S          # string that's being inserted or deleted
+    %v          # the current setting of the validate option
+    %W          # the name of the widget
+
+
+-----------
+COMBOBOX
+-----------
+
+this is just a dropdown with a list of options:
+
+    boundVariable = StringVar()
+    comboBoxWidget = ttk.Combobox(parent, textvariable=boundVariable)
+
+
+a combobox will generate a <<ComboboxSelected>> virtual event that you can bind to whenever its value changes.
+    this is more straightforward than tracing changes on the textvariable like was done with entry:
+
+    comboBoxWidget.bind('<<ComboboxSelected>>', callback)
+
+
+you can define the list of menu options using the 'values' configuration option:
+
+    comboBoxWidget['values'] = ('USA', 'Canada', 'Australia')
+
+
+If set, the 'readonly' state flag will restrict users to making choices only from the list of predefined values but not be able to enter their own 
+    though if the current value of the combobox is not in the list, it won't be changed regardless
+    be sure to call the selection_clear method when the value changes if you set 'readonly', the UI apparently looks buggy otherwise 
+
+Combobox also has accessors methods you can use to get / set the value (like the entry widget has)
+    alternatively there's a current() method that, if called, returns the currently selected index in the list.
+        if you pass an index to current() it will set the Combobox to that index item 
+
+
+####################################################
+THE GRID GEOMETRY MANAGER
+####################################################
+
+to cause widgets to take up multiple rows / columns use the columnspan and rowspan options
+
+the width / height of each row or column will vary depending on the size of all the widgets contained within
+    as a result, some widgets will not take up the full cell space 
+    by default the widget will be centered in the cell. 
+    the sticky option changes this, specifying which edge to stick the widget against 
+        the argument to sticky is a string with any combination of n e s w (why not in the format (N,S,E,W)?)
+        specifying opposite directions - i.e. "sn" - causes the widget to stretch to fit 
+    most widgets have options to configure how they are displayed if they are stretched larger than needed. 
+        i.e. a label widget has an anchor option that controls where the label's text will be positioned within the widget's boundaries
+
+the sticky bit also determines where to position the element during window resizing 
+
+every row & column has an associated weight that indicates how much the it should grow during resizing 
+    the initial weight of each row & column is 0, meaning it won't resize to fill extra space at all.
+    you must specify a positive weight to get it to resize 
+weights are set using the columnconfigure and rowconfigure methods of grid
+columnconfigure and rowconfigure also take a minsize grid option
+
+there are also multiple ways of adding padding around a widget.
+    some widgets (such as frame) allow you to add padding when you construct them using the padding option 
+    you can also use the padx and pady grid options when adding the widget. these add outside padding 
+        or for inside padding use ipadx and ipady
+        the difference might only be relevant when frames are stretched to fit within a cell, though it isn't entirely clear.
+    the columnconfigure and rowconfigure methods also accept a pad option
+
+
+    from tkinter import *
+    from tkinter import ttk
+
+    root = Tk()
+
+    mainFrame = ttk.Frame(root, padding=(3,3,12,12))
+    subFrame = ttk.Frame(mainFrame, borderwidth=5, relief="ridge", width=200, height=100)
+    nameLabel = ttk.Label(mainFrame, text="Name")
+    nameEntry = ttk.Entry(mainFrame)
+
+    isCheckboxAChecked = BooleanVar(value=True)
+    isCheckboxBChecked = BooleanVar(value=False)
+    isCheckboxCChecked = BooleanVar(value=True)
+
+    checkBoxA = ttk.Checkbutton(mainFrame, text="Option A", variable=isCheckboxAChecked, onvalue=True, offvalue=False)
+    checkBoxB = ttk.Checkbutton(mainFrame, text="Option B", variable=isCheckboxBChecked, onvalue=True, offvalue=False)
+    checkBoxC = ttk.Checkbutton(mainFrame, text="Option C", variable=isCheckboxCChecked, onvalue=True, offvalue=False)
+    submit = ttk.Button(mainFrame, text="Submit")
+    cancel = ttk.Button(mainFrame, text="Cancel")
+
+    mainFrame.grid(column=0, row=0, sticky=(N, S, E, W))
+    subFrame.grid(column=0, row=0, columnspan=3, rowspan=2, sticky=(N, S, E, W))
+    nameLabel.grid(column=3, row=0, columnspan=2, sticky=(N, W), padx=5)
+    nameEntry.grid(column=3, row=1, columnspan=2, sticky=(N,E,W), pady=5, padx=5)
+    checkBoxA.grid(column=0, row=3)
+    checkBoxB.grid(column=1, row=3)
+    checkBoxC.grid(column=2, row=3)
+    submit.grid(column=3, row=3)
+    cancel.grid(column=4, row=3)
+
+    root.mainloop()
+
+    root.columnconfigure(0, weight=1)
+    root.rowconfigure(0, weight=1)
+    mainFrame.columnconfigure(0, weight=3)
+    mainFrame.columnconfigure(1, weight=3)
+    mainFrame.columnconfigure(2, weight=3)
+    mainFrame.columnconfigure(3, weight=1)
+    mainFrame.columnconfigure(4, weight=1)
+    mainFrame.rowconfigure(1, weight=1)
+
+
+you can also introspect and change these various grid layout options after initialization 
+    the slaves method returns all the slave widgets gridded inside a master, or optionally just those within a certain column or row.
+    the configure method lets you change grid options on a widget.
+
+
+    mainFrame.grid_slaves()                             # returns all slaves 
+
+    for widget in mainFrame.grid_slaves(row=3):         # loop through all slaves in row 3
+        ...
+
+    for widget in mainFrame.grid_slaves(column=0):
+        ...
+    
+    nameLabel.grid_info()                               # {'in': <tkinter.ttk.Frame object .!frame>, 'column': 3, 'row': 0, 'columnspan': 2, 
+                                                        #  'rowspan': 1, 'ipadx': 0, 'ipady': 0, 'padx': 5, 'pady': 0, 'sticky': 'nw'}
+
+    nameLabel.grid_configure(sticky=(E,W))              # change the widgets sticky grid property 
+
+
+the forget method of grid removes slaves from their grid. it takes a list of one or more slave widgets as arguments. 
+    you can add it back later using the same methods as used initially.
+the remove method of grid does the same thing as forget, except that the grid options will be remembered if you add the widget again later.
+
+create new frames for different views and grid the widgets separately within that frame (i.e. subFrame in the example). 
+    this is more modular than having one giant grid 
+
+####################################################
+MORE WIDGETS
+####################################################
+
+-----------
+LISTBOX
+-----------
+a listbox displays a list of single-line text items, usually lengthy, and allows users to browse through the list, selecting one or more.
+    listboxes are part of the classic Tk widgets. there is not presently a listbox in the themed Tk widget set.
+
+the height option specifies how many single-line text items are displayed without scrolling:
+
+    listboxWidget = Listbox(parent, height=10)
+
+
+the listvariable configuration option allows you to link a variable containing a list of text items to the listbox
+    to add, remove, or rearrange the text items you simply modify the variable 
+    in Python the listvariable must be a StringVar:
+
+    fruitList = ["apple", "orange", "banana"]
+    fruitListString = StringVar(value=fruitList)
+    listboxWidget = Listbox(parent, listvariable=fruitListString)
+
+    ...
+
+    fruitList.append("peach")
+    fruitListString.set(fruitList)
+
+
+the selectmode option determines whether users can select single or multiple items at once. 
+    by default it is set to "browse" for single-item selection, but can be changed to "extended" for multiple selection 
+    note that there are two deprecated modes called "single" and "multiple" that you should never use since they aren't cross-platform compatible 
+
+
+the curselection method returns a list of indices of all items currently selected. this may be an empty list
+the selection_includes(index) method checks if the item with a given index is currently selected.
+the selection_set(first, last) and selection_clear(first, last) methods let you to programmatically select / deselect an item or span of items 
+    also make sure newly selected items are visible. to do this use the see(index) method:
+
+    listboxWidget.selection_set(index)
+    listboxWidget.see(index)
+
+
+when a user changes the selection, a <<ListboxSelect>> virtual event is generated.
+sometimes applictions also handle the <Double-1> event on listboxes (if the user double clicks an item):
+
+    listboxWidget.bind("<<ListboxSelect>>", lambda e: updateDetails(lbox.curselection()))
+    listboxWidget.bind("<Double-1>", lambda e: invokeAction(lbox.curselection()))
+
+the listbox is a classic Tk widget so you must be careful modifying its style to maintain cross-platform compatibility, but changing colors is be fine 
+
+
+    from tkinter import *
+    from tkinter import ttk
+    root = Tk()
+
+    colors = ("white", "yellow", "orange", "red", "green", "blue", "purple", "black)
+    colorsBoundVar = StringVar(value=colors)
+
+    gift = StringVar()
+
+    def pickColor(*args):
+        ...
+
+    def submit(*args):
+        ...
+
+    listboxWidget = Listbox(c, listvariable=colorsBoundVar, height=5)
+
+    listboxWidget.grid(column=0, row=0, rowspan=6, sticky=(N,S,E,W))
+
+    listboxWidget.bind('<<ListboxSelect>>', pickColor)
+    listboxWidget.bind('<Double-1>', submit)
+    root.bind('<Return>', submit)
+
+    for i in range(0, len(colors), 2):
+        listboxWidget.itemconfigure(i, background='#f0f0ff')
+
+    listboxWidget.selection_set(0)
+
+
+notice there are more colors than the listbox's height here. to allow the user to scroll through the list of colors you need to add a scrollbar 
+
+-----------
+SCROLLBAR
+-----------
+
+scrollbars are not a part of another widget, but are a separate widget altogether
+the scrollbar and the scrolled widget must call methods on one another to coordinate 
+
+
+    scrollbarWidget = ttk.Scrollbar(parent, orient=VERTICAL, command=listboxWidget.yview)
+    listboxWidget.configure(yscrollcommand=scrollbarWidget.set)
+
+
+every widget that can be scrolled vertically or horizontally has a method named yview or xview
+    as long as this method is present the scrollbar doesn't need to know anything else about the scrolled widget.
+
+the scrolled widget also needs to communicate to the scrollbar the percentage of the entire content area that is currently visible.
+    this lets the scrollbar know how far to scroll 
+    every scrollable widget has a yscrollcommand and/or xscrollcommand configuration option for this purpose. 
+        here you always just specify the scrollbar's set method, tkinter will do the rest.
+
+
+    from tkinter import *
+    from tkinter import ttk
+
+    root = Tk()
+    listboxWidget = Listbox(root, height=5)
+    listboxWidget.grid(column=0, row=0, sticky=(N,W,E,S))
+
+    scrollbarWidget = ttk.Scrollbar(root, orient=VERTICAL, command=listboxWidget.yview)
+    scrollbarWidget.grid(column=1, row=0, sticky=(N,S))
+    listboxWidget['yscrollcommand'] = scrollbarWidget.set
+
+    ttk.Label(root, text="Status message here", anchor=(W)).grid(column=0, columnspan=2, row=1, sticky=(W,E))
+
+    root.grid_columnconfigure(0, weight=1)
+    root.grid_rowconfigure(0, weight=1)
+
+    for i in range(1,101):
+        listboxWidget.insert('end', 'Line %d of 100' % i)
+
+    root.mainloop()
+
+
+-----------
+TEXT
+-----------
+
+a text widget allows the user to enter multiple lines of text (unlike entry which is just 1 line)
+text widgets are another one of the classic Tk widgets 
+text widgets have alot of depth, and can be used to create complex applications such as word processors. here we will just cover the basics 
+
+    textWidget = Text(parent, width=40, height=10)      # 40 characters wide, 10 lines 
+
+the width and height options specify the requested number of characters and lines  
+
+the wrap configuration option controls line wrapping, and can be: 
+
+    "no wrapping"                           # text may horizontally scroll
+    "char"                                  # allow wrapping mid-word 
+    "word"                                  # wrap at word boundaries
+
+a text widget can be disabled, where no editing can occur. 
+    because text is not a themed widget the usual state and instate methods are not available. 
+    instead set the configuration option state to either "disabled" or "normal"
+
+    textWidget['state'] = 'disabled'
+
+
+scrolling works the same way as with listboxes
+
+to retrieve the contents of the text widget call the method get(start, end)
+    text can also be added using insert(index, text) and deleted using delete(start, end):
+
+    textWidget.insert("1.0", "the first line of text")
+    textWidget.get("1.0", tkinter.END)                      # get all text from the first character to the last 
+    textWidget.delete("1.0", tkinter.END)
+
+
+-----------
+SCALE
+-----------
+
+the scale widget allows users to choose a numeric value using a slider 
+
+    scaleWidget = ttk.Scale(parent, orient=HORIZONTAL, length=200, from_=1.0, to=100.0)
+
+the orient option may be either horizontal or vertical
+the length option is specified in screen units (e.g., pixels)
+the 'from_' and 'to' configuration options specify the numeric range for the value returned 
+
+the value of the scaleWidget must be a floating-point value between from_ and to 
+
+there are several different ways you can set the scaleWidget's value:
+    there's a 'value' configuration option you can use 
+    you can link the scaleWidget to a variable using the variable option
+    you can call the scaleWidget's set(value) method 
+        you can also read the value using its get() method 
+
+you can also setup a callback using the command configuration option
+
+
+    boundNumberVariable = StringVar()
+    ttk.Label(root, textvariable=boundNumberVariable).grid(column=0, row=0, sticky='we')
+
+    scalesCurrentValueLabel = ttk.Label(root)                           # since the scale doesn't show its current value we'll make a label for that
+    scalesCurrentValueLabel.grid(column=0, row=1, sticky='we')
+
+    def update_label(val):
+        scalesCurrentValueLabel['text'] = "current value: " + val
+
+    scale = ttk.Scale(
+        root, 
+        orient='horizontal', 
+        length=200, 
+        from_=1.0,
+        to=100.0, 
+        variable=boundNumberVariable, 
+        command=update_label
+    )
+    scale.grid(column=0, row=2, sticky='we')
+    scale.set(20)
+
+as with other themed widgets you can use state / instate to disable or enable it
+
+-----------
+SPINBOX
+-----------
+
+the spinbox is a themed widget
+the spinbox looks like an entry, but has two up/down arrows next to it. these let users cycle through and choose an option from a list of options.
+    users can also type in an option if they want, though you can disable that feature by setting the 'readonly' state flag 
+
+    selectedOption = StringVar()
+    spinboxWidget = ttk.Spinbox(parent, from_=1.0, to=100.0, textvariable=selectedOption)
+
+
+you can either configure a spinbox to select from a range of numbers or a list of items 
+    the numerical range is specified with from_ and to 
+    the list is specified with the 'values' configuration option, like with comboboxes
+
+there is a boolean 'wrap' option that determines whether the list of items / numbers should be circular and wrap back around  
+you can also specify a width for the spinbox's displayed current selection 
+
+-----------
+PROGRESSBAR
+-----------
+
+the progressbar widget shows the progress of an operation
+
+    progressbarWidget = ttk.Progressbar(parent, orient=HORIZONTAL, length=200, mode='determinate')
+
+
+The mode configuration option can be set to: 
+    
+    determinate                 # shows relative progress towards completion (used if you can estimate how long it will take)
+    indeterminate               # shows the operation is continuing but doesn't show relative progress (used if you don't know how long it will take)
+
+
+to use determinate mode estimate the total number of "steps" the operation will take. this could be an amount of time but doesn't need to be.
+    provide this to the progressbar using the 'maximum' configuration option. this should be a floating point number 
+    as the operation proceeds, update the progressbar's 'value' configuration option to make it show progress toward the maximum.
+        so the value will start at 0 and then count upwards to the maximum 
+    there are two ways to update 'value':
+        update a variable bound using the progressbar's 'variable' configuration option
+        call the progressbar's step(amount) method, which increments the value by the given amount
+            
+to use indeterminate mode you still need to inform the progressbar that the operation is continuing
+    when the operation begins call the progressbar's start() method 
+    at the end call the progressbar's stop() method 
+    in theory this is all you need to do
+    however... if you start the progressbar, call a function that takes several minutes to complete, and then stop the progressbar, 
+        you'll have to make sure not to block the event loop with that large task 
+        (otherwise the UI will freeze and the widget won't show up at all)
+
+####################################################
+EVENT LOOP
+####################################################
+
+the event loop continually processes events, pulled from the system event queue, usually dozens of times a second. 
+    it watches for mouse or keyboard events, invoking command callbacks and event bindings as needed.
+
+all screen updates are processed in the event loop. 
+    widgets notify Tk that it needs to be redrawn, and once Tk's event loop has time it will ask the widget to redraw itself.
+
+Tk uses a single-threaded programming model. All the GUI code, the event loop, and the application code run in the same thread.
+    so to prevent the event loop from blocking event handlers must execute quickly 
+
+the author recommends breaking up large operations into many smaller chunks using timers to avoid blocking the event loop.
+    tkinter actually provides support for this with the method after(milliseconds, callback) 
+    there was a long hacky example of this but I'm not including it. I'm just going to use threads or possibly asyncio 
+
+you must only make tkinter calls from the thread where you imported tkinter
+tkinter and asyncio will have separate event loops 
+so just keep all tkinter code on the main thread and spin-off asyncio event loops in another thread.
+    the main thread code may need to coordinate with the background asyncio code 
+        you can queue a function onto the asyncio event loop using asyncio's call_soon_threadsafe()
+        if you need to communicate from a background thread to the main thread running tkinter 
+            use event_generate() to post a custom virtual event to the Tkinter event queue, and bind to that event in the code:
+
+            root.event_generate("<<MyCustomEvent>>")
+
+
+####################################################
+MENUS
+####################################################
+
+
+
+####################################################
+WINDOWS AND DIALOGS
+####################################################
+
+####################################################
+ORGANIZING COMPLEX INTERFACES
+####################################################
+
+####################################################
+FONTS, COLORS, IMAGES
+####################################################
+
+####################################################
+CANVAS
+####################################################
+
+####################################################
+TEXT
+####################################################
+
+####################################################
+TREEVIEW
+####################################################
+
+####################################################
+STYLES AND THEMES
+####################################################
+

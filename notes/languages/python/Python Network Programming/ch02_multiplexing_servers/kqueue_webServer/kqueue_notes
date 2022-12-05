@@ -1,0 +1,313 @@
+python documentation on kqueue: 
+
+    select.kqueue() 
+        Returns a kernel queue object. Only supported on BSD
+        The kqueue() system call provides a generic method of notifying the user when an event happens or a condition holds,
+        Every kqueue() has a unique kevent() associated with it which is identified by the (ident, filter) pair.
+
+        Syntax: 
+            kqueue_object = select.kqueue()
+            kqueue_object.close()                                   
+            kqueue_object.closed
+            kqueue_object.fileno()                                           <- return the file descriptor number 
+            kqueue_object.fromfd(fd)                                         <- create a new kqueue from a given file descriptor 
+            kqueue.control(changelist, max_events[, timeout]) → eventlist    <- low level interface to kevent. 
+                                                                                changelist must be an iterable of kevent objects or None
+                                                                                max_events must be 0 or a positive integer
+                                                                                timeout in seconds (floats possible); 
+                                                                                    the default is None, to wait forever
+
+    select.kevent(ident, filter=KQ_FILTER_READ, flags=KQ_EV_ADD, fflags=0, data=0, udata=0)
+        Returns a kernel event object
+        A kevent is usually associated with kqueue and is identified by the (ident, filter) pair; there may only be one unique kevent per kqueue. 
+        The kevent() system call is used to register events with the queue and return any pending events to the user.
+        kqueue() returns a kernel event object (? I thought it returned a kqueue object).
+        
+        Syntax:
+            kevent_object = select.kevent(ident, filter=KQ_FILTER_READ, flags=KQ_EV_ADD, fflags=0, data=0, udata=0)
+
+            kevent_object.indent        <- value used to identify the event, usually the file descriptor number 
+            kevent_object.filter        <- name of the filter used for this event 
+            kevent_object.flags         <- action of the filter 
+            kevent_object.fflags        <- filter-specific flags 
+            kevent_object.data          <- filter-specific data 
+            kevent_object.udata         <- user defined data 
+
+// -------------------------------------------------------
+
+MITs Python kqueue example: 
+    def poll(self, timeout):
+        kevents = self._kqueue.control(None, 1000, timeout)
+        events = {}
+        for kevent in kevents:
+            fd = kevent.ident
+            if kevent.filter == select.KQ_FILTER_READ:
+                events[fd] = events.get(fd, 0) | IOLoop.READ
+            if kevent.filter == select.KQ_FILTER_WRITE:
+                if kevent.flags & select.KQ_EV_EOF:
+                    # If an asynchronous connection is refused, kqueue returns a write event with the EOF flag set.
+                    # Turn this into an error for consistency with the other IOLoop implementations.
+                    # Note that for read events, EOF may be returned before all data has been consumed from the socket buffer,
+                    # so we only check for EOF on write events.
+                    events[fd] = IOLoop.ERROR
+                else:
+                    events[fd] = events.get(fd, 0) | IOLoop.WRITE
+            if kevent.flags & select.KQ_EV_ERROR:
+                events[fd] = events.get(fd, 0) | IOLoop.ERROR
+        return events.items()
+
+// -------------------------------------------------------
+
+man kqueue on a BSD system for more information. here's the initial description:
+
+    The kqueue() system call provides a generic method	of notifying the user
+    when an event happens or a	condition holds, based on the results of small
+    pieces of kernel code termed filters.  A kevent is	identified by the
+    (ident, filter) pair; there may only be one unique	kevent per kqueue.
+
+    The filter	is executed upon the initial registration of a kevent in order
+    to	detect whether a preexisting condition is present, and is also executed 
+    whenever an event is	passed to the filter for evaluation.  If the
+    filter determines that the	condition should be reported, then the kevent
+    is	placed on the kqueue for the user to retrieve.
+
+    The filter	is also	run when the user attempts to retrieve the kevent from
+    the kqueue.  If the filter	indicates that the condition that triggered
+    the event no longer holds,	the kevent is removed from the kqueue and is
+    not returned.
+
+    Multiple events which trigger the filter do not result in multiple
+    kevents being placed on the kqueue; instead, the filter will aggregate
+    the events	into a single struct kevent.  Calling close() on a file	
+    descriptor will remove any kevents that reference the descriptor.
+
+    The kqueue() system call creates a	new kernel event queue and returns a
+    descriptor.  The queue is not inherited by	a child	created	with fork(2).
+    However, if rfork(2) is called without the	RFFDG flag, then the descriptor 
+    table is shared, which	will allow sharing of the kqueue between two
+    processes.
+
+    The kevent() system call is used to register events with the queue, and
+    return any	pending	events to the user.  The changelist argument is	a
+    pointer to	an array of kevent structures, as defined in <sys/event.h>.
+    All changes contained in the changelist are applied before	any pending
+    events are	read from the queue.  The nchanges argument gives the size of
+    changelist.  The eventlist	argument is a pointer to an array of kevent
+    structures.  The nevents argument determines the size of eventlist.  When
+    nevents is	zero, kevent() will return immediately even if there is	a
+    timeout specified unlike select(2).  If timeout is	a non-NULL pointer, it
+    specifies a maximum interval to wait for an event,	which will be interpreted 
+    as a struct	timespec.  If timeout is a NULL	pointer, kevent()
+    waits indefinitely.  To effect a poll, the	timeout	argument should	be
+    non-NULL, pointing	to a zero-valued timespec structure.  The same array
+    may be used for the changelist and	eventlist.
+
+    The EV_SET() macro	is provided for	ease of	initializing a kevent structure.
+
+// -------------------------------------------------------
+
+https://www.usenix.org/legacy/publications/library/proceedings/usenix01/freenix01/full_papers/lemon/lemon.pdf
+from Jonathan Lemons original paper on kqueue - 
+
+Kqueue is designed to reduce the overhead incurred by poll() and select(), by efficiently notifying the user of an event that needs attention, 
+while also providing as much information about that event as possible.
+
+KQUEUE API 
+The kqueue API introduces two new system calls
+The first creates a new kqueue, which is a notification channel, or queue. 
+    (pythons select.kqueue())
+
+The new kqueue is where the application registers which events it is interested in.
+It's also where it retrieves the events from the kernel. 
+The returned value from kqueue() is treated as an ordinary file descriptor, and can in turn be passed to poll(), select(), 
+    or even registered in another kqueue
+    (so pythons select.kqueue() returns a queue that is handled with a file descriptor)
+
+The second call is used by the application both to register new events with the kqueue, and to retrieve any pending events.
+By combining the registration and retrieval process, the number of system calls needed is reduced.
+Changes that should be applied to the kqueue are given in the changelist, and any returned events are placed in the eventlist, 
+    up to the maximum size allowed by nevents.
+    (looks like this is pythons kqueue.control()
+     there is this bit of code in MITs python example: kevents = self._kqueue.control(None, 1000, timeout))
+
+The number of entries actually placed in the eventlist is returned by the kevent() call.
+    (I'm not sure how this works in python. select.kevent() can be called using the return value of kqueue.control()...?)
+
+The timeout parameter behaves in the same way as poll(); a zero-valued structure will check for pending events without sleeping, 
+    while a NULL value will block until woken up or an event is ready. An application may choose to separate the registration 
+    and retrieval calls by passing in a value of zero for nchanges or nevents, as appropriate. 
+    (so you might want to use self._kqueue.control(None, 1000, None) instead here...?)
+
+Events are registered with the system by the application via a struct kevent, and an event is uniquely identified within the system 
+    by a <kqueue, ident, filter> tuple. In practical terms, this means that there can be only one <ident, filter> pair for a given kqueue.
+The filter parameter is an identifier for a small piece of kernel code which is executed when there is activity from an event source,
+    and is responsible for determining whether an event should be returned to the application or not. 
+The interpretation of the ident, fflags, and data fields depend on which filter is being used to express the event. 
+    The current list of filters and their arguments are presented in the kqueue filter section.
+The flags field is used to express what action should be taken on the kevent when it is registered with the system, 
+    and is also used to return filter-independent status information upon return. 
+    The valid flag bits are given below
+The udata field is passed in and out of the kernel unchanged, and is not used in any way. The usage of this field is entirely 
+    application dependent, and is provided as a way to efficiently implement a function dispatch routine, or otherwise add 
+    an application identifier to the kevent structure. 
+
+Input flags:
+    EV ADD -        Adds the event to the kqueue
+    EV ENABLE -     Permit kevent() to return the event if it is triggered.
+    EV DISABLE -    Disable the event so kevent() will not return it. The filter itself is not disabled.
+    EV DELETE -     Removes the event from the kqueue. Events which are attached to file descriptors are automatically deleted when
+                    the descriptor is closed.
+    EV CLEAR -      After the event is retrieved by the user, its state is reset. This is useful for filters which report state transitions 
+                    instead of the current state. Note that some filters may automatically set this flag internally.
+    EV ONESHOT -    Causes the event to return only the first occurrence of the filter being triggered. After the user retrieves 
+                    the event from the kqueue, it is deleted.
+Output flags:
+    EV EOF -        Filters may set this flag to indicate filter-specific EOF conditions.
+    EV ERROR -      If an error occurs when processing the changelist, this flag will be set.
+
+// -------------------------------------------------------
+KQUEUE FILTERS 
+The design of the kqueue system is based on the notion of filters, which are responsible for determining whether an event has occurred or not, 
+    and may also record extra information to be passed back to the user. 
+The interpretation of certain fields in the kevent structure depends on which filter is being used. 
+
+The current implementation comes with a few general purpose event filters, which are suitable for most purposes:
+
+    EVFILT READ
+    EVFILT WRITE
+    EVFILT AIO
+    EVFILT VNODE
+    EVFILT PROC
+    EVFILT SIGNAL
+
+The READ and WRITE filters are intended to work on any file descriptor, and the ident field contains the descriptor number. 
+These filters closely mirror the behavior of poll() or select(), they return whenever there is data ready to read, 
+    or if the application can write without blocking. The kernel function corresponding to the filter depends on the descriptor type, 
+    so the implementation is tailored for the requirements of each type of descriptor in use. 
+In general, the amount of data that is ready to read (or able to be written) will be returned in the data field within the kevent
+    structure. If the underlying descriptor supports a concept of EOF, then the EV EOF flag will be set in the flags word structure 
+    as soon as it is detected.
+
+The AIO filter allows the user to register the aio request with a specified kqueue, and an event is returned when appropriate
+
+The SIGNAL filter is intended to work alongside the normal signal handling machinery, providing an alternate method of signal delivery. 
+    The ident field is interpreted as a signal number, and on return, the data field contains a count of how often the signal 
+    was sent to the application. This filter makes use of the EV CLEAR flag internally, by clearing its state (count of signal occurrence) 
+    after the application receives the event notification
+
+The VNODE filter is intended to allow the user to register an interest in changes that happen within the filesystem. 
+    Accordingly, the ident field should contain a descriptor corresponding to an open file or directory. 
+    The fflags field is used to specify which actions on the descriptor the application is interested in on registration, 
+    and upon return, which actions have occurred.
+    The possible actions are: 
+        NOTE DELETE
+        NOTE WRITE
+        NOTE EXTEND
+        NOTE ATTRIB
+        NOTE LINK
+        NOTE RENAME
+    These correspond to the actionsthat the filesystem performs on the file and thus will not be explained here.
+    These notes may be OR-d together in the returned kevent, if multiple actions have occurred. E.g.: a file was written, then renamed.
+
+The final general purpose filter is the PROC filter, which detects process changes. 
+    For this filter, the ident field is interpreted as a process identifier. 
+    This filter can watch for several types of events, and the fflags that control this filter are:
+        Input/Output Flags:
+            NOTE EXIT -         Process exited
+            NOTE FORK -         Process called fork()
+            NOTE EXEC -         Process executed a new process via execve(2) or similar call.
+            NOTE TRACK -        Follow a process across fork() calls. The parent process will return with
+            NOTE TRACK -        set in the flags field, while the child process will return with NOTE CHILD set in fflags 
+                                and the parent PID in data.
+        Output Flags only:
+            NOTE CHILD -        This is the child process of a TRACKed process which called fork().
+            NOTE TRACKERR -     This flag is returned if the system was unable to attach an event to the child process, 
+                                usually due to resource limitations.
+
+// -------------------------------------------------------
+USAGE 
+A kqueue-aware application will need to notify the kernel of any changes to the list of active descriptors.
+    This can be done either by calling kevent() for each update to the active descriptor list, or by building up a
+    list of descriptor changes and then passing this list to the kernel the next time the event loop is called (this gives better performance).
+Though the implemention seems complex, much of the complexity stems from there being multiple event sources and multiple filters. 
+    A program which only wants READ/WRITE events is actually fairly simple.
+
+// -------------------------------------------------------
+IMPLEMENTATION 
+The focus of activity in the Kqueue system centers on a data structure called a knote, 
+    which directly corresponds to the kevent structure seen by the application. 
+    The knote ties together the data structure being monitored, the filter used to evaluate the activity, 
+    the kqueue that it is on, and links to other knotes. 
+The other main data structure is the kqueue itself, which serves a twofold purpose: 
+    to provide a queue containing knotes which are ready to deliver to the application, 
+    and to keep track of the knotes which correspond to the kevents the application has registered its interest in.
+
+These goals are accomplished by the use of three sub data structures attached to the kqueue:
+    1. A list for the queue itself, containing knotes that have previously been marked active.
+    2. A small hash table used to look up knotes whose ident field does not correspond to a descriptor
+    3. A linear array of singly linked lists indexed by descriptor, which is allocated in exactly the same fashion as a process’ open file table.
+The hash table and array are lazily allocated, and the array expands as needed according to the largest file descriptor seen. 
+The kqueue must record all knotes that have been registered with it in order to destroy them when the kq is closed by the application. 
+In addition, the descriptor array is used when the application closes a specific file descriptor, in order to delete 
+    any knotes corresponding with the descriptor. 
+
+// -------------------------------------------------------
+REGISTRATION 
+Initially, the application calls kqueue() to allocate a new kqueue (referred to as kq). 
+    This involves allocation of a new descriptor, a struct kqueue, and entry for this structure in the open file table.
+The application then calls kevent(), passing in a pointer to the changelist that should be applied. The kevents in the changelist 
+    are copied into the kernel in chunks, and then each one is passed to kqueue register() for entry into the kq.
+The kqueue register() function uses the <ident, filter> pair to lookup a matching knote attached to the kq. 
+    If no knote is found, a new one may be allocated if the EV ADD flag is set.
+The knote is initialized from the kevent structure passed in, then a specific filter attach routine is called to attach the
+    knote to the event source. Afterwards, the new knote is linked to either the array or hash table within the kq
+
+// -------------------------------------------------------
+FILTERS 
+Each filter provides a vector consisting of three functions: <attach, detach, filter>
+The attach routine is responsible for attaching the knote to a linked list within the structure which receives the events being monitored, 
+    while the detach routine is used to remove the knote this list. These routines are needed because the locking requirements 
+    and location of the attachment point are different for each data structure.
+The filter routine is called when there is any activity from the event source, and is responsible for deciding whether the activity 
+    satisfies a condition that would cause an event to be reported to the application. The specifics of the condition are encoded within 
+    the filter, and thus are dependent on which filter is used, but normally correspond to specific states, 
+    such as whether there is data in the buffer, or if an error has been observed.
+    The filter must return a boolean value indicating whether an event should be delivered to the application.
+    It may also perform some “side effects” if it chooses by manipulating the fflag and data values within the knote
+    These side effects may range from merely recording the number of times the filter routine was called, or having the filter
+    copy extra information out to user space.
+All three routines completely encapsulate the information required to manipulate the event source. No other code in the kqueue system is aware of 
+    where the activity comes from or what an event represents, other than asking the filter whether this knote should be activated or not.
+
+// -------------------------------------------------------
+ACTIVITY ON EVENT SOURCE 
+When activity occurs (a packet arrives, a file is modified, a process exits), a data structure is typically modified in response. 
+    Within the code path where this happens, a hook is placed for the kqueue system, this takes the form of a knote() call. 
+    This function takes a singly linked list of knotes (unimaginatively referred to here as a klist) as an argument, 
+    along with an optional hint for the filter. The knote() function then walks the klist making calls to the filter routine for each knote. 
+    As the knote contains a reference to the data structure that it is attached to, the filter may choose to examine 
+    the data structure in deciding whether an event should be reported If the filter decides the event should be returned, 
+    it returns a truth value and the knote() routine links the knote onto the tail end of the active list in its corresponding kqueue, 
+    for the application to retrieve.
+
+// -------------------------------------------------------
+MISC 
+Since an ordinary file descriptor references the kqueue, it can take part in any operations that normally can performed on a descriptor. 
+    The application may select(), poll(), close(), or even create a kevent referencing a kqueue; in these cases, 
+    an event is delivered when there is a knote queued on the active list. The ability to monitor a kqueue from another kqueue allows 
+    an application to implement a priority hierarchy by choosing which kqueue to service first.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

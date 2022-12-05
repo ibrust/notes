@@ -1,0 +1,212 @@
+as prospective main specialties. numbered by preference: 
+4 swift - it's easy and you'll make good money working for big companies 
+3 kotlin - it's easy, its fun, it makes good money 
+14 javascript - you get to interact with design people and you can work remotely, very independently, may even work for yourself 
+6 php - the language sucks and you would not want to make it your main thing, but it is good to get your foot in the door with 
+5 python - the language is very simple, you can do alot of cool things with it, you can play around with it alot... you might even join a new startup 
+13 java - it's kind of a boring life and a boring language. you can make good money and have nice things though
+11 c# - you could easily make this your own thing & you'd be the person that knew more than anyone about it, you could make alot of money 
+12 c++ - you end up feeling very trapped in life if you go this direction. very isolated 
+10 c - you're more of a scientist here. it's a very technical life but you're also free from having to deal with alot of the social obligations 
+8 network admin - meet women 
+7 database admin - kind of a corporate life that you're not hugely fond of 
+9 system admin - you become very proficient, but once you have the skills there's not much more you need. so it's kind of a coasting life
+1 cloud engineer - this is just the ultimate shebang. if you want huge and the very best this is what you go for 
+2 system architect - very intellectually demanding 
+
+_______________
+ideal for success: 
+ios > python > machine learning 
+
+ideal for skill in programming: 
+networking > system admin > machine learning 
+
+ideal for undefined reason: 
+freelancing > low level programming > system admin 
+
+what i would choose:
+low level programming > professor > android 
+
+ideal specializations eventually: 
+big tech companies > datacenter > math 
+
+greatest talent: 
+graphics > professor > system admin > web dev 
+
+weakest area: 
+ios > ios > graphics (?) 
+
+not really my cup of tea: 
+datacenter > ios > web dev 
+
+really my cup of tea: 
+random > cloud > freelancing > low level programming 
+
+most useful specializations: 
+python > backend servers > random 
+
+_________________________________________
+
+
+most employable languages: 
+python > sql > swift 
+
+languages best for my career going forward: 
+php > go > python
+
+my favorite languages: 
+python > swift > java 
+
+languages I'll most excel at: 
+javascript > c > go 
+
+language most taking off: 
+c# > java > javascript > php 
+
+languages slowing down: 
+go > sql > python > php
+
+best future in for me: 
+python
+
+best next languages for personal development: 
+php > c# > c++ > c > python > sql 
+
+best language to go in depth with after preliminary learning: 
+c# > sql > java > c++
+
+biggest lapse in my knowledge: 
+c# > javascript
+
+most money to be made by me: 
+python > kotlin > c#
+
+most underrated language: 
+php, kotlin, go
+
+most overrated language: 
+c++, sql
+
+most underrated language (again): 
+python > c++ > php 
+
+most overrated language (again): 
+java > c# > swift
+
+------------------------------------------
+best to study a particular topic with:
+
+database: c# 
+servers: go
+distributed systems: typescript
+CGI: python
+
+multithreading: swift 
+networking: swift > java 
+web tech: php 
+mvc frameworks: java 
+machine learning: c++ 
+
+GIS: javascript 
+full stack development: javascript 
+front end: go 
+security: go 
+graphics: go 
+
+NLP: go 
+hacking: SQL
+microservices: php
+entrepreneurial: python
+backend: php
+
+cloud: c++, c#
+amazon web services: c
+gaming: c#
+OS: swift 
+algorithms: kotlin 
+----------------------------------
+ultimate language for a topic: 
+CGI: python
+NLP: c
+networking: python 
+web tech: python
+MVC framework: c++, c (apparently) 
+GIS: c++ 
+machine learning: python 
+multithreading: javascript 
+database: java 
+full stack dev: java 
+hacking: swift 
+front end: kotlin 
+security: c++
+graphics: python 
+microservices: c
+
+entrepreneurial: java
+backend: sql, php
+cloud: swift, java
+amazon web services: javascript
+gaming: php
+OS: swift
+algorithms: go
+
+most rising market: 
+c# > java > c++ 
+
+most falling market: 
+javascript > sql > kotlin
+
+best direction to go: 
+python 
+
+best direction to go long term: 
+java > python > go 
+
+languages I'll most beat others in: 
+java > swift > kotlin > go 
+
+direction I'll make the most money the fastest: 
+java > php 
+
+direction i'll make biggest money in long term: 
+javascript > java > c 
+
+direction i'll make least money in long term: 
+go > java > python 
+
+direction I'll most enjoy in life: 
+kotlin > go > c# > sql
+
+direction I'll least enjoy in life: 
+swift > c > c# > c++ 
+
+best language to write my music composition app in: 
+go > kotlin > swift > php 
+
+language that next big thing will most be in: 
+python > sql > kotlin > c > swift 
+
+ultimate knowledge once I'm ready: 
+c# > javascript > php 
+
+biggest deficiencies I'll face: 
+c++ > python 
+
+long term job security ideal languages: 
+go > swift > c# 
+
+worst job security languages: 
+go > c > javascript > php > c++ > python 
+
+my best career (again): 
+python > c++ > sql > java 
+
+my worst career: 
+java > sql > go > c# 
+
+career I'd most want to have: 
+c# > sql > python > java 
+
+best job prospects overall over the next 20 years: 
+c > java > c# > php 
+

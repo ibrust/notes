@@ -1,0 +1,13 @@
+to get started install the SCSS compiler in VSCode, create a .scss file, & hit 'watch' to activate real time compilation 
+if there's a syntax error in the .scss file it should show up in the VSCode terminal 
+
+
+$dark_green = #CCA135;                      // declare & use variables. variables can be global or local 
+
+body {
+    background-color: $dark_green; 
+
+    header, p {                             // you can nest elements. selector lists are compatible with nesting 
+        background-color: white;
+    }
+}

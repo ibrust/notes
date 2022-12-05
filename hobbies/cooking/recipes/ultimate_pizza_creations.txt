@@ -1,0 +1,51 @@
+Beef pizza creation: 
+['beef (Porterhouse, roasted, 4-5 semi-large hunks per pizza', 'focaccia bread (similar to pizza bread)', 'onion', 'bacon', 'olive oil', 'red pepper flakes', 'capers', 'sesame seeds', 'white mushroom', 'roasted beets', 'chili sauce', 'provolone']
+	you could try cooking the steak on the pizza itself, or separate ...
+
+Sun-Dried Tomato pizza: 
+['sun-dried tomato', 'cilantro', 'melon', 'emmental cheese', 'onion', 'oregano', 'italian sweet pepper', 'clams']
+
+Mini Squid pizza:
+['mozzarella', 'bagels (instead of normal dough)', 'white mushroom', 'motery jack cheese', 'black olives', 'grits', 'goat cheese', 'alfredo sauce', 'onion', 'sun-dried tomato', 'squid', 'oregano']
+
+Gourmet Pineapple pizza: 
+['pepperoni', 'pineapple', 'clams', 'canadian bacon', 'fresh basil', 'fontiago cheese', 'focaccia bread (similar to pizza bread)', 'white peppercorn']
+
+Bacon Ranch pizza: 
+['oregano', 'onion', 'fresh basil', 'cheddar cheese', 'green olives', 'honey', 'emmental cheese', 'mozzarella', 'homemade ranch dressing', 'bell pepper', 'bacon']
+
+Traditional Chinese Pizza: 
+['eggplant', 'parmigian', 'scallops', 'Fenugreek', 'goat cheese', 'sausage', 'mahlab (seasoning)', 'white mushroom', 'sun-dried tomato', 'mace (seasoning)']
+
+Organic Fish pizza: 
+['black mustard', 'white mushroom', 'ginger', 'fish (snapper or salmon here)', 'mozzarella', 'green beans', 'green olives', 'pineapple']
+
+(needs further development)
+['proscuito', 'rice (black rice - not sure how to use this, maybe sprinkle on top, or make it separately?)', 'white mushroom', 'cilantro', 'chorizo', 'blue cheese', 'sausage', 'oregano', 'broccoli', 'onion (yellow apparently)', 'sun-dried tomato']
+
+(?nacho pizza...? mexican pizza...? taco salad pizza...?)
+['salsa', 'star anise', 'cheddar cheese', 'onion', 'crushed tortilla chips', 'cilantro', 'peperoncini', 'grits', 'squid', 'navy beans (or maybe another kind...?)', 'scallops', 'basil', 'motery jack cheese']
+
+6 more
+
+Dough recipe: 
+	proof it for 34 hours
+	make 2 servings instead of 4 (most online recipes seem to give you 4)
+	if you ever need an alternative to wheat than use corn flour. could also try 9 day proofing the bread
+	
+	you buy the cracked wheat and make your own flour out of it, it looks like: 
+	amazon product name: Non-GMO Organic Cracked Wheat | 100% Organic | Hard Red Winter Wheat | The Best Wheat In The World | Grown in the Rocky Mountains | Resealable Packages | Cache Harvest Co. Premium 
+
+	for yeast: 
+	Blingdeals 10bags 50g Bread Instant Yeast Active Dry High Glucose Tolerance Baking Supplies 
+
+	pizza stone (this is a ceramic one, and apparently it works with a kamado grill...? maybe for real flames?): 
+	Viemoi Pizza Stone for Medium, Large, XXL Kamado 	
+
+	ideal kamodo grill: 
+	Char-Griller E06614 AKORN Jr, Red Charcoal kamado Grill 
+
+	temperature: aim for 450
+
+	
+	

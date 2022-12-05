@@ -1,0 +1,409 @@
+---------------------------------------------------------
+---------------------FLYWEIGHT---------------------------
+---------------------------------------------------------
+
+factory method | flyweight
+	"FLYWEIGHT - DIVERSE OBJECTS"
+		a variety of flyweight objects can be obtained, whether from cache or contructed, through a factory API 
+		the go4 models for flywieghts include a factory in the UML
+
+singleton | flyweight | strategy 
+	"FLYWEIGHT - OBJECT CREATION API"
+		from outside to inside: singleton > flyweight > strategy 
+		you have the global interface to this strategy, which handles the internals of retrieving cached objects or creating new objects. 
+		it's a complex strategy internally. I'm not sure what value the strategy pattern adds other than loose coupling of components, 
+		but there are certainly many strategies used internally by the flyweight. 
+		some of these patterns may be useful in parts - for example, a global object cache is useful in contexts outside of a flyweight. 
+
+singleton | facade | flyweight 
+	"FLYWEIGHT - SIMPLE INTERFACE"
+		from outside to inside: singleton > facade > flyweight 
+		this just seems to be a remark on how simple the API to a flyweight is - how all the complexity of caching & managing these objects 
+		is encapsulated, and you access it all through the API. 
+
+flyweight | proxy 
+	"FLYWEIGHT - OBJECT SHELL W/ LAZY LOADING & RECYCLING"
+		I think this is that object shell that acts as a placeholder - like the empty cells in a tableview. 
+		it gets filled in with the more specific and variant state after a call to the factory interface, I think...
+		lazy loading is a part of this too - you don't load the cell until it's about to appear on screen, for example. 
+		this reduces the total number of objects you need in the caches. this is an important part of the flyweight optimization 
+		and when objects move offscreen they get recycled too. so this is an important pattern
+
+flyweight | decorator 
+	"FLYWEIGHT - OBJECT WRAPPERS"
+		these are wrappers that are applied to the shells of objects. i.e. a text editor that allows things like highlighting, bolding, etc. 
+
+*chain of responsibility | flyweight	- 63% done, but still needs work
+	"FLYWEIGHT - PARTITIONED OBJECT DELEGATION"?
+		from outside to inside: chain of responsibility > flyweight 
+		this has something to do with the partitioning of the objects in the flyweight, and sending requests up the chain 
+		it might have something to do with communication between these different layers and delegating responsibility 
+		the chain may actually move up from the base object toward the wrappers, seeing if functionality is attached to the object or not. 
+		so we would call this... a partitioned object delegation request, or something?
+
+flyweight | visitor 
+	"FLYWEIGHT - COMPLEX OBJECT FINDER"
+		The visitor helps build an object in any way that pleases you - remember that these are combinations of objects. 
+		So you can configure the visitor to look for a specific object (or decorators), and maybe even a set of them.  
+		And it also handles making sure the object is unused or shareable before retrieving it.
+
+---------------------------------------------------------
+------------------FACTORY METHOD-------------------------
+---------------------------------------------------------
+factory method 
+	also known as a virtual constructor. It's an abstract constructor, it allows the decision of which type of object 
+	to construct to be made at runtime.
+
+*factory method | factory method
+	"MULTIPLE FACTORIES"
+		a simpler alternative to an abstract factory.  
+		What are the tradeoffs between multiple factories and an abstract factory? I don't know - elaborate more later  
+
+factory method | factory method | adapter 
+	"VIRTUAL ADAPTER"
+		Adapting between the constructs of different factory methods. This is a 1-to-1 mapping between 2 parallel sets of objects. 
+
+adapter | adapter | factory method 
+	"BROKER"
+		this is about adaptation between a set of objects. 
+		instead of having N^2 combinations of adapters a broker allows for 2N combinations. All requests for adaptation go through the centralized broker. 
+
+mediator | factory method
+	"OBJECTS MANAGER"
+		throughout the lifecycle of factory constructed objects - they're allocated / deallocated, their state changes. 
+		the mediator passes messages between the different objects, and provides them all with fresh information. it also handles initialization / deallocation.
+		A common example is a set of views that can be clicked on / backed out of. The view is a factory construct. Clicking allocates / deallocates the view. 
+		within the view you might update some information. This information needs to be relayed somewhere - maybe to other views, maybe to a backend system. 
+		the container can also wrap & organize a field of objects. 
+		The mediator is the wrapper around these factory objects, it manages them...
+		it may sometimes be worth it to have this dedicated class just to manage complex interactions between different factory objects
+
+*observer | factory method | facade
+	"CONTEXT-SENSITIVE CONSTRUCTOR"?
+		by combining observation and a factory method you can choose what to instantiate based on context. 
+		this may then be useful for designing a simple interface - like a facade. I'm not really sure of the details... 
+		wouldn't the products of the factory need to share their interface in this case? 
+		the interfaces of the products should have a fairly big effect on the ways you can use them, and how general you can make the code 
+
+---------------------------------------------------------
+-----------------ABSTRACT FACTORY------------------------
+---------------------------------------------------------
+prototype | abstract factory 
+	"ABSTRACT PROTOTYPE" (in go4)
+		read go4 for more details
+
+strategy | command | abstract factory 
+	"ABSTRACT USER INTERFACE"
+		the set of UI buttons & what they do changes based on the factory type. you can change the whole interface this way. 
+		platform independent code is one classic example. 
+		but let's say a new toolbar needs to be shown when the user presses a given menu button. this is a well-designed way to implement that. 
+		each tool bar has a factory and each button is a factory construct w/ unique functionality (also produced by the factory?)
+
+*abstract factory | observer | observer
+	"OBSERVING SETS OF OBJECTS DIFFERENTLY"?
+		when the set of objects you're creating changes you should also change the observer mechanism you're using
+		the observer & the observed are inseparable, so the association of different observers with different factories is a natural one
+		what about using observation to trigger which factory is instantiated? That doesn't explain the two observers, though... 
+		needs elaboration
+
+---------------------------------------------------------
+---------------------BUILDER-----------------------------
+---------------------------------------------------------
+
+composite | builder
+	"TREE BUILDER" or "PARSER"
+		common pattern. a tree is ofter the output of a builder - i.e. the parse tree is the output of the parser
+		it would be useful to know how to build a streaming parser in C 
+
+builder | state
+	""
+		maybe taking snapshots at different phases of execution, as you continually add to / alter the application state 
+		this is a kind of builder pattern in a sense. and maybe it could be used in to restore state in different contexts
+
+state | builder | composite 
+	"" 
+		it would just be a combination of the parser pattern and the taking of snapshots I think 
+		probably the networking or database integration layer is the place to take the snapshot, 
+		since it's the entry point to the system 
+
+builder | adapter 
+	""
+
+visitor | observer | builder 
+	"" 
+
+builder | chain of responsibility | facade 
+	"" 
+
+---------------------------------------------------------
+---------------------PROTOTYPE---------------------------
+---------------------------------------------------------
+
+chain of responsibility | prototype 
+	"" 
+
+prototype | mediator 
+	""
+
+prototype | composite 
+	""
+
+prototype | observer 
+	"" 
+
+bridge | template method | prototype 
+	""
+		close to the bridge | template method | interpreter pattern. 
+		this sounds like an actual bridge between general methods of a class and some other component that gets inserted at runtime, right? 
+		I can see the value of combining template methods and prototypes, but what would be the value of the bridge? 
+		what is gained by bridging a prototype? I probably need to think more carefully about prototypes before I answer this. 
+
+command | prototype | facade 
+	""
+
+---------------------------------------------------------
+---------------------SINGLETON---------------------------
+---------------------------------------------------------
+
+singleton | singleton 
+	"SINGLETON / GLOBAL ACCESS PROPAGATION"
+		One singleton often introduces the need for more singletons. With the singleton you have global access, 
+		but from within that global data structure you will find the need for global access to more data structures. The need for global access propagates. 
+		This propagation is probably something to protect against by ensuring your singletons are self-contained subsystems. 
+		then again... if you have one singleton, having multiple may simplify the code, so you may embrace this try to simplify the code 
+
+observer | singleton | observer 
+	"NOTIFICATION CENTER"
+		you can subscribe to a variety of events from anywhere with this pattern 
+		or is it the fact you can subscribe globally to a singleton? so you can observe it from here, from there, from everywhere... etc. 
+			so not a variety of events per se, just different observers...? It could be either one...
+
+adapter | singleton | facade 
+	"GLOBAL INTERFACE"?
+		the singleton is a facade to a subsystem, allowing multiple systems to access it. but they're going to need adapters to interact with its interface.
+
+observer | memento | singleton 
+	"EVENT EMITTING DATABASE INTERFACE"
+		So the memento extracts information & stores it in the singleton. Whenever this happens the singleton emits an event, & this event can be subscribed to. 
+		we do data binding but it's often on instances. data binding on a singleton... does this introduce anything interesting? 
+			no, I think this is just a choice to use instances where we could have easily used a singleton, it's the same thing though. 
+
+singleton | iterator | singleton 
+	"DATA AGGREGATOR"?
+		could this be something like our aggregator, that first checks the local and then the remote, and then some other datasources? 
+
+template method | adapter | singleton
+	"SINGLETON METHOD IMPLEMENTATIION"
+		outside to inside: template method > adapter > singleton 
+		you're just calling a method that belongs to the singleton, and since this method is global it needs to be a template method. 
+		but then you need an adapter to receive the input from that method, and possibly the output as well. Convert the data to a format compatible with the singleton. 
+
+---------------------------------------------------------
+-----------------------STATE-----------------------------
+---------------------------------------------------------
+
+state | iterator
+	"ADVANCED SEARCH"
+		you're just iterating in some fashion to find a particular state. 
+		though this is common, it increases the languages power to use a state & iterator design pattern. 
+		for example, you can iterate over many different structures in different patterns; and a state object lets you define complex search parameters polymorphically.
+
+state | command
+	"CONTEXT-SENSITIVE BUTTON"
+		so like the world of warcraft buttons - you click them... then the icon changes & they do something else for a few seconds. 
+		They have a state associated with them
+
+state | composite
+	"STATUS HIERARCHY"
+		You can represent state with a hierarchy. For example, when the element at the top of the heap is the first in alphanumeric order.
+		Or lets say a virus scanning application defines different threat levels. The state is being ranked according to some set of values. 
+
+state | iterator | memento 
+	"ADVANCED SEARCH & EXTRACTION"
+		like advanced search, but now you're saving what you find so that you can reproduce it elsewhere
+		the ability to represent in a compact form then reconstruct what you found is a key part of the memento pattern. 
+
+state | command | facade 
+	"CONTEXT-SENSITIVE INTERFACE" or "REPRESENTATIONAL INTERFACE"
+		it's similar to the context-sensitive button, but there's this complex subsystem you're interfacing with. 
+		the interface's state is a simple representation of the complexity contained within the subsystem.  
+		The internal function performed changes based on this state. 
+		from outside to inside: state > facade > command. It reminds me of a REST API because the state is representational and outside the subsystem. 
+
+state | interpreter
+	"CONTEXT-SENSITIVE LANGUAGE"
+		this is supposed to be an innovative pattern. I think this is kind of like a context-sensitive language. Look at the example:
+		"amazon photos. Users can store thousands of photos. They can also construct these photos into storylines that represent series of events in their lives. 
+		A picture is worth a thousand words. Pictures are a language. When you form these pictures into a storyboard, you are saying something about your life. 
+		A picture can be interpreted. But a series of pictures can also be interpreted… correct? Like words in a language - a series of statements." 
+		It almost reminds me of the command line, where you input something... and then you can input a new set of commands, because your first input 
+		effected the state.
+		So the interpretation is changing based on state; changing from one interpretation to the next.
+
+state | mediator 
+	"KEEPING STATE UPDATED" or "DISTRIBUTED STATE MANAGEMENT"
+		application architectures like MVC or MVVM are adept at keeping distributed state updated in response to events.
+		The mediation layer sends messages between different components to maintain consistency. 
+		asynchronous events & distributed systems make things complicated - network requests, database requests, user input. 
+		but even at the hardware level you have this pop up with cache consistency between processors. It also pops up in multithreaded programming.
+		this is probably one of the most fundamental patterns
+
+---------------------------------------------------------
+-----------------------BRIDGE----------------------------
+---------------------------------------------------------
+
+bridge | chain of responsibility 
+	"DELEGATION CHAIN"
+		So you split up a large class into smaller related classes, then you add a delegation chain between them to defer functionality. That's all this appears to be 
+
+bridge | strategy | proxy
+	"ABSTRACT PROXY"
+		is this like a proxy that evolves alongside the object it's proxying for? And since both are abstract a strategy determines how the proxy behaves? That actually makes some sense. 
+		so this is almost like... an abstract proxy object? 
+		this is interesting because the proxy can be for different objects depending on what's needed (as determined by the strategy)
+
+bridge | template method | interpreter 
+	"MODIFIABLE INTERPRETER"
+		So lets say you're bridging between a class of template methods and a class for an interpreter. 
+		this should allow the actual opertions to vary independently of the parsing and interpretation, right? 
+		so your language can evolve in one respect, and the actual operations carried out by the language evolve separately. 
+		that seems like it would make the language modifiable, backwards compatible and so on. 
+
+---------------------------------------------------------
+-----------------------FACADE----------------------------
+---------------------------------------------------------
+
+Façade | Decorator
+	""
+ 
+Facade | Decorator | Observer
+	""
+
+Facade | Mediator | Composite  
+	""
+
+---------------------------------------------------------
+----------------------MEDIATOR---------------------------
+---------------------------------------------------------
+
+mediator | composite | iterator 
+	""
+
+mediator | prototype
+	""
+
+---------------------------------------------------------
+----------------------DECORATOR--------------------------
+---------------------------------------------------------
+
+decorator | command
+	""
+
+decorator | composite | adapter
+	""
+
+decorator | adapter | decorator 
+	""
+
+---------------------------------------------------------
+----------------------OBSERVER---------------------------
+---------------------------------------------------------
+
+observer | iterator
+	""
+
+command | observer
+	""
+
+---------------------------------------------------------
+----------------------PROXY------------------------------
+---------------------------------------------------------
+
+proxy  | command
+	""
+
+memento  | proxy  | memento 
+	"DATABASE PROXY"?
+		some kind of object that acts like it contains all sorts of data, but infact internally it's making requests to fetch that data... or something along these lines?
+		it sounds like a form of lazy initialization?
+
+---------------------------------------------------------
+---------------------INTERPRETER-------------------------
+---------------------------------------------------------
+
+command  | interpreter
+	""
+
+interpreter  | strategy
+	""
+
+interpreter  | visitor  | interpreter		<- the change of a visitor can change the interpretation of a language, bear that in mind
+	""
+
+---------------------------------------------------------
+---------------------VISITOR-------------------------
+---------------------------------------------------------
+
+template method  | iterator  | visitor
+	""
+
+---------------------------------------------------------
+REMAINING: 
++ 5 more pairs 
++ 25 more triplets 
+
+
+prototype  | proxy  | observer  | chain of responsibility  | 
+state  | iterator  | facade  | memento  | 
+state  | decorator  | mediator  | visitor  | 
+composite  | template method  | chain of responsibility  | template method  |
+command  | chain of responsibility  | facade  | composite 
+chain of responsibility  | interpreter  | chain of responsibility  | strategy  |
+prototype  | state  | decorator  | strategy  | 	
+iterator  | interpreter  | adapter  | abstract factory  |
+iterator  | builder  | facade  | facade  | 
+builder  | factory method  | decorator  | state  | 
+
+		
+command  | interpreter  | decorator  | chain of responsibility  | command 
+	// seems like a system that, depending on the input language, a request is propagated until a command receives the input & is triggered, 
+		but what does the decorator do? I think it must be used in the chain of responsibility somehow...? 
+		maybe you add it to an object or set of objects for them to receive the command...? So maybe the decorator is configured by the interpreter?
+		So this would be something like a control interface...? almost like SDN or something? 
+
+
+visitor  | adapter  | decorator  | factory method  | flyweight
+state  | visitor  | memento  | adapter  | strategy
+abstract factory  | flyweight  | bridge  | facade  | mediator
+bridge  | decorator  | abstract factory  | singleton  | flyweight
+
+75+ patterns: 38%+?
+single patterns: 21%
+random patterns: remainder 
+amended by: any other patterns read about. 
+
+// it's not clear to me that delegation is completely distinct from chain of responsibility. 
+// I guess delegation is a single link, right? whereas the chain of responsibility is the whole link. If that is significant enough or not
+---------------------------------------------------------
+---------------------DELEGATION--------------------------
+---------------------------------------------------------
+Delegation | Abstract Factory 
+	""
+
+Delegation | Template Method 
+	""
+
+Delegation | Interpreter | Template Method 
+	""
+
+Delegation | Command | Memento 
+	""
+
+Delegation | Strategy | Mediator 
+	""
+
+Delegation | Adapter | Strategy 
+	""
+
+Delegation | Interpreter | Iterator 
+	""

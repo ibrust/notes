@@ -1,0 +1,13 @@
+-a UIView knows how to draw itself into a rectangular area 
+-a UIView is also a responder (it's a subclass of UIResponder), and can sense taps / gestures 
+-views are part of a view hierarchy. If a parent his hidden, its subviews are hidden. 
+    likewise if it is moved, its subviews move, etc. 
+-the view hierarchy is also the basis of the responder chain (though not identical to the responder chain)
+-views can come from nibs or be created in code 
+-the top of the view hierarchy is a window - an instance of UIWindow (or your own subclass of it)
+-in iOS 13 iPad can support multiple windows, but all iPhones support only one window at a time 
+-the window contains one rootViewController, and its view occupies the entire screen (on iOS). 
+    everything goes through the rootViewController & its view - the Window is kept separate
+-the rootViewController is the base of the viewController hierarchy. its view occupies the full screen 
+    & is at the base of the view hierarchy, just below the window 
+

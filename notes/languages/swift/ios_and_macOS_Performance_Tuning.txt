@@ -1,0 +1,612 @@
+CPU OPTIMIZATIONS SECTION 
+
+-instead of using arrays to repeatedly check for whether an object is contained in the array, use sets, they have constant complexity. 
+
+-various native functions & library functions have hidden increases in algorithmic complexity, beware of this in nested loops 
+
+-objc is a hybrid language. The C part of the language is extremely fast, but the objc runtime / foundation objects are very slow. NSObject init/allocs are among the most expensive operations in the language. Therefor, minimize the use of NSObjects & maximize the use of C primitives. 
+
+-Though Swift was built from the ground up & it isn't a hybrid language, NSObjects are still integrated throughout the language. 
+	Thought many Swift primitives such as Int, Float are compiled types.
+
+-be careful when using function pointers to call methods: compilers can't see through the function pointer and often cannot optimize the method being called. Compilers would otherwise try to inline method calls in many cases - such as a method that uses strings as parameters, it would automatically inline that. 
+
+-objc message sends are surprisingly very efficient. They're one of the only aspects of the objc runtime that are efficient. in objc, design objects with C on the inside (since its crudeness wont effect the interface) and interface with the object through higher level methods using message sends. Make the objects course-grained (to avoid the need for excessive alloc/init), and mostly static. 
+
+-the biggest performance sink in objc is through libraries such as Foundation (i.e. NSObjects), which have enormous hidden performance costs. Avoid object wrappers (NSNumber, NSString, etc.) and use C primitives. 
+
+-the need to init/alloc objects slows down the object wrappers, not to mention they're immutable by default, which means changing them requires copying data - more init/allocs 
+
+-these ratios show relative performance of common operations: 1ms : 5ms : 50ms : 200ms = C primitive use : message sends : key value accesses (more detail later) : NSobject alloc/init
+
+-division operations are alot more expensive than the other mathematical operations, including multiplication. CPUs have special hardware for handling multiplication. 
+
+-when working with NSNumbers you can create them using a technique called tagged pointers. With this technique, the numbers value is encoded in the pointer address, and you never allocate any memory at the address. The pointer itself contains the relevant numerical information. Since alloc/init is a large part of why NSObjects are so slow, tagged pointers significantly improve performance via bypassing any call to alloc/init. NSNumber_tagged_pointers.m demonstrates how to create tagged pointers for NSNumber. 
+
+-In my own tests of summing numbers in a loop, regular NSNumbers take 36s, NSNumber w/ tagged pointers take 3.8s, Swift Ints take 1.2s, and C Ints take 0.8s. 
+
+-Swift numbers are compiled and perform quite well, generally speaking. It's when you have to convert Swift Ints to some foundation or UIKit datatype - like CGFloat - that you begin having significant degradation of performance. 
+
+-dividing 64-bit numbers is much slower than dividing 32-bit numbers. But multiplication isn't slower for 64 bit numbers, it's the same speed. Apple CPUs have instructions & circuits that accelerate multiplication significantly, apparently.
+
+-using the NSFoundation or CoreFoundation types with 32 bit numbers is alot slower than using them with 64 bit, because their runtime has been optimized for 64 bit (which is no longer that relevant)
+
+-C strings are about 10 times faster in compare operations than NSStrings, though NSStrings have all kind of human readability functionality built in (like unicode) that make them valuable 
+
+-NSString literals are of type NSConstantString, which stores 8 bit characters, while NSCFString (the underlying bridge type of NSString & CSString) stores strings in 16 bit unicode, making NSString literals more performant.
+
+-You could, in theory, subclass these string objects & add custom optimizations. For example, there's a string design pattern called a rope, where a long string (like one representing a string table) is implemented as a binary tree of smaller strings. It allows for fast insertion/deletion of strings into the string table. There are many other custom optimization patterns with strings you can add
+
+-if you mutableCopy an NSString you get an NSMutableString. If you copy an NSMutableString you get an NSTaggedPointerString. the test I ran confirmed this is the case - the OS has an internal tagged pointer implementation for strings. 
+
+-Thoough OSX 10.10 implements tagged strings, it isn't clear under what circumstances it does this. You cannot instantiate an NSTaggedPointerString yourself, the system does it when it feels it's necessary. There may still be times for manually implementing tagged strings (similar to the NSNumber implementation) in places where NSTaggedPointerStrings are not being created automatically.
+
+-There are various tagged pointer algorithms for 64 bit strings. You can store 8 or 9 characters in a string using different custom character representation schemes - 6 bit ascii, 7 bit ascii, etc. This allows strings no longer than 8 or 9 characters to be represented as tagged pointers. You also need a few bits to identify the strings length in there. 
+
+-If you're designing JSON, make sure all the strings are less than 8 characters. This way either the system will automatically generate NSTaggedPointerStrings for the JSONs keys, or you can generate them yourself. The speedup of tagged pointers was 10x earlier w/ the NSNumber test. 
+
+-when parsing data, use NSData instead of NSString, and parse the raw data with C strings. You only create NSStrings for the actual text content you need.   
+
+-property accessor methods are a fine-grained method that can be avoided in code that's performant-critical, accessing the public property directly. However, doing so means you need to revert to manual reference counting, compiling that file without ARC enabled. Otherwise ARC will bloat your code will all kinds of unnecessary retains, and performance will degrade. The property accessor methods are optimized, and when you use them ARC knows not to bloat the code. 
+
+-Likewise you can construct higher-level methods that return multiple instance variables, circumventing their property accessors. This further avoids repeating message sends, but again all the same issues with disabling ARC & doing manual reference counting applies. You'd only want to do this in the utmost performant critical code. Message sends aren't really that giant of a performance cost, generally speaking, so while this optimization is possible and can yield good benefits in tight loops, in most cases it isn't worth the effort. 
+
+-default accessors generated by objc properties are about 35% slower than a custom accessor (not sure whether this is atomic or nonatomic, you'll have to test this to confirm it. see page 49 for his implementation of custom accessors). He seems to feel there is never a need for atomic under any circumstances, regardless. 
+
+-KVC (key value coding) is an old way of accessing properties that's used throughout objc. It uses the valueForKey keyword: 
+	[obj valueForKey:@"key"]
+These messages are 20x slower than normal accessors, and 10x slower than just a message send. 
+Although you can dynamically vary the selection of the key with them, if you want to do this just use performSelector, it's only 2x slower than a normal accessor and does the same thing: 
+	[obj performSelector:@selector(attribute)]; 
+
+-KVO and cocoa bindings (outlets, etc.) are built on top of KVC, so they're also very slow. infact, adding a KVO observer to a property adds a factor of 100 to the access time and a binding adds a factor of 150. KVO can be useful, but avoid using it in performance critical code 
+
+-there's a transitive dependency problem with KVO: if b observes a, and c observes both a and b... c will receive 2 observer responses if a is updated. 
+this leads to exponential degradation in performance. 
+
+-Another problem with KVO is dependency loops, which can lead to infinite recursion (b updates in response to a, a updates in response to b, and on and on)
+
+-A more performant alternative to KVO is to use a "constraint solver", especially for larger datasets. DeltaBlue, Amulet, and Cassowary are popular options. Apple used Cassowary for autolayout apparently. 
+
+-@public variable access speeds up access time because an entry to the accessors offset is placed within a compiled lookup table. However, if you're making class variables public you should consider using a C struct for that data anyway, you've already dispensed with encapsulation principles. But there are some advantages of keeping it a class property - code compatibility, access control settings. Structs also have their benefits: stack allocation, pass by value, the struct can be easily embedded in another compound data type. Object heap allocation is very slow compared to struct stack allocation - the compiler can optimize the stack easily. 
+
+-both swift and objc can allocate structs on the stack, or in bulk on the heap using malloc. bulk allocation saves alot of time with objects. I think there's a way to do compile time bulk allocation in swift as well, though I don't remember the details. 
+
+-avoid excess foundation object allocations using object caching. This is the same type of object reuse that tableviews implement with reusable cells. Apparently reusing just a single object saves about 50 message sends worth of CPU performance. 
+
+-you can implement object caching using the reference counting mechanism. In your object cache, look for objects with only 1 reference remaining (the caches reference to it). This indicates you can reuse it. In the authors tests, object allocation decreased alloc/init time by about 15x. 
+
+-an alternative implementation is to override dealloc, placing the object in the cache instead of deallocating it. This requires a global cache and tightly couples the class to the cache, however. 
+
+-use lazy initialization to defer the initialization of accessors with large memory footprints
+
+-if you perform a long calculation that might be repeated, cache the results for future use. 
+note that caching is not without downsides: by retaining objects they might be retained in the CPUs cache longer or in RAM longer. This can lead to some thrashing and degrade program performance. Probably the size of the object and the frequency of reuse is worth considering. 
+
+-Never implement a custom cache using NSStrings, or any sort of NSObject. to test for membership you will have to alloc/init a new NSString, and this will nullify any benefit of caching the object. The final result will actually be a degradation in performance. Instead, if you want to implement a custom cache, use C-strings or other C primitives in the background and convert them to NSStrings as needed. 
+
+-because foundation objects (NSObjects) are so slow, particularly their alloc/inits, any kind of intermediate representation (like those often used in parsing) significantly degrades performance. However, these intermediate representations are heavily used by, JSON coders, decoders, archiving, & other techniques used in Foundation. You typically must implement a custom parser if you want good performance. 
+
+-there are some open source C array implementations that are more performant than NSArrays while providing more functions than classical C arrays. 
+	some examples are MPWRealArray, FScript, SMUGRealVector. Often these arrays are an order of magnitude or more performant than NSArray, 
+	not including the time it takes to allocate all the NSObjects in the array
+
+-you can add bulk operations to C arrays, where the loop is executed inside the array implementation rather than accessing the index in a loop outside the array. Bulk operations significantly improve performance. 
+
+-you can also add vector operations to C arrays using the vDSP library. You can improve performance by 2700x over NSArray by combining all these methods, apparently. 
+
+-in swift, a typical C primitive array - like [Int] - has reasonable access times, but it is harder in Swift to get very good performance. It will run about 4-5x slower than a well written objc implementation. 
+
+-swift in debug mode (where it hasn't been optimized by the compiler) is about 1000x slower than objc in general, almost unusable in a variety of contexts. Swift optimization is very compiler-reliant. 
+
+-NSDictionary uses NSObjects, and thus its access time is quite slow (despite it being a hashed structure). 
+
+-NSDictionary access times are optimized by the compiler if both the key used as the index and the key stored in the dictionary are of the same string type. For example, if both strings are NSTaggedPointerStrings, access times are slightly faster. If both strings are NSConstantStrings, access times are slightly faster. 
+
+-So ideally you'd like both the key used as the index into the dictionary, and the key stored in the dictionary, to be NSTaggedPointers (these are the fastest strings available). If your dictionary keys are all 7 characters long or less, the OS should make them NSTaggedPointerStrings. Now you need to obtain a key to use as an index which is an NSTaggedPointerString. To create one, call copy off an NSMutableString that is 7 characters long or less. NSDictionary is optimized for small strings in general, so make your strings small (like 1 or 2 characters). Although this will speed up your NSDictionary accesses, it's still slow, and a custom dictionary implementation outperforms this significantly (which is covered later
+
+-if your dictionary contains keys too long to be made into tagged pointers, and instead contains NSConstantStrings, access these with a string literal: @"string1". This is also of type NSConstantString 
+
+-for truly good dictionary performance you must write your own custom dictionary implementation. In addition to using C primitives, custom dictionaries can be specially optimized for specific problems. For example, if the number of keys you need to store is small you can operate on the strings byte representations and not worry about having the strings. Some open source dictionary implementations are MPWSmallStringTable, MPWXMLAttributes. The string table can increase access times by 15x in the right use cases apparently 
+
+-despite the fact Swift benefits from compiled types like Int, String, etc. its Dictionary type is, amazingly, 30% slower than NSDictionary (I tested this personally january 2021) 
+
+-If you only have a few keys, one of the most effective fixes is to not use a dictionary. Instead, use a struct with the keys as properties. If the struct is sparsely populated and you want to minimize your memory footprint, use a combination of structs (almost like coredatas object graph)
+
+-NSDictionary also slows down the rest of the program by forcing it to use NSStrings as keys, and these keys tend to propagate throughout the program. So if you must use NSDictionary, the author suggests wrapping the dictionary in a decorator that allows you to add dedicated property accessors for individual keys to the dictionary. The accessors can be added both statically and dynamically. It just avoids needing to use NSStrings to access the data, propagating NSStrings throughout the rest of the code / having to allocate new NSStrings. Worth testing, the code is on page 65 
+
+-message sends are well optimized and their performance is usually not a concern. However, sometimes in a tight loop that consists of nothing but message sends you may want to optimize them. In these cases you can use IMP caching. With IMP caching you retrive a function pointer from the objective-c runtime for a specific method and call it directly, bypassing the message sending overhead.
+
+-the objc runtime method the function pointer points to can change during execution under rare conditions. Typically the programmer can tell if this might happen. Examples are if you're loading a bundle that includes a category, using runtime functions to add, remove or change method implementations, or changing the class of the object in question. 
+
+-nils will crash the program while using IMP caching. Also, the object off which you're calling can't be deallocated at any time, or the program will crash. Nils are not automatically handled any longer. 
+
+-some alternatives to IMP caching are: turn the method into a C function, an inline function, or a preprocessor macro. These all assume you have access to thes source code, while IMP caching does not - one major advantage of it. 
+
+-the author provides a generic object cache that uses IMP caching and other optimizations on page 68
+
+-generally speaking, converting any need for dynamic runtime behavior to object methods is great for performance due to the speed of messages. this architecture spreads throughout your project and provides a good future basis for optimization. 
+
+-object methods should fall into 2 categories: optimized C data manipulation methods, and high-level coordination methods. 
+
+-for C data manipulation methods, all typical C optimization techniques apply, including using the vDSP library. 
+
+-pass all data in to the function call rather than having the method fetch the data in the middle of it 
+
+-high level methods are generally not executed often and shouldn't require optimizationLoops should happen in or with the optimized C methods. 
+
+-corefoundation is horribly implemented. It relies on all kinds of NSDictionary lookups, heap allocated objects, and abstract interfaces. The NSCF classes apple currently uses are all built on corefoundation
+
+-NSThread is an interface to pthreads. You can also use the NSObject method performSelectorInBackground to launch pthreads. You can also setup pthreads using the pthreads library itself. Setup with this approach is supposed to be an order of magnitude faster than the others.
+
+-Generally, if a task doesn't take longer than 1ms it is not worth multithreading - the time required to set up a thread, and the negligibility of the operation, is not worth it.  
+
+-instead of using mutex locks in pthreads, use @synchronized sections. This handles possible exceptions that could occur within mutex's and prevents deadlocks. there are also things called "atomic functions" which may be worth reading about - they can be used to build lock-free structures. 
+
+-dispatchqueue ends up being even faster than pthreads in performance, because there's no new thread setup involved - the threads are already setup. The recommendation seems to be to prefer dispatchqueues over pthreads. (Though I wonder how true this remains as the problem scales and you lack the ability to customize which thread runs what)
+
+-large volumes of data should always be contained in bulk allocated objects and hidden behind bulk interfaces  
+
+-IOS apparently uses a slow parser that pulls everything into memory at once, killing your performance. The parser has a bug in it that quadratically increases memory consumption by the depth of the object graph being parsed. He ended up with over a gigabyte of memory consumption for a file that was 1/6th that size in one of his tests. 
+
+-the author implements a streaming XMLParser (a SAX parser) that uses almost no memory by streaming in 1000kb at a time. Read chapter 4 for details. Basically he's avoiding intermediate representations, NSObject allocations, and points NSData directly to a data buffer. The buffer is an input string of characters. He avoids doing string comparisons, because NSString has slow comparisons, and instead uses a bunch of message sends for each potential string (similar to techniques discussed earlier). He also used object caching. 
+
+___________________________________________
+MEMORY SECTION 
+
+-ensure your objects are sequential in memory. sequential access times remain especially low when the size of the data is less than the size of a cache line on your machine. Access times increase once this cache line size is exceeded (because it has to fetch from RAM or another level of cache), but the increase is minor if the data is sequential. Random accesses, however (like with independently allocated objects on the heap), which represent a stride length that always exceeds the caches line length, always need swapping into/out of cache and are always significantly slower. In particular, random accesses to RAM are the slowest of the above access methods - by a wide margin (you end up making repeated trips to RAM). 
+
+-If we compare any of the above (random vs. sequential access to RAM or cache) to disk accesses, there is no real comparison in the scale of latency involved. Disk accesses take many orders of magnitude longer than even random accesses to RAM. For this reading, avoiding disk accesses is by far the highest priority when doing memory optimization. 
+
+-So try your best to keep the size of your working set (data you're working with at a given time) within the caches, ideally smaller than a cache line; but certainly ensure it fits within RAM; and try to keep them sequential in memory if possible. If your memory consumption gets too big, this means frequent page swapping, accesses to disk and a significant degradation in performance. 
+
+-there are two types of virtual memory pages: clean and dirty. clean memory is unchanged - it's either newly allocated as 0s in RAM or mapped to a location on disk that hasn't been modified. Clean memory can quickly be swapped out of RAM, with no need to write changes back to disk. Dirty memory pages are pages that were used and need to be written to disk before they can be swapped out of RAM.
+IOS is unlike most OS's: it never writes back dirty pages to disk. Instead, to free up memory, clean pages must be swapped out, or allocated memory that's dirty has to be freed. There just is no automatic write-back of the dirty pages to disk. If too many dirty pages accumulate you just run out of RAM and either the app terminates or you have to free up allocated memory. This is when the memory warning functions fire. 
+
+-function stacks are well optimized: the elements are continuous in memory, and the stack variables are allocated simply by incrementing the stack pointer. The downside is stack variables don't outlive the functions termination, and the stack has a limited amount of memory so you can't declare very large arrays on it. Return values also have to be copied back to the calling code. You can't return arrays either - if you return a pointer to the array, the arrays values on the stack get cleaned up after the function exits. Also note that stack variables do not need to be reference counted for garbage collection, but heap variables do. 
+
+-Swift solves these issues by just allocating all collections on the heap regardless of if they're allocated in a function or not. Normally, in objc, you could do this manually and choose whether the array should be stack or heap allocated. Additionally, in both Swift & objC all Foundation objects are allocated on the heap and accessed via pointers. 
+
+-the malloc function call is used to allocate large amounts of space on the heap at once. It is much more efficient to do it this way than to allocate the objects one at a time. This is true in both Swift and objc. Note that when you use malloc you must manually call free() to free the allocated memory once you're finished with it.  
+
+-the use small objects that are isolated in memory should be avoided in performance-critical code as it will incur random access & heap access penalties
+
+-the use of large, heap allocated objects can be more efficient than the same objects allocated on the stack, however, because you avoid needing to copy all that data (which can be alot of data). You can just pass the pointer. 
+
+-MRC (manual reference counting): the property allocators of objective C implement reference counting automatically, but for whatever reason this was still called MRC. It preceded ARC. Note that reference counting is only done for the objc runtime objects (i.e. NSObjects).  
+
+-with MRC, in some cases of performance critical code you can forgo reference counting entirely in small sections of code if you can prove the object references are balanced at the end of it and there's an external reference keeping the objects alive for the duration. There is an option to turn off ARC and use MRC in XCode. I'm not sure if this can be done on a per-file basis. 
+
+-ARC was added after MRC. ARC sweeps through your code during compilation and inserts all kinds of reference counting code - prior to you setting pointers, for example. This vastly increased the number of reference counting operations, apparently. The performance cost can be from 10-100% 
+
+-ensuring that you are properly deallocating objects / avoiding circular references is important for minimizing the memory footprint, which in turn means less page swapping & less disk access. 
+
+-the unix shell command 'top' shows a list of all currently running processes, their names / ids, CPU usage and memory usage. the swapins/swapouts line at the top will tell you if you're swapping pages in and out of memory, if it's more than 0 for a sustained time than you are. This is an indication that you should reduce your total memory consumption. 
+
+-the unix shell command 'heap' takes a snapshot of your applications heap object graph and displays the information. Thus you can see everything on your heap at a given time. 
+run the command: heap Xcode -sumObjectFields 
+You pass the process id or name you wish to examine (in this case Xcode itself). -sumObjectsFields helps identify unidentified objects in the object graph, just use it always. 
+heap gives you a summary of each malloc zone it finds (various heap allocation functions in Swift/objc are internally implemented with malloc).
+Examining the output, you can tell whether memory is fragmented if there is low utilization. 
+heap tries to find the types of objects within the malloced memory zones and gives summary information about them. it labels non-object anything it can't find information about (so non-object usually ends up being the largest object, but it's really just a bunch of unidentified objects)    
+The program needs to be running already for you to use this command. 
+
+-the OS tries to minimize free memory in order to maximally utilize its paging resources, while simultaneously trying to maintain a small amount of free memory for swapping 
+
+-the unix shell command 'leaks' will show memory leaks
+run the command: leaks Xcode 
+replace Xcode with the process id or name you want to examine
+
+-to inspect memory usage from directly within your code, malloc.h comes with a function mstats() which shows virtual memory usage. for RAM usage (rather than virtual) mach provides a host_statistics() function. Its use is more complicated, there are flags like HOST_VM_INFO and data types like vm_statistics_data_t. Read for more details. 
+Remember the OS is always managing memory, trying to utilize as much as possible, and these statistics are very fluid / not entirely indicative 
+
+-despite all this, Instruments are the best option for analyzing IOS devices. you often need to run multiple instruments simultaneously when analyzing memory to get a clear picture of what's happening: Allocations, VM Tracker, Leaks, and Counters are useful Instruments for analyzing memory.
+
+-you can safely prevent ARC from inserting almost all memory management code into your program, with releases all correctly taken care of, by abiding by 3 simple rules: 
+	1) always use accessors (except if overriding dealloc where you have to use the private property)
+	2) auto-generate all accessors with non-autoreleasing get accessors or non atomic properties using automatic accessor synthesis 
+	3) always use convenience methods for object creation 
+If you do these 3 things ARC will need to insert almost no memory-management into the code. 
+
+-NSObjects take up alot more space than C primitives (NSNumber representing a float takes up 10x the space of a C float)
+
+-tagged pointers dramatically reduce the memory footprint of NSObjects, only the pointer itself is allocated. 
+
+-remember that allocating NSObjects occurs on the heap where you often get random access 
+
+-NSDictionary takes up even more space, and since it's hashed the access pattern will be random on the cache level 
+
+-though some people use dictionaries for saving space in implementing sparsely populated structures, you need a sparse structure with less than 5% utilization and 100 elements to break even in space used, due to the significant memory allocation overhead of NSDictionary itself. 
+
+-the first memory optimizations to do, in order, are: 
+	1) eliminate leaks
+	2) avoid bulk use of Foundation objects wherever possible - try using C primitives, tagged pointers, & so on 
+	3) store bulk data compactly, in sequence, and avoiding pointer redirections in the data 
+	4) find more compact models to represent the data (refactor / simplify the model) 
+
+-regarding the size / speed tradeoff in optimization: size is almost always more important than speed for execution time due to disk accesses taking so many orders of magnitude longer than compute operations (like 10 orders of magnitude longer). There are CPU-bound operations where CPU optimization is essential, but optimizing sequential memory access and cache utilization is a vital part of that also.
+
+-ways of reducing the size of a data model include: 
+	1) reduce the size and number of variables 
+	2) avoid excess, unnecessary subclassing
+	3) switch to more space-efficient datatypes, like C primitives or tagged pointers over Foundation objects; 
+
+-apparently sometimes using compression for network transfers can actually slow down your program because you end up having to decompress, which results in having the data in 2 places in memory and a number of extra dirty pages. Be mindful of memory consumption when doing compression for network transfers. 
+
+-you can mark memory as purgeable, which indicates to the OS that instead of writing it bask to disk when it's dirty it can just be discarded, similar to how clean memory is handled. to do this you can use mmap() to set aside the memory space (instead of malloc; read for details on madvise() and details of its purgeability).
+Alternatively, you can use the higher level NSPurgeableData. NSPurgeableData wraps an NSMutableData interface around purgeable data. It implements the NSDiscardableContent protocol. read page 145 or the apple documentation for more details. The system sometimes retains this type of memory longer, and you need locks to access it. 
+
+-there are algorithms called cache-aware and cache-oblivious algorithms that try to account for cache size in their implementation to maximize performance, read for details. 
+
+-to avoid cache pollution, certain multimedia instruction sets stream directly from RAM and don't utilize the cache. streaming performance is generally unaffected by this. vDSP and vImage are two libraries that are supposed to utilize this 
+
+-cache contention, where two threads are trying to access data from the same cache line (like neighboring elements in an array), degrades performance. sometimes, if they're trying to access different data on the same cache line, padding the data with dummy data to move it onto different cache lines can resolve the contention. Another fix is to use function calls, using stack-allocated variables for any long calculations. Then update the contended data once, after the calculations are finished. 
+
+-if multiple threads are working on the same piece of data, there's a 'thread affinity' API that can be used to associate specific data with just 1 specific thread (read about it, not covering it) 
+
+-if threads are working on completely different data sets, try to ensure the threads run on different cores to avoid L1 cache being filled up with 2 different data sets 
+
+-nested arrays have a bug that causes them to use inordinate amounts of memory when being read from. 
+Assume you have a 4-level nested array - [[[["string1"]]]].
+Swift & objc both are designed such that when you call a function, you wait on it to return a full result (not a partial result). In a recursive function, each function returns a result to its calling function, and all these results get pieced together as the call stack unwinds. A total, pieced together result is returned by the original function. 
+This nested array is evaluated in a recursive loop. The function can't tell what is nested deeper in the array until it gets there, it doesn't even know how deep the nesting goes. But it sets aside memory enough to hold what could be there. It doesn't track whether some previous iteration already allocated memory for this nested object or not.
+What this means is chunks of memory keep getting allocated and pieced together until you wind up with a block of memory 4x the size of string1. It's a bug, it could be fixed, but has not been. 
+In practical terms, if you have a JSON structure that is 5-6 levels deep... where most of the data is at the lowest level... you end up using 5-6x the memory you should have in reading that structure, due to this bug (this bug existed as of 2017, I'm not sure if it's fixed yet or not, would have to test it. I have seen JSON parsers use giant amounts of memory, though).
+
+-Even if the bug were fixed, the entire arrays contents is being stored in memory at once. This is memory-inefficient, and especially a problem if you're working with a giant amount of data (like a big thing of JSON). This approach will pollute your memory, forcing swapping of all your pages. 
+
+-streaming is a much more memory-efficient approach: instead of constructing a complete result from partial results in memory, you stream the partial results through a small buffer. For data manipulation, you pass the buffer into methods instead of returning results from the method (which also avoids copying the data). The author implements some streaming parsers in the book. 
+
+-nested autorelease pools and the @autoreleasepool compiler directive are ways of avoiding heap growth. They cause newly created objects to be automatically deallocated unless strong references are established to them. If you were to implement a streaming parser using these methods it would not be very efficient, however, due to the high overhead of allocating NSObjects repeatedly (they're being allocated and then released shortly afterwards). autorelease is basically a way of implementing an intermediary representation and being memory efficient about it, but you prefer to avoid intermediary representations due to the extra alloc/inits associated. 
+
+-Object caches (caches of reusable, mutable objects mentioned earlier) are a preferred solution to autorelease implementations, because they eliminate any need for alloc/init and release of objects. One thing to note about object caching - you must be careful not to pollute memory with caches that are too large. 
+
+-there's a special dictionary called NSCache that is like an NSMutableDictionary except its contents can be evicted from the dictionary if the system ever detects memory pressure. You have to be careful to retain whatever keys/values you wish to use. Otherwise it can be used interchangeably with NSDictionary - read page 153 for more details. Like NSDictionary it isn't well tuned for CPU performance, but memory use will be improved.
+
+-there's something called memory mapping that NSData has a flag for. It basically creates a virtual memory space for the file but doesn't pull it into memory until it's accessed, and it pulls it in 1 page at a time. This is much faster than traditional Unix I/O (i.e. read/write), which pulls everything into memory - and if that memory ever needs reclaiming, UNIX writes it to/from a swap file (or in IOS's case, the system runs out of memory / tries to swap clean pages or free up allocated memory). In contrast, with memory mapping only the pages that are modified need to be written back, and most pages can be treated as clean memory (swapped without penalty). 
+With memory mapping, if the code is expecting the data immediately there will be latency, and if separate parts of the file are accessed at different times the latency can be recurrent. For this reason, you need to preread the file (called "page walking") when you use memory mapping - which pulls the file into memory initially. Implement this by reading 1 byte from each page in the file, incrementing by the page size.
+Memory mapping leads to a dramatic increase in performance, and almost all file access should be memory mapped. 
+
+-There's a caveat: with memory mapping, loading is done lazily. If the file is unavailable - like if it's a remote file - your program can even block indefinitely waiting on the file to pull in. Therefor NSData w/ memory mapping enabled only works when the disk is considered reliable - like the data is stored on the boot disk. 
+
+-an alternative to prereading the memory mapped file ("page walking") is to use madvise(). this is a system call that can ask the system to pull the memory in question into RAM, mark it to be freed from RAM, and even implement a streaming of data into / out of RAM. It's the preferred approach - page 156 for details. 
+
+-even with optimizations on, ARC still inserts unnecessary retains into your code in a number of cases. For critical parts of the code you can prevent this from either compiling that file without ARC or using __unsafe_unretained attributes where necessary, until the retains go away (that's a keyword that appears to mark variables). Keep performance critical code out of ARC and rely on ARC/non-ARC interoperability. For example, the object cache the author implemented, mentioned earlier, has to be run without ARC (he could have mentioned that earlier) 
+
+-the author implements an object oriented streaming API inspired by Unix pipes/filters. It's available on his github along with alot of other streaming parsers & optimization code, google MPWFoundation
+
+-you can get speedups in objc by writing macros instead of making function calls, you avoid the very slight penalty of initializing the stack & so on (CPUs have registers reserved for this, but there still is a slight penalty. In a very tight loop it might be worth it) 
+
+__________________________________________________________________________
+SWIFT SECTION 
+
+-swifts design is alot more static than objc's - especially the dynamic dispatch of objc has been changed, and most native swift methods are compiled statically. 
+
+-there's alot more information available at compile time in swift than objc. Swift optimization is generally very compiler-reliant 
+	(different from objc where it's programmer-reliant)
+
+-the greater use of stack allocation using structs avoids references counting, which is only necessary with heap allocation
+
+-swift references are alot more expensive than objc references
+
+-primitives and objects in swift are more closely integrated - i.e. you can store Ints in an array along with NSObjects. 
+	Primitives are more easily wrapped / unwrapped, often automatically, in contexts where they need to be used as objects 
+
+-despite these improvements, this is mostly increased convenience rather than new possibilities for optimization. 
+	It doesn't increase performance over well optimized objc code, where many of the same things can be done. 
+	Many of the optimizations that could be done it objc it seems are now delegated away from the programmer to the compiler. 
+	This does make it more difficult to write Swift code that performs horribly, whereas with objc if you don't know how to optimize your code, 
+	it can run extremely slow (like if you rely heavily on NSObjects). It also makes it hard to write code that runs very fast, 
+	many of the manual optimizations in objc are no longer possible. 
+
+-as of 2017, swift primitives were 50% sower and swift objects were about 300% slower. I tested the primitives in Jan 2021 and they're still about 50% slower. 
+
+-Swift Ints are slower due to overhead associated with checking. For example, the system checks for overflow. 
+	You can disable overflow checking, but note that this changes Swift source code semantics. 
+	You'd do this using the -Ounchecked compiler flag, or alternatively you can use the unchecked arithmetic operators: &+, &-, etc. 
+
+-you can use the vectorization library in swift via "import Accelerate". Here you have access to the vDSP library mentioned earlier. 
+	The implementation of these vectorization methods, though possible, is more convoluted in Swift, though. 
+
+-unoptimized swift has so much abstraction and indirection inserted into it that it overwhelms the time profile list of calls and slows down debug builds by over 1000x. 
+	Debug builds are almost unusable in alot of situations. The compiler optimizes away this bookkeeping code. 
+	the author fears that the compiler might fail to optimize out a small percentage of this bookkeeping code, resulting in large slowdowns. 
+
+-Despite the fact you can use Swift's Dictionary class with true, compiled primitives such as String & Int (unlike objc where you must use NSString and NSNumber), 
+	they are only very slightly faster than Objc dictionaries (tested january 2021). 
+	However, if objc is optimized with a custom dictionary that uses primitives it vastly outperforms swift. 
+
+-apparently you can use @inline{_always} in Swift to inline functions, which improves performance. 
+
+-you can use UnsafeMutablePointer instead of Array to improve performance in Swift - he doesn't go into detail, 
+	but I believe you use mmap() or malloc() along with this (probably mmap since it can be combined with madvise()) 
+
+-Swift's NSJSONSerialization (the old method) still uses Foundation objects all throughout, and it uses intermediate representations. 
+	It's also horribly memory efficient due to the nested array bug mentioned earlier. Also, switching off the Any type returned is 25x slower than switching off typed objects. 
+	There are some open source parsers that are more efficient, the best bet is to use a streaming parser like the author implemented. 
+	These have almost no memory footprint - no intermediate representation, don't read the entire structure into memory at once, 
+	don't suffer from bugs that multiply memory consumption, and so on. They're orders of magnitude faster. 
+	I'm not sure how the new Swift parser stands up, but it still uses NSObjects throughout, & it now does extra work for the programmer, so I doubt it's much different. 
+
+-he talks about an image processing algorithm in Swift where he did 4 optimizations. He managed to get it only 30% slower than objc, down from 500% slower: 
+	1) he dispensed with an object model for Pixel data and just included the pixel data directly in the algorithm
+	2) he replaced the Array abstraction (used to store pixels) with UnsafeMutablePointer using the withUnsafeMutablePointer construct & bulk memory allocation
+	3) turned off all compiler checking of overflow with -Ounchecked
+	4) added vector instructions (SIMD) - i.e. import Accelerate
+
+-all things considered, it's best to write critical sections in optimized objc and link it in to the swift project. 
+_________________________________________________________________________________
+INPUT/OUTPUT SECTION 
+
+-the OS plays a larger role in mediating I/O access than it does with CPU or memory access. the OS provides a uniform interface for diverse I/O hardware, as well as networking responses and interprocess communication mechanisms 
+
+-the OS also tries to improve I/O performance by caching, buffering, and batching I/O requests 
+
+-UNIX has various byte-stream file I/O methods: read(), write(), & various others like fputs(), fgets(), & more. UNIX files are just streams of bytes with metadata
+
+-read/write are meant for bulk data, so you want to read/write using your own buffers instead of repeatedly calling read/write for single bytes. fputs/fgets & other similar I/O methods handle this buffering internally in various ways. read/write is generally used for large operations where you can control the buffers. When you do implement manually buffering you must be mindful of issues like partial input or buffer stitching (combining buffers when you have overflow)
+
+-memory mapping via mmap is generally preferred over read/write, anyway
+
+-there's something called a Unified Buffer Cache, which is a buffer typically implemented in RAM. It combines the traditional page buffer (which buffers virtual memory) and the buffer cache (which buffers I/O). before the UBC there were issues with having to copy memory between the page buffer (used by mmap) & buffer cache (used by read/write). 
+Now with UBC unifying these two buffers, all I/O goes in via the virtual memory subsystem: the kernel maps the file to a set of virtual pages; and then, if mmap was used... the pages are copied into memory lazily; otherwise with read/write they're copied in immediately. Hence the name mmap - memory mapping
+
+-Sometimes, because file I/O is being pulled into the UBC in RAM, file input can begin causing unnecessary swapping (even though there's enough room in RAM). Usually this is only a problem with system services apparently. It can be mitigated with using unbuffered I/O or by using madvise() 
+
+-note that the UBC both caches reads and buffers writes. about every 30s, UNIX calls sync() globally, which writes back UBC buffered changes to disk (this is done to batch the writes, which speeds up the systems throughout significantly). 
+
+-Because of this, if you manually force synchronous writes, you slow down your systems writing performance significantly, as it will now be writing back immediately and repeatedly, rather than waiting 30s. 
+
+-TCP/IP is also a byte stream, and is well optimized for performance. From a practical standpoint, the biggest thing to be aware of when using TCP/IP is the time it takes to set up a new connection (handshaking, etc.). So try to reuse existing connections over setting up new ones. URLSession encourages this and has an API for it. 
+
+-FTP is unsuitable for transfering lots of small files due to its internal implementation requiring a new data connection for every new transfer. 
+-HTTP also suffers from being fundamentally connectionless (i.e. TCP has to make these handshakes repeatedly), though new HTTP implementations can reuse connections for multiple transfers
+
+-generally speaking: 
+	1) try to do your reads / writes in large chunks at once, ideally a whole file at a time 
+	2) if you have to read only parts of a large file, use memory mapping and then access the individual parts of the file you need 
+	3) if you need to incrementally generate a large file, just append to it and disable reading until you are finished 
+
+-measuring I/O is difficult because most events (like network events, disk reads) won't show up in the console, and bugs are often non-repeatable since they rely on external factors 
+
+-if, in instruments, you notice execution time is not accounted for or CPU utilization is significantly below 100%, the program is often waiting on I/O 
+
+-using the 'time' UNIX command, real, sys, and user time will often be far apart if you were waiting on I/O. multiple processes competing for threads can cause this, but usually the time will be evenly distributed between the processes. sleep() can also cause this. the 'top' unix command is also useful for seeing this  
+
+-after fetching I/O it will typically be cached in the UBC, and a second access will take significantly less time 
+
+-the purge UNIX command empties the entire UBC - useful if you want to run repeated accurate tests 
+
+-the iostat unix command gives a direct summary of I/O on the system, either as a snapshot or in a time interval if specified
+run the following command to examine a 1 second interval: iostat 1 
+
+-the netstat unix command works in a similar way but shows network activity and packets for the interval, and it can also give more detailed information
+run the following command: netstat 1
+
+-the time profiler instrument can also give some information in the callstack & CPU utilization section. Function calls that are blocking will still be marked by it as taking up CPU time (like read/write & other lower level system calls) 
+
+-the unix tool fs_usage is the best way to get detailed information. it shows which function calls block i.e. wait for I/O, by marking them with a 'W'. It will also show page swapping via PAGE_IN_FILE. the limitation of this tool is it must be used on a process that's already running, and it can also generate giant amounts of output at times. You can limit this output to some degree with command line arguments. 
+run the following command to limit output to a particular process: sudo fs_usage -f filesys process_name 
+
+-although memory mapping is generally the fastest way to do I/O, the prereading of the memory into RAM is slower than a direct read() by about 60%. but remember memory mapping reduces the memory footprint by allowing for clean swapping, and because it supports lazy loading, the app won't be unresponsive while the data is being loaded. Ultimately the memory footprint has a big effect on performance. memory mapping (mmap) is generally preferred (though there are exceptions - cases where read is preferred, like with streaming). 
+
+-he says he used madvise(SEQUENTIAL) with mmap(), and this helped speed up paging in the data. If using this, you have to be 100% sure the data being paged in is sequential, otherwise it will take 10x longer to page in.  
+
+-another way to slow down input is to read in a large number of small files rather than a few large files. this can be something that effects launch performance, especially just after system startup, apparently. Conversely, you can speed up file input by compiling many small files into one large one (though there probably needs to be a large number of small files to make this worthwhile)
+
+-NSData and read/write with comparable options have the same file load times. if you malloc a buffer the size of a file and read() it in, it takes the same time as using NSData with no options; if you mmap() a file it takes the same time as NSData with the mapping options. 
+
+-one way you can speed up I/O - even faster than memory mapping - is using the streaming options of read(). This works because copying the bits into a buffer is faster than allocating new memory with mmap. Note the actual buffer size used with read() doesn't effect performance much, as long as it isn't too big - 64K seems reasonable. This is because the system calls in chunks and stores whatever you don't use in the UBC. However, you wouldn't use this method if you need all the data in memory at once, because then you'll have to allocate memory to store the contents in, and that memory won't benefit from memory swapping either. the one case where this can be useful is when parsing external data into a different internal format (because you'd need to allocate new memory for the changed contents regardless), but note that this will require buffer-stitching (proper handling of buffer overflow). in cases like this you may want to disable caching. 
+
+-There are some synchronous network initializers, like the objc method initWithContentsOfURL:, which will block the entire app waiting on the network call. 
+
+-Simultaneous requests improve performance up to somewhere between 4-6 simultaneous requests, at which point cumulative latency / network congestion begins degrading performance. The exact number of simultaneous requests to make before this congestion degrades performance is something you could only test for and optimize. You must be careful of overloading servers resources, leading to starvation of your app, as well. NSURLConnection previously did not limit the number of simultaneous connections and people had to limit them manually to avoid excess congestion. The new NSURLSession class handles this limiting automatically (though I'm not sure if it is sufficient by itself). There's a property called HTTPMaximumConnectionsPerHost on NSURLSessionConfiguration that prevents overloading a particular host, and can be used for these purposes. Generally speaking, ~4 is the appropriate number of simultaneous connections for iphone, ~6 for macbook pro. Large downloads may need to be limited further. 
+
+-There's a flag in NSURLSessionConfiguration called HTTPShouldUsePipelining which is off by default, but if the server supports pipelining this can significantly increase throughput.
+
+-besides not utilizing bandwidth, an additional problem with the initWithContentsOfURL: and some other URL initializer methods is they must load all the data into memory at once, using excess memory. typically you'd use a streaming approach. An alternative to streaming is to download the files directly to disk and then use memory mapping. this 2nd approach simplifies the logic & allows you to deal with complete files. You wouldnt use it if the file size is too large, though. Consider it if you have small / alot of files. Another advantage of downloading the files to disk & memory mapping them is you create your own URL cache, which will facilitate offline use of files & quicker startup.
+
+-although NSURLSession's NSURLConnection runs asynchronously, this can still bog down the main thread with timesharing, so always put it on a background thread. 
+
+for both file & network I/O, putting all I/O on different threads doesn't improve performance much. There is some improvement, but it's very minor. The i/O operations are already asynchronous (time-shared), and most I/O is buffered or read-ahead. Just make sure the I/O isn't on the main thread, so as not to burden it with extra computation. The only time you need multithreading for I/O is when you have a very large serving fielding a very large number of requests. 
+
+
+-sometimes it's better to make initial network requests, if they're important bottlenecks, 1 at a time. This avoids adding network congestion during the initial requests, which will slow them down. Since they're your bottlenecks, speeding them up is the number 1 priority. 
+
+-in the authors tests, URLSession was able to manage 1000 small requests per second, and transfer 300MB/s in large requests, which is apparently acceptable performance. 
+
+-the simplest & fastest ways of saving application state is with a memory dump, where you take the base address of the data and either write() it or wrap it in an NSData with one of the writeTo methods, making sure to use the non-copying initializer (initWithBytesNoCopy:). the only downside to this is interoperability of your data with other apps. There's some system called "Squeak" that solves most of the interoperability issues, though all apps that access the data must use Squeak, and the data must be saved as a whole.
+
+-another way to save state is by making your own file format in Xcode. 
+
+-the author implements a streaming XML writer to go with his SAX parser that significantly outperforms the archiver or JSON serializers provided by Foundation. He uses these for saving, and they are orders of magnitude faster with a tiny fraction of the memory consumption. The XML writer used input streams, it didn't use any intermediate representation, & had other optimizations. Page 245 for details.
+
+-property lists have XML, JSON, and binary storage formats. binary is the most compact. JSON is transmitable. XML... if you want to transform the data into some other format, you can write an XSLT template and run it over the XML to output the data into another format: HTML, SVG, plaintext, comma-delimited, etc.. Otherwise JSON is just better than XML - JSON is lighter, faster, smaller, can immediately integrate with web applications & with code, etc..
+
+-NSPropertyListSerialization handles converting to these serialized formats, but is extremely slow. Converting to binary is faster, but they're all slow. It consumes giant amounts of memory, using things like NSDictionary & storing the data in a very inefficient format.
+
+-Archiving is apples alternative to NSPropertyListSerialization which they tell you to use for large object graphs. Archiving isn't limited to the property list classes, it can serialize arbitrary object graphs and data within them. NSKeyedArchiver is the class used to do this on IOS. Any class can implement the NSCoder protocol and be archived. These are the methods to create the archive: 
+to create it in memory, use archivedDataWithRootObject: 
+to create it on disk, use archiveRootObject:toFile:
+
+-archiving is infact even slower than property lists - about 2x as slow for writing, same speed for reading, and uses a truly enormous amount of memory. this is because it doesn't actually stream the data, despite having an API for doing so. it actually just builds a property list behind the scenes, but one that is even larger. 
+
+-overall, for the IOS provided serialization classes, it looks like the new JSON serializer is the most performant. But this goes about 4-8x slower than the custom XML serializer he implemented. NSKeyedArchiver had the worst performance, and a truly horrible memory footprint. Binary PList wasn't much better, though. 
+
+-for creating and saving 1 million objects without batching, core data performed 3x worse than even NSKeyedArchiver (35s). It even used slightly more memory than NSKeyedArchiver during the operation. A third of the execution time was spent just creating NSManagedObjects in memory. And core data slows down yet another 3x more if you change from an SQL store to an XML or binary store (both atomic). In-memory stores took 20s on the test, making them the fastest. 
+
+-you can speed core data up using batching, but batching presents more complications. first, you need to balance the batch size. If batches are too small you lose the benefit of batching, but if too large it overloads the CPU (some internal algorithm has non-linear scaling with the number of objects). the author found the optimal batch size to be between 100 and 1000. Furthermore, overall performance degrades with each successive batch you save because there's ever increasing overhead associated with core data managing all the objects. This scaling bug makes core data unsuitable for storing large amounts of data (like a million objects, for example). 
+
+-If batches are independent (objects are not used repeatedly between them) and you're using a SQL store, you can call NSManagedObjectContext's reset method which will clear the context and dramatically reduce the memory footprint. However, doing this purge if you're using the atomic or in-memory stores degrades performance very dramatically.
+
+-when you fetch objects, they're lazily loaded, so you don't incur an immediate performance hit. the author traverses 1 million fetched objects and it took 42s (very bad). The fetched objects were arranged in a tree structure, the links defined by the objects relationships. To fix the problem you must tell core data to fetch all the objects at once, not individually. This turns out to be an overly complicated task that core data does not direct support, but you can trick core data into doing it. 
+
+-to trick core data into fetching an entire tree structure at once, first use NSManagedObjectContext's setRelationshipKeyPathsForPrefetching: method. Configure it to fetch all the children of a given node. To get this to work, you must specify the attributes of the children also - i.e. child_obj, child_obj.property_a, child_obj.property_b, etc.. This will return an array of children. Now you must correctly initialize the childrens reference back to their parent. To do this you must construct a fetch request for all the children in the array to fetch their parent. In his example, this fetch request had the form: (@"parent IN %@", array_of_fetched_children). Lastly, you might need to add an explicit flag on the leaf nodes in the tree structure and use it to prevent them from attempting to fetch nonexistent children. Ultimately all this mess improved core datas access times by about 70%, from 42s to 12s, in the authors tests.
+
+-relational database performance is generally overrated. typically good relational database performance only occurs when the data is in RAM, either in the UBC or in the databases buffers 
+
+-Core data was so slow because it needed to create all these managed objects, and manage their relationships. You can get the entire 42s fetch down to 0.8s if you just fetch a dictionary from coredata instead of fetching these managed objects. This can be done by setting NSDictionaryResultType in NSFetchSpecification. Unfortunately this means you can't save changes to the database, and there are no relationships defined in the dictionary either - so the object tree structure is not available. But sometimes you don't need those things. 
+
+-if you can keep the number of total elements down, core data performs reasonably well regardless. Many of these slow times were due to core datas poor scaling. You can modify individual objects quickly with core data, even if the database is large - this is advantageous compared to file serialization techniques where you have to deserialize / reserialize the entire file to make a single change. Another great upside of core data is its ability to fetch specific subsets of large datasets with querying. 
+
+-Due to how poorly core data scales, it's necessary to subset the data well and work only with relatively small subsets. fetching 1000 items takes 10ms if you have an index on the key you're fetching and you aren't fetching relationships. otherwise core data has to table scan and times can increase proportional to the dataset size (1.5s for the 1million objects). modifying those 1000 objects in memory takes 31ms, saving them takes 144ms (on the border of acceptable interactive performance). Try to keep the working set under 450 if you're doing combined fetch/modify/write operations on the data, this should keep the total operations time unnoticeable or barely noticeable.
+
+-apple has other recommendations for tweaking core data: use external storage for large binary data blobs, de-normalize the data model to avoid cross-relationship fetches, experiment with batch sizes in data import tasks, put numeric predicates first in fetch specifications (they evaluate more quickly). Read the documentation for more details 
+
+-if you really need high performance out of a database, use another database. SQLite is a good option. the author uses the fmdb wrapper around SQLite, he thinks the C API is too verbose. SQLite is about 5x faster than core data and uses way less memory, but doesn't automatically manage / handle relationships 
+
+-if you use SQLite, enable prepared statements. It speeds up runtime. with fmdb this is just a flag. 
+
+-if you do things with SQLite in a loop, or any kind of bulk update, wrap the loop in [db beginTransaction] and [db endTransaction] so that SQLite doesn't wrap every statement in its own individual transaction. if you dont do this, execution times are incredibly slow (like minutes). 
+
+-there are some more details to optimizing SQLite. the author says the API uses strings to index, whereas SQLite itself uses columns, and this was doubling runtime; so he patched the fmdb API. page 262 for more details
+
+-SQLite also allows you to bulk modify objects on disk without fetching them / writing them back. You do this using a SQL statement like: UPDATE obj set b=42 (takes 1.5s, faster than other methods apparently). just remember there's no change tracking, so if the object is also in memory you'd have to make sure it got updated. 
+
+-he also says to turn on write-ahead logging with the command: PRAGMA journal_mode=wal (not sure if that's exactly correct). apparently this optimizes & sequentializes disk access: instead of updating the database item directly, changes are appended to a sequential log. Reads first check that log before going to the database. 
+
+-the author claims many optimizations that helped relational databases in the past now hinder performance, such as: on-disk b-trees, multi-threading to hide disk latency, explicit buffer management. The author seems to feel that relational databases are overrated in terms of performance, and performance is not their primary design goal. For performance, a custom file storage mechanism or a nosql database is a reasonable alternative. 
+
+-there's a design pattern called an event log, which is a way of implementing persistence. An event log is a list of all the changes to the data that have occurred. It can be in-memory or recorded in a file and appended. With a pure implementation, the event log is kept as a file and used to reconstruct application state by replaying the events and updating the state on each event. the event log can get too large in this case, and is memory inefficient. 
+
+-an alternative, hybrid approach to the pure event log is a checkpoint system. you write back the state at certain checkpoints. For reading, you attempt to read the checkpoint file first, and if it doesn't read correctly you use the log. You also occasionally prune the log entries that are no longer relevant (i.e. were overwritten by later entries - but you must do this carefully). 
+
+-another, better hybrid approach is the approach taken by LevelDB (a nosql database). LevelDB's store is a "sorted string table", a read-only list of strings that's indexed. Writability is implemented using a "log structured merge tree". All changes are appended to this log structured merge tree. This log is kept both in memory and on disk. Reads first examine the in-memory log, and then the string tables on disk if nothing was found. The string table access can be implemented with memory mapping. The sorted string tables are occasionally rewritten in large batches using the log. This reads & writes very quickly apparently. 
+
+-This LevelDB design works well with event-based applications such as email, chat, social network apps, etc.. The approach can take advantage of the time-based nature of the data, where for example recent emails or recent chat messages are usually all that's accessed. That data will already be in the log, in-memory. in contrast, a relational database treats all elements equally. 
+
+-LevelDB itself is too restrictive in the type of data it can handle, but this deisgn can be implemented directly on a file system in ways customized to suite your needs. Be sure to implement the string tables with extensive metadata, indexing information & so on. (if I wanted to do this I'd probably study database implementation first) 
+
+-The above LevelDB design is an example of a "segregated store": keeping different types of data with different access requirements, sizes, life cycles etc. in separate places. There are other examples of implementing custom segregated stores for applications. For example, storing large media files separately from files that handle layout information. If you wanted to implement something like this in IOS - a system of files and folders built into a custom file database - IOS's FileWrapper & FileManager APIs would be all you really need. 
+
+-the author gives an example program where a client had read in a file from memory and then split it into lines, then put them into a string table he could search for the lines. The author optimized the code by using memory mapping instead of copying, and then instead of creating individual NSStrings for each line, kept an integer array of offsets to lines. this improved speed by 160x apparently. This method of using an array of offsets into a single buffer is 10x faster even than a C implementation of an algorithm without either. note th is example works if you're only dealing with a flat structure of strings. 
+
+-apple's property lists are a more complex structure. Apple's property list decoder has to load all the data into memory before any single piece of data can be accessed. The author comes up with a plan to implement a property list decoder with lazy loading. Property lists are implemented in C, so you can't just override the implementation & add lazy loading. The author literally digs through the apple documentation and reverse-engineers his own property list decoder that is fully optimized with streaming, & all the techniques previously discussed. Of course I will never do this, but the code is available on his github, and details for how to do something like this are on page 272. This custom property list decoder reduces execution time by 80% and memory usage by 99% compared to apples implementation. 
+
+-Apparently Swifts lazy loading mechanism for a collection of objects doesn't implement true lazy loading behavior: it doesn't cache the result unless the entire collection is converted to a non-lazy collection at once. 
+
+-in the custom property list he changed an algorithm from linear to binary search by changing some indexing method from indexOfObject: to indexOfObject:inSortedRange:options:usingComparator: with the option NSBinarySearchingFirstEqual. read it if you want the details
+
+-there's another example given of reading / writing with a 3 million entry CVS file. He turns the data model into a custom binary representation. Then he uses memory mapping & other optimization techniques. This is, generally, the fastest way to do things. The core data implementation took 22 minutes, this solution took 280ms - 8000x faster for reading and 4000x faster for writing. read page 286 for more implementation details. 
+
+-He also created a custom CVS parser using a custom dictionary created earlier for the XML parser, and added to it the ability to specify a subset of the fields to parse (rather than parsing all the CVS fields) 
+
+-he eventually multithreaded the CVS parser. He implemented this by dividing up the dataset for the various threads, & instantiating a CVS parser for each thread. He did a shallow copy on these CVS parsers, so they shared all data - except for the object cache, which needed to be unique for all of them. This way there was no need for any locking to access the object cache. Again you can probably find the parser on his github
+
+___________________________________________________________________________
+GRAPHICS AND UI SECTION 
+
+-some important performance thresholds are: 
+	100 ms - for user requests 
+	16.66 ms - (60hz) motion is completely smooth (generally the goal for most animation)
+	40ms - multiple frames fuse into motion (this is the one used for analog effects, but relies on things like motion blur built into the graphics system)
+	1s - user won't lose focus 
+	10s - keep users attention 	
+	1ms - smooth mouse movement but 60hz monitors refresh in increments of 16.66ms so it isn't attainable 
+
+-Quartz (i.e. core graphics) draws with the CPU into a buffer in main memory (some sort of in-memory frame buffer). This is why it isn't as performant as OpenGL or Metal. It draws in immediate mode. 
+
+-OpenGL ES (apples implementation of openGL) is used for 3D graphics. It draws in immediate mode except when specified (apparently openGL succeeded PHIGS in general use, largely because PHIGS drew in retain mode). openGL is platform-independent. openGL ES uses a "call return" style. This abstraction apparently makes it difficult to take advantage of batch-processing operations supported by the GPU hardware
+
+-Metal does not hide the low-level implementation details, allowing you to interface with the GPU more directly 
+
+-spritekit is a retain mode graphics system used for games, scenekit is another retain mode graphics systems. Apparently retain mode systems are good for high level management of graphics objects, but fall short if you need customization beyond what the framework provides
+
+-two common designs of systems with GPUs today are: integrated graphics and discrete graphics cards. Integrated graphics have both the GPU & CPU in the same chip, connected to shared RAM. discrete graphics cards are a completely separate system from the CPU, with their own VRAM. 
+
+-The author tested openGL vs quartz. OpenGL was about 10x faster drawing basic 2d triangles. The results were about the same on his mac with a discrete card & his iphone with an integrated graphics card. quartz used 100% of the CPU during the algorithm, openGL passed the work to the GPU and the CPU was basically idle. 
+
+-GPUs execute a ton of the graphics calculations in parallel due to their dedicated architecture, which makes them inherently faster than CPUs for these graphics tasks. CPU instruction streams are largely linear while GPUs work mostly in parallel, so for certain applications GPUs continue to outscale CPUs in their efficiency. This performance gap only continues to grow 
+
+-the Window Manager multiplexes the screen between windows owned by different processes, so that each process draws into its own window. Apparently the Window Manager leverages openGL for this. Through this manager, every graphics API - quartz, openGL, metal, spritekit, scenekit, etc. - whether they're retained or immediate, are retained by these various window bitmaps. As such, they can be moved around as windows, hidden or unhidden, etc.. This is all handled by the window manager. This is more important in Mac than in IOS. In IOS you typically only have 1 window on screen at a given time (sometimes iPad can have multiple). 
+
+-"Quartz Extreme" was an upgrade that took advantage of the fact Windows are implemented with OpenGL to leverage performance improvements. The windows contents, provided by Quartz or another graphics API, become an openGL texture which can be drawn using openGL & the GPUs accelerated graphics in ways deemed appropriate. For many operations this takes the load off the CPU almost entirely. So this Quartz Extreme is a hybrid software/hardware implementation.
+
+-Core Animation uses a similar approach, but instead of drawing into a shared buffer, each CALayer maintains its own bitmap, and these are composed together by a "renderer server" which has hardware support. Effectively, each CALayer acts like a window under Quartz Extreme, and animation changes (bitmap compositing) can be handled by an associated openGL primitive. Core animation is moving even more of the process to hardware - once all CALayers have been set up, the animations run separately from the calling code, in their own process and on the GPU hardware. 
+
+-The above optimizations are counter-intuitive because rasters generally require more processing power, but because the raster operations are supported by the GPU hardware it's an optimization. 
+
+-because animations are implemented so efficiently, with the GPU, they are easily added to programs without burdening the CPU. They are easy ways to improve the UI/UX 
+
+-you can often use an animation to make a program feel responsive while waiting for some long operation I/O operation 
+
+-there's supposed to be an instrument called "core animation" that's useful for debugging quartz applications, but it is not showing up in instruments. One person said you need a real device connected for it to show up. Another person said it was deprecated, but then another said it was added back after people complained. No idea where it is, really. Anyway, it can apparently be used to monitor frame skips. It can be used in combination with the time profiler to find which code is responsible for the frame skips. page 313
+
+
+-the core animation instrument (if it's ever found) allows you to set various flags. These flags cause certain colored pixels to be output to the screen, useful for debugging purposes: 
+	'flag name' | description
+	
+	'color blended layers' | alpha blending is a significant performance hit. multiple layers of pixels have to be read from. 
+ 		this flag will show blended layers as red, non-blended green  
+	
+	'color hits green misses red' | flag indicates cache hits / misses in a certain cache used when the 'should rasterize' flag is on. 
+		Usually quartz copies / blends the entire layer on an update. Adding this 'should rasterize' flag to a layer causes quartz to instead cache the 
+ 		raster of the sublayers of the layer the flag is set on. it's an optimization, read for more details 
+	
+	'color copied images' | indicates if a specific image could be used directly by the GPU or had to be copied/converted by the CPU first (colorized in the 2nd case)
+	
+	'color misaligned image' | indicates if an images pixels are word-aligned or not (in memory). If they're misaligned, the GPU has to convert them, degrading performance 
+	
+	'flash updated regions' | when an area on the screen is changed it will flash a color. allows you to identify content that might not need to be redrawn so often 
+	
+	'color openGL fast path blue' | shows regions of the screen that avoid the main compositor and are instead rendered with openGL
+	
+	'color offscreen rendered yellow' | shows areas that were rendered offscreen and then copied to the screen, wasting memory. 
+
+-he talks about one time using the 'color blended layers' option. the tool indicated the whole image was being blended, but the view was opaque. It turned out the image itself had an alpha channel. his mistake: he had created the images using a bitmap context, but used the argument kCGImageAlphaPremultipliedLast instead of kCGImageAlphaNoneSkipLast.
+
+-because IOS uses bitmaps, which can contain millions of pixels, small inefficiencies in bitmap processing code get magnified enormously. Always heavily optimized bitmap processing code. 
+
+-images are very lazily loaded in IOS. Even the initial load time of static images is slow, but subsequent loads are faster. 
+
+-For a color gradient implemented using a static JPEG, tests loaded it in ~50ms, and PNG ~67ms. In contrast, manually drawing the gradient takes 3ms. Even subsequent rendering, after the static images lazy loading, seems to favor the manual drawing of gradients by about 2x.
+
+-although IOS has jpeg hardware decoders, this is mainly useful for medium / large images. many small images incur too much overhead. For loading small images use a JPEG library like TurboJPEG rather than relying on hardware. However, for medium / large images, the IOS hardware vastly outperforms any library. JPEGs are generally much more performant than PNGs. 
+
+-one of the biggest pitfalls for GUI performance is performing long or unpredictable operations on the main thread. putting long operations in the background without making the UI respond (i.e. using a spinner or animation) is another big mistake. 
+
+-for graphics, having all your assets prerendered and delivered as bitmaps is a common mistake. He says prefer either vector artwork (vector images?) 
+	or doing the actual drawing in code. Bitmaps are large and do not scale with different screen sizes well, so they need to be supplied at every resolution. 
+
+-images are initially rendered into buffers that exceed the max screen size, and then scaled down, so there is no "pixel perfect" image fit. The image is always scaled down. Even if there were a pixel perfect image fit, the eye couldn't notice it. 
+
+-for drawing, the most common problems are redrawing things that haven't changed and drawing the same pixel multiple times 
+
+-large complex paths degrade performance because the antialiasing algorithm must account for overlapping path segments, and this algorithm scales quadratically with the number of links in the path. I hope that turning off antialiasing alleviates this though.
+
+-using CALayer will yield a performance benefit when drawing PDFs, because it preserves vector information for repeated elements. 
+	It should no longer be used for drawing images, however, because CGImage has been optimized enough to make that unnecessary (this was some past technique)  
+
+-CGImage is supposed to have heavily optimized image drawing - maybe this is worth looking into. Does it offer any performance advantage over UIImage.draw(), or is there a difference?
+
+-he says though accelerated drawing with openGL instead of quartz sounds like a good idea, apple has tried to do this and failed numerous times; additional transaction costs nullified any performance improvements apparently. the immediate call/return style of quartz can map to the openGL API, but doesn't actually map well to the hardware interface. The primitives are also different: quartz uses bezier paths, and tesselating those into the shaded triangles used by the hardware is expensive. More generally, he says quartz will sometimes give as good or better performance than openGL in your apps in different contexts, for the same reasons (i guess you'll have to test / figure out when that is. It's probably fairly obvious)
+
+-"display throttle" - apparently Mac OS X (and I'm assuming IOS?) will only refresh the screen 60 times a second (60mhz), and requests for any more than that will actually block your program. Quartz is smart enough to tell whether you've attempted to draw something new, and only blocks if you have - otherwise it won't block, it'll just return. Still, this is a potential source of congestion. 
+
+-An example program of an installer tried to update the display for every file installed, showing the user the filename that was installed. There were thousands of files being installed very rapidly in programs. The installer wound up refreshing the UI with the new filenames more often than display throttling would allow and this blocked the installer, slowing it down to a crawl. 
+
+-openGL doesn't have display throttling. in this case you must be careful that you don't do too many useless refreshes that clog up resources 
+
+-there are 2 good techniques for limiting refresh rates: 
+	1) timers: run a timer in a loop of something like 10hz, & use it to query / update the display (this is good for things like progress bars) 
+	2) update-request batching: store the updates in a batch (like a queue) and then perform the updates at once / do the necessary display 
+
+-apple has an NSProgress class that's supposed to handle progress reporting (like installation progress bars) but apparently (as of 2017) it still hasn't solved the out of control refresh rate bugs in the mechanism it uses to report the progress to the UI. So it has the same problem as the installer, basically. 
+
+-In implementing a tableview, one especially interesting thing the author did (which I haven't seen) is he protected for cases where the update handler may be called muptiple times in a single refresh cycle. So the author appended the new list of cells needing updating onto a queue, and refreshed the tableview once the time was appropriate (after some small fraction of a second has passed). Of course you want to target updates to the specific rows that need it, as well. 
+Apparently there are potential refresh rate issues while implementing tableviews. Implementation details on page 332. 
+
+-He gives different examples of how sometimes faking good performance is the best policy. for example, drawing low resolution images in draw:rect: that were later replaced by true, higher def images. this kind of presentation-focused resourcefulness is an important part of GUI optimization, apparently 
+
+-he talks about a time he tried to animate changing the color of a path over time - like tracing a path with a new color. He used Core Animation initially, but it didn't support the partial screen redrawing optimization that draw:rect supports; instead the entire screen had to be redrawn each time. The application was unusable despite the fact core animation is GPU accelerated. 
+
+-he seems to feel that large architectural decisions - for example, quartz vs. core animation vs opengl - are very important for UI optimization, and the correct choice is not always obvious. 
+
+-there's a problematic interaction between threading and memory warnings. If you run your memory consuming code on the main thread, the main will be blocked from receiving memory warnings. However, if you run the memory consuming code on a background thread, the background thread will continue to consume memory as the main tries to free it, also potentially leading to a crash. The solution (he claims) is to periodically have the background thread that's consuming memory check in with the main thread, especially before doing large allocations. If the main needs to free memory, it sends a message to the background thread for it to block until the memory is freed. 
+
+-for loading small images, a library called TurboJPEG is the fastest you can do. Relying on apples JPEG hardware isn't efficient for many small JPEGs because there's some initial overhead associated with using the hardware. However, for medium and large JPEgs, apples JPEG hardware is the fastest method of image loading by many orders of magnitude. PNG should pretty much never be used (despite the fact apple recommends it). For images that need alpha you can use PNG, but if you need performance try the authors implementation of JPNG, a kind of JPEG with alpha (page 350).  
+
+-The author talks about a few other image load optimization techniques: scaling down images to smaller sizes using CGImageSourceCreateThumbnailAtIndex() (you might want to test this against other image scaling methods and watch for performance, there are a variety of ways of doing this), adding lower resolution images on old devices until the higher res ones can fully load, combining a software decoder like TurboJPEG with hardware decoding for medium / large JPEGs; add some images in PVRTC format that work well with that compression; decode a few of the animation sequences from MPEG movies. He has alot of suggestions - it looks like a sound knowledge of image processing and graphics is necessary to really understand all the optimizations that are possible. 
+
+-there's a form of cache pollution caused by multithreading, where a thread streams through memory, forcing other threads data out. special instructions allow reading data from main memory without going through the caches, and streaming performance is generally unaffected (streaming RAM performance is better than random access speeds). 
+

@@ -1,0 +1,638 @@
+very brief notes of the most important things learned- 
+
+==================================================================================
+// INTRO & BASIC COMMANDS 
+
+the ps command lists processes. unlike top it isn't real-time output 
+    ps              <- only shows processes with the invokers user ID
+    ps -e           <- shows all processes
+
+the cron scheduler takes instructions from a crontab file 
+
+man -k cron         <- this lists everything in the manual that contains the keyword cron 
+b and f             <- hotkeys for going back / forward a page in some places, like in man pages 
+man man             <- pulls up man's documetation about itself 
+
+if you're using an XWindow system you can use the xman command to see the man page
+
+in the synopsis section of the man page: 
+    if a command is enclosed in rectangular brackets it's optional; otherwise it's required 
+    3 dots (...) signify a variadic parameter 
+    a pipe | means or, only one of the options it separates can be used
+
+the variable PAGER indicates whether you want to use the more or less pagers. here's how you change the pager:  
+    echo $PAGER                         <- list current pager in use 
+    PAGER=less; export PAGER            <- change systems pager 
+
+the variable SHELL indicates your systems shell type: 
+    echo $SHELL 
+
+printf is preferred to echo because various shells and types of UNIX/Linux differ in how they implement echo. 
+for example, BSD systems don't support escape sequences (i.e. \n, \t) within echo commands 
+
+    printf "the current shell is: %s\n" $SHELL 
+
+==================================================================================
+// SCRIPT 
+
+the script command lets you record the I/O of your terminal session in a file. 
+    script                  <- starts session
+    ... 
+    exit                    <- ends session 
+
+script creates a file called typescript, and will overwrite it with each new session. to append to it instead us the -a option 
+the file created by script contains ctrl-m at the end of lines. you can open this in vim to see it, and remove it with sed if you like
+
+==================================================================================
+// MAILX
+
+POSIX requires systems to support mailx, which is a command line email utility 
+this command used with pipes & IO redirection can easily generate mail headers and message bodies
+received mail goes into a mailbox. after it's viewed it's moved into mbox 
+note that mail may contain encoded binary attachments 
+
+the sender / receiver can be on the same or different hosts. email names are in the following forms: 
+    ibrust                  <- same host 
+    ibrust@walmart          <- different host 
+    ibrust@walmart.com      <- differnet host across the internet 
+
+to send mail in the terminal:
+    mailx ibrust777@gmail.com 
+    <enter subject> 
+    <enter the message body> 
+    <press ctrl+d or . to finish> 
+    EOT                                         <- this means 'end of text'  
+
+to send mail programatically: 
+    printf "got through" | mailx -s "subject name" ibrust777@gmail.com                  <- the -s option indicates the subject 
+
+if your mail isn't getting sent try typing mailq to check the mail queue. there can be DNS issues apparently. also read about sendmail  
+
+incoming mail is appended to the mailbox located at /var/mail or /var/spool/mail in Linux  
+
+you'll be prompted in the terminal if your mailbox receives mail 
+to receive mail in the terminal:
+    mailx 
+
+after viewing the mail it's moved to the file called mbox, usually in the home directory 
+read page 43 for more about mailx 
+
+==================================================================================
+// NAMES / DATES / PASSWORDS
+
+the passwd command can be used to change passwords. a non privileged user can change their own and an admin can change any passwords 
+passwords are stored in /etc/shadow or /etc/passwd on older systems, and used by the system during login 
+
+the uname command displays information about the machines OS 
+
+    uname               <- prints name of OS 
+    uname -r            <- prints version of OS 
+    uname -n            <- the machines hostname, & domain name if applicable. many UNIX commands take the machines hostname as an argument
+
+the who command shows you the names of users logged into the system, when they logged in, and their host/domain names
+    the name listed here can be used with mailx to send mail to other users on the system apparently 
+
+the date command displays the current date in various ways 
+    date                <- full date 
+    date +%m            <- only the month 
+    date +%h3           <- name of the month 
+    date +"%h %d"       <- name of month + day 
+    date +%D            <- date in format mm/dd/yy 
+    date +%T            <- time in format hh:mm:ss
+    date "%H:%M:%S"     <- time in format hh:mm:ss
+    date %y             <- last 2 digits of year 
+
+==================================================================================
+// STTY
+
+the stty command configures terminal settings 
+stty -a lists out the current configuration settings as key/value pairs 
+    the baud rate is the speed of the terminal 
+    keys preceded by - are turned off 
+
+some noteworthy keys are: 
+    intr        <- the interrupt key. it's set to ^c (ctrl+c) by default 
+    eof         <- end of file key, used by many commands to end the command. ctrl+d by default, it's similar in function to ctrl+c
+    erase       <- the backspace key. set by default to ^?, which is the key labeled backspace apparently 
+    susp        <- press while a command is running to suspend the job, allowing you to resume it later. ctrl+z by default
+    echo        <- shell programmers often turn this off temporarily to prevent passwords from showing up on the screen 
+    stop        <- stops scrolling of display and locks keyboard 
+    start       <- resumes scrolling of display and unlocks keyboard 
+    kill        <- kills command line without executing it. not the same as the kill command, this is a configured key. ctrl+u by default
+    quit        <- kills running command & dumps a core file. ctrl+\ by default. 
+
+examples of changing these configurations: 
+    stty intr DEL               <- make DEL the interrupt key 
+    stty erase [Backspace]      <- if you're on a machine where backspace doesn't work try this 
+    stty -echo                  <- turn echo off, hiding password entry 
+    stty echo                   <- turn echo back on 
+
+    stty sane                   <- restores default configurations 
+
+==================================================================================
+// X WINDOW SYSTEM, TERMINAL EMULATORS, FILE MANAGERS 
+
+X was originally developed to work in a networked environment 
+the terminal emulator is a character terminal being run in a window within the X Window system 
+there are variations of the X Window system. GNOME, KDE, and CDE (common desktop environment) are a few examples. 
+
+from a terminal emulator you can also run X programs, but always run them in the background: 
+
+    firefox &               <- run firefox in the background 
+
+the original emulator was xterm. now there's ddterm, konsole, and others 
+with an emulator, the exit command kills the window and its associated shell. exit kills the login session at a character terminal
+
+the emulator allows copy-paste
+
+X also provides a file manager similar to finder or windows explorer. 
+    which file manager is used also varies. the CDE implementation of X uses dtfile as its file manager. Linux uses Konqueror
+
+==================================================================================
+
+two ways of making LF (linefeed) characters in a file visible: 
+    cat -e <file>       <- outputs a readable form 
+    od <file>           <- outputs octal code
+
+displaying binary files with cat can mess up the terminals settings if you're unlucky, apparently
+
+best practice for naming files is to use only alphanumeric characters and . - _ 
+
+==================================================================================
+// FILE SYSTEM STRUCTURE 
+
+the root of the folder hierarchy is / 
+the root user is the login id of the system admin 
+
+the UNIX file system varied alot until the AT&T SVR4 release. Since then the SRV4 structure has been loosely adopted by most vendors.
+think of the filesystem as broadly comprising system and user folders
+
+system folders: 
+    /bin and /usr/bin: common UNIX commands (binaries). PATH includes these folders 
+    /sbin and /usb/sbin: commands the system admin can execute. the system admins PATH also contains these folders 
+    /etc: system configuration files. you can change important system behavior by editing these files.  
+        /etc/passwd and /etc/shadow contain usernames / passwords
+    /dev: contains all device files 
+    /lib and /usr/lib: contain all library files in binary form. C files link here 
+    /usr/include: contains standard library headers used by C
+
+user folders: 
+    /tmp: where users can create temporary files. these are wiped away periodically by the system 
+    /var: the variable part of the system. contains things like print jobs & outgoing mail 
+    /home: on many systems users are housed here, though this varies between distributions 
+
+==================================================================================
+// HOME
+
+when the user logins in they begin in /home 
+the shell variable HOME contains the absolute path for the users home
+
+    echo $HOME 
+    /Users/vn51hvk                  // so it's /Users on a mac, not /home 
+
+the system admin sets the home directory foro a user in /etc/passwd when the account is created 
+
+in most shells ~ (except Bourne) also refers to the base of the home directory 
+
+    ~/          <- refers to the current users home directory 
+    ~/Bob       <- refers to Bobs home directory (possibly a different user)
+
+always use ~ or $HOME in shell scripts to refer to files in the home directory 
+
+cd used without arguments returns to the home directory. 
+
+==================================================================================
+// FILESYSTEM NAVIGATION & COMMANDS
+
+before you make a C file or shell script you can check whether the system already has one of the same name using type, which, or whereis 
+
+here's a quick way to copy a file into the parent directory: 
+
+    cp <filename> .. 
+
+
+you can actually make directory trees or multiple directories with mkdir: 
+
+    mkdir /files /files/notes /files/documents
+
+you can also remove the whole directory tree with rmdir: 
+
+    rmdir /files/notes /files/documents /files 
+
+rmdir removes empty directories 
+rm -r can remove non-empty directories 
+
+    rm -r /full_folder 
+
+
+basic ls (list) commands:   
+
+    ls temp.txt /bin/python3        <- ls can be used with one or more file or folder names to check if they exist
+    
+    ls /notes                       <- when the argument is a folder it lists the folders contents 
+    ls -d /notes                    <- -d causes ls to just list the directory name, not the contents 
+
+    ls -F                           <- the default output of ls doesn't identiffy folders & binaries, but with this option it does
+
+    ls -x                           <- some systems don't list the output in columns without -x 
+
+    ls -R                           <- list files recursively 
+
+    ls -l                           <- long listing 
+
+    ls -a                           <- show hidden files 
+
+to make ls display different types of files in different colors: 
+
+    alias ls='ls --color=tty'
+    alias ls='ls -G'                <- on mac or BSD systems 
+
+    alias ls='ls -GFal'             <- combine multiple configuration options into the alias 
+
+list hidden files / folders in your home directory to see some important ones. for example: 
+
+    .profile                        <- contains a set of instructions performed when the user logs in (don't see it on mac)
+    .exrc or .vimrc or .viminfo     <- contains a sequence of startup instructions for vi / vim 
+    .shosts                         <- pertains to the secure shell, discussed more later 
+    .zshrc                          <- startup instructions for zhs
+
+
+basic cp commands:
+
+    cp najdorf.txt rossolimo.txt /black_sicilian        <- copy multiple files into an existing folder. the folder must be the last argument
+
+    cp *.c *.o /proj_folder                             <- copy all c & object files 
+
+    cp -R /folder1 /folder2                     <- recursively copy all folder1 contents into a new flder, folder2. folder2 cannot already exist!
+                                                and do not run this command twice! it creates new directories and gets screwed up if you run it twice
+
+basic mv commands: 
+
+    mv file1 file2 folder                       <- you can move multiple files into a folder 
+
+    mv foldername1 foldername2                  <- mv can rename a folder 
+
+
+basic rm commands. rm deletes files and folders: 
+
+    rm *                            <- delete all files in the current directory 
+    rm /folder1/*                   <- delete all files in a folder
+                                    note that * does not match files beginning with . 
+
+    rm -r or rm -R                  <- recursive removal
+
+    rm -f /folder1/*                <- force removal. remove without prompting for confirmation, and don't only delete files with write permissions
+
+    rm -rf /folder1                 <- easily remove folder & all children
+
+be extra careful when using the rm commands since they can destroy the filesystem 
+also remember that a file isn't actually cleaned up until there are no longer any references to its inode 
+
+==================================================================================
+// PAGERS 
+
+use more or less pagers rather than cat to view larger files:
+
+    more <filename> 
+
+    top | less                  <- commands with output larger than the screen can be piped into pagers 
+
+while viewing a file with the pagers more or less you can use a variety of commands: 
+
+            more    less        action 
+    f       X       X           forward a page  
+    b       X       X           back a page 
+    p               X           jump to top of file 
+    G               X           end of file 
+    /<exp>  X       X           searches forward for <exp> 
+    ?<exp>          X           searches back for <exp> 
+    n       X       X           repeats search forward 
+    .       X                   repeat last command 
+    v       X       X           starts up vi editor 
+
+less is generally a superset of more, except it can't repeat the last command 
+
+==================================================================================
+
+wc commands: 
+
+    wc -l       <- count lines  
+    wc -c       <- count characters 
+    wc -w       <- count words
+
+lp is used to print in UNIX, but to use it you must have the printer configured property. some distributions use berkley's lpr instead 
+one interesting thing about lp though is you can interact with it like other UNIX commands: 
+
+    ls | lp                 // see pg 81 for more info if ever interested 
+
+od (octal dump) displays the octal value of each character. it's used for viewing binary: 
+
+    od -bc <executable> | less      <- -b outputs octals organized into bytes. -c uses the c escape characters to format output 
+
+Windows adds CR/LF (\r\n or ^M\n) to the end of lines. UNIX adds only LF (\n)
+you can see these characters using the od command 
+sometimes you must convert between Windows & UNIX formats. some UNIX systems have tools like dos2unix, unix2dos, and Tofrodos for this 
+
+    dos2unix <oldFile> > <newFile>
+    unix2dos <oldFile> > <newFile>              <- this inserts CF before every LF, so be careful with using it on code
+
+when you open a file in windows and it's all one line it might be because it's an unconverted UNIX file 
+
+an archiver is different than a compressor. an archiver can store groups of files, a compressor reduces the size of files 
+use the tar command to archive groups of files or folders: 
+
+    tar -cvf tarfile.tar file1.txt file2.txt        <- create the tar file 
+    tar -xvf tarfile.tar                            <- extract the contents 
+    tar -tvf tarfile.tar                            <- view the tarfiles contents 
+
+tar options: 
+    c       <- creates a tar file 
+    x       <- extracts files from an archive 
+    t       <- displays files in an archive 
+    v       <- verbose. displays a list of the files 
+    f       <- read from or write to the specified file. required for many commands 
+
+different UNIX distributions use a variety of compressors including gzip, bzip2, and zip: 
+
+    gzip -l file.txt        <- compress file 
+    gzip -d file.txt        <- uncompress file 
+    gunzip file.txt         <- alternative way to uncompress file 
+
+    gzcat file.txt          <- view file contents without uncompressing it. some systems instead use gzmore, zcat, or zmore 
+
+gzip and tar are often used in combination to first group files & then compress them: 
+
+    tar -cvf tarfile.tar file1.txt file2.txt        
+    gzip -l tarfile.tar                             <- creates a tar zipped file, .tar.gz. a shorthand convention is often used .tgz
+    ... 
+    gunzip tarfile.tar.gz 
+    tar -xvf tarfile.tar 
+
+alot of open source software is available in the form of .tar.gz or .tgz files 
+gzip and tar are used so often together than GNU tar provides a special command for doing both at the same time: 
+
+    tar -cvzf tarfile.tar.gz file1.txt file2.txt 
+    tar -xvzf tarfile.tar.gz 
+
+while gzip has been used for a long time, a better alternative gaining popularity is bzip2. it provides better compression. 
+    bzip2 works similarly to gzip, read about it for more details 
+
+zip is another new program. it does both archiving and compression 
+
+    zip archive.zip file1.txt file2.txt 
+
+    zip -r compressed_notes.zip /notes          <- the -r option recursively traverses a folder and archives / compresses everything
+
+    unzip compressed_notes.zip                  <- this guards against overwriting by asking for confirmation 
+
+    unzip -v compressed_notes.zip               <- the -v option allows you to view the compressed archive, apparently 
+
+note that zip does not overwriting existing archives with this command, it appends to or updates them in the archive
+
+==================================================================================
+// FILE ATTRIBUTES 
+
+ls -l lists the important file attributes in 7 fields:
+
+    ls -l
+
+    total 376
+    drwxr-xr-x  12 vn51hvk  staff    384 Jan 22 17:46 ./
+    drwxr-xr-x  10 vn51hvk  staff    320 Oct 29 23:53 ../
+    -rw-r--r--   1 vn51hvk  staff  28341 Jan 22 17:46 Combine - Asynchronous Programming
+    -rw-r--r--   1 vn51hvk  staff   8964 Nov 26 22:52 IOS bootcamp notes
+    -rw-r--r--   1 vn51hvk  staff   1007 Nov 11 22:58 Programming iOS 13
+
+
+    field 1: type & permissions. the first bit indicates if it's a directory or executable
+             - is an ordinary file, d is a folder, l is a symbolic link 
+    field 2: the number of links associated with the file 
+    field 3: the user that owns the file. the user & root can modify the file in any way 
+    field 4: the group ownership of the file 
+    field 5: the size off the file in character count, not disk space 
+    field 6: last modification time 
+    field 7: filename 
+
+
+the permissions field is composed of the following bits: 
+
+    bits        meaning 
+    1           file type 
+    2-4         users permissions  
+    5-7         group permissions 
+    8-10        all users permissions 
+
+
+files & folders are created with a default set of permissions determined by the systems umask setting 
+
+    umask 022                           <- set the systems umask 
+    echo "new file" > temp              <- new file created with permissions -rw-r--r--
+
+use chmod to modify the permissions: 
+
+    chmod u+x file1             <- give the user execute permissions. this is a relative change - other bits are unaffected 
+    chmod g-w                   <- remove group write permissions 
+    chmod o+r                   <- all other uses read permissions 
+    chmod go-x                  <- remove other users & group users execute permissions 
+    chmod a+r                   <- set all 3 groups read permissions 
+
+    chmod 700                   <- give the user full access. this sets all the permission bits 
+
+    chmod -R 700 folder1        <- recursively assigns permissions to the folder & all children 
+
+
+the folders permissions determine whether files within it can be deleted, so you can still delete files with no permissions on them 
+
+for a folder, read permissions means you can see the contents with ls. 
+    write permissions means you can add or delete files in the directory. security issues are often related with this setting 
+        note that if the folder doesn't have write permissions, but the file does, the file can still be edited just not deleted 
+        never make folders group or world writable unless there's good reason to do so - anyone will be able to add / remove files 
+    execute permissions only means the user can traverse any subdirectories. 
+        often when shell commands are executed on a folder they require execute permissions 
+
+when creating a new file / folder, UNIX systems first set file permissions to 666 and folder permissions to 777, 
+    then subtract the systems umask 
+    so a umask of 666 would mean the file permissions were 000 
+
+basic umask commands: 
+
+    umask               <- displays the value of the current umask 
+    umask 022           <- by default removes write permissions for groups & world 
+
+file names aren't stored on the inode so that they can have multiple filenames. when that happens the file has multiple links 
+basic hard link syntax: 
+
+    ln <existing_file> <new_link_name>              // this creates a hard link 
+
+    ln *.sh <new_folder>            // create groups of links. if *.sh matched 27 shell scripts there would be 27 links in the new folder 
+
+rm and ln are complimentary; rm actually just decrements the link count & removes the entry in the directory. 
+    the system calls rm & ln use are also similarly called unlink & link 
+
+common uses of links: 
+
+    a) to point to files that have moved, to maintain compatibility with hard coded links in programs 
+    b) they provide some protection against accidental deletion if you only expose the link 
+    c) the filename used to invoke a program is available to shell scripts & programs. since links have different invocation names 
+        you can modify a file to behave slightly different depending on where it's invoked. this minimizes code duplication 
+    
+hard links have two limitations. you can't link across file systems (since hard links use inodes), and you can't link to a folder. 
+    symbolic links (also called soft links or symlinks) solve these problems 
+
+    ln -s <existing_file> <symbolic_link_name>      // -s is used to create a symbolic link rather than a hard link 
+
+unlike a hard link, a symbolic link is a separate file that contains a pointer to the original file 
+symbolic links have their own separate inodes 
+if you delete the data a symbolic link points to it remains a dangling symbolic link - a bug 
+
+when you copy a symbolic link the file it ponts to is copied, not the symbolic link itself 
+
+the system admin assigns the UID (user id) and GID (group id) when they create the users account
+UIDs and GUIds have both a name & numeric representation. this data is stored in /etc/passwd and /etc/group 
+the id command shows the current users UID / GID: 
+
+    id              // on my mac I'm part of 20 different groups 
+
+while chown and chgrp are used to change a files owner & group, chown can do both at once: 
+
+    chown ian:group1 file.c             // the : separates the owner & group 
+    chown -R ian folder1                // chown can also use -R 
+
+ownership / group membership can get screwed up if you have root privileges while creating a file - it'll belong to root 
+    similarly if you transfer files from a remote machine to yours the number of its original creator will be maintained
+
+directories last modification time isn't changed by creating ro removing a file, only by reading from the directory 
+last modification times are often used by backup tools. but extracting from tar files often throws off the last modification time, 
+    so you must use the touch command on the files to rectify that 
+on some systems IO redirection also doesn't effect the last modification time despite changing the contents
+
+==================================================================================
+// FIND 
+
+find recursively examines a folder tree, looks for matches of a set of selection criteria, and takes action 
+
+    find <path_list> <selection_criteria> <action>
+
+    find /home -name index.html -print 
+    find / -name a.out -print 
+    find . -name "*.c" -print                   // quote wildcards
+
+    find -name "*.c"                            // only on Linux systems find uses -print & the current directory by default 
+
+all children of the paths specified in path_list are searched 
+the selection criteria always conosist of an expressioon in the form -operator argument (i.e. -name index.html)
+the -print action simply outputs to the terminal 
+
+find throws an error message when it can't change to a directory, so consider running it with sudo 
+if you can't run find with sudo than redirect the error messages into the void so you don't miss the matches: 
+
+    find / -name file.txt -print 2>/dev/null 
+
+there are many different flags for selection criteria and types of actions. +/- can often be used in arguments: 
+
+    selection criteria: 
+    -inum 1234          // inode number 
+    -type d             // file type - f for file, d for directory, l for symbolic link 
+    -perm 777           // match the files octal permissions
+    -user ian           
+    -group groupname 
+    -size -20           // if size is less than 20 blocks 
+    -size +20[c]        // if size is greater than 20 characters 
+    -mtime -3           // modified less than 3 days ago 
+    -mtime +3           // modified more than 3 days ago 
+    -mmin -15           // modified less than 15 minutes ago 
+    -atime +10          // accessed more than 10 days ago 
+    -amin -15           // accessed more than 15 minutes ago 
+    -name file1.txt     // filename 
+    -iname filel1.txt   // case-insensitive filename 
+    -mount              // don't search past mount points 
+
+    actions: 
+    -print              // output to stdout 
+    -ls                 // run ls -lids command on the files 
+    -exec <cmd>         // run a UNIX command  
+    -ok <cmd>           // like -exec, except prompts for confirmation before running the command 
+
+there are also 3 special boolean operators that can precede the selection criteria: -a (and - the default), -o (or), and ! (not)
+
+    find . ! -name "*.c" -print                         // print files that aren't .c 
+
+    find . \( -name "*.sh" -o -name "*.c" \) -print     // print files that are .sh or .c 
+                                                        // the parentheesis must used to group the logic expression 
+                                                        // but they must be escaped because the shell also uses parenthesis 
+
+the -exec and -ok actions must have {} \; at the end: 
+
+    find $HOME -name file1.txt -exec rm -i {} \;                // rm has an interactive option, minimizing risk of this command 
+    fnid $HOME -name file1.txt -ok mv {} $HOME/newFolder \;     // mv doesn't have an adequate interactive option, so use -ok 
+
+{} is a placeholder for a filename. So -exec cp {} {}.bak provides a .bak extension to all selected files. 
+\; just terminates the command. 
+
+==================================================================================
+// VI/VIM 
+
+there are 3 modes: command mode, input mode, and ex mode. 
+when you first open a file you start in command mode. 
+    command mode                enter by pressing esc 
+    input mode                  enter by pressing i 
+    ex mode                     enter by pressing : 
+
+you can't enter text in command mode, but can perform high level commands. most of vim's commands are here 
+command mode operations: 
+
+    // common commands 
+    u                   undo last operation 
+    o                   open line below & return to input mode 
+    d                   delete line 
+    h                   move cursor 1 space left 
+    5h                  move cursor 5 spaces left 
+    l                   move cursor 1 space right 
+    5l                  move cursor 5 spaces right
+    S                   clear line & start adding text
+    A                   append text at end of line 
+
+    // less common commands 
+    i                   insert text to the left of the cursor 
+    a                   append text to the right of the cursor 
+    I                   insert text at start of line 
+    O                   open line above & return to input mode 
+    r<char>             replace single character beneath cursor w/ <char> 
+    s                   remove char under cursor & begin typing 
+    R                   begin overwriting text to the right of cursor 
+
+prefixing a command with a number repeats that command as many times 
+
+you can enter & edit text in input mode 
+input mode operations: 
+
+    ctrl+w              delete the previous word 
+
+
+you can save the file & do other file related things before exiting in ex mode. you can also do substitutions here 
+ex mode operations: 
+
+    :x                  save and quit 
+
+
+the configuration file for vim is typically $HOME/.vimrc or $HOME/viminfo. for vi it is traditionally $HOME/.exrc. 
+    if the file doesn't exist in the home directory you can add it manually 
+    many ex mode commands can be placed in this file so they are available every session 
+        you can set abbreviations, hotkeys, & variables, among other things 
+
+
+
+
+
+
+
+
+
+
+
+
+
+==================================================================================
+
+
+

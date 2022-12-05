@@ -1,0 +1,595 @@
+========================================
+======PART I - THE PYTHON LANGUAGE======
+========================================
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CHAPTER 1 - INTRODUCTION 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+there are different implementations of the python interpreter and development environments, i.e. Jython, IronPython, IDLE, ActivePython, Wing IDE, pydev 
+
+when using the interpreter, the special _ variable holds the results of the most recent operation 
+
+on UNIX use the shebang to direct the OS to the python interpreter. 
+    This allows you to execute the script without typing python3 (this works for any language, not just python):
+
+    #!/usr/bin/env python
+
+python is dynamically typed: variable names are bound to different values, possibly of varying types, during execution 
+variables are untyped, the value is what's typed. the assignment operator just points the variable to a value. 
+
+the amount of indentation used in python doesn't matter as long as it's consistent within a block 
+
+there are 3 ways of doing string formatting - C-style format strings, the new format(), and an old format() 
+use C-style format strings to format decimals & other things: 
+
+    print("%3d money owed: %0.2f" % (year, moneyOwed))
+
+you can also format sections of a string individually using format(): 
+
+    print("format(year, "3d"), "money owed:", format(moneyOwed, "0.2f"))
+
+strings also have an old format() method to format many values at once: 
+
+    print("{0:3d} {1:0.2f}".format(year, moneyOwed))
+
+
+use the \ symbol to continue a line on the next line. you don't need this symbol for code enclosed in {}, (), [], or triple quoted strings 
+
+there is no special switch or case statement, so just use elif 
+
+the in operator returns True or False:
+
+    if book in bookList:
+        ... 
+
+
+for iterates over things in python. the following code loops through a file: 
+
+    for line in open("file.txt"):
+        ...
+
+you can output to a file using the print statement or the files write method: 
+
+    outputFile = open("output.txt", "w")
+    for book in chosenBooks:
+        print(book, file=outputFile)
+    
+    OR 
+        
+    outputFile = open("output.txt", "w")
+    for book in chosenBooks:
+        outputFile.write("%s\n" % book)
+
+
+you can work with the interpreters standard input and output streams directly or use the input() function: 
+
+    import sys 
+    sys.stdout.write("enter your name: ")
+    name = sys.stdin.readline() 
+
+    OR
+
+    name = input("enter your name: ") 
+
+
+access characters or slices in a string using subscripts
+
+    name = "Ian Rust"
+    print(name[0], name[4])     # I R 
+    print(name[:3])             # Ian 
+    print(name[4:])             # Rust
+
+
+python never does implicit type conversion from a string to a number
+    instead you must use int() or float() for explicit type conversion 
+
+to convert non-string values to a string you can use str(), repr(), or format() 
+str() returns a string of human friendly text
+repr() returns a string of the machine representation
+format() allows you to specify the formatting you want: 
+
+    x = 3.4 
+    print(str(x))               # 3.4 
+    print(repr(x))              # 3.9999999999              <- machine representation of 3.4 
+    print(format(x, "0.5f"))    # 3.40000  
+
+lists can contain a mix of types 
+some common list operations are append(), insert(), slicing, len(), and concatenation: 
+
+    books = []
+    books.append("GO4")
+    books += ["Networking, A Top Down Approach", "Software Architecture in Practice", "Database Systems"]
+    books.insert(2, "Distributed Systems")
+    print(books[1:3)
+    print("total books:", len(books))
+
+
+you can also use list comprehensions to construct lists in compact ways:
+
+    import sys 
+    floatsInFile = [float(line) for line in open(sys.argv[1])]
+    smallestFloat = min(floatsInFile)
+
+
+tuples support most of the same operations as lists, but the contents are immutable 
+tuples use slightly less memory than lists 
+tuples can be extracted using subscripts or the assignment statement: 
+
+    webAddress = ("www.python.org", 80)
+    print("url:", webAddress[0], "port:", webAddress[1])
+    url, port = webAddress
+
+
+tuples and lists can be useful in combination to compactly represent data: 
+
+    portfolio = [] 
+    for line in open("portfolio.csv")
+        fields = line.split(",")            # split the line into a list 
+        name = fields[0]
+        shares = int(fields[1])
+        price = float(fields[2])
+        stock = (name, shares, price)
+        portfolio.append(stock)
+
+    print(portfolio[1][1])                  # elements in a list of tuples are accessed seamlessly 
+
+    totalInvestment = 0.0
+    for _, shares, price in portfolio:      # iteration through a list of tuples is straightforward too 
+        totalInvestment += shares * price 
+
+
+sets are unordered and can't be referenced by subscripts 
+to create a set use the set() constructor and supply a sequence of items: 
+
+    numberSet = set([3, 5, 7, 9, 7])
+    letterSet = set("broccoli and cauliflower")
+
+
+-operations on sets include: 
+
+    abcdefg = set("abc") | set("defg")      # union 
+    cde = set("abcde") & set("cdefg")       # intersection 
+    ab = set("abcde") - set("cdefg")        # difference - items in first set but not in second set 
+    abfg = set("abcde") ^ set("cdefg")      # symmetric difference - all items not in both sets 
+
+common methods of sets include: 
+
+    letters = set("abc") 
+    letters.add("d")            # add() adds a single item 
+    letters.update("efg")       # update() adds multiple items 
+    letters.remove("g")         # remove() removes a single item 
+
+
+though dictionary keys are usually strings they can also be other types such as numbers and tuples
+here's how dictionaries work: 
+
+    emptyDictionary = {} 
+    animalSounds = { "cow" : "mooo", 
+                     "dog" : "bark", 
+                     "bird" : "chirp",
+                     "monkey" : "hoo" }
+
+    dogSound = animalSounds["dog"] 
+    animalSounds["bird"] = "caw"
+    animalSounds["snake"] = "ssssss"
+
+    if "snake" in animalSounds:                         # dictionary membership is tested with the in operator
+        print(animalSounds["snake"])
+    else:
+        print("silence")
+
+    print(animalSounds.get("snake", "silence"))         # get() is a quick, convenient way of checking a key & providing a default value 
+
+    del animalSounds["monkey"]                          # to remove an element of a dictionary use del 
+
+    keys = list(animalSounds)                           # typecasting a dictionary with list() returns a list of its keys 
+
+
+the for statement can iterate over sequences: lists, dictionaries, tuples, strings, files, ranges
+
+    for x in [0, 1, 2, 3, 4]:
+    for x in range(5): 
+    for x in range(0, 5):
+    for x in range(4, -1, -1):           # this iterates backwards - 4, 3, 2, 1, 0
+    for letter in "aligator":
+    for line in open("file.txt"):
+    for key in {'cat' : 'meow', 'dog' : 'bark'}:
+
+you can also create custom iterators and generator functions to supply the for statement with sequences 
+in python2 range() creates the entire sequence in memory at once. xrange() is used to generate a stream of values instead 
+    in python3 xrange() was renamed to range(), and the old python2 range() was removed 
+
+use a tuple to return multiple values from a function 
+you can invoke a function using keyword arguments (which don't have to be in order) if you know the argument names
+
+to modify the value of a global variable from within a function use the global keyword: 
+
+    count = 0
+    ... 
+    def foo():
+        global count 
+        count += 1
+
+a generator function can return a sequence of results by using the yield statement: 
+
+    def countdown(n):
+        while n > 0:
+            yield n 
+            n -= 1
+    ... 
+    count = countdown(5)
+    count.next()                # 4 
+    count.next()                # 3 
+
+any function that contains yield is a generator, and returns a sequence of results via successive calls to a next() method
+    (or __next__() in python3)
+next() makes the generator function run until it reaches the next yield statement 
+    at this point the value passed to yield is returned, and the function suspends 
+
+normally you would not manually call next() as shown, you would hook the generator up to a for loop: 
+
+    for x in countdown(5):
+        ... 
+
+generators provide a way of writing programs based on pipelines, streams, or data flow (so declarative, event driven programming)
+
+you will find that generators are often mixed with other sequences 
+    for example, a generator can be used in a for loop in place of another sequence
+
+coroutines are functions that wait for sequences of input (in contrast, generators produce sequences of output)
+the yield keyword is used on the righthand side of an expression to make the coroutine pause and wait for input:
+
+    total = 0 
+    ...
+    def _runningTotal():
+        global total
+        while True:
+            total += (yield)                # (yield) on the righthand side indicates the function is waiting for input. 
+    
+    runningTotal = _runningTotal()
+    runningTotal.next()                     # call next once to advance the function to the first (yield)
+    runningTotal.send(14)                   # provide input to a (yield) with send() 
+    runningTotal.send(22)
+    runningTotal.send(3)
+    runningTotal.close()                    # coroutines continue until they return OR close() is called 
+
+coroutines are useful in concurrent programming with producers/consumers. 
+    The generators are producers and the coroutines are consumers
+
+
+all values in python are objects 
+the dir() function lists all methods of an object and is useful for exploring in the interpreter or debugger 
+
+    items = [37, 43]
+    print(dir(items))       # prints out methods of lists - ['__add__', '__class__', '__contains__', ... 'append', 'count', 'extend', ...]
+
+the double underscore methods (i.e. __add__) implement language operations. 
+    for example, __add__ implements the + operator
+
+        items = [37, 43]
+        items.__add__([72, 11])             # [37, 43, 72, 11]
+
+the class keyword is used to define new objects 
+class variables are declared in the outer scope of the class, instance variables are created in the initializer 
+the @staticmethod decorator precedes static methods
+object is the root class that all objects inherit from in Python 
+
+the first argument in class methods always refers to the object itself. the word self is typically used here, but it's just a convention 
+
+    class MusicBar(object):                             # inherits from object 
+        key = random.randint(1,12)                      # class variable 
+        
+        def __init__(self):                  
+            self.noteCount = random.randint(1, 8)       # instance variables 
+            self.beat = []
+        
+        def generateBeat():                             # instance method 
+            for x in range(8):
+                roll = random.randint(1,100)
+                if roll < 35:
+                    beat.append("X")
+                else:
+                    beat.append("-")
+
+        @staticmethod
+        def getKey():                                   # static method 
+            return MusicBar.key
+
+
+use try/except chains to handle errors: 
+
+    try:
+        openFile = open("file.txt", "r")
+    except IOError as error: 
+        print("error opening file:", error
+
+use raise to trigger an exception
+with raise you can use the builtin exceptions or create your own exceptions 
+
+    raise RuntimeError("computer says no")
+
+
+the with keyword helps properly open and manage system resources such as locks, files, and network connections
+    error handling is often tricky in these situations and the with keyword simplifies it 
+    for example, in the below code the mutex is automatically acquired and released as the with block executes 
+    this management occurs irrespective of what happens inside the with block (i.e. if an exception occurs within the lock is still released)
+    
+        import threading 
+        messageLock = threading.Lock() 
+        ... 
+        with messageLock:
+            messages.add(newmessage)
+
+
+the with statement is normally only compatible with objects related to system resources or the execution environment 
+    such as files, connections, and locks. however, user-defined objects can define their own custom processing.
+
+you can import .py files and use their classes and functions. python refers to these as modules 
+to access an imported class or function precede its name by its module: 
+
+    import MusicTools 
+    ... 
+    beats = MusicTools.beatGenerator()
+
+
+you can use the 'as' keyword to rename the imported module: 
+
+    import aVeryLongAndPoorlyNamedFile as Dog 
+    ... 
+    Dog.bark() 
+
+
+use 'from' to import just specific classes or functions from a module into the current namespace: 
+
+    from MusicTools import beatGenerator 
+    ... 
+    beats = beatGenerator()                     # no need to precede the function by its module name, since it was pulled into this namespace
+
+
+you can also examine the classes and methods in modules using dir():
+
+    import string 
+    print(dir(string))
+
+
+in the interpreter you can type help("<module_name>"), help("<function_name>"), or help() to get more information. 
+    alternatively you can read the docs at: https://docs.python.org/3/
+most python functions also have documentation strings that describe their usage. 
+    you can view these using print(<function_name>.__doc__)
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CHAPTER 2 - LEXICAL CONVENTIONS AND SYNTAX
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+if the body of a conditional or function contains only a single statement it can be put on the same line as the declaration: 
+
+    if value1 != None: return value1
+    else: return -1
+
+
+the pass statement indicates an empty block
+
+identifiers starting with an underscore, such as _foo, are not imported by the * wildcard:
+
+    from <module> import *              # does not import things preceded by _ 
+
+
+special reserved identifiers have leading and trailing double underscores, such as __init__
+identifiers with leading double underscores, such as __bar, are used for private class members 
+
+you can specify an integer using octal, hex, or binary: 
+
+    0o777           # octal
+    0x100fea8       # hex 
+    0b10110101      # binary 
+
+integers in python can have a limitless number of digits 
+in old python code you might see large integers written with a trailing L or l. this specification for long integers is no longer necessary 
+
+an integer or float with a trailing J or j is an imaginary number 
+you can create complex numbers with real and imaginary parts by adding a real and an imaginary number: 
+
+    1.2 + 12.34J 
+
+
+adjacent strings separated by whitespace are automatically concatenated by the interpreter: 
+
+    "hello "
+    "world"         # automatically concatenated into "hello world"
+
+
+python2 strings weren't unicode by default. instead you had to specify unicode by preceding the string with u
+in python3 all strings are already unicode
+in either case you insert unicode characters into strings with \u or \U followed by 4 hexadecimal codes
+
+    name = u"Jalepe\u00f1o"             # here \u00f1 specifies a 4 byte unicode character 
+
+
+to create raw strings precede the string by r or R
+raw strings don't recognize special characters preceded by backslash \ except for unicode escape characters \u or \U 
+
+to specify a string of raw byte data don't use raw strings. instead use byte strings by preceding the string with b
+
+if the first line of a module, class, or function is a string then that string becomes its documentation string
+the documentation string is accessible by the objects __doc__ attribute 
+
+    def selectKey():
+        "selects a random music key and returns it"
+        keys = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]
+        return keys[random.randint(0, 11)]
+
+
+you are allowed to use multiple decorators on a function 
+
+python source programs are typically written in 7-bit ascii. but if you're working in a unicode environment this can be problematic
+    you can include a special encoding comment on the first or second line of a script to let the interpreter know the encoding is different 
+    this can allow you to use unicode characters directly within the script instead of specifying them with \u or \U: 
+
+        #!/usr/bin/env python 
+        # -*- coding: UTF-8 -*- 
+
+        ... 
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CHAPTER 3 - TYPES AND OBJECTS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+every piece of data in pythono is an object 
+
+the built-in id() function returns an integer used to identify an instance, usually its memory address
+the built-in type() function returns the type of an object 
+
+the 'is' operator compares whether two objects are the same instance
+'is' can also be used to test whether they're the same type, though this won't check for inheritance:
+
+    if obj1 is obj2:                                # test whether they're the same instance 
+        ... 
+    if type(obj1) is type(obj2):                    # test whether they're the same type - there's only one instance of the class object
+        ... 
+
+the built-in isinstance() function is a better way to check whether an object is a member of a class since it is aware of inheritance: 
+
+    s = []
+    d = {}
+    if isinstance(s, list):
+        ...
+    if isinstance(d, dict):
+        ... 
+    
+all objects are referenced-counted. when an objects reference count reaches zero it's garbage-collected
+an objects reference count is increased when it's assigned to a variable or placed in a coontainer 
+an objects reference count is decreased via reassignment, when it leaves scope, or by the del function 
+
+the current reference count of an object can be obtained via sys.getrecount():
+
+    import sys 
+
+    a = 37 
+    sys.getrefcount(a)                  # 7 reference counts for this single variable 
+
+reference counts are often much higher than expected because the interpreter aggressively shares these objects to conserve memory 
+
+the interpreter also periodically executes a cycle detector that looks for inaccessible reference cycles to deallocate
+
+the garbage collectors behavior can be fine tuned with the gc module (CH 13)
+
+for primitives the assignment statement effectively copies the value (though it may be shared behind the scenes until it's modified)
+for mutable objects assignment is a reference
+
+a shallow copy creates a new object but populates it with references to the items contained in the original object: 
+
+    a = [1, 2, [3, 4]]
+    b = list(a)
+    b is a                  # false 
+    b[1] = -3
+    print(a[1])             # -3
+
+a deep copy creates a new object and recursively copies all the objects it contains. this can be achieved using copy.deepcopy(): 
+
+    import copy 
+    a = [1, 2, [3, 4]]
+    b = copy.deepcopy(a)
+    b[1] = -3
+    print(a[1])             # 2
+
+in python all objects are first class. this means you can treat them all as data: 
+
+    dict = {"value": 1}
+    dict["func"] = abs                              # add a function to the dictionary 
+    import math 
+    dict["math"] = math                             # add a module 
+    dict["error"] = ValueError                      # add an exception 
+    nums = [1, 2, 3, 4]
+    dict["append"] = nums.append                    # add a method of another object 
+
+    dict["func"](-1)                                # 1 
+    dict["append"](100)                             # executes nums.append(100)
+    dict["math"].sqrt(4)                            # 2
+    try:
+        x = int("a lot")
+    except items["error"] as e:
+        print("couldn't convert")
+
+
+in the above code the dictionary contains a function, a module, an error, a method of another object
+
+common data types in python: 
+
+    Type Name           Description
+
+    type(None)          the null object None 
+
+    int
+    long
+    float 
+    complex             complex number 
+
+    bool 
+
+    str 
+    unicode             unicode character string (Python 2 only)
+
+    list 
+    tuple 
+
+    xrange or range     renamed from xrange to range in python 3 
+    dict 
+    set                 mutable set 
+    frozenset           immutable set 
+
+
+python has exactly one null object, which is written as None. 
+    this object is returned by void functions
+    it's also frequently used as a default value 
+    None has no attributes and evaluates to false 
+
+all numeric types are immutable 
+floats are 64 bit only 
+
+the decimal module provides support for general base-10 arithmetic, and the fractions module adds a rational number type (see CH14)
+
+sequences are ordered sets of objects that use indices. tuples, lists, and strings are sequences 
+string and tuples are immutable sequences
+
+common operations that work on sequences: 
+
+    nums = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+    # slice operations 
+    nums[1:3]                       # [2, 3] 
+    nums[1:8:2]                     # [2, 4, 6, 8] - 3rd parameter indicates the stride 
+    nums[5:-1]                      # [6, 7, 8]
+
+    len(nums)                       # 9 
+
+
+
+
+pg 40, very top 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

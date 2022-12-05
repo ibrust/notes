@@ -1,0 +1,162 @@
+CHAPTER 1
+
+-if the unit test fails, clearly report the problem 
+-To run the tests in xcode, press option+U or go to Product > Test 
+-Tests make assertions to indicate whether they pass or fail 
+
+    class demoTests : XCTestCase {
+        func test_fail() {
+            XCTFail("test failed - optional description of why")                                    // assertion to make a test fail 
+        }
+    }
+
+-test methods are contained within a subclass of XCTestCase. this subclass is called a 'test suite', i.e. a collection of tests  
+-test methods must always start with the word "test" 
+-test methods can't be declared private 
+-test methods take no parameters & have no return values 
+
+-for whatever reason, people typically use snakecase in their test method names 
+
+-to view the messages output from tests, go to one of those panels warning at the top left; or press option+5; or go to View > Navigators > Show Issue Navigator
+-the output messages from tests will also appear in test logs, which can be processed by CI servers
+_________________________________________________________________________________________________________________________________________________________________
+
+-the following is a list of popular assertions. there are more complicated parameter lists for many of these: 
+
+    Failure Assertions: 
+        XCTFail(“optional description“)                                                             Asserts failure immediately 
+
+    Comparison Assertions:
+        XCTAssertEqual(expression1, expression2, “optional description”)                            Asserts two expressions have same value
+        XCTAssertEqualWithAccuracy(expression1, expression2, accuracy, “optional description”)      Asserts two expressions have same value within a certain accuracy
+        XCTAssertNotEqual(expression1, expression2, “optional description”) 
+        XCTAssertGreaterThan(expression1, expression2, “optional description”) 
+        XCTAssertLessThan(expression1, expression2, “optional description”) 
+        XCTAssertLessThanOrEqual(expression1, expression2, “optional description”) 
+
+    Boolean Assertions: 
+        XCTAssertTrue(expression, “optional description”) 
+        XCTAssertFalse(expression, “optional description”) 
+
+    Nil Assertions: 
+        XCTAssertNil(expression, “optional description”) 
+        XCTAssertNotNil(expression, “optional description”) 
+        XCTUnwrap(expression, “optional description”)                                               Asserts that an expression is not nil and returns the unwrapped value
+
+    Exception Assertions    (indicate whether evaluating expression generates an exception)
+        XCTAssertThrowsError(expression, “optional description”)                                    Asserts that an expression throws an error
+        XCTAssertNoThrow(expression, “optional description”)                                        Asserts that an expression does not throw an error
+
+_________________________________________________________________________________________________________________________________________________________________
+-one advantage of the variety of assertions is the output messages they generate by default. they describe not only what behavior failed, but what was expected 
+-you could test everything with XCTestAssertTrue if you wanted, but it'd have no good output message  
+-a technique is to embed values in the optional messages with string interpolation, i.e. "\(value)"
+    XCTFail("test failed - value was: \(value)) 
+
+-XCTFail() is one of the best uses for the optional messages. infact I think the message is required now
+-generally beware of adding optional messages that redundantly give information already printed by the test assertion
+-assertions with objects output the objects as strings
+-some objects have complicated string descriptions of themselves. you can control how an object is output as a string by implementing the CustomStringConvertible protocol 
+
+-by utilizing the variety of assertions you can avoid conditional logic (i.e. if statements & loops) in your test code. this makes the tests simpler & more reliable 
+
+-XCTAssertEqual(expression1, expression2, "optional description") is one of the most common assertions in practice, apparently 
+-Swift will automaticaly wrap or unwrap the expressions passed to XCTAssertEqual for comparison purposes. You don't have to ensure they're both optional, or both not optional 
+
+-if you're dealing with floating point numbers, don't use XCTAssertEqual. The numbers may be slightly unequal due to implementation issues. 
+-use XCTAssertEqualWithAccuracy for floating point numbers: 
+    result = 0.1 + 0.2
+    XCTAssertEqualWithAccuracy(0.3, result, accuracy: .0001)                // this would fail if you didn't use the accuracy method 
+
+_________________________________________________________________________________________________________________________________________________________________
+CHAPTER 2
+-the author says in a new test suite he creates a "test zero" temporarily. The test fails, and he wants to verify that it fails to check that the suite is working.  
+-he doesn't actually write this test, he has his own custom test templates (which you can download) that contain test zero
+
+    func test_zero(){                               // confirm test suite itself is working, delete afterwards 
+        XCTFail("test suite is working...")
+    }
+
+-next he wants to ensure that the test code & production code are connected correctly. if they aren't, the test won't compile: 
+    @testable import production_class 
+    ...
+    func test_class_imports(){               // if this compiles then the test & production code are connected properly. 
+        let obj = production_obj()          // the test doesn't assert anything, it just verifies the import. I suppose this test does have lasting value as a test 
+        let result = obj.method()
+    }
+
+-testable makes declarations with internal access visible (across targets) 
+-anything declared private remains offlimits, even with testable 
+
+-to look at a history of test logs & reports, option+9 works (option+5 was just for warnings / failures). This is the 9th icon in the top left panel. 
+
+-when the tests run, the system creates a separate instance of the XCTestCase subclass for every single test method it finds. So your tests run in separate instances. 
+-test fixture: the environment (properties, methods, etc.) the test relies on in order to run 
+-setUp() and tearDown() reset the test fixture for each test. When would you need to override these if the tests run in separate instances? Not sure 
+-for any properties used in setUp() / tearDown(), declare them as vars & explicitly unwrapped: 
+
+    private var property_name: class_name!
+    override func setUp(){                                        // this is always called before the test method, so explicit upwrapping is safe 
+        super.setUp()
+        property_name = class_name() 
+    }
+    override func tearDown(){                                     // this is always called after the test method 
+        property_name = nil 
+        super.tearDown() 
+    }
+
+-the author feels it is necessary to setUp / tearDown any properties in the method, despite the fact the tests run in separate instances. I still don't see why. 
+_________________________________________________________________________________________________________________________________________________________________
+CHAPTER 3
+
+-you enable code coverage in Xcode via opening the scheme editor: (Product > Scheme > Edit Scheme). 
+    From there select Test, then activate its Options tab, then check "Gather coverage..." (looks like this may be outdated)
+-now when you rerun tests, in the test reports panel (option+9) you'll see a report for code coverage 
+-the code coverage report lists percent of code covered per file. You can click on the files to see the green / red bar showing areas covered (traversed during testing, basically) 
+-if the green / red bar doesn't show up, select Editor > Code Coverage and it should appear 
+
+-note that, while the green / red bar indicates which parts of code were touched during tests, it says nothing about whether you made assertions, or the quality of the tests. 
+
+-the author notes that if code is old, it's been tried and tested by the users for a while and generally doesn't need to be tested that it meets requirements 
+-old code does, however, need characterization tests 
+-to write a characterization test, first write a test for the piece of code that will fail (to ensure failure is possible in the test). Then adjust it to make it work. 
+-characterization tests ensure you don't break the old code while adjusting the codebase 
+
+_________________________________________________________________________________________________________________________________________________________________
+
+-some code is unreachable (like due to early return statements), and you will never get full coverage of it 
+
+-conditionals (i.e. if statements) require 2 or more tests to explore each branch with assertions 
+-you must also carefully test the boolean expression used by the conditional 
+-if the boolean expression used >= or <= you may even need separate tests for equality and greater/less than 
+-if the boolean expression used &&, you will need 3 tests for 3 conditions:
+    operands:   a   b 
+    test1       F   T
+    test2       T   F 
+    test3       T   T
+-if the boolean expression used ||, you will need 3 tests for 3 conditionals also: 
+    operands:   a   b 
+    test1       F   T
+    test2       T   F 
+    test3       F   F
+
+-there are a variety of conditions besides if statements: 
+    ternary operator a : b ? c 
+    guard statements 
+    nil coalescing operator ?? 
+    optional chaining 
+    switch statements 
+
+-the number of paths can explode. you can't test everything. try to have at least 1 test per path, but definitely apply reason to what needs testing. 
+-you can also limit conditional explosion by extracting nested conditionals into separate methods and testing the methods individually 
+
+_________________________________________________________________________________________________________________________________________________________________
+
+-
+
+_________________________________________________________________________________________________________________________________________________________________
+CHAPTER 4
+
+
+
+_________________________________________________________________________________________________________________________________________________________________

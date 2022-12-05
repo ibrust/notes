@@ -1,0 +1,18 @@
+==============================================================================================
+==============================================================================================
+// OMAHA GAMBIT - 4.1% 
+1. e4 e5 2. Nc3 d6 3. f4 
+
+    3... Nf6 4. Nf3 - transposes w/ falkbeer, vienna gambit w/ 3... d6 4. Nf6 - 12%
+
+    // leela provides moves for both the main omaha lines (exf4 and Nc6) that are almost never played 
+    ------------------------------------------------------------------------------------------
+    *3... exf4 4. Qf3                       // 53%, +0.02 - leela likes Qf3 but it's almost never played, scores well though
+
+    ------------------------------------------------------------------------------------------
+    3... Nc6 4. d3              // 17.7%, +0.03 - you're actually going to fiancetto the bishop here. d3 is almost never played.
+                                // Bb5 is another option, it's sharp and black can go wrong easily, has a high winrate, but scores -0.04
+                                // look for transpositions in the falkbeer d3 lines 
+        
+
+

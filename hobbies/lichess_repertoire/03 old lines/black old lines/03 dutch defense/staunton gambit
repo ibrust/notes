@@ -1,0 +1,169 @@
+===============================================================================================
+===============================================================================================
+// STAUNTON GAMBIT 
+// there are often deeper lines in the book if a particular variation becomes common 
+1. d4 f5 2. e4 fxe4 
+
+    ===============================================================================================
+    // STAUNTON GAMBIT w/ 3. Nc3 - 84%
+    3. Nc3 Nf6 
+
+        4. f3 d5 - transposes w/ 3. f3 d5 4. Nc3 Nf6 
+
+        -------------------------------------------------------------------------------------------
+        -------------------------------------------------------------------------------------------
+        *4. Bg5 g6                     // 85% - main line 
+
+            // the most played lines are the bad ones 
+            ---------------------------------------------------------------------------------------
+            5. Bxf6 exf6 6. Nxe4 d5                     // 52%, -0.18 
+                7. Ng3 Qe7+ 
+                    *8. Qe2 Nc6                         // -0.32
+                    #8. Be2 Qb4+                    // -2.67
+                    #8. Ne2 Qb4+ 
+                7. Nf3 Nc6 
+                *7. Nd2 Bf5 
+
+            ---------------------------------------------------------------------------------------
+            // STAUNTON GAMBIT, LASKER VARIATION
+            5. f3 d5                        // 19.4%, -0.12
+
+                6. Qd2 Bg7 - transposes w/ 5. Qd2 d5 66. f3 Bg7 
+
+                ---------------------------------------
+                6. fxe4 ? 
+
+                ---------------------------------------
+                6. Bxf6 ? 
+
+                
+
+            ---------------------------------------------------------------------------------------
+            5. Bc4 c6                       // 11.3%, +0.00 - evaluation is inconsistent
+
+                *6. d5 Bg7                   // +0.00 - loose position might warrant more precision
+
+                    *7. Nge2 e6 
+                        8. dxe6 d5 
+                        8. d6 Qa5 
+                        8. Nxe4 O-O 
+                            9. dxe6 d5 
+                    7. d6 Qb6 8. Bb3 Qc5    // -0.32
+                    7. f3 Qa5               // -0.52
+                    7. Qd2 cxd5 
+
+                6. Bxf6 bxf6 
+                    7. d5 b5                // -0.27 - be careful not to play f5 if you haven't played Bg7, Qd4 is a problem. loose position might warrant more precision
+
+                6. f3 d5                    // -0.13 - easy move to find, easy continuation 
+
+            ---------------------------------------------------------------------------------------
+            // STAUNTON GAMBIT, ALEKHINE VARIATION
+            5. h4 d5                        // 10.8%, -0.06
+                *6. h5 Bf5
+
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            5. Qd2 d5                       // 2.5%, -0.10
+                6. f3 Bg7 
+
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            5. d5 Bg7                       // 1.3%, -0.05
+
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        4. g4 h6                    // 2.5%, -0.37
+
+            ~~~~~~~~~~~~~~~~~~
+            5. f3 d5 
+
+                6. h3 e6 
+
+                    7. fxe4 Bb4                 // if they take again you will crush them 
+
+                        8. g5 hxg5 9. Bxg5 Bxc3 10. bxc3 dxe4       // -0.46 - the author used a crazy alternative line sacrificing the knight here w/ 8... O-O, but I'd rather keep it simple
+
+                        #8. exd5 Ne4            // -1.12 
+
+                6. g5 hxg5 7. Bxg5 Nc6
+
+                6. Bg2 c5                   // often you respond to flank attacks w/ a strike in the center 
+
+                6. fxe4 Bxg4 
+
+            ~~~~~~~~~~~~~~~~~~
+            5. g5 hxg5 6. Bxg5 d5
+
+                7. f3 Nc6 - transposes w/ 5. f3 d5 6. g5 hxg5 7. Bxg5 Nc6
+
+            ~~~~~~~~~~~~~~~~~~
+            5. h4 d5                // more lines in the book 
+
+            ~~~~~~~~~~~~~~~~~~
+            #5. d5 e6 
+                6. dxe6 d5!         // -0.76 - just bypass the pawn completely 
+        
+
+    ===============================================================================================
+    // STAUNTON GAMBIT w/ 3. f3 - 12%
+
+    3. f3 d5                +0.00 - e6 is another option preferred by the author, but this is the mainline & I think more restricting
+
+        -------------------------------------------------------------------------------------------
+        -------------------------------------------------------------------------------------------
+        4. fxe4 dxe4                // 47%
+
+            ----------------------------------------------
+            *5. Nc3 Nf6              // main line 
+
+                --------------------------
+                *6. Bg5 Bf5          // -0.02, counter pressure his pawn 
+
+                    // all these lines score horrible ecxept Nge2
+
+                    7. Bc4 Nc6          // -0.27 
+                        8. Nge2 e6 
+
+                            9. O-O Be7          // if you can move the knight & threaten Ne3 you force the dark square bishop to trade 
+                                                    // your queen takes back & this accelerates your queenside castling 
+                            9. d5 Na5
+
+                    *7. Nge2 e6         // -0.07 - eval is jumping all over the place 
+                        8. Ng3 Be7 
+
+                    #7. Bxf6 exf6        // -0.45 - it's somewhat common but it sucks. consider developing the queen & long castling 
+
+                    #7. Bb5+ c6          // -0.38 - Bb5+ is a dumb move, really, and the continuation is obvious 
+
+                    ~7. Qe2 Nc6          // -0.22 - rare move. Nc6 instead of Nd7 gives room for the queen to develop, eventually you can long castle 
+
+                        8. Bxf6 exf6 9. O-O-O Qd2          // after Bxf6, Qd2 prepares long castle 
+                
+                --------------------------
+                #6. Bc4 Nc6         // -0.25
+
+                    7. Nge2 Na5     // lightsquare bishop can't escape a trade 
+
+            ----------------------------------------------
+            5. Bc4 Nc6              // -0.20
+
+                6. Nc3 Nf6 - transposes w/ 5. Nc3 Nf6 6. Bc4 Nc6 
+
+        -------------------------------------------------------------------------------------------
+        -------------------------------------------------------------------------------------------
+        4. Nc3 Nf6                  // 37%, -0.02 
+
+            5. fxe4 dxe4 - transposes w/ 4. fxe4 dxe4 5. Nc3 Nf6
+
+            5. Bg5 Bf5      // -0.02, reinforce pawn 
+
+                6. fxe4 dxe4 - - transposes w/ 4. fxe4 dxe4 5. Nc3 Nf6 6. Bg5 Bf5
+
+        -------------------------------------------------------------------------------------------
+        -------------------------------------------------------------------------------------------
+        4. c4 e6                    // 15%, -0.38 
+
+            5. Nc3 Bb4
+
+                6. a3 Bxc3+ 7. bxc3 Nc6         // holding off on Nf6 keeps the queens diagonal open a bit longer 
+
+            #5. fxe4 Qxh4+ 6. Kd2 Nc6           // -0.99 
+    

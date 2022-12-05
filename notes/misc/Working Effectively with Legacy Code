@@ -1,0 +1,31 @@
+these are just general takeaways from the chapters, not comprehensive notes 
+_________________________ 
+
+there are four kinds of code changes: refactoring, optimization, added features, and bug fixes 
+
+refactoring and optimization hold the functionality invariant 
+bug fixes aim to change only the targetted problem and hold everything else invariant 
+added features may or may not change existing features. 
+    sometimes the new feature is pretty isolated, other times it's tangled up with existing features 
+
+make sure the invariant part is covered by tests before you begin coding 
+
+testing is the critical thing that makes legacy code maintainable - with it you can change the code, without it you can't. 
+
+it's important that your tests can execute in a reasonable amount of time, otherwise people won't run them frequently and they're less useful 
+
+it's also important that your tests allow you to identify the source of an error quickly. 
+    this is achieved by testing small units - single classes or functions
+
+larger tests (where multiple classes / functions are involved) are still important, but remember that you lose specificity at this level too. 
+
+with legacy code you may find you can't separate the thing you want to test from surrounding dependencies 
+    
+often the initial cleanup of legacy code begins by identifying what component you want to change, and breaking dependencies to make it testable 
+    two common ways you can break dependencies are introducing interfaces and reducing the amount of data you're passing into the component 
+    after isolating the component you can add tests for it, then proceed to clean things up / refactor things 
+
+
+
+
+

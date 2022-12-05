@@ -1,0 +1,69 @@
+===============================================================================================
+// PIN VARIATION 
+1. e4 c5 2. Nf3 e6 3. Nc3 Nc6           // ~6% - 3... a6 is also an option. it leads to a favorable variation of the kan / wing attack
+                                        // Nc6 works better with the four knights though, and black is strong in the rossolimo if you know the lines 
+
+    4. d4 cxd4 5. Nxd4 Nf6 - 46%, transposes w/ four knights 
+    4. g3 d5 - transposes back into the closed sicilian
+
+    -------------------------------------------------------------------------------------------
+    -------------------------------------------------------------------------------------------
+    // ROSSOLIMO w/ 3... e6 4. Nc3 
+    4. Bb5 Nd4                          // 26%, +0.07 - white has a high winrate until you drill into the specific variations where black scores well
+                                        // alot of these lines are actually very trecherous for white, you just have to know the lines 
+        ---------------------------------------------------------------------------------------
+        5. O-O a6                   // 43%
+
+            -----------------------------------------
+            // each 7th move is different here but all look interesting
+            6. Bd3 Nc6                  // +0.05 
+
+                7. Re1 g5               // -0.07 - the trapped pawns make g5 work. look deeper into this continuation if you have time. 
+
+                7. b3 g6 
+
+                7. e5 d6 
+
+                7. a4 d5 
+
+            -----------------------------------------
+            6. Be2 Ne7
+
+        ---------------------------------------------------------------------------------------
+        // this is a rough line for white, lots of traps and already scores bad 
+        #5. Nxd4 cxd4               // 31%, -0.25
+
+            6. Ne2 Qg5              // 99%, -0.40 - threatening bishop & g2 
+
+                #7. Nxd4 Qc5            // 46% - you will win a piece hehre 
+
+                    8. c3 e5 9. b4 Qb6 
+
+                *7. Bd3 Qxg2            // 34%
+
+                    *8. Ng3 Qh3         // -0.37 
+
+                    #8. Rg1 Qxh2        // -1.07 
+
+            ~*6. Nb1 Nf6            // 0.8%, -0.29 - computer recommended move but almost never played 
+
+        ---------------------------------------------------------------------------------------
+        5. Bc4 Nf6 
+
+            6. O-O a6 
+
+            #6. e5 d5               // -0.25 - after the exchanges you have a better position apparently
+
+    -------------------------------------------------------------------------------------------
+    -------------------------------------------------------------------------------------------
+    4. Bc4 Nf6                          // 11%, -0.03 - maybe look into the bowdler attack and look for similarities or transpositions 
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+    ~4. Be2 d5
+
+    // after d3 the best followup move is d4 for white, but no one will ever do that 
+    ~4. d3 Nf6                // -0.08 
+        5. Be7 d5 
+        5. e5 Ng4 
+
+    ~#4. a3 d5               // -0.25

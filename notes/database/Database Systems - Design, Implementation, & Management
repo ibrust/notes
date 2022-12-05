@@ -1,0 +1,641 @@
+------------------------------------------------------------------------------------------------
+---------------------------------CHAPTER 1 DATABASE SYSTEMS-------------------------------------
+------------------------------------------------------------------------------------------------
+-large amounts of data that doesn't require high levels of integrity and consistency can potentially be stored in unstructured databases
+-in-memory databases are another kind of database becoming popular: they give faster performance for business intelligence that's time-sensitive
+-cloud computing is also developing as an alternative to company owned server clusters
+-information: data that's been processed to reveal its meaning. meaningful data
+-knowledge: understanding of information in a relevant context; new knowledge can be derived.
+-data management: the proper generation, storage, & retrieval of data
+
+-databases store end-user data and metadata. Metadata is data about data. end-user data is raw data that is of interest to the database user.
+    metadata describe the characteristics and relationships of the data.
+
+-DBSM provides an interface to the database, & various applications / people can interact with the unified interface. DBSM receives all application 
+    requests and translates them into complex operations needed to fulfill them.
+-DBSM allow data sharing between users, & provide security, data entry consistency, and query response.
+
+-single-user database (one user at a time, i.e. desktop database); multiuser database (workgroup database ~ 50 or less people / single department typically; 
+    enterprise database - beyond that / multiple departments)
+-centralized database - the data is located at a single site; distributed database - data is located at different sites
+-discipline specific databases: specialized databases such as GIS databases, financial databases like CRSP, medical databases with confidential info. 
+    Contrast with general-purpose databases
+-most popular way of classifying databases: how they will be used and the time sensitivity of the data.
+-operational database (also called OLTP for online transaction processing; transactional; or production database): specific type designed to support a company's everyday operations
+-analytic database: focus on storing historical data used for strategic / analytic purposes (contrasted with operational databases); supports advanced data analysis
+-usually analytic databases store information in a data warehouse and use an OLAP (online analytic processing) front end. 
+    The OLAP is a set of tools / environment for the data analysis
+-semistructured data: data that has been partially but not fully processed
+-XML databases (related to semi-structured and unstructured data): supports semistructured XML data - i.e. company emails, web pages, memos, etc.
+
+-database design is important for company efficiency; good database design is a process of decomposing data into multiple tables that can be pieced together coherently
+-early digital file systems, as the system grows large, run into problems with DRY violations across multiple files 
+-early digital file systems (pre DBMS) also left a schism between the everyday business people working with the data and the computer specialists managing the file system. 
+    This led to personalized computers, but this leads to even more consistency problems
+-more problems with early digital file systems:
+    data retrieval and manipulation required extensive programming and time (no ad hoc queries), whereas now we have SQL (which is non procedural)
+    complexity of managing such a system as it continues to grow larger (including all the report generating programs written for it)
+    difficult to enforce security and also share data across locations effectively; this in turn incentivizes islands of information forming and data redundancy and anomalies
+    extensive coding is data dependent (a type of structural dependence); many coding dependencies tend to break as file systems are changed
+
+-The DBMS & the application programs / utility software are distinct. The application programs / utility software (like a GUI for the DBMS) generate reports 
+    and help manage the database. Programmers still write programs to do this kind of thing
+-Important functions of a DBMS:
+    1) data dictionary management - a lookup system for the data (built with metadata), it's an abstraction layer for accessing the data 
+    2) data storing - databases handle storing the data (performance tuned) and also any code / programs used on the data.
+    3) data transformation / presentation - automatically changes data into different forms for input, storage, and output
+    4) security - access levels and passwords
+    5) multiuser concurrent access management
+    6) data backup / recovery functions
+    7) input data integrity enforcement
+    8) programming interfaces - SQL and APIs for other languages such as C, Java, Visual Basic; plus administrative programs for DBAs to use
+    9) database communication interfaces - there are different interfaces from which people can connect to the database, and the DBMS can facilitate all of them
+-though DBMSs & databases are superior to file systems, there is overhead in running and maintaining one for a company
+-popular big data databases: cassandra, bigtable; popular in memory databases: solidDB, TimesTen; popular cloud databases: none specified
+
+------------------------------------------------------------------------------------------------
+----------------------------------CHAPTER 2 DATA MODELS-----------------------------------------
+------------------------------------------------------------------------------------------------
+-Data modeling is the first critical step in designing a database. It is like the blueprint to a house. There are many different viewpoints within an organization; 
+    different ways of seeing the data, all which must be accommodated.
+
+-data models consist of 4 building blocks: entities, attributes, relationships, and constraints
+    entities: the entity is the subject matter of the table as a whole (similar to a class). you also have entity instances (a row in the table) & entity sets (multiple rows)
+    attributes: the columns, also called data fields
+    relationships: 1 to many, many to many, 1 to 1; describes association between entities (or entity sets?). A central concept of relational databases
+    constraints: restriction placed on the data, also known as a rule - ensures data integrity
+-sometimes entity and entity set are confused. The entity set is some or all of the entity instances; the entity is the table as a whole (or something like that) 
+-1:M, M:M, 1:1 are also representative of relationships between entities in SQL code
+-note that the relationships are bidirectional. 1:M can be flipped to be M:1
+
+-before creating a model, it is necessary to clearly delineate all the business rules. These are rules that describe how the organization (or application?) must operate, which 
+    can be expressed using the 4 data model building blocks. For example: each employee may order 1 lunch under 5 dollars on break; customers may place up to 30 invoices; etc.
+-you typically get the rules from managers (assuming they know what's going on) and company policy documents (or application requirements?)
+-not all business rules can be part of a data model. "no pilot can fly 10 hours within a 24 hour period" can't be, because this requires processing. 
+    This rule would have to be enforced w/ application code
+-often times the nouns in the business rules are entities while the verbs are relationships (though this is a very object-oriented idealistic way of thinking)
+-in identifying relationships in the business rules, think about the relationship in both directions
+-entities and attributes must be well named; and often attributes incorporate their entities name into them; i.e.: entity CUSTOMER w/ attribute CUSTOMER_CREDIT_LIMIT
+
+-database modeling techniques have evolved over the years as the databases evolved
+-the evolution of database models has been: 
+    file system 
+    hierarchical and network models
+    relational model 
+    entity relationship model 
+    object relational model 
+    XML / Hybrid DBMS 
+    Key-value store / Column Store (NoSQL)
+
+-hierarchical model: developed in 60s, a tree of 1:M relationships between root / leaves
+
+-network model: still hierarchical, but child nodes can have more than one parent node. 
+    concepts of schema, subschema, DML (data manipulation language), DDL (data definition language) were derived from the network model
+-schema: the conceptual organization of the database from the admins viewpoint
+-subschema: part of the schema that's being interfaced with by a given application
+-DML (data manipulation language): used to work with the database, defines how the database can be worked with
+-DDL (data definition language): allows you to create & define the schema
+
+-lack of ad hoc querying and data dependence led to hierarchical & network models being replaced by the relational model
+-relational model: invented in 70s, became popular as computing power grew. 
+-tables are called relations, each row is a tuple, each column is an attribute
+-RDBMS (relational database management system): implements the relational database by performing the same functions as hierarchical & network DBMS's 
+    plus additional functions. Relational models have more overhead
+-the advantage of the relational model is its ability to hide the relational models complexity from the user. 
+    The user sees the database as a collection of tables; all the implementation details are managed by the RDBMS. the user can intuitively manipulate / query information
+-tables are related via common attributes
+-1:1, 1:M, M:M can be used in relational schema, though technically M:M isn't appropriate in a relational model. we'll learn more about this in CH3
+-a relational diagram consists of boxes with lists of attributes within, & connections between the boxes. The connections have 1:1, 1:M, M:M tags
+-note that tables preserve data independence: the table is just a logical relationship, the data can be stored independently of the table
+-relational databases use SQL which lets the user interface with the tables without handling data directly, preserving data independence. 
+    RDBMS's manage the implementation details
+-The RDBMS has an SQL engine built into it
+-SQL is a declarative language: an application (can be code or GUI) that uses SQL has logic involving the database schema, 
+    while the RDBMS implements the details behind the scenes
+-ERM (entity relationship model): data modeling method that was combined with relational modeling for use in designing relational databases. 
+    it produces ERD's (entity relationship diagrams)
+-the entity, attribute, relationship, constraint language used earlier relates to ERM & ERD's. ERD's are modeling entities
+-relationships (line connections) use 1:M, 1:1, M:M  (though again, M:M is possible but not good practice, refer to CH3)
+-there are 3 ways of drawing ERD's: crow's foot notation, chen notation, & class diagrams (part of UML). 
+    Chen notation is the squares / diamonds. note that diamonds are supposed to be relationships
+
+-object-oriented data model (OODM): data & their relationships are bundled together in objects & managed with an object oriented database management system (OODBMS)
+-OODM differs from RDM in that an objects attributes are given internal relationships to one another, & the objects can be related differently - combined in larger objects, etc. 
+    this gives the attributes context, so OODM is a semantic data model.
+    the objects can also have methods associated with them 
+-an object is analogous to an entity; it's like an entity instance but has unique semantics
+-a class is analogous to an entity or entity set; but the class has private member functions
+-the OODM model supports inheritance
+-UML class diagrams are used to represent the OODM
+-The OODM allows for a larger representation of complex objects, and like OO programming it apparently scales well
+
+-ERDM (extended relational database model) evolved out of RDM as a response to OODM. It added a variety of OO concepts but maintained the simplicity of the relational model
+-O/R DBMS (object relational database management system) is the evolved RDBMS used for ERDM. O/R DBMS is the most popular type of DBMS at the present time
+
+-OODBMS's are used in niche places where complex objects are needed, such as GIS, CAD, simulations; otherwise O/R DBMS's are most commonly used because they're simpler 
+
+-as the internet took off, XML (extensible markup language) emerged as a standard for communicating information
+    databases for web apps & files such as web sites, email, word processing documents, etc.. needed to handle & store large amounts of internet relayed information 
+    XML is semi-structured so it was well suited for this. 
+    Thus XML databases emerged, & O/R DBMS's also incorporated support for XML into their systems
+
+-Big Data: a movement to manage large amounts of web-related data & derive business insight from it while simultaneously providing high performance & scalability at low cost
+-browsing patterns, purchasing history, customer preferences, behavior patterns, social media data are a few sources of business intelligence on consumers
+-O/R DBMS's are insufficient for handling big data: the data is often unstructured & difficult to fit in rows & columns, would require too much storage space 
+    & processing power to handle, the models analysis tools are not suited for unstructured data
+-NoSQL databases address these problems
+-there is not a standard model that's yet established for NoSQL databases (2013), there are competing ones: 
+    document databases
+    graph stores
+    column stores
+    key-value stores
+-key-value stores and column stores appear to be the early leaders. These models apparently originated from functional languages like LISP, but focus on storage
+
+-key-value stores model: it's similar to a dictionary. one table has 3 columns, a unique id, a key, and a value. each row now represents a single attribute
+-in contrast to relational models, the key-value model is schema-less: to add a new attribute you do not need to modify the table definition, 
+    you merely add a new row & define the new attribute there. It is a formless way of doing it
+-NoSQL databases are particularly suited for sparse data: large number of attributes with many unfilled data fields
+
+-NOTE: NoSQL databases do not store or enforce relationships among entities. The programmer manages relationships in program code.
+    Also there is no data integrity enforcement, the programmer must handle that too.
+
+-NoSQL databases have their own APIs, & do not use SQL. Because of this, the programmer must handle how to access the data - there is no declarative system handling the data access
+-indexing and search are difficult with NoSQL: the value is unformatted
+
+-column stores: BigTable & Cassandra have extended the key-value model to group multiple key-value sets into column families or column stores
+
+-NoSQL databases are generally designed to work well on distributed systems, which saves money. 
+    They have built in fault tolerance, i.e. if one node dies the database is unaffected
+-To achieve fault tolerance & maximize performance, multiple copies of data are made on various nodes. This leads to a sacrifice in data consistency. 
+    If for some reason one nodes data is updated and the other fails to update, there is no automatic rollback of the update as with relational databases.
+-Some NoSQL implementations provide eventual consistency.
+
+-There are different views that a database can be seen from: end-user viewpoint, global / designers viewpoint, DBMS viewpoint, & physical hardware viewpoint
+-Note that there are typically multiple end-user views, which have some common entities & some different entities
+-these viewpoints can be modeled separately, and often are. For example, professors have a 1:M relationship with classes but students have an M:M relationship with classes.
+-External views - modeling the end-user or external views limits what data different end-users have access to, which promotes security. 
+    It also will promote feedback about the models accuracy.
+
+-different views are composed into different models: 
+    global view -> conceptual model 
+    DBSM view -> internal model 
+    physical view -> physical model 
+
+-the conceptual model of the database incorporates all views (external and internal). It contains all entities, relationships, constraints, & processes. 
+    The conceptual model defines the conceptual schema (conceptual because it's abstract & high level) 
+-ERM / ERD's are often used for drawing the conceptual model 
+-the conceptual model is a logical model - it is kept both software & hardware independent
+-the internal model is drawn once a specific DBSM is selected. The internal model details how to implement in concrete form the conceptual schema. 
+    This detailing produces an internal schema. The internal schema is software dependent, but hardware independent.
+-the physical model is concerned with where the data will be stored, how it will be formatted, and how the DBSM / operating system will interface with the storage mediums. 
+    It is both hardware and software dependent.
+-ultimately a change in the physical model shouldnt effect the internal model; and a change in the internal model shouldnt effect the conceptual model 
+-early data models didn't enforce divide up the model layers like this, but the relational model does
+-with the relational model it is not strictly necessary to work at the physical level, but fine-tuning can still be done at that level 
+
+------------------------------------------------------------------------------------------------
+-----------------------CHAPTER 3 THE RELATIONAL DATABASE MODEL ---------------------------------
+------------------------------------------------------------------------------------------------
+-the relational model was derived from set theory & predicate logic, similar to prolog. SQL is a declarative language.
+    With set theory & predicate logic you can test whether a fact is true or false, and perform operations on sets.
+
+-the 3 most noteworthy components of an RDBMS: 
+    1) a logical structure (like tables / relations)
+    2) a system for maintaining data integrity
+    3) and a set of operations to manipulate data.
+
+-the RDBMS, which sits between the user and the database, allows the user to deal with the database on a logical level & in a declarative manner. 
+    The physical details are handled internally. This is the main advantage of relational databases. We see the data in terms of tables rather than files. 
+    This separation means we can work with relationships between tables while preserving structural & data independence.
+
+-a table is a persistent relationship between data. 
+-a table (or entity) contains a group of related entity instances, i.e. an entity set
+
+-the columns of a table have data types associated with them. each column has a range of values - that's the attributes domain
+-remember that a table is a logical, not a physical, representation of data
+-the order of the rows & columns is not important
+
+-every table has a primary key: an attribute or combination of attributes that uniquely identifies each row.
+-a key can be one or more attributes. keys identify and are used to determine other data attributes
+-functional dependence: the relationship when key field(s) determine data value field(s). notated as: key_field -> data_field. 
+    the key is also called the "determinant" and the data value is called the "dependent".
+-composite key: a key that is made up of multiple attributes (called key attributes)
+-superkey: a key that can uniquely identify any row in the table. note: this key:value relationship is 1:1, not 1:M
+-candidate key: a minimal superkey; without superfluous key attributes as part of it. a good candidate for the tables primary key. 
+    the key can include multiple attributes, but they must be necessary.
+-entity integrity: when each entity can be uniquely identified by a valid primary key there is entity integrity.
+
+-primary keys cannot be null or repeat themselves
+-null values are generally disliked in tables and can be an indication of bad table design
+-foreign key: the primary key in one table being used within another table
+-foreign key fields must always be either null or a valid value corresponding with their primary table. 
+    this maintains "referential integrity". this enforcement rule limits deleting entries in a table whose primary key is a foreign key in another table
+-secondary key: a key that is used for data retrieval for convenience, i.e. name and phone number, but may not be unique
+
+-flags: these are sometimes used in place of nulls. For example, -1 as a missing foreign key and then a dummy row of 0s for data at the -1 primary key entry
+-UNIQUE and NOT NULL are constraints that can be placed on columns in relational databases
+-There are 8 fundamental relational algebra operators used by relational databases: 
+    SELECT          - returns all rows that satisfy a condition
+    PROJECT         - returns all values for specific columns (like selecting a column)
+    JOIN            - combines information from 2 or more tables. there are many different kinds of joins 
+    INTERSECT       - returns only rows that appear in both tables
+    UNION           - combines all rows from 2 tables
+    DIFFERENCE      - returns all rows in one table that aren't in another.
+    PRODUCT         - yields all possible pairs of rows from 2 tables (read for more detail)
+    DIVIDE          - an obscure operation with a 2 column dividend & 1 column divisor table. Entries in the divisor are searched for 
+                        in the dividend, and the common elements are output (read for more detail)
+-the above is more of a theoretical algebraic definition of SQL. few DBMSs have SQL support for all of these relational operators, 
+    but they must at least support SELECT, PROJECT, & JOIN
+-For UNION, INTERSECT, & DIFFERENCE, tables must have the same or compatible attributes for the operation to be allowed
+
+-natural join: links tables by selecting only the rows with common values in their common attributes.
+-3 steps to a natural join:
+  1) get PRODUCT of the 2 tables
+  2) SELECT the rows with common attributes. the shared columns are called "join columns"
+  3) PROJECT is used to eliminate the duplicate columns that came from joining both tables
+-there are many other kinds of joins: equijoin, theta join, inner join, outer join, left outer join, right outer join. read for more details (pg 78)
+
+-data dictionary: provides metadata for all tables in the database (all attribute names, relationship types, data types, constraints, etc.). so this allows for universal lookup
+-system catalogue: contains everything from the data dictionary plus internal metadata that the DBMS needs, like indexing information
+-often only the system catalogue is provided as a table that can be queried, and data dictionary information must be derived from it.
+
+-before creating a field, query the system catalogue to see if something like it already exists. 
+    Avoid duplicating column names across tables, and avoid repeating columns with different names.
+
+-1:M relationships are the ideal in relational database design, and you should strive to maximize them. 
+    Typically this means primary keys in one table as foreign keys in another (1:M)
+-1:1 relationships should be rare and used only if necessary. 1:1 means the two fields are intentionally being placed in different tables. 
+    But it can often mean they should have been placed in the same table. 
+    under certain rare conditions 1:1 relationships are essential, however. CH5 will discuss how 1:1 can be used to avoid propagating nulls via a generalization hierarchy
+-There are also optional 1:1 relationships - i.e. 1 of the fields can be null. This will be discussed in CH4 
+-M:M is not directly supported in relational databases, but can be implemented indirectly.
+-you don't implement M:M using inverse 1:M relationships from 2 different tables. This creates many duplicate entries in each table and leads to inefficiencies in the DBMS.
+-instead you create a composite entity (also called a bridge, linking, composite, or associative entity or table. I think I'd rather call it a bridge table).
+    the bridge table includes foreign keys for both other tables primary keys, and its primary key is the combination of both foreign keys. 
+    All the data that needs to be mapped between the two tables is just added to the bridge table.
+
+-often database design must reconcile conflicting priorities of elegance, speed, and information requirements.
+-although relational databases eliminate redundancy (aside from keys being used repeatedly), sometimes deliberate controlled redundancy is necessary for speed 
+    or information requirements.
+-controlled redundancy can maintain historically accurate records. For example, databases that keep track of receipts would want a historical record of prices 
+    independent of current prices.
+
+-index: a structure of keys with 1 or more pointers associated with each key. An index helps find 1 or more table rows quickly.
+-temporary and permanent index structures are both used throughout DBMSs.
+-unique indices have only one pointer associated with them, and correspond with primary keys or candidate keys
+-tables can have multiple indices, but each index is associated with only one table.
+-SQL commands create indexes during execution
+-Dr. Codd lists 12 criteria that a relational database should meet (though not all do meet them). The noteworthy ones are: 
+    metadata should be ordinary data stored in a table that can be queried (that's the data dictionary or system catalogue)
+    the DBMS should support a declarative language w/ view definition & programmatic data manipulation (that's SQL)
+    must support set level insert, delete, & update (that's SQL)
+    integrity constraints are defined in the system catalogue, not by applications
+    all data must be accessible through a combination of table name, primary key, & column name 
+    nulls must be treated in a systematic way, independent of data type 
+    the physical layer must be orthogonal to the rest of the system     
+
+------------------------------------------------------------------------------------------------
+-----------------------CHAPTER 4 ENTITY RELATIONSHIP MODELING-----------------------------------
+------------------------------------------------------------------------------------------------
+-Entity Relationship Diagrams (ERDs) are composed of entities, attributes, relationships, and constraints (the entity intances - i.e. rows - are not relevant)
+-entities, entity sets, and objects are terms used somewhat interchangeably
+-ERM is used for the conceptual model (it models the entire database). This means ERDs can be used with any type of database, not merely relational databases.
+
+-The ERMs entities, attributes, relationships, cardinalities, & constraints are all derived from business rules (in an enterprise setting). 
+    a business rule is a precise description of a policy, procedure, or principle within an organization. 
+    more generally you can derive the ERM from use cases 
+-making sure all these business rules or use cases are well defined is the first part of a database designers job.
+    the second part is drawing an ERM that meets the requirements
+
+-the 3 common ERDs notations are: 
+    Chen                - good for conceptual modeling (some concepts can only be shown with Chen)
+    Crow's Foot         - better for modeling of implementations, like the internal or physical model. 
+                            This implies you wouldn't use it with the conceptual model - so why is it an ERD notation? It isn't clear - maybe ERD is used more broadly as well...?
+    UML                 - can be used in conceptual, internal, & physical modeling
+
+-w/ all 3 notations the entity (or table) is represented by a rectangle with the table name capitalized.
+-w/ Chen attributes are ovals outside the rectangle (the entity), connected by a line. It looks a bit weird, see pg 107 for details. I think I prefer UML 
+-w/ Crow's foot the attributes are stacked in rows within the table (like you'd expect). attributes in bold are required attributes, nonbold are optional.
+
+-remember attributes typically have domains (a range of possible values) - but this isn't modeled in the conceptual schema 
+
+-relational schema: a shorthand notation for table structure: table_name(key_atttribute_1, attribute_2, ... attribute_n)
+-ERD models and relational schema both underline primary keys (and multiple attributes in composite keys)
+
+-composite attributes: attributes that can be further subdivided, like address into street & zip.
+-for best querying avoid composite attributes
+
+-multi-valued attribute: an attribute that can hold multiple values - i.e. a person can have multiple degrees
+    it's much better to use 1:M tables instead multi-valued attributes in relational databases.
+    Crow's foot does not support multi-valued attributes, but Chen does (2 lines are connected from the oval to the rectangle)
+
+-ERD's do not expect you to draw relational connections from primary key to foreign key, they just connect the whole tables to one another 
+
+-derived attribute: its value is calculated from other attributes. also called a 'computed attribute'
+    derived attributes are indicated by dashed lines in Chen, & Crow's foot does not support them (that's a legitimate limitation of Crow's foot I think)
+    trade offs with storing vs computing derived attributes: storing saves CPU processing & speeds up access (in theory - if RAM is not overrun), but uses up memory space. 
+    computing provides updated values, while storing requires maintenance to ensure updated values. computing seems generally preferred
+
+-participants: this term refers to the 2 tables in a relationship
+-be sure to carefully, reliably identify the relationship between participants. 
+    form a sentence w/ 2 the entities & a relating word, then state the sentence in both directions 
+    i.e. "a division is managed by an employee; an employee can manage only one division" - 1:1
+    remember that this model defining process provides an opportunity to carefully check & define the business requirements as well 
+
+-in entity relationships, 'cardinality' refers to the min & max number of entity instances related with a single entity instance. 
+    for a 1:M relationship with a cardinality max of 4 is written 1:4 
+    for a 1:M relationship with a cardinality minimum of 2 you'd write 2:M 
+    this is why they write two numbers beneath each ERD endpoint
+-alot of EDR drawing software doesn't add cardinality because the DBMS typically does not directly specify this aspect of the database internals
+-knowing the cardinality is important when designing applications that use the database, however. 
+    You must control the cardinality with SQL triggers (CH8) or in application software 
+
+-an entity is existence-dependent if it can only exist when another associated entity exists. this means that it has a non-nullable foreign key 
+-likewise, if an entity can exist apart from any related entity it is existence-independent. This is also called a 'strong entity' or a 'regular entity' 
+
+-in a 1:M relationship, sometimes the 1 entity is called the parent (it contains the primary key) & the M entity is called the child (it contains the foreign key) 
+-an entity relationship is weak or non-identifying if the childs primary key does not contain its foreign key as a component (i.e. its parents primary key) 
+    in crow's foot this is drawn as a dotted line between the entities
+-likewise, an entity relationship is strong or identifying if the childs primary key contains its foreign key as a component 
+    in crow's foot this is drawn as a solid line 
+-whether to make a relationship strong or weak is something the database designer must decide. 
+
+-regardless of the relationship strength the DBMS must always load the data of the parent before loading the data of the child to avoid referential integrity errors.
+
+-a weak entity is one that is both existence-dependent and has a primary key that contains its foreign key as a component
+    so this is a child whose foreign key is non-nullable & is used in the childs primary key  
+
+-optional participation: an object in an entity relationship is allowed to not exist (the reference would be null)
+    optional participation is indicated by a minimum cardinality of 0 
+-mandatory participation: objects in the entity relationship must exist (minimum cardinality of 1) 
+-if you screw up the optional vs. mandatory cardinality of your entities than you'll end up with a bunch of filler rows
+    be carefulof making participation mandatory, it's less flexible. Carefully examine the business rules to determine how this effects the operating of the business
+
+-the burden for establishing the relationship is always placed on the entity that contains the foreign key (because it's loaded last) 
+
+-'relationship degree' - this refers to how many entities participate in the relationship. we've only seen binary relationships (2 participants), 
+    but there are also unary, ternary, & higher order relationships 
+-in practice ternary & higher order relationships should be decomposed into binary relationships whenever possible 
+-unary relationships can still be 1:1, 1:M, and N:M 
+
+-with unary relationships the question of participation in the relationship becomes important. note that participation is different from referential integrity 
+    for example, participation answers: must every employee have a spouse who's an employee? must every employee be a spouse to another employee?  
+    in contrast, referential integrity answers: must every employee spouse be a valid employee? 
+-referential integrity requires the values in the childs foreign key correspond to values in the parents primary key. 
+    in one direction, participation considers whether the foreign key can contain a null. 
+    in the other direction it considers whether every value in the primary key must appear as a value in the foreign key 
+
+-M:N relationships can be used in conceptual modeling, but then you need to use a bridge entity in internal modeling (especially w/ a relational database model) 
+-the bridge entity is composed of the primary keys of each parent (it has 2 parents). those two keys piece together to form the bridges primary key. 
+    also note the parents have a 1:M relationship with the bridge 
+-bridge entities can also add in their own attributes, they don't just have to be pass-throughs
+    the bridge would contain fields for the combination of the 2 entities. for example, a student enrolled in a class... their grade may go in the bridge 
+
+-carefully consider optionality alongside the business rules / use cases. for example, though you may assume you cant be a student if you aren't taking a class, 
+    during the enrollment process you can be a student without having signed up for classes. likewise a class can have 0 students prior to registration. 
+    So the database needs to give students & classes an optional relationship (min cardinality of 0) in both directions 
+-if you add a bridge between two classes their relationships optionality must be transferred to how they relate with the bridge. 
+__________________________ 
+// developing an ER diagram 
+
+-drafting an ER is an iterative process that involves the following: 
+    1) create a detailed narrative of the organizations description of operations (or detailed description of the application) 
+    2) identify the business rules based on the descriptions (or use cases of the application)
+    3) identify the main entities from the business rules / use cases 
+    4) develop the initial ERD (try detailing the relationships between all the relevant pairs of entities then piecing it all together. you get an initial set of relationsihps)
+    5) identify the attributes & primary keys that describe the entities (this helps better understand & refine the relationships)
+    6) revise & review the ERD (be sure to also identify connectivity & cardinality)
+-refine the ERD until the business people or clients agree the ERD is an accurate representation 
+
+in an organization setting: use their existing business forms & reports to help define your entities & attributes - they're a great resource 
+    also interview the organizations leaders & mine for information 
+
+-remember the existence of a 1:1 relationship often (but not always) indicates the misidentification of attributes as entities. 
+    before setting up a 1:1 relationship make sure you have a good reason to do so 
+
+-UML was designed for modeling OO, where object instances are assumed to have unique identifiers, so traditionally primary / foreign keys aren't included in the diagrams
+    but UML is really very flexible and I would include them if it made sense 
+
+-database designers often must compromise between design standards, processing speed, and information requirements 
+    design standards: minimizing data redundancy, avoiding use of nulls as much as possible, & others
+    processing speed: minimizing the number & complexity of relationships reduces access time, but may propagate nulls. you may also be forced to store computed properties 
+    information requirements: if you need up to date information, computed properties may need to be used (it depends on how much processing speed you need / have available) 
+
+-performance / processing requirements, security, shared access, & data integrity should also be considered while designing the ERD 
+-ensure the design can satisfy all needs for querying & reporting 
+
+-there are 3 ways of implementing a unary / recursive 1:1 relationship 
+    1 table: a field references the primary key. this design can duplicate data / data validation problems. for example, if a & b reference one another
+        data must be changed in 2 places. there is also no enforcement of what entries can be referenced. This design also creates excessive nulls 
+    2 tables: extract the recursive entries out into a separate table. this eliminates the nulls, but you still have data duplication / validation problems
+    2 tables + a semi-bridge: see pg 138 for implementation. generally this approach is complicated & still has problems. 
+-any of these solutions probably will require the database triggers or application code for data validation
+
+-the last important thing to do when designing a database is create thorough, well designed documentation of your design activities. 
+    this allows coworkers to understand & maintain the design 
+
+------------------------------------------------------------------------------------------------
+-----------------------------CHAPTER 5 ADVANCED DATA MODELING-----------------------------------
+------------------------------------------------------------------------------------------------
+
+-the extended entity relationship model (EERM) & extended entity relationship diagrams (EERD) developed as a response to increasingly complex data modeling requirements 
+-unlike the ERM, the EERM can model subtypes, supertypes, & entity clusters 
+
+-entity supertypes / subtypes are an OO design principle ported over to ERM modeling. Their use avoids the excess propagation of nulls, 
+    and allows the specification of more nuanced relationships involving subtypes 
+
+-a specialization hierarchy is the term used to describe the entity supertype / subtype inheritance hierarchy. 
+-specialization hierarchies support:
+    attribute & relationship inheritance
+    disjoint / overlapping constraints
+    complete / partial constraints
+    the subtype discriminator - a special supertype attribute  
+
+-specialization hierarchies do not support multiple inheritance. 
+-a different EER structure called the specialization latice does support multiple inheritance, but we dont cover it. it's better suited for OO models, apparently
+
+
+-all entity subtypes inherit their primary key from their supertype 
+-a subtype & supertype have a 1:1 relationship with one another 
+-note that a subtype inherits all its supertypes relationships 
+
+-the subtype discriminator is an attribute that specifies to which subtype an entity instance belongs
+    for example, shape may have a subtype discriminator field called 'type'. for a triangle entry the field would be set to 'triangle'. 
+-usually subtype discriminators are discrete values, but they can also be scalar values depending on business rules / use cases  
+    for example, you may define a midlevel employee as having been w/ the company between 2 and 5 years
+
+-disjoint subtypes: each entity instance can be only 1 of the subtypes 
+-overlapping subtypes: entity instances can be multiple subtypes 
+    to implement overlapping subtypes you need multiple discriminators - one for each subtype 
+
+-the completeness constrain specifies whether a supertype must have an associated subtype 
+    partial completeness: not every supertype instance is a member of a subtype
+    total completeness: every supertype instance must be a member of a subtype 
+
+-there are two methods of developing inheritance hierarchies: 
+    specialization - top down approach. start w/ the parent type & a general set of traits, then derive the children 
+    generalization - bottom up approach. start w/ a variety of different types & look for common attributes to generalize into a supertype 
+
+-as ERDs grow large you often end up with hundreds of entities, and the diagram becomes unreadable. entity clustering addresses this problem 
+-an entity cluster is an entity used to represent multiple entities & relationships in the ERD. 
+    an entity cluster is thought of as virtual or abstract because it is never instantiated, it's just used for modeling 
+
+-with entity clusters you do not display any attributes, you just show relationships 
+
+-see pages 155, 157, & 160 for some example EERDs
+__________________________
+
+-it is important to select a good primary key since it's used for establishing table relationships & for ensuring data integrity 
+-natural key: this is a real world, generally accepted identifier used to distinguish the entity. this kind of primary key is preferred 
+
+-the function of the primary key is to guarantee entity integrity, not to describe the entity.
+    therefor if you had to choose between a number and a combination of description fields (like full name + DOB) you would choose the number 
+-primary keys are for use behind the scenes. for example, when shopping you read the label, but you dont read the serial number. 
+
+-primary keys should generally use the minimum number of attributes possible, but there are 2 exceptions where composite primary keys are preferred 
+    1) as identifiers of bridge entities, where each primary key combination occurs only once in the M:N relationship 
+    2) as identifiers of weak entities, where the weak entity has a strong identifying relationship with the parent entity 
+        this second case typically pops up in one of 2 situations: 
+        a) a real-world object that is existence dependent on another real-wrold object. for example, sponsor > dependent
+        b) a real-world object that is represented in the data model as 2 objects in a strong identifying relationship. 
+            for example, invoice & line - line is part of an invoice, it doesn't exist without invoice. 
+
+-list of desirable primary key characteristics: 
+    1) guarantees unique values 
+    2) nonintelligent - it shouldn't have semantic meaning other than to uniquely identify the instance 
+    3) no change over time - if the attribute has semantic meaning it might be subject to updates. another reason for it to be nonintelligent 
+    4) single attribute (usually) - this simplifies the implementation of foreign keys & speeds up the database / application
+    5) preferably numeric - unique values are easier to manage when they're numeric. the database can use internal counters to increment the value 
+    6) security-compliant - dont use social security numbers as PK, for example. that goes back to not using keys with semantic meaning as well 
+    7) prefer natural primary keys if they are suitable - i.e. serial number. otherwise use a surrogate key. a surrogate key is the DBMS generated numerical key.  
+        usually you set 'unique index' and 'not null' constraints on your surrogate key via the DBMS
+
+__________________________
+// CONCRETE EXAMPLES 
+-In the pure conceptual stage of design foreign keys are not part of an ER diagram. The ERD displays only entities and relationships. 
+    Entity instances are distinguished by identifiers that may become primary keys. 
+-Next the modeler attempts to understand and define the entities and relationships. 
+    In the relational model foreign keys are the mechanism through which the relationships in an ERD are implemented.
+
+-In a 1:M relationship the primary key is the 1, the foreign key is the M 
+-In a 1:1 relationship:
+    if one entity is mandatory & the other is optional:         place the FK in the optional entity
+    if both entities are optional                               place the FK where it causes the fewest nulls
+    if both entities are mandatory                              place the FK where it causes the fewest nulls, or consider revising your model to combine the entities 
+-your data model should reflect the real world if possible. 1:1 relationships are a way of creating separate entities for types that don't belong together 
+
+-time-variant data refers to data whose values change over time AND for which you must keep a history of the data 
+-some time-variant data changes are event-driven, while others occur on a fixed schedule 
+-some time-variant data can be modeled by creating a separate entity for it & forming a 1:M relationship with it 
+-other time-variant data can turn a 1:M relationshpi into an M:N relationship, & you use a bridge for it in this case 
+    here you still retain the original link between the two entities. this easily distinguishes current data from historical data 
+    in another chart the author has a bridge, but also keeps 1:M links between the 2 entities in both directions. he says this is for even easier querying of current data 
+
+-a design trap refers to a relationship that is improperly or incompletely defined & is therefor represented in a way that doesn't reflect the real world.
+    mistakes like this are fairly common in ER modeling 
+-a 'fan trap' is a common design trap. This occurs when you have one entity with two 1:M relationships to different entities, 
+    and the relationship between those two entities is not expressed in the model correctly. 
+    for example, a division can have many teams, and many players. a fan trap would relate division to teams & relate division to players. 
+        the correct implementation would relate division to teams, then relate teams to players. 
+
+-redundant relationships occur when there are multile relationship paths between entities. 
+    although this is useful with time-variant data since the relationship distinguishes what the current data is, in most cases this is bad design
+    redundant relationships require that they be kept consistent across the model, and this is a maintenance burden 
+
+------------------------------------------------------------------------------------------------
+-----------------------CHAPTER 6 NORMALIZATION OF DATABASE TABLES-------------------------------
+------------------------------------------------------------------------------------------------
+
+-If data is not properly divided into tables an RDBMS is essentially no different than a glorified file system database 
+-EDM alone often isn't enough to prevent data anomalies. the second step is table normalization 
+
+-table normalization is a process for evaluating and correcting table structures to minimize data dependencies, thus reducing the likelyhood of data anomalies 
+-table normalization is done in a series of steps called normal forms. the steps are abbreviated 1NF > 2NF > 3NF > 4NF. You only usually go up to 3NF 
+-though normalization is important, dont assume you always want the most normalize table structure. the more normalized the form, 
+    the more relational join operations will be necessary to produce a desired output; and the more processing resources will be needed for queries 
+-thus a successful design must also consider the need for fast performance
+    in some cases you will actually need to denormalize your tables to meet some performance requirements 
+    denormalization takes a higher normalized form & transforms it into a lower form 
+-the price you pay for greater performance through denormalization is more data redundancy 
+
+-the words table and relation are used interchangeably in database terminology. 
+    the table is the implementation view of a logical relation that meets certain conditions (i.e. they're the result of a SQL query). 
+-in normalization terminology, any attribute that is at least part of a key (a key attribute) is called a prime attribute. 
+
+-after the ERD is complete, normalization is used to analyze the relationships among the attributes within each entity & determine if the structure can be improved 
+-normalization is also used to modify existing databases (often database designers are asked to modify flat structures like excel spreadsheets)
+
+-some deficiencies to notice in tables: 
+    1) the primary key contains null values 
+    2) lack of input constraints leading to input errors  
+    3) data redundances, which lead to a number of problems
+
+-the objectives are normalizatoin are: 
+    1) each table represents a single subject 
+    2) no unnecessary data duplication 
+    3) all attributes are dependent on a primary key - so they can be uniquely identified by it 
+    4) there are no insertion, update, or deletion anomalies (probably the most complicated requirement) 
+
+-there are 5 notable normal forms: 
+    1NF-    table format, no repeating groups, & PK identified
+    2NF-    1NF and no partial dependencies 
+    3NF-    2NF and no transitive dependencies
+    BCNF-   every determinant is a candidate key (special case of 3NF)
+    4NF-    3NF and no independent multivalued dependencies 
+
+-your objective is to ensure that all tables are at least 3NF 
+-even higher normal forms do exist (5NF, DKNF), but these are used very rarely as they degrade performance by increasing joins, and without much benefit 
+    only in very specialized cases would you need these forms, for example in a statistical research application
+
+-functional dependence: a term to describe the relationship between a key and its corresponding values 
+    B is functionally dependent on A if each value of A determines one and only one value of B 
+    i.e. all the rows with the an attribute A have the same attribute B
+
+-partial dependency: a functional dependence inwhich the determinant is only part of the key 
+    i.e. (A, B) -> (C, D) and B -> C. here B -> C is a partial dependency
+    these tend to be easy to identify 
+
+-transitive dependency: Z is transitively dependent on X if X -> Y, Y -> Z and X is the primary key
+    these are more difficult to identify, but notice they exist only when a functional dependence exists between nonprime attributes 
+    i.e. Y -> Z is functional dependence between nonprime attributes. look for this as a sign of transitive dependence 
+
+-for illustrations of the process of normalizing a table from unnormalized up to 3NF see pg 187 onward 
+-the following illustrates the process of converting an unnormalized table with 1 candidate key into 3NF
+
+-to put a table in 1NF form: 
+    1) eliminate repeating groups   - a repeating group is a group of multiple entries for a single key occurrence
+                                        eliminate these groups by eliminating all the nulls. make sure each repeating group attribute contains an appropriate data value
+    2) identify the primary key     - after eliminating the repeating groups nulls it should become clear that the key is not uniquely identifying each entry. 
+                                        so now establish a proper primary key - possibly a composite key. refer to the guidelines on selecting primary keys 
+    3) identify all dependencies    - first identify all functional dependencies. then look for any transitive & partial dependencies. i.e. PROJ_NUM -> PROJ_NAME
+                                        during this step it is helpfu to draw a dependency diagram. refer to pg 189 for a closer look. 
+
+-all relational tables satisfy 1NF. the problem with 1NF is there may be partial & transitive dependencies. 2NF & 3NF eliminate them 
+
+-if there's only one candidate key than it must be a composite key for conversion to 2NF to be possible. 
+    otherwise no partial dependencies could exist & the table already is 2NF
+
+-to put a table in 2NF form: 
+    1) make new tables to eliminate partial dependencies    - for each component of the composite key that acts as a determinant in a partial dependency, create a new table 
+                                                                with a copy of that component as the primary key. the determinants must also remain in the original table, 
+                                                                where they serves as a foreign key.  
+    2) reassign corresponding dependent attributes          - any attributes that were partially dependent are placed in the new table of their corresponding determinant. 
+                                                                all other attributes that weren't partially dependent remain in the original table 
+
+-it is sometimes permissible to keep a partial dependency for performance or convenience.
+
+-now we get rid of any transitive dependencies with the 3NF form. transitive dependencies can lead to data anomalies due to duplication
+-to put a table in 3NF form: 
+    1) make new tables to eliminate transitive dependencies     - for every transitive dependency, create & new table with its determinant as the primary key 
+                                                                    again the determinant remains in its original table also to serve as a foreign key 
+    2) reassign corresponding dependent attributes              - once again move any attributes that were transitively dependent into the new table 
+
+-it is imperative that you move to 2NF before 3NF - resolve partial dependencies before transitive dependencies. 
+
+-if a table has multiple candidate keys, the overall process is the same but there are additional considerations 
+    for example, if you have 2 candidate keys - a single attribute primary key & a composite key, the table can have partial dependencies based on the candidate key 
+    due to there being multiple candidate keys those dependencies might be mistakenly perceived as transitive dependencies and not resolved until 3NF
+    previously we said a transitive dependency existed when one nonprime attriute determined another nonprime attribute 
+    remember that a nonprime attribute cannot be part of a candidate key. thus these are not transitive dependencies but partial ones. 
+
+-pg 193, 6.4 

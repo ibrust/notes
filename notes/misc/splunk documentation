@@ -1,0 +1,880 @@
+==========================================
+SEARCH APP TUTORIAL
+==========================================
+
+separate multiple keywords by Boolean operators AND, OR, and NOT. 
+    in search, the AND operator is implied when you type multiple keywords 
+NOT clauses are evaluated before OR clauses. AND clauses have the lowest precedence.
+The asterisk ( * ) character is used as a wildcard for any number of characters, similar to regex 
+
+Some fields: 
+_time - the timestamp of an event
+host - domain name of what appears to be the search-head server 
+
+Field names are case sensitive, but field values are not
+You can use wildcards in field values
+Quotation marks are required when the field values include spaces
+
+Initially the Selected Fields list contains the default fields host, source, and sourcetype. 
+    You can designate other fields to appear in the Selected Fields list. To add fields to the Selected Fields list, 
+    click All Fields at the top of the Fields sidebar.
+Every event might not have all of the selected fields
+Interesting Fields are fields that appear in at least 20% of the events.
+
+Notice that fields based on the event timestamp begin with date_*
+The field that identifies data that contains punctuation is the punct field. 
+The field that specifies the location of the data in your Splunk deployment is the index field.
+
+You can use both != and = for specifying values in searches, i.e.:  
+	status!=200
+
+The pipe character | indicates that you are about to use a command
+The results of the search to the left of the pipe are used as the input to the command to the right of the pipe. 
+You can pass the results of one command into another command in a series, or pipeline, of search commands.
+
+The top command returns the most common values for a field: 
+	<search criteria> | top fieldname 
+
+top is an example of a transforming command
+**Transforming commands organize the search results into a table.
+**Many of the transforming commands return additional fields that contain useful statistical information. 
+    The top command returns two new fields: count and percent
+
+A subsearch is a search that is used to narrow down the set of events that you search on.
+**The result of the subsearch is used as an argument to the primary, outer search. 
+**Subsearches are enclosed in square brackets
+
+example searches: 
+    sourcetype=access_* status=200 action=purchase | top limit=1 clientip | table clientip
+
+        Because we specified only the clientip field with the table command, that is the only field returned. 
+        The count and percent fields that the top command generated are discarded from the output
+
+    sourcetype=access_* status=200 action=purchase [ search sourcetype=access_* status=200 action=purchase 
+                                                   | top limit=1 clientip 
+                                                   | table clientip ] 
+    | stats count AS "Total Purchased", distinct_count(productId) AS "Total Products", values(productId) AS "Product IDs" by clientip 
+    | rename clientip AS "VIP Customer"
+
+        Here the subsearch finds the top purchaser
+        then the primary search finds which products that individual bought 
+        you can rename fields in your search with AS to make the resulting columns more readable 
+
+**By default, subsearches return a maximum of 10,000 results and have a maximum runtime of 60 seconds.
+    in large production scenarios this may not be enough and the request can timeout or data can get cut off 
+    sometimes you must rewrite the subsearch to limit the number of events to avoid this 
+
+**lookup files are used to match a fields returned values with a list of names. this matching is called 'field lookups'
+After the field lookups are configured, you can add any of the fields from the lookup file to your searches
+with lookup files you can customize names of values that appear in dashboards. this is done in a few steps: 
+    1: upload the lookup file 
+    2: share it with applications 
+    3: create a lookup definition 
+    4: share the definition with applications 
+    5: optional - make the lookup definition automatic 
+Follow the documentation if you want to do any of this:
+    https://docs.splunk.com/Documentation/Splunk/8.0.6/SearchTutorial/Usefieldlookups
+In lookup definitions there's a Supported fields column. The Splunk software automatically interprets 
+    the first row in a CSV lookup table file as the field names, or column headings, for the lookup table.
+automatic definitions: Instead of using the lookup command in your search when you want to apply a field lookup to your events, 
+    this sets the lookup to run automatically. 
+
+example searches: 
+    sourcetype=access_* status=200 
+    | stats count AS views count(eval(action="addtocart")) AS addtocart count(eval(action="purchase")) AS purchases by productName 
+    | eval viewsToPurchases=(purchases/views)*100 
+    | eval cartToPurchases=(purchases/addtocart)*100 
+    | table productName views addtocart purchases viewsToPurchases cartToPurchases 
+    | rename productName AS "Product Name", views AS "Views", addtocart as "Adds To Cart", purchases AS "Purchases"
+
+        here eval is used to define two new fields. It's also used within the count() function - I'm not sure what hte difference is 
+
+    sourcetype=access_* 
+    | timechart count(eval(action="purchase")) by productName usenull=f useother=f
+
+        The search also uses the usenull and useother arguments to ensure events with null valuels fro prooductName are not included 
+
+For searches that use the stats and chart commands, you can add sparkline charts to the results table
+    see documentation for more details: https://docs.splunk.com/Documentation/Splunk/8.0.6/SearchTutorial/Tableasareport
+
+You can edit a dashboard using the UI or the Source. choosing UI editing shows the Add Panel and Add Input buttons
+    Add Panel can create a new panel, add a report as a panel, or clone from an existing dashboard.
+    Add Input shows a list of controls to add to the dashboard, including text, a checkbox, and a time range picker
+
+When creating a newdashboard panel be sure to select (Time Range -> Shared Time Picker) (not the default) if you want it to use that
+    note that panels created from reports will not connect to the shared time picker, only panels created from searches 
+
+==========================================
+SEARCH MANUAL
+==========================================
+
+Ask yourself what you aim to accomplish by searching. This may effect what techniques you use in searching.
+    Raw event searches are searches that just retrieve events (often using just the basic search command). 
+        Useful for research / investigation
+    Transforming searches are searches that perform some type of statistical calculation against the results. 
+        Useful for report / dashboard generation, etc.
+    Also bear in mind whether you are running a search for sparse or dense information
+
+**There are six broad categorizations for almost all of the search commands (not always mutually exclusive):
+    distributable streaming
+    centralized streaming
+    transforming
+    generating
+    orchestrating
+    dataset processing
+
+A non-streaming command waits until all events are returned, then it operates on the entire set of events.
+    stats, top, & sort are a few non-streaming commands. 
+    transforming commands are non-streaming commands.
+    dataset processing is also non-streaming
+A streaming command operates on each event as they stream in.
+    eval is a streaming command 
+
+Non-streaming commands force the entire set of events to the search head. This requires a lot of data movement and a loss of parallelism.
+
+**When a command is run it outputs either events or results, based on the type of command. For example, when you run the sort command, 
+    the input is events and the output is events in the sort order you specify. However, transforming commands do not output events. 
+    **Transforming commands output results. For example the stats command outputs a table of calculated results. The events used to calculate 
+    those results are no longer available. After you run a transforming command, you can't run a command that expects events as an input.
+
+_____________________________
+
+distributable streaming commands can run on the indexers, centralized streaming commands cannot 
+If all of the commands before the distributable streaming command can be run on the indexer, the distributable command will be run on the indexer. 
+    Otherwise it must still be run on the search-head 
+
+distributable streaming commands can be applied to subsets of indexed data in a parallel manner. 
+
+common distributable streaming commands: 
+    eval
+    fields
+    makemv
+    rename
+    regex
+    replace
+    strcat
+    typer
+    where
+
+For centralized streaming commands, the order of the events matters. 
+A centralized streaming command applies a transformation to each event returned by a search. 
+    But unlike distributable streaming commands, a centralized streaming command only works on the search head.
+
+common centralized streaming commands: 
+    head 
+    streamstats 
+    dedup (in some modes)
+    cluster (in some modes)
+
+A transforming command orders the search results into a data table. 
+These commands "transform" the specified cell values for each event into numerical values that Splunk software can use for statistics.
+transforming commands are not streaming.
+transforming commands are required to transform search result data into the data structures that are required for visualizations 
+
+common tranforming commands:
+    chart
+    timechart
+    stats
+    top
+    rare
+    addtotals (when used to calculate column totals, not rows)
+
+A generating command fetches information from the indexes, without any transformations. 
+Generating commands are either event-generating (distributable or centralized) or report-generating. 
+    Most report-generating commands are also centralized.
+Depending on which type the command is, the results are returned in a list or a table.
+Generating commands do not expect or require an input. 
+Generating commands are usually invoked at the beginning of the search and with a leading pipe.
+    That is, there cannot be a search piped into a generating command.
+        The exception to this is the search command, because it is implicit at the start of a search
+
+common generating commands: 
+    dbinspect
+    datamodel
+    inputcsv
+    metadata
+    pivot
+    search
+    tstats
+
+An orchestrating command is a command that controls some aspect of how the search is processed. 
+    It does not directly affect the final result set of the search. 
+For example, you might apply an orchestrating command to a search to enable or disable a search optimization
+
+common orchestrating commands: 
+    redistribute
+    noop
+    localop
+
+data processing commands require the entire dataset before they can run (there are a couple of these commands)
+
+common data processing commands: 
+    sort
+    **eventstats
+    cluster (some modes) 
+    dedup (some modes)
+    fillnull
+
+_____________________________
+
+sourcetype usually tells you the events data format 
+remember that time is the most important search parameter that you specify
+
+A search consists of a series of commands that are delimited by pipe ( | ) characters 
+at the beginning of the whole pipeline there are search terms specifying what events to retrieve from the indexers 
+Some commands have functions and arguments associated with them
+Some commands also enable you to use clauses to specify how you want to group your search results.
+
+put quotes around strings that include white spaces, commas, pipes, quotes, or brackets
+    also if you need to search for an SPL keyword (like AND) put it in quotes
+backslash (\) escapes quotes, pipes, and itself
+If Splunk software does not recognize a backslash sequence, it will not alter it.
+    For example \s in a search string will be available as \s to the command, because \s is not a known escape sequence.
+
+events are a collection of fields 
+fields mostly come from sources, but can also be generated by splunk indexing
+    i.e. _time, source (the filename)
+
+fields can also be "", null, or contain multiple values 
+
+number values are represented as strings; some of the commands convert them to integers
+
+incorrect syntax in searches will not highlight the command, and incorrect datatypes as arguments will be red 
+
+square brackets signify a subsearch 
+
+Between the job progress controls and search mode selector are three buttons which enable you to Share, Export, and Print the results of a search
+(Job -> Send job to the background ) apparently you can do this
+
+**An alert runs a report in the background (either on a schedule or in real time). 
+    When the search returns results that meet a condition you have set in the alert definition, the alert is triggered.
+    more info: http://docs.splunk.com/Documentation/Splunk/8.0.6/Alert/Aboutalerts
+
+There are 3 search modes - Fast, Smart, & Verbose
+    Fast:       only returns fields in the search or default fields
+                you'll only see event lists and event timelines for searches that do not include transforming commands
+
+    Verbose:    returns all the event data it possibly can 
+                returns an event list view of results and generates the search timeline.
+
+    Smart:      Behaves like verbose when the search doesn't include a transforming command. 
+                Behaves like fast when the field does include a transforming command
+
+
+the search keyword can be omited from the start of a search because it is implied there
+
+-----------OPERATORS-------------
+
+when you use * you are searching alot of information (all events up to a max limit), so be very careful 
+the more specific your search, the more efficient it is. searching for a specific word or phrase is more efficient than using a wildcard
+if you use a wildcard at the end of a field it is also more efficient than using it at the beginning 
+when using a wildcard, specify a field-value pair wherever possible to avoid searching the whole _raw field (the whole string of data). 
+    for example: status=fail* 
+wildcards in the mdidle of a string of words where a _ or - are used as separators will cause the search to fail due to how Splunk parses words 
+just avoid using wildcards to match punctuation altogether because this is error prone and very inefficient 
+
+the LIKE function can be used with _ to match a single character as a wildcard 
+
+the splunk documentation contradicts itself and claims now that boolean operators must always be capitalized (it said otherwise earlier)
+
+= and != can be used on any field 
+< > <= >= can also be used on numerical fields 
+
+**when you search with NOT events that don't even contain the field are also returned. 
+    When you search with !=, events that contain a different value are returned.
+try to avoid the use of != and NOT regardless because they're inefficient 
+
+for search purposes, splunk segments fields using major & minor breaking symbols. 
+    it appears that major breakers divide the fields at index time & minor at search time, though it doesn't say explicitly 
+When you search for a term that contains minor segmenters, the term is treated by default as a phrase
+    so searching for 127.0.0.1 would really look for 127 AND 0 AND 1 
+
+to search for a specific term or phrase use CASE() or TERM(). these have better performance than regular searching
+    CASE() is used for case-sensitive values 
+    TERM() is used to search for a single term that is bound by major or minor breakers, to bypass segmenting it by minor breakers. 
+        it's used as an optimization to find specific search terms
+        for example, if you searched TERM(127.0.0.1) this would search specifically for that IP 
+
+the rex and regex commands allow you to search for regular expressions 
+    enclose regex's that use splunk special characters or keywords in quotation marks
+
+------------OPTIMIZATION-------------
+
+To optimize searches abide by these principles: 
+    Retrieve only the required data
+    Move as little data as possible
+    Parallelize as much work as possible
+    Set appropriate time windows
+And bear in mind the following techniques: 
+    Filter as much as possible in the initial search
+    Perform joins and lookups on only the required data
+    Perform evaluations on the minimum number of events possible
+    Move commands that bring data to the search head as late as possible in your search criteria
+
+example: 
+    unoptimized: 
+        sourcetype=my_source
+        | lookup my_lookup_file D OUTPUTNEW L 
+        | eval E=L/T 
+        | search A=25 L>100 E>50
+    optimiized: 
+        sourcetype=my_source A=25                       <- A=25 moved earlier in the search 
+        | lookup my_lookup_file D OUTPUTNEW L
+        | search L>100
+        | eval E=L/T 
+        | search  E>50
+
+to limit the amount of data fetched: 
+    set a narrow time window
+    be as specific as possible
+    retrieve the smallest number of events possible 
+
+learn which indexes contain your data, the sources of your data, and the source types... so that you can avoid this sort of thing: 
+    source=*
+
+sometimes you need only a sample set of the events. 
+    The head command retrieves only the most recent N events for a historical search: 
+        sourcetype=access_* | head 1000 ...
+Event sampling uses a ratio that you specify to select events. 
+    For example, if the sample ratio value is 100, each event has a 1 in 100 chance of being included in the result set
+    You must specify a sampling ratio before you run your search. In Splunk Web, click the Sampling drop-down and choose a sampling ratio
+    see this document for more details: 
+        http://docs.splunk.com/Documentation/Splunk/8.0.6/Search/Retrieveasamplesetofevents
+    Typically, searches that use the transaction, stats, or streamstats commands are not good candidates for sampling.
+        other problematic commands might include distinct_count, earliest, latest, max, min
+    dashboard panels powered by searches (but nor reports) will show in the XML a sampleRatio tag if sampling is active: 
+        <search>
+            <query>buttercupgames</query>
+            <earliest>@d</earliest>
+            <latest>now</latest>
+            <sampleRatio>500</sampleRatio>
+
+move field-value pairs into the initial search: 
+    unoptimized: 
+        ERROR | stats sum(bytes) as sum by clientip | search sum >1048576 AND clientip="10.0.0.0/8"
+    optimized: 
+        ERROR clientip="10.0.0.0/8" | stats sum(bytes) by clientip | search sum > 1048576
+use the where command (fitltering): 
+    unoptimized:
+        field1=value | eval KB=bytes/1024 | where field2=field3
+    optimized:
+        field1=value | where field2=field3 | eval KB=bytes/1024
+remove unnecessary fields from the search 
+use non-streaming commands as late as possible 
+    i.e. sort, stats, & others 
+use post-process searches in dashboards 
+    https://docs.splunk.com/Documentation/Splunk/8.0.6/Viz/Savedsearches
+    Post-process searches perform additional processing on results from a base search.
+use Fast Mode (is this possible in dashboards?)
+    Use summary indexing, report acceleration, and data model acceleration features. links are on this page: 
+        https://docs.splunk.com/Documentation/Splunk/8.0.6/Search/Quicktipsforoptimization
+
+sparse searches that run against large volumes of data take longer than dense searches against the same data set.
+report-generating (i.e. transforming) searches occur on the search head. because this happens in-memory, smaller datasets significantly speed this up
+
+In most cases, a search is slow because of the complexity of what the query is retrieving from the index. look out for the following: 
+    the search contains extremely large OR lists
+    complex subsearches (which break down into OR lists)
+statistical calculation with a BY clause on fields that have a high cardinality & lots of uncommon or unique values requires a lot of memory
+    One possible remedy is to decrease the value for the chunk_size setting used with the tstats command
+    also try to reduce the number of values the BY clause must process (you could try sampling, top, etc.)
+
+filter your data using default & indexed fields as early as possible
+    for example: sourcetype=access_* (status=4* OR status=5*) | stats count by status
+to specify an indexed field replace the = sign with ::. you can only use this syntax during the indexing phase:
+    indexed_field_1::value_1
+
+Field extraction can take place either before event indexing (in the case of default fields and indexed fields) 
+    or after event indexing (in the case of search fields).
+
+summary-indexing can pre calculate alot of the data you use in reports 
+**there's also a way to schedule saved searches it appears. read more here: 
+    https://docs.splunk.com/Documentation/Splunk/8.0.6/Knowledge/Usesummaryindexing
+
+the Job Inspector can be used to analyze which phases of the search take the most time 
+**Splunk also reorders your query to optimize it. You can view the reordered query in the Job Inspector. read: 
+    https://docs.splunk.com/Documentation/Splunk/8.0.6/Search/Built-inoptimization#Analyze_search_optimizations
+
+there's a datamodels.conf file where you can specify a list of tags to be targetted by datamodel acceleration (an optimization). read more: 
+    https://docs.splunk.com/Documentation/Splunk/8.0.6/Knowledge/Designdatamodelobjects#Set_a_tag_whitelist_for_better_data_model_search_performance
+
+**there are two types of field predicate filtering commands, search and where 
+the optimizer often reearranges predicates. it can merge them, delete them, move them forward, split them into smaller pieces (to move them forward),
+    flip them, or simplify them.
+
+    examples: 
+        // two search get merged 
+        before:     index=main | search a > 10 AND fieldA = "New"
+        after:      index=main AND a > 10 AND fieldA = "New"
+
+        // search & where can be merged sometimees 
+        before:     index=main | where fieldA = "New"
+        after:      index=main AND fieldA = "New"
+
+---------------RETRIEVE EVENTS-----------------
+
+The phrase event data refers to your data after it has been added to the Splunk index.
+Events contain pairs of information, or fields.
+When you add data and it gets indexed, the Splunk software automatically extracts default fields, custom indexed fields, 
+    and fields indexed from structured data.
+the default fields host, source, and source type describe where the event originated.
+other default fields include datetime fields
+**?you must setup a custom indexed field. read: 
+    http://docs.splunk.com/Documentation/Splunk/8.0.6/Data/Configureindex-timefieldextraction
+splunk automatically creates optimized indexing information for structured data (CSV, JSON, other)
+    this is the type of data you must use :: to specify instead of = 
+
+You can use parentheses to partition different searches to certain indexes. This can reduce the amount of searching individual indexes must do: 
+    (index=main (error OR warn)) OR (index=_internal error) OR (index=mail (error OR failed))
+
+the names of the different indexers are stored in the splunk_server field 
+    with this field you can restrict routine searches to specific index servers - another optimization (but server would need to be set up for it)
+
+the field eventtype categorizes events into groups (examine the data & see what groups are establbished)
+when you search your data you are essentially filtering out all unwanted events. Your search results share common characteristics
+    So you can save your search as a new event type, giving the events a collective name. read more:
+        https://docs.splunk.com/Documentation/Splunk/8.0.6/Search/Classifysimilarevents
+you might have different eventtypes with commonly related fields. To help you search more efficiently you can assign the values tags.
+    add these tags while you save a search as an event type, from the event type manager located in Manager > Event types
+    after you add tags to multiple event types you search for them using the tags:
+        search for a tag on a specific field such as eventtype:
+            tag::<field>=<tagname> i.e. tag::eventtype="paymentTxError"
+        search for a tag associated with any field (apparently you can tag fields other than eventtype, but the documentation hasnt mentioned this):
+            tag=<tagname>
+
+you can also click on the pattern tab after a search to view common patterns in your events. 
+    patterns are identified by the presence of included or absence of excluded keywords in your search
+splunk analyzes & finds the patterns for you (this operation can take a long time to complete). 
+    move the Smaller / Larger slider to change how narrow or broad the event patterns should be.
+some of these patterns you can save as event types 
+you can also create alerts that trigger based on the pattern
+
+in a search, where all the events are listed, you can use the UI to add & remove fields in the list from your search 
+
+To do a real-time search in Splunk Web select a real-time range with the time picker 
+
+-----------TIMESTAMPS--------------
+
+splunk adds timestamps to events during indexing 
+
+**use the following to indicate the length of time:
+    s, m, h, d, w, mon, quarter, y 
+**in a search you can specify absolute and relative time ranges using time modifiers:
+    earliest=-60m                                               <- relative timem modifier 
+    earliest=now-2h                                             <- if you specify only earliest, latest is set to now by default
+    latest=12 A.M. November 1, 2018                             <- absolute time modifier
+    earliest=10/19/2018:00:00:00 latest=10/27/2018:00:00:00
+    latest=+1d@d                                                <- @ is the 'snap to' operator. this specifies all of tomorrow as the time 
+    earliest=@d-2h                                              <- snap to beginning of today and subtract 2 hours - so 10PM yesterday 
+    earliest=1                                                  <- earliest=1 is the earliest time you can specify 
+    earliest=0                                                  <- earliest=0 means earliest isn't usd in the search
+
+**?Time ranges for real-time search follow the same syntax as for historical searches, except that you precede the relative time specifier with rt:
+    rt<time_modifier>
+
+querying _time for events that happened around the same time as an error can help correlate results and find the root cause.
+
+**If you use the default Last 24 hours time range picker setting, the search processes the events using UNIX time. 
+    The same set of events are returned for a user in San Francisco and a user in Tokyo.
+**If you use a time range that refers to a time associated with today such as Since 00:00:00, 
+    the search processes events based on midnight of your time zone, not UNIX time
+**If you use a snap-to time, such as @d or @mon, the search processes events based on the beginning of the day or month of your timezone, not UNIX time
+**If you search from 12:00 to 14:00 PDT (Pacific Daylight Time) that is the same as searching from 19:00 to 21:00 GMT  (7 hours difference)
+    When daylight saving time is over, Pacific Standard Time (PST) is used (8 hour difference)
+
+------------SUBSEARCHES---------------
+
+**a subsearch is surrounded by brackets []
+**the first command in a subsearch is always a generating command (i.e. search, eventcount, inputlookup, tstats, and many others)
+see a list of generating commands here: https://docs.splunk.com/Documentation/Splunk/8.0.6/SearchReference/Commandsbytype
+
+in nested subsearches splunk processes the most deeply nested ones first, working outward to the main search 
+subsearches dont have to be nested, they can also be seqeuntial. in this case the leftmost search is run first 
+
+**the result of a subsearch is treated as a search criteria in the main search 
+**run a subsearch if the command needs to be encapsulated 
+    i.e., top here needs to be encapsulated: 
+    sourcetype=syslog [search sourcetype=syslog earliest=-1h | top limit=1 host | fields + host]
+**also run a subsearch to add its output to the main search using the append command
+    certain commands like append or join expect a subsearch as an argument 
+
+*by default subsearches return a maximum of 10,000 results and have a maximum runtime of 60 seconds
+    though every command can change what the default maxout is when the command invokes a subsearch
+        for example, the join command has a default max of 50,000 
+        the append command can override the default maximum if the maxresultrows argument is specified
+    but the search could timeout or cut off the data if you aren't careful...
+
+example:
+    sourcetype=access_* status=200 action=purchase 
+        [search sourcetype=access_* status=200 action=purchase 
+        | top limit=1 clientip 
+        | table clientip] 
+    | stats count AS "Total Purchased", distinct_count(productId) AS "Total Products", values(productId) AS "Product IDs" by clientip
+    | rename cilentip AS "VIP Customer"
+
+    in the above, because top returns count and percent fields, table is used to keep only the clientip value
+
+the format command is implicitly applied to a subsearch before it's output to the outer search. 
+    format changes the subsearch results into a single linear search string of the form:
+        (field1=val1_1 AND field2=val1_2) OR (field1=val2_1 AND field2=val2_2)
+internal fields (those beginning in _) are not included in the linear search string (there's no need to include them) 
+
+Use the search field name and the format command when you need to append some static data or apply an evaluation on the data in the subsearch.
+    format will then pass the field unaltered to the primary search.
+    there's also a query field name that does something similar to all the fields in the subsearch 
+    read here for more info: https://docs.splunk.com/Documentation/Splunk/8.0.6/Search/Changetheformatofsubsearchresults
+
+
+-------------TABLES AND VISUALIZATIONS---------------
+
+To create chart visualizations your search must transform event data into statistical data tables. 
+    These statistical tables are required for charts and other kinds of data visualizations.
+the main transforming commands are: 
+    chart           - a chart that can display any series of data (can be column, line, area, & pie charts). unlike timechart does not use _time
+    top             - a chart that display the most common values of a field.
+    timechart
+    rare            - a chart that display the least common values of a field.
+    stats           - a report that display summary statistics.
+
+transforming commands are always after generating commands, linked by a pipe
+
+chart, timechart, and stats are all designed to work with statistical functions
+the list of statistical functions is: 
+    count, distinct count
+    mean, median, mode
+    min, max, range, percentiles
+    standard deviation, variance
+    sum
+    first occurrence, last occurrence
+
+transforming commands generate specific data structures that can be used with specific visualizations.
+
+if you don't specify a limit, top & rare default to showing 10 values 
+
+**To fully utilize the stats command you need to use the by clause at the end
+**stats alone will just return one column, which isn't very useful 
+but this is useful, because it will break down all the values of host and generate an average for each:
+    sourcetype=access_combined | stats avg(kbps) by host
+
+examples: 
+    index=_internal "group=thruput" | timechart avg(instantaneous_eps) by processor
+    sourcetype=access_* | chart avg(clientip) over date_wday
+    sourcetype=access_* | chart sum(bytes) over clientip by host
+    sourcetype=access_* | chart count over ssl_type                         <- a stacked bar chart 
+    sourcetype=firewall | top limit=100 dst_port
+    sourcetype=firewall action=Deny | rare src_port
+    sourcetype=alert_log | top 1 msg by mc_host | sort count                <- sort results alphabetically
+    index=_internal "group=pipeline" | stats sum(cpu_seconds) by processor | sort sum(cpu_seconds) desc
+
+**The associate command identifies events that are associated with each other through key/value pairs.
+    i.e. if fieldA="blue" and fieldB="blue" then the two events are associated 
+you can fine tune the associate command with its arguments supcnt, supfreq, and improv
+    for example, this searches for events that share at least 3 associations:
+        sourcetype=access* | associate supcnt=3
+
+**The correlate command calculates the statistical correlation between fields.
+    It uses the cocur operation to calculate the percentage of times that two fields exist in the same set of results.
+    **for example, this searches all placeOrder eventtypes and looks for correlations between all the fields: 
+        eventtype="placeOrder" | correlate type=cocur
+
+the diff command compares differences between events
+    for example, this compares the ip address of the 44th and 45th events in the search: 
+        eventtype=goodaccess | diff pos1=44 pos2=45 attribute=ip
+
+**while chart and timechart return data suitable for graphing, stats only outputs data in table form 
+    the xyseries command is used to redefine data for graphing, and is often used in combination with stats 
+**chart and timechart both split their data using the by clause at the end. in most cases you can achieve the same thing using:
+        | stats n by x,y | xyseries x y n
+
+**splunk dosn't provide a direct way to add multiple data series to your charts (or timecharts). but you can achieve this with stats and xyseries.
+    example: 
+        index=application_servers 
+        | bin _time 
+        | stats sum(handledRequests) as hRs, avg(sessions) as ssns by _time,source 
+        | eval s1="handledReqs sessions" 
+            | makemv s1 
+            | mvexpand s1 
+        | eval yval=case(s1=="handledReqs",hRs,s1=="sessions",ssns) 
+        | eval series=source+":"+s1 
+        | xyseries _time,series,yval
+
+        1) before the stats command, separate the events by _time 
+        2) use stats to calculate statistics for each source value 
+        3) use eval to add a single-valued field s1 to each result of the stats command 
+        4) makemv command converts s1 into a multivalued field, where the first value is "handledRequests" and the second value is "sessions".
+        5) mvexpand creates separate series for each value of s1
+        6) use eval to define a new field, yval, and assign values to it based on the case that it matches
+        7) use eval to define a new field, series, which concatenates the value of the host and s1 fields
+        8) the xyseries command is used to define a chart with _time on the x-axis, yval on the y-axis, and data defined by series
+
+there are times where timechart isn't flexible enough and you should just use chart 
+    example: 
+        earliest=-10d latest=-8d | chart sum(P) by date_hour date_wday
+
+        the above produces a chart with 24 slots, one for each hour
+        each slot contains two columns. with this you can compare hourly sums between the two days
+
+-------------EVALUATE AND MANIPULATE FIELDS---------------
+
+**eval creates new fields using existing fields and an arbitrary expression
+    the expression can be a combination of literals, fields, operators, and functions 
+in the expression ensure that field data types are valid for the type of operation
+
+**eval is often used in combination with stats 
+**because the eval expression returns a new field you must use the AS keyword to specify its name 
+**?there's an optional by clause at the end (I think in combination with stats)
+
+    | stats count(eval(status=404)) AS status_count
+
+    | stats count(eval(status=404)) AS status_count BY source
+
+    | eval sum_of_areas = pi() * pow(radius_a, 2) + pi() * pow(radius_b, 2)
+
+    | eval location=city.", ".state                     <- concatenation 
+
+
+you should be able to find an email with this search. replace sourcetype=cisco:esa and mailfrom with the email field name 
+
+    sourcetype="cisco:esa" mailfrom=*
+    | eval accountname=split(mailfrom,"@"), from_domain=mvindex(accountname,-1), location=if(match(from_domain, "[^\n\r\s]+\.(com|net|org)"), 
+        "local", "abroad") 
+    | stats count BY location
+
+    here mvindex defines a new field, from_domain, as the portion of the mail from field after the @ symbol
+    if(match()) are combined to check whether the address is local or from abroad, & creates 2 new fields for these conditions 
+        note that it would give better performance than match() to use event types to classify the fields 
+    if you are using an eval expression often, consider defining a calculated field for it to speed things up: 
+        http://docs.splunk.com/Documentation/Splunk/8.0.6/Knowledge/definecalcfields
+
+**you can match fields against external sources like lookup tables
+    the lookup table could be a static CSV file
+    you can also use the results of a search to regularly populate the CSV file and then match fields against it
+    after you configure a lookup table you invoke it in search with the lookup command
+    http://docs.splunk.com/Documentation/Splunk/8.0.6/Knowledge/Addfieldsfromexternaldatasources
+
+various search commands find fields in different ways
+
+    rex -               find fields using Perl regex's. see http://docs.splunk.com/Documentation/Splunk/8.0.6/Knowledge/Aboutfields
+    extract (or kv) -   find field/value pairs using default patterns (used with .conf files)
+    multikv -           find field/value pairs in multiline, table-formatted events (creates a new event for each table row)
+    spath -             find field/value pairs in structured event data, such as XML and JSON (use on XML and JSON documents)
+    xmlkv and xpath -   find field/value pairs in XML-formatted event data (fields in events are distinct from documents, apparently)
+    kvform -            find field/value pairs using predefined form templates
+
+examples: 
+    | rex field=_raw "From: (?<from>.*) To: (?<to>.*)"
+
+
+**multivalue fields are parsed at search time, so you can process multivalue fields in the search pipeline
+search commands that work with multivalue fields: 
+    makemv -            separate multivalue fields into multiple single value fields
+    mvcombine -         create a multivalue field from similar events
+    mvexpand -          expand the values of a multivalue field into separate events
+    nomv -              convert values of the specified multivalue field into one single value
+eval and where support functions that work with multivalue fields: 
+    mvcount() -         count the number of values in a multivalue field
+    mvfilter() -        filter a multivalue field using an arbitrary Boolean expression
+    mvindex() -         return a subset of values in a multivalue field
+    mvjoin()
+you can also use these statistical eval functions on multivalue fields:
+    max() 
+    min() 
+read about statistical eval functions here https://docs.splunk.com/Documentation/Splunk/8.0.6/SearchReference/StatisticalFunctions:
+
+examples:
+    | eval To_count=mvcount(split(To,"@"))-1 | eval From_count=mvcount(From) | eval Cc_count=mvcount(split(Cc,"@"))-1
+
+    | eval email=mvfilter(match(email, "\.net$") OR match(email, "\.org$"))
+
+    | eval top_three=mvindex(to,0,2)
+
+    | eval to_first=mvindex(to,0)
+
+    | makemv delim="," senders
+
+    | makemv delim="," senders | top senders
+
+    | nomv senders
+
+    | mvexpand foo
+
+-------------CALCULATE STATISTICS---------------
+
+The stats command generates reports that display statistics in a table form 
+use chart and timechart to create visualizations for statistics 
+use geostats to create map visualizations for statistics of events that include GIS fields
+
+stats, chart, timechart, geostats, eventstats, and streamstats are all designed to work with statistical functions 
+list of statistical functions: http://docs.splunk.com/Documentation/Splunk/8.0.6/SearchReference/CommonStatsFunctions 
+
+stats works on all the events in the pipeline and returns a table of only the fields that you specify
+
+    | head 10 
+    | stats sum(bytes) as ASumOfBytes by clientip
+
+    the above returns a table with 2 columns and 10 rows
+
+**eventstats is like stats, but it doesn't change the data stream to output a table - it just aggregates its results with the original event data 
+streamstats works like eventstats in that it aggregates the results and doesn't produce a table, but in addition it uses streaming 
+
+    | head 10 
+    | eventstats sum(bytes) as ASumOfBytes by clientip 
+    | table bytes, ASumOfBytes, clientip                            <- eventstats didn't format the output as a table
+
+
+    | eventstats median(bytes) as medbytes 
+    | eval snap=if(bytes>=medbytes, bytes, "smaller") 
+    | timechart count by snap
+
+
+    | eval warns=errorGroup+"-"+errorNum 
+    | stats count as Date_Warns_Count by date_mday, warns 
+    | stats stdev(Date_Warns_Count), var(Date_Warns_Count) by warns             <- calculates standard deviation and variance 
+
+you can use the calculated fields as filter parameters for a search:
+
+    | eval URILen = len(useragent) 
+    | eventstats avg(URILen) as AvgURILen, stdev(URILen) as StdDevURILen 
+    | where URILen > AvgURILen+(2*StdDevURILen) 
+    | chart count by URILen span=10 cont=true
+
+You can embed eval expressions and functions within any of the stats functions. 
+    This is a shorthand method for creating a search without using the eval command separately from the stats command.
+
+    status=* | stats dc(eval(if(status=404, clientip, NULL()))) AS dc_ip_errors
+
+more examples: 
+    | stats count(eval(method="GET")) AS GET, count(eval(method="POST")) AS POST BY host
+
+
+    | eval accountname=split(mailfrom,"@"), from_domain=mvindex(accountname,-1) 
+    | stats count(eval(match(from_domain, "[^\n\r\s]+\.com"))) AS ".com",
+            count(eval(match(from_domain, "[^\n\r\s]+\.net"))) AS ".net", 
+            count(eval(match(from_domain, "[^\n\r\s]+\.org"))) AS ".org", 
+            count(eval(NOT match(from_domain, "[^\n\r\s]+\.(com|net|org)"))) AS "other"
+
+
+adding sparklines to a chart is fairly straightforward
+read here for more info: https://docs.splunk.com/Documentation/Splunk/8.0.6/Search/Addsparklinestosearchresults
+    
+    | chart sparkline count by sourcetype
+
+When you run a stats search it returns batches of results until the search is complete. 
+    an internal maxresultrows setting sets a limit for the number of results that the search head can gather in a single batch, 
+    with the default being 50,000 rows at a time (this is done to limit memory consumption)
+
+-------------ADVANCED STATISTICS---------------
+
+read about advanced statistics commands here: https://docs.splunk.com/Documentation/Splunk/8.0.6/Search/Commandsforadvancedstatistics
+interesting commands (try incorporating these into our dashboards): 
+    analyzefields -	        analyzes numeric fields and whether they predict another discrete field
+    outlier	-               removes outlying numerical values
+    rare - 	                displays the least common values of a field
+    **trendline -	        computes moving averages of fields
+
+when you chart the data and you notice that the axis is skewed, an outlier can be the culprit. 
+
+some useful stats commands for examining skew: 
+
+    stats stdev(field)
+    stats perc75(field) perc25(field)
+    top 3 field
+
+
+examples of various ways of identifying outliers (these output outliers in descending order): 
+
+    | head 500                                                              <-- uses standard deviation to find outliers
+    | eval _time=(round(strptime(time, "%Y-%m-%d %H:%M:%SZ")))
+    | streamstats window=100 avg("price") AS avg stdev("price") as stdev 
+    | eval lowerBound=(avg-stdev*2) 
+    | eval upperBound=(avg+stdev*2) 
+    | eval isOutlier=if('price' < lowerBound OR 'price' > upperBound, 1, 0) 
+    | fields "_time", "symbol", "sourcetype", "time", "price", "lowerBound", "upperBound", "isOutlier"
+    | sort - isOutlier
+
+
+    | head 500                                                              <-- uses interquarter range to find outliers 
+    | eval _time=(round(strptime(time, "%Y-%m-%d %H:%M:%SZ")))
+    | eventstats median("price") as median p25("price") AS p25 p75("price") as p75 
+    | eval IQR=(p75-p25) 
+    | eval lowerBound=(median-IQR*20) 
+    | eval upperBound=(median+IQR*20) 
+    | eval isOutlier=if('price' < lowerBound OR 'price' > upperBound, 1, 0) 
+    | fields "_time", "symbol", "sourcetype", "time", "price", "lowerBound", "upperBound", "isOutlier"
+    | sort - isOutlier
+
+
+the outlier command can either remove or truncate the outlier. truncate reduces the outlier to the threshold for outliers: 
+
+    | timechart avg(cpu_seconds) by host 
+    | outlier action=transform
+
+
+    | timechart span=1h max(bytes)                  <- use this to remove one value that skews the axis of the whole chart 
+    | fillnull 
+    | outlier
+
+
+    | eval durationMins = (duration/60) 
+    | eventstats avg(durationMins) as Avrg, stdev(durationMins) as StDev            <- remove outliers that exceed 3 standard deviations 
+    | eval threeSigmaLimit = (Avrg + (StDev * 3)) 
+    | where durationMins < threeSigmaLimit
+
+
+it is good to identify spikes in your data so that you can respond with appropriate action
+**a moving trendline is useful for identifying spikes 
+
+    | timechart avg(bytes) as avg_bytes
+    | trendline sma5(avg_bytes) as moving_avg_bytes                 <- add a line or bar series to the chart for last 5 values moving average
+    | eval spike=if(avg_bytes > 2 * moving_avg_bytes, 10000, 0)     <- add another series for spikes when the avg bytes exceeds 2x moving average
+
+sma is simple moving average, there's also wma (weighted moving average) and ema (exponential moving average) 
+
+
+-------------GROUPING AND CORRELATING EVENTS---------------
+
+event correlation is finding relationships between events from different sources 
+you can do event correlations using time, geographic location, transactions, sub-searches, field lookups, and joins
+there are also conditional searches, where you see the results of a search only if the sub-search meets certain thresholds.
+
+in most cases you should prefer stats or transaction over join or append, apparently 
+A transaction is any group of conceptually-related events that spans time
+One common use of a transaction search is to group multiple events into a single meta-event 
+
+
+==========================================
+SEARCH REFERENCE
+==========================================
+
+SPL syntax examples: 
+    bin [<bins-options>...] <field> [AS <newfield>]
+        <field> is required 
+        [<bins-options>...] and [AS <newfield>] are optional 
+        <bins-options>... is variadic - you can specify any number of options 
+
+    replace (<wc-string> WITH <wc-string>)... [IN <field-list>]
+        <wc-string> and <wc-string> must be used together, are required, and can be repeated multiple times
+
+    many commands use keywords with some of the arguments
+        common keywords: AS, BY, WITH, WHERE, and OVER
+            these can also be lowercase
+
+    chart [<chart-options>] [agg=<stats-agg-term>] 
+    ( <stats-agg-term> 
+        | <sparkline-agg-term> 
+        | "("<eval-expression>")" 
+    )... [ BY <row-split> <column-split> ] 
+    | [ OVER <row-split> ] [BY <column-split>] ]
+        
+        if a piece of punctuation is in doubles quotes "" it must be included in the actual search query. these are usually parenthesis 
+
+A <by-clause> displays each unique item in a separate row. Think of the <by-clause> as a grouping.
+The <split-by-clause> displays each unique item in a separate column. Think of the <split-by-clause> as a splitting or dividing.
+Wildcard characters ( * ) are not accepted in BY clauses.
+
+When the syntax contains <field> you specify a field name from your events
+    example: bin [<bins-options>...] <field> [AS <newfield>]
+
+
+
+

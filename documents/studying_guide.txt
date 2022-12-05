@@ -1,0 +1,66 @@
+These compTIA certs look interesting to me: 
+Network+ 
+Security+
+Server+
+Cloud+
+Linux+
+these ones are security are maybe another path: 
+CySA+
+CASP+
+PenTest+
+
+FOR LANGUAGES: 
+While learning PHP: 
+study web technology, microservices, and the backend; 
+and you can throw in some multithreading, gaming, and graphics too apparently
+
+while learning C#: 
+study database, the cloud, and gaming;
+and you can throw some GIS in too 
+
+while learning python:
+study entrepreneurship, the cloud, and networking; 
+and you can throw in some MVC frameworks and security too 
+
+while learning javascript: 
+study full stack development, GIS, web tech, networking; 
+and you can throw in some amazon web services and gaming as well
+
+while learning c: 
+study amazon web services, the cloud, front end, OO design, and operating systems
+
+****while learning c++: 
+study machine learning, cloud, mvc frameworks, full stack development, graphics
+
+while learning SQL: 
+study hacking, cloud, amazon web services, and multithreading 
+
+while studying swift: 
+study multithreading > OS > networking > microservices 
+
+while studying java: 
+study MVC frameworks, networking, backend, NLP, algorithms, design patterns / architecture
+
+while studying kotlin: 
+study algorithms, OS, microservices, GIS (probably google maps I imagine), and security 
+
+***while studying Go:
+study architecture, front end, security, graphics, NLP, and amazon web services 
+
+study by themselves: algorithms, enterpreneurship, GIS, and gaming
+(study them less in other words?) 
+___________________________________________
+FOR TOPICS STUDY THESE LANGUAGES AT THE SAME TIME: 
+networking: swift
+database: c# 
+web tech: php 
+machine learning: c++ 
+multithreading: swift 
+security: go 
+hacking: SQL 
+microservices: php 
+OS: swift 
+algorithms: kotlin 
+MVC frameworks: java 
+servers: go
+distributed systems: typescript

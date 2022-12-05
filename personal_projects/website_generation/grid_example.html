@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Civil War Map of Guerilla Violence</title>
+	<meta charset="utf-8">
+	<meta name="description" content="web map of union army movement & guerilla attacks">
+	<meta name="viewport" content="initial-scale=1, maximum-scale=1, width=device-width, user-scalable=no" />
+	<meta name="keywords" content="civil war, guerilla, guerilla attacks, GIS, history, data, dataset, army, guerilla warfare, union army movement,
+									attack, union, confederacy, web map, storymap, arcserver map, union railroads, union army, OMAM, of methods and madness,
+									middle tennessee state university, MTSU">
+			<!-- have fialka add in / edit keywords, not more than ~30 total words... -->
+	<link rel="stylesheet" href="new_styles.css">
+	<link rel="icon" href="images/icon.png" type="image/png" sizes="32x29">
+	<link rel="stylesheet" href="https://js.arcgis.com/4.15/esri/themes/dark/main.css">
+	<script type="text/javascript" src="https://js.arcgis.com/4.15/"></script>
+</head>
+
+<body id="body_element">
+	<main id="main_element">
+		<header class="resizable_window" id="title_bar">
+		</header>
+		<aside id="layer_pane">
+		</aside> 
+		<div id="table_wrapper">
+		</div> 
+	</main>
+
+<style> 
+    * {
+        margin: 0px;
+        padding: 0px;
+    }
+
+    body { 
+        position: absolute;
+        display: block;     
+        background: purple;
+        height: 100%; 
+        width: 100%; 
+        overflow: hidden; 
+    }
+
+    main {
+        height: 100%; 
+        width: 100%; 
+        position: absolute; 
+        display: block; 
+        overflow: hidden; 
+        display: grid;
+        grid-gap: 5px;
+        grid-template-columns: 6fr 3fr;
+        grid-template-rows: 4fr 14fr 4fr;
+        grid-template-areas: "title_bar title_bar" ". layer_pane" "table_wrapper .";
+    }
+
+    #title_bar {  
+        background-color: green; 
+        grid-area: title_bar;
+    }
+
+
+    #layer_pane { 
+        background-color: blue; 
+        grid-area: layer_pane; 
+    }
+
+    #table_wrapper {
+        background-color: red; 
+        grid-area: table_wrapper;
+    }
+
+
+</style> 
+
+<script>
+
+</script> 
+
+</body>
+</html>
+
+

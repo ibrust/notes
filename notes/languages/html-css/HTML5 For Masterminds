@@ -1,0 +1,2302 @@
+CHAPTER 1 - WEB DEVELOPMENT
+-javascript is distinct from java / flash in that it is directly a part of the HTML, it is tightly integrated
+-HTML5 is a standard that bundles html, css, & javascript; it causes the languages to evolve together
+-if a user accesses a website without specifying a file the server typically looks for index. Some servers look for others like home, default. You need one of these.
+	sometimes these main files also have different extensions depending on the type of language used; for example, index.php instead of index.html.
+-servers have a list of these main filenames that includes the extension, & look for them in a particular order until one is found
+***when naming webpage files use _, lowercase letters & numbers only
+***you can create subdomains of a domain - they're links to subfolders; so you can have different websites sharing the same overall domain name, 
+	then a dot and different sub domain names: i.e. http://resources.example.com
+-hyperlinks can be defined with either absolute or relative URLs
+-HTML tags are often called elements. 
+-single tags will either modify the surrounding content or load content
+-HTML5 syntax:
+	<!DOCTYPE html> <html lang="en">
+	...
+	</html>
+-attributes of html tags are either a single word or key=value
+-CSS uses either of these formats: properties:values; or selector{ properties:values; properties:values; ... }
+-the selector will be applied to elements with the same name as the selector; this syntax is also called a 'rule'
+-javascript code goes inside of the <script> </script> tags; you can also load code from files inside there
+***the author discusses purchasing a domain name ~from~ a web service provider (godaddy.com) as a common option
+	after purchasing a domain you also need to establish your 'nameservers' - i.e. the DNS configuration, used to determine your website location***
+***while web hosts typically offer an FTP service to manage the site from within the browser,
+	professional developers typically use a dedicated program for managing sites from the client such as Filezilla***
+***when you open a web hosting account you will get an FTP account for your website; to use Filezilla (connect via FTP) 
+	you need the host name (IP or domain), username, password, & port***
+-Since MACs come with an apache server, when you install MAMP & try to access localhost 
+	you must use a separate port dedicated for the MAMP stacks apache server: http://localhost:8888
+-www.w3schools.com is a good learning resource for HTML/CSS/Javascript & more - Bootstrap, W3.CSS, & other things
+_____________________________________________________________________________________________________________________________________________________
+CHAPTER 2 - HTML
+
+***text editors won't check your HTML code. Use a validation tool such as: http://validator.w3.org
+
+***<!DOCTYPE html> this must always be the first line in the HTML5 document, with no characters preceding it
+***<html lang="en"> </html> HTML5 documents form a tree structure; html tags are always the root of the tree
+***<head> </head> the head tags contain meta information such as the pages title, the character encoding, and external files, styles, & codes needed by the document. 
+	this information is mostly invisible to the web user
+***<body> </body> the body tags contain the visible content of the page
+
+***elements available as children inside the head tags: title, base, meta, link, style, script
+
+    <title> insert text </title>   <--- sets the top bar title
+
+    ***<base> ? <--- the href attribute here establishes the base of the relative URL used throughout the page
+
+    ***<meta> <--- specifies metadata, attributes include: charset, name, content
+		<meta charset="utf-8"> is standard
+
+    ***meta name & content attributes are used in combination by search engines. specify a description & keywords with multiple meta tags:
+		<meta name="keywords" content="birds, dogs">
+		<meta name="description" content="a page on dogs">
+
+    ***<link> <--- specifies this pages *relationship* with an external resource, usually loads CSS stylesheet.
+		link attributes: href, rel (define type of relationship), media (specifies resources media type), type, size (specifies size of file, often used for icons)
+    	pages that include an icon in the title bar do so w/ the link elements rel attribute:
+			<link rel="icon" href="images/icon.png" type="image/png" sizes="16x16">		<!-- Typical size for this is 16x16 -->
+
+		links type attribute specifies a MIME type which indicates the format of the content being linked to. 
+			MIME, multipurpose internet mail extension, is a format for sending attachments.
+    		common MIME type specifiers: text/html (for an html file), image/jpeg, image/png, & many others
+
+    ***this is the code to load a stylesheet: 
+		<link rel="stylesheet" href="file.css">
+    
+	<style> CSS code </style> <---- declare CSS styles within the document
+    <script> javscript code </script>
+
+***elements available as children inside the body tags: table, div, main, section, nav, aside, article, header, footer, others?
+    <table> <--- this is an old pre-css element, apparently; it even preceded div. Not actually used as often as it once was
+		<tbody> 
+			<tr> 
+				<td> data </td> 
+			</tr> 
+		</tbody> 
+	</table> 
+
+    <div> content </div> <--- pre HTML5 but came after table, doesn't provide much information about the element but flexible, useful when no other element applies
+    <main> ? <--- to contain the main content of the document
+    ***<nav> ? <--- to contain navigational aids
+    	nav is often placed below (rather than within) the header, and above the main
+    ***<section> ? <--- separates thematic content into columns or blocks within the main
+    <aside> ? <--- usually to the side of the main; content is related but not part of the main: references, links to previous posts, advertisements
+    	asides can be placed in or outside of the main
+    ***<article> ? <--- represents an independent item of content, such as a forum post, blog entry, etc.
+    	articles might commonly be within a section the same way multiple blog entries or forum posts would be
+    ***<header> ? <--- defines a header for the body or sections
+    <footer> ? <--- defines a footer for the body or sections
+
+    headers often go at the top & contain the logo, name, subtitles, & short description of website
+    at the bottom you often have an "institutional bar" within footer, look to some websites for examples 
+
+***in HTML5, there are special character strings for symbols. here are a few common ones: 
+	&copy for copywrite symbol
+	&lg &gt for < >
+	&amp for &
+	&quot for "
+	&apos for ' 
+	&pound for english pound money symbol
+	&euro for euros money symbol 
+
+-all html elements have id and class attributes, i.e.: 
+	<section id="news"> ... </section>
+	<div class="books"> ... </div>
+
+-id identifies a unique element, class identifies a set of elements
+-id & class attributes can be used by some other HTML elements for identification, used w/ CSS rules, & used in javascript 
+***you can assign multiple classes to an element via separating the class names with a space
+
+-elements to represent text include the following: h1, p, pre, span, br, wbr, em, strong, i, u, b
+    <h1>heading</h1> 
+	<h6>subheading</h6>
+	<p>paragraph</p>
+	***<pre>preformatted text</pre> (preserves spacing / formatting)
+	***<span>unstyled / custom styled text</span>
+	<br> line break
+	***<wbr> lets browser decide on line break
+	<em>italics by default</em>
+	<strong>bold by default</strong>
+
+even when using the <header> tags... put titles inside <h1> tags. This allows you to change the formatting in a modular way 
+
+***<p> will reduce whitespace to 1 space per word, removing line breaks & extra space; then it will also separate the paragraph from surrounding text
+	for this reason p is often used purely for formatting purposes, including formatting of messy text or individual lines
+***in contrast, <pre> preserves the spacing / formatting of the original text; commonly used w/ posting computer code, for example
+
+strong, em, i, u, b - these elements default styling can be changed in CSS
+
+***elements used with text but that define the content of the text: mark, small, cite, address, time, code, data
+    <mark> highlights text
+    <small> uses small print size
+	<cite> is an actual citation
+    <address> is used for contact information
+    <time> makes datetimes machine readable and includes attributes: datetime, pubdate
+    ***<code> is exclusively for computer code but should be combined with pre; needs pre to preserve formatting.
+    ***<data> can make a value machine readable, i.e.: <data value="32">Thirty Two</data>
+
+***all these "specific content elements" are used inside the other traditional text elements
+
+<time>'s datetime attribute must be in the format: "2016-10-12T12:10:45" or "2016-10-12 12:10:45"; 
+	its pubdate attribute is a boolean that merely indicates if it's a publication date
+
+***<address> & <small> are often found in footers
+
+a comment looks like this: 
+	<!-- comment text -->
+
+***<a> w/ href attribute is used to make a hyperlink: 
+	<a href="index.html" target="_self"> text </a>
+
+	target specifies where to open the link. optional targets include: 
+		_self 					// by default, opened in the same frame or window
+		_blank 					// new window
+		_parent					
+		_top					// parent & top are uncommon & work with frames 
+
+***<with <a> you can link to website pages, places in your current document, setup links to launch applications, download, or execute files on servers
+***<nav> often contains multiple <a> elements
+
+***to link to a location in your current page use # and the elements id: 
+	<a href="#tag1">link text</a>
+
+***this will launch the default mail application: 
+	<a href="mailto:ibr2a@mtmail.mtsu.edu"> link text </a>
+
+***this will download a file instead of opening it: 
+	<a href="file_to_download" download> link text </a> 
+
+***ping is another attribute used to execute code on a server in a specified location. ping can be used in combination with download & other attributes:
+	<a href="http://www.site.com/content/file.pdf" ping="http://www.site.com/script.php" download> link text </a>
+
+-ping will execute any executable code on the server, not just php code - python, ruby, etc.
+
+***the following elements are used for inserting pictures into documents: img, picture & source, figure & figcaption
+	<img src="image.jpg"> 		<-- basic way of inserting an image
+
+***attributes of img: src, width, height, alt, srcset, sizes, crossorigin
+    alt 				// text that will be shown if the image fails to load
+    srcset 				// specify a list of images for different resolutions that the browser can load appropriately 
+    sizes 				// specify a list of media queries and sizes to tell the browser the image to show depending on the screen resolution (see chapter 5)
+    crossorigin 		// sets credentials for CORS-enabled images (chapter 11)
+
+***if you specify only width or height, but not both, the browser will preserve the aspect ratio of the image 
+***width="150" will be 150 pixels
+
+figure tags can be put around an image tag to treat it as a figure. by default figures are rendered with margins on either side:
+	<figure> 
+		<img src="image.jpg"> 
+		<figcaption> explanatory text </figcaption> 
+	</figure>
+
+-these elements are used to create lists: ul, ol, dl
+	ul w/ li creates unordered lists. by default a bullet appears next to each li element
+	ol w/ li creates ordered lists (not sorted, just order indicated by a letter, number, numeral)
+
+-lists are styled by default with margins on either side
+
+	<ul>
+		<li> ... </li> 
+		<li> ... </li> 
+	</ul>
+
+	<ol type="1">
+		<li> ... </li> 
+		<li> ... </li> 
+		<li> ... </li> 
+	</ol>
+
+	<dl> 
+		<dt> orange </dt> <dd> a round citrus fruit </dd> 
+	</dl>
+
+-ol has attributes: reversed, start, type.
+	reversed will reverse the indicator order to count down
+	start tells the indicators where to begin counting
+	type will select the type of indicator: 
+		1 		// numbers
+		a 		// lowercase letters
+		A 		// uppercase letters
+		i 		// lowercase roman numerals
+		I 		// uppercase roman numerals
+
+-dl w/ dt & dd create a list of terms and descriptions, similar to how a dictionary is layed out. 
+	dl defines the list, dt the terms, dd the descriptions
+
+***the blockquote and details elements are also useful in creating lists, though they were not designed for this purpose
+	blockquote is for creating a simple block of text. 
+		It works like <p> but also includes margins by default, so it can be used to create lists without bullets or indicators
+	details works w/ the summary element to create an arrow control that expands when clicked on to reveal more information
+		summary contains the visible description, while the rest of the message can be wrapped in whatever else you wish
+
+	<blockquote> row 1 </blockquote> 
+	<blockquote> row 2 </blockquote>
+
+	<details> 
+		<summary> book list </summary> 
+		<p> HTML for masterminds </p> 
+		<p> database design & implementation </p> 
+	</details>
+
+***tables were used prior to CSS to structure HTML documents, but have since been replaced entirely. They are still useful for structural statistical data, however.
+
+-there are multiple ways of creating tables, but the most common is table combined w/ tr, td, & th
+	<tr> defines a row of cells
+	<td> defines a cell
+	<th> is the table header
+
+***td & th have attributes colspan and rowspan. these specify how many columns / rows the cell will occupy
+
+	<table>
+		<tr> <th> column 1 </th> <th> column 2 </th> </tr>
+		<tr> <td> ... </td> <td> ... </td> </tr>
+		<tr> <td rowspan="2"> ... ... </td> </tr>
+	</table>
+
+-translate is a global attribute (owned by all elements) that specifies whether to ignore translating a span of text. 
+	It can be assigned "yes" or "no", default is yes
+
+	<span translate="no"> Star Wars </span>
+
+***contenteditable is a boolean global attribute. If specified, a web user can edit the content of the element. 
+	note again that a boolean attribute is specified by merely including its name.
+	note that changes to contenteditable are stored in the clients browser, not uploaded to the server. For that you need javascript w/ AJAX
+
+	<span contendeditable> enter name </span>
+
+-the form tag allow web users to insert information & send it to the server
+-forms wrap a variety of tags for user input. 
+***the form tag itself has a few attributes: name, method, action, target, enctype, accept-charset
+	method: specifies whether the submission is a GGET or POST method (only 2 options).
+	action: specifies the URL of the file on the server that will process / use the form information
+	target: specifies where the servers response to the form data will pop up (target="_self" is current window & the default, _blank is a new window)
+	enctype: declares how the message sent will be encoded, it's encoded by default but there are other options. you can make it unencoded or partially encoded
+	accept-charset: specifies what kind of character set to use in the form, default is the same as the one in the meta tags
+
+	<form name="form1" method="get" action="script.php"> ... </form>
+
+***tags for form input include but are not limited to: input, textarea, select, button, output, meter, progress, datalist, label, fieldset
+	input: basic input element, very versatile, it has attributes called type and value. type can specify many different forms of input
+	textarea: element to create an input text box. attributes rows, cols, or pixels can be used to specify the size of the box
+	select: combines with elements option and optgroup to create a list of options user can select from. option elements define each option, optgroup groups the options into subgroups.
+	button: create a button; w/ an attribute called type, specify the type of button: submit, reset, or button. reset clears the form, submit will submit it, button is a custom option.
+	output: combined with javascript, this button will display results of the form submission
+	progress: some kind of progress bar
+	label: a label to identify the form with
+	fieldset: used to group other form tool elements together; useful in large forms
+	datalist, meter, & others exist also
+
+***the input element is the most versatile and comes with a wide range of specifiers for its type attribute which change its behavior.
+***here are some of the less obvious ones:
+	text: input field for generic text
+	email: for inputting emails
+	tel: for inputting phone numbers
+	range: for a range of numbers
+	datetime-local: to insert a date and a time
+	time: field for hours and minutes
+	hidden: this hides the input field, it's used to send "complimentary" information to the server. research for more details
+	radio: generates a radio button to select an option; typically multiple radio buttons are combined to create a list of options
+	file: an input field to select a file from the users computer
+	button: same function as button:button;. It does not have any default function, but its function can be defined via javascript.
+	image: specifies an image used for the graphic of the submit button itself. use the src attribute to specify an image URL. also has width & height attributes
+
+	elements not mentioned: search, url, number, date, week, month password, color, checkbox, submit, reset
+
+	<form name="form_name" method="get" action="process.php">
+		<input type="text" name="myname">
+		<input type="submit" value="Send">				// value here changes the submit buttons text to Send 
+	</form>
+
+-form elements don't produce line breaks. typically form layout is achieved with CSS 
+***the name attribute must be included for the servers php script to identify the individual elements in the form 
+***depending on the tag the value attribute might specify an initial value 
+
+***the label element is often used with input tags. It creates a textual description, often preceding the input tag. 
+	the label also helps browsers identify the part of the form
+	label can be associated with an input element using the "for" attribute, which uses the inputs id (why?)
+
+***maxlength & minlength: these are attributes of the input elements text type that give parameters for the size of the input (i.e. limit the string to 16 characters)
+
+	<input type="text" name="users age" value="33">
+
+	<label> Name: 
+		<input type="text" name="myname">
+	</label>
+
+	<label for="name_input"> Name: 
+		<input type="text" name="name_input" id="name_input"> 
+	</label>
+
+	<label> Name: 
+		<input type="text" name="name_input" maxlength="16">
+	</label>
+
+***input tags have the following attributes: min, max, step 
+	min 		// minimum input value allowed
+	max 		// max input value allowed 
+	step 		// controls the increments of the value 
+
+	these attributes are especially useful with the range input type 
+
+***radio buttons get associated with one another using the name attribute. if they share a common name attribute they'll function as a group 
+
+-radio buttons also have a boolean attribute called checked which makes one button the default selection 
+
+***with radio buttons the value attribute will specify whatever value the button is supposed to represent. 
+	This value is sent to the server when the form is submitted
+
+	<input type="radio" name="list_one" value="15" checked>
+	<input type="radio" name="list_one" value="30">
+
+***with input's checkbox type  multiple boxes can be selected at once. The boxes can have different names because there is no need for grouping them
+
+-input's date type is often implemented with a small calendar that pulls up. 
+	The syntax of the date sent to the server is year-month-day. 
+	Use this syntax to specify any default values w/ value
+-input's other time related types expect certain date formats as well:
+	-week: year-Wweek i.e. 2017-W30
+	-datetime-local: year-month-dayThours:minutes:seconds
+	-month: year-month
+	-time: hours:minutes
+
+-when a colon is sent over the network it gets converted to %3A first. I think this is defined by HTTP but don't entirely remember 
+
+***when the submit button is pressed the values in the form are added to the URL and the specified script on the server is used to process the form
+
+***with input's color type you can specify a default hex color. the button will look like a rectangle with a color inside:
+	<input type="color" name="one_color" value="#ff00aa">
+
+***the button tag has the same types as the input tag, allowing you to customize buttons of that type w/ CSS & Javascript
+
+-the text between the opening and closing tags of the button tag is relevant. 
+	For example, with the submit type the text is used for the title of the submit button.
+
+***input's text type is limited to one line of input. the textarea tag can take multiple lines of input. this is the actual box. 
+	rows & cols attributes can specify its size
+	text between the textarea tags declares an initial string value for the box
+
+-select tags show a menu of options:
+
+	<form name="form_one" method="get" action="script.php">
+		<select name="book" id="booklist">
+			<option value="1">HTML for masterminds</option>		// value is sent to the server for processing, along with select's name for identification
+			<option value="2">compiler book</option>
+		</select>
+		<input type="submit">
+	</form>
+
+***datalist tags can create something similar to a select - a dropdown menu, but with descriptions next to the selections. 
+	the datalist's id can be referenced by an input type's list attribute:
+
+	<datalist id="contactlist">
+		<option value="6156301570" label="ian">
+		<option value="6154766719" label="mom">
+	</datalist>
+	<label> <input type="tel" name="phone_number" list="contactlist"> phone </label>
+
+***progress and meter tags are not form elements but they're useful with form
+-progress reports the progress of a task and has 2 attributes: value & max. 
+	value 				// indicates how much of the task is complete
+	max 				// the value needed to reach the end
+-meter shows a scale but not a progress bar, just a known range. the bar looks horizontal. It attributes are: value, min, max, low, high, optimum.
+ 	min & max 				// set the range
+	low, high, & optimum 	// partition the meter into different sections
+	value 					// sets the actual reading on the meter
+	
+***when a form is submitted, each form element sends its name & value as a key/value pair. 
+	so always assign names & values to form elements
+
+***the form attribute method="get" will send the data to the server within the URL. this can be convenient sometimes 
+	method="post" will encode it in the body of the HTTP message. always use this for sensitive data 
+***post can be used to send unlimited amounts of information, but get can only send as much as can fit in the URL
+
+-PHP has an array variable called $_GET which directly accesses URL query information:
+	<?php
+		print('the value is: '.$_GET['val']);
+	?>
+-PHP also has a similar $_POST variable
+
+***HTML defines a number of global attributes that are unique to form elements:
+	disabled 				// boolean attribute that disables the form element. often applied dynamically based on other form selections
+	readonly				// make the forms value unmodifiable. typically used if there's only one possible input which need not be changed 
+	placeholder 			// gives a hint for the field 
+	autocomplete 			// can be set to on or off, activates autocomplete for the field
+	pattern 				// provide a regular expression that the browser will use to validate the associated form element 
+	novalidate 				// boolean attribute for the form tag itself; indicates the form shouldn't be validated. forms are validated by default. 
+	formnovalidate			// same as novalidate but for button tags or input types submit or image
+	required				// boolean, indicates the field is required
+	multiple 				// for input types email and file, allows multiple values to be inserted into the field
+	autofocus 				// browser will focus the element when the page loads
+	form 					// used to associate a form element with a form when it was not placed inside the form tags. it should specify the forms id 
+	spellcheck 				// do spell checking on the field, can be set to true or false. true by default 
+
+-novalidate causes the form to not be validated regardless of which button is used to submit it 
+***formnovalidate is only tied to a particular button. it's used with submission type buttons that don't send data to the BE:
+
+	<input type="submit" value="Send">
+	<input type="submit" value="Save" formnovalidate>				// just saving the data, not sending it to BE yet 
+
+***example of using pattern with an input to validate a 5 digit zip code:
+
+	<input pattern="[0-9]{5}" name="zipcode" title="insert zipcode">			// the title is displayed with the error message for invalid input 
+
+-the autocomplete attribute can be placed within the main form tag to effect the whole form or within specific form input tags 
+
+	<input type="search" name="the_search" autocomplete="off">					// don't use autocomplete for the search 
+	<input type="text" name="user_age" autofocus>								// autofocus 
+	<textarea name="the_textbox" cols="50" rows="6" spellcheck="false">			// turn off spellchecking for the textbox 
+
+-here's how to connect an input element to a form element elsewhere in the code:
+
+	<input type="search" name="the_search" form="main_form">					// the form attribute must specify the id of the associated form 
+	...
+	<form name="main_form" id="main_form" method="get" action="script.php">
+		<input type="submit">
+	</form>
+_____________________________________________________________________________________________________________________________________________________
+
+CHAPTER 3 - CSS:
+***style properties are in the following format: 
+	font-size: 24px;								// you can occasionally specify multiple values, hence the semicolon
+
+***common size specifiers: 
+	px
+	pt 			// points
+	in
+	cm
+	mm
+	em 			// relative to elements font size)
+	rem 		// relative to documents font size
+	%			// relative to size of elements container
+***certain size specifiers have better compatibility across different resolutions (more detail later)
+
+***rules are lists of properties applied to a selected type of element:
+	p {							// applies these properties to all <p> tags in the document
+		color: #FF0000;
+		font-size: 24px;
+	}
+
+***there are 3 ways of applying CSS to the HTML document:
+	inline styles			// tags have a global attribute called style for setting style properties directly
+	embedded styles			// use of <style> tags located inside <head> to set style rules for that specific page 
+	style sheets			// rules in a separate css document. webpages link to this document 
+
+	<head>
+		<meta charset="utf-8">
+		<link rel="stylesheet" href="styles.css">						// link to the stylesheet 
+
+		<style>															// embedded style 
+			p {
+				font-size:30px;
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<p style="font-size: 20px, color: #FF0000;"> ... </p>		// inline style 
+		</main>
+	</body>
+
+-style sheets are usually favored for their modularity and testability 
+
+
+***in the DOM tree, if styles are applied to parent nodes, the child nodes without overriding styles also inherit those styles.
+***style rules can be linked to elements using id, class, or tag name. you can combine these methods for more specificity
+
+	p, span {						// select multiple tags 
+		font-size: 24px;
+	}
+	main p {						// select p tags that are children of main
+		font-size: 32px;
+	}
+	section > p {					// select p tags that are direct children of main 
+		font-size = 22px;
+	}
+	span + p {						// select p tags where a span tag is a sibling immediately in front of it
+		font-size = 16px;
+	}
+	span ~ p {						// select p tags where a span tag is a sibling anywhere in front it (doens't have to be immediately in front)
+		font-size = 19px;
+	}
+
+	#id_name {						// select by id 
+		font-size: 20px
+	}
+
+	.class_a {						// define a class to be applied in the document 
+		font-size = 40px;
+	}
+	.class_b {
+		font-family = "Courier";
+	}
+	span.class_b {					// define this class rule for spans only 
+		font-size = 10px;
+	}
+	...
+	<p class="class_a"> ... </p>
+	<p class="class_a class_b"> ... </p>			// apply multiple classes to a tag 
+	<span class="class_c"> ... </span>
+
+
+	p[name="my_name"] {					// select p tag (or tags?) named my_name 
+		font-size = 10px;
+	}
+	p[name*="my_name"] {				// select p tags with my_name anywhere in the name 
+		font-size = 10px;
+	}
+	p[name^="my_name"] {				// select p tags whose name begins with my_name
+		font-size = 10px;
+	}
+	p[name$="my_name"] {				// select p tags whose name ends with my_name
+		font-size = 10px;
+	}
+	p[name~="my_name"] {				// select p tags whose name containes my_name as a separate word 
+		font-size = 10px;
+	}
+
+-css pseudo-classes can be combined with the selectors listed above: 
+
+	:nth-child(2) {						// select every 2nd child tag in the whole document 
+		font-size: 100px;
+	}
+	p:nth-child(2) {					// select every 2nd child p tag in the whole document 
+		font-size: 100px;
+	}
+	p:nth-child(odd) {					// select every odd child p tag 
+		background-color: "#CCCCCC";
+	}
+	p:nth-child(even) {					// select every even child p tag 
+		background-color: "#999999";
+	}
+	
+	span:first-child {					// select every span that's the first child 
+		font-size: 100px;
+	}
+	span:last-child {					// select every span that's the last child 
+		font-size: 100px;
+	}
+	span:only-child {					// select every span that's the only child 
+		font-size: 100px;
+	}
+	span:first-of-type {				// select the first span in a group, but not if it's the only one 
+		font-size: 100px;
+	}
+
+	:not(p) {							// select all tags that aren't p tags 
+		font-size: 100px;
+	}
+	p:not(#id) {						// select all p tags to which #id does not apply 
+		font-size: 100px;
+	}
+
+-there are layout and formatting properties. layout pertains to the spatial arrangement of elements, format modifies how the element looks.
+
+-properties pertaining to font size & style:
+
+	font-family: Arial, Courier;			// multiple fonts can be listed for backup if the computer doesn't have the initial font 
+											// individual font names w/ multiple words must be in double quotes 
+	font-size: 30%;
+	font-weight: bold;					// normal, bold, 100, 200, 300, 400, 500, 600, 700, 800, 900
+										// the numbers work with certain fonts 
+	font-style: italic;			 		// normal, italic, oblique
+
+	font: bold 24px Arial,Courier;		//  style / weight, size, family
+
+-properties pertaining to font alignment, spacing, text between lines:
+
+	text-align: center;			<!-- left, right, center, justify; aligns the text within an element, typically left by default -->
+	text-align-last: right;			<!-- left, right, center, justify; aligns only the last line in a paragraph of text -->
+	text-indent: 20px;			<!-- px, %, em, rem, pt; set paragraph indentation amount -->
+	letter-spacing: 20px;			<!-- px, %, em, rem, pt; set letter spacing -->
+	word-spacing: 20px;			<!-- px, %, em, rem, pt; set spacing between words -->
+	line-height: 20px;			<!-- px, %, em, rem, pt; set spacing between lines -->
+	vertical-align: baseline;		<!-- baseline, sub, super, text-top, text-bottom, middle, top, bottom; aligns elements vertically, often used with images & text combined-->
+	text-decoration: underline;		<!-- underline, overline, line-through, none; often useful on the "a" element to remove underlines from links by setting it to none -->
+
+***there's a group of safe fonts - fonts that most people have on their computers. this group of fonts is very limited, however. 
+	to get around this, CSS provides the @font-face rule that allows you to provide a font file:
+
+	@font-face {
+		font-family: "NewFontName";
+		src: url("font.ttf");								// url here is a CSS function - one of a handful CSS provides for certain things 
+	}
+	p {														// you can now refrence the font by name 
+		font-family: "NewFontName, Courier";				// make sure to set a backup font if the browser fails to load the font
+	}
+
+-there are 3 ways to declare colors w/ the color property:
+	color: #00FF3C						// red - green - blue
+	color: rgb(0, 255, 143)
+	color: rgba(0, 255, 143, .5) 
+	color: hsl(0, 25%, 360) 
+	color: hsla(0, 25%, 100%, .5)		// hsla(hue, saturation, lightness, alpha)
+
+-equal levels of red, green, and blue produce gray
+
+***hue is a color wheel; 0/360 is reds, 120 is greens, 240 is blues
+***saturation is a grayscale, 0% is gray and 100% is full color
+***lightness at 100% is white and 0% is black
+
+***there is a property called "opacity", but it is unwieldy because it causes all child elements to inherit their parents opacity. 
+	rgba and hsla get around that problem. with them you can change background transparency without effecting the whole website
+
+-www.colorhexa.com or htmlcolorcodes.com help you visually select a color & get a corresponding color code
+
+***by default, an elements width is determined by the container it's in, but its height is flexible
+***width & height are sizinig properties:
+	width: 200px;			// px, %, auto, vh, vw. auto is the default and fits to the parent container 
+	height: 100%;
+
+these are special properties for working with the viewport size (the browser window size): 
+	vh 		// viewport height. units are 1-100 and work like a percentage 
+	vw 		// viewport width 
+	vmin 	// minimum viewport length 
+	vmax 	// maximum viewport length
+
+	height: 100vh; 				// element takes up full viewport screen height 		
+
+-if you set the width & height too small the content will overflow into other elements 
+***there are properties to handle overflow:
+	overflow: hidden; 			// visible, auto, hidden, scroll - how the overflow will be displayed 
+								// scroll makes a scroll bar, auto lets the browser decide 
+	overflow-x: hidden;
+	overflow-y: hidden;
+	overflow-wrap: normal 		// normal, break-word. sets how words at end of lines are hyphenated
+								// break-word uses any break available, normal tries for common breaks 
+
+***margin is space around the elements box
+***padding is space within the box between the edge & the content
+***the size of the element + the margins = the total space taken up on the page
+
+	margin: 20px, auto; 		// px, %, auto. positions are top, left, right, & bottom margins in that order. 
+								// here both left & right become auto, top & bottom become 20px
+								// if you leave out any parameters the remaining ones will be filled in w/ preceding ones, matching opposing elements
+	padding: 40px;				// padding works the same way as margin 
+
+	margin-top: 40px;			// you can specify top, left, bottom, or right individually
+	padding-right: 10%;
+
+***there are two kinds of elements: blocks & inline. 
+	block elements you can set a custom size for, inline you cannot. 
+	span is an example of an inline
+
+-elements have the following background properties:
+	background-color: #CCCC00;
+	background-image: url("picture.jpg");
+	background-position: top left;		 // set position of background image. use combinations of center, top, left, bottom, right
+	background-size: 100px 50px;		// size of background image specified as: px, %, cover, or contain. 
+										// cover stretches to fit, contain preserves proportionality 
+							 			// px and % both take 2 parameters for width & height 
+										 
+	background-repeat: no-repeat;		// repeat, repeat-x, repeat-y, no-repeat 
+	background-origin: border-box;		// border-box, padding-box, content-box. 
+										// specifies if image is positioned relative to the border box, padding, or content 
+	background-clip: padding-box; 		// border-box, padding-box, content-box. sets the area to be painted by the image, clipping the image 
+	background-attachment: scroll;		// scroll, fixed. specify whether the image scrolls with the page or is fixed 
+
+	background: #CCCC00 url("picture.jpg") no-repeat;			// declare multiple background properties at once 
+
+***elements can add a border to the edge of their box. the following properties pertain to borders: 
+	border-width: thin, 4px, .1em, thick;				// sets width of the top, right, bottom, & left borders in that order. can accept up to 4 values.
+							 							// values can be: px, em, rem, pt, thin, medium, thick. 
+														// % does not work 
+
+	border-style: solid dashed; 						// top, right, bottom, & left in that order. can accept up to 4 values. 
+														// values can be: none, hidden, dotted, dashed, solid, double, groove, ridge, inset, outset 
+														// default is none 
+
+	border-color: #CCCC00 #FFFFFF;						// top, right, bottom, & left in that order; can accept up to 4 values. 
+
+	border: 5px dashed #CCC999;							// specify multiple border properties at once 
+
+	border-radius: 20px/10px 30px;						// format can be px or px/px. px/px specifies an ellipse w/ horizontal/vertical radius 
+							 						    // corners can be set individually in order: top-left, top-right, bottom-right, bottom-left 
+
+-border widths, colors, and styles can also be declared independently: 
+	border-top-width
+	border-left-style
+	border-left-color
+	border-right-color
+	border-bottom						// multiple attribute version 
+	etc.
+
+***there is also a second border element called outline. it's drawn outside the first border. it's can make the border stand out more
+-outline has the following properties: 
+	outline-width: 10px;						// will not work unless an outline-style was also defined 
+	outline-style: solid;
+	outline-color: red;
+	outline-offset: 10pt;
+	outline 5px dashed #CCC999;
+
+-all outline properties work the same as the border properties with these exceptions: 
+	outline-offset is a new property that sets the distance between the border & the outline. 
+		size units other than % are accepted. 
+		offset (space between it & border) is 0 by default, so outline is drawn right next to border
+	there is no property for setting the radius 
+
+
+-you can also make custom borders using images. 
+-the image is divided into a 3x3 grid. The 4 corners & 4 edges are used in constructing the corners / edges of the border.
+-first create a normal border and then use the following customization properties: 
+
+	border-image-source: url("picture.jpg");
+	border-image-width: 20px; 		 			// px, %, em, rem, pt -->
+
+	border-image-repeat: stretch;				// repeat, round, stretch, space. this specifies how the images 4 edges are fitted to the box 
+
+	border-image-slice: 20, 16;					// units can be integer or % 
+												// can take 4 parameters specifying the 4 inward offsets of the image slices 
+
+	border-image-outset: 20px; 					// px, %, em, rem, pt. 
+												// sets how far the border is from the elements box 
+
+	border-image: url("picture.jpg") 29 round; 
+
+
+-properties for adding shadows: 
+
+	box-shadow: #2394ce, 5px, 5px, 20px, 15px, inset;	// color, xoffset, yoffset, blur radius, spread value, inset 
+														// color, xoffset, and yoffset are required  
+														// the inset is a boolean value for an inner shadow effect
+														// the offsets determine the position / distance of the shadow from the box, and can be + or -  
+														
+	text-shadow: rgb(100, 120, 120), 10px, 10px, 20px;	// color, xoffset, yoffset, blur 
+														// hcolor, xoffset, and yoffset are required 
+														// offsets of 0 place the shadow directly behind, but still create blur effects around it 
+
+-shadows do not expand the elements size, so make sure you have room around the element before using them
+
+***color gradients can be created as images within CSS using functions, then added using the background or background-image property
+***the following CCS functions exist for creating the gradient: 
+	linear-gradient(position, angle, color-stop)		// position (1st param) can be top, left, bottom, or right. it specifies where the gradient begins
+														// angle (2nd param) sets the direction of the gradient.
+														// angle can be deg, grad, rad, or turn (degrees, gradians, radians, turns) 
+														// color-stop is a list of colors in the gradient, separated by commas
+														// each color may include a % separated from the color by a space to denote where the color ends
+	
+	radial-gradient(position, shape, color-stop, extent)	// position sets the origin of the gradient and can be combos of center, top, left, bottom, right
+															// shape can be circle or ellipse 
+															// extent determines the gradients final shape 
+															// extentt can be closest-side, closest-corner, farthest-side, farthest-corner
+
+***Each browser has a different prefix, & you must declare the function using these prefixes: 
+	-o- for opera
+	-moz- for firefox
+	-webkit- for chrome / safari 
+	-ms- for internet explorer
+
+***examples: 
+	-webkit-linear-gradient(to left top, blue, red);			// gradient tilted 45 degrees, starting blue & finishing red 
+	-moz-linear-gradient(45deg, blue, red);						// gradient going from the bottom right to the top left corner
+														
+	-o-linear-gradient(0deg, blue, green 40%, red);				// gradient going from the bottom to top, starting blue, turning green at 40% of its length,
+																// and finishing red
+	-ms-linear-gradient(.25turn, red, 10%, blue);				// gradient going from the left to right, starting red, getting to the midpoint color
+   																// 10% of the way across the length, taking the rest of the 90% to change to blue
+	-moz-linear-gradient(45deg, red 0 50%, blue 50% 100%);		// multi-position color stop: gradient tilted 45 degrees with a red bottom-left half 
+																// and a blue top-right half, with a hard line where the gradient changes from red to blue
+
+	-o-radial-gradient(circle at center, red 0, blue, green 100%)	// gradient starting at the center as red, changing to blue, and finishing green
+
+	background:-webkit-linear-gradient(top, #FFFFFF 40%, #777777 90%); 
+	background-image:-webkit-linear-gradient(top, transparent, #777777);
+
+***the transparent keyword (or rgba / hsla) can be used to specify a transparent color. use this to overlay gradients onto surrounding background imagery
+
+-filters add effects to elements / their content. they can be applied images and other elements
+-filter uses a variety of functions as parameters:
+	blur(10px);				 					// range 1px - 10px, adds a blur effect 
+	grayscale(0.5); 			 				// range 0.1 to 1, makes an image grayscale 
+	drop-shadow(3px, 2px, 10px, #FF00DD);		// x & y specify the distance of the shadow from the image, size (3rd param) is the size of the shadow 
+	sepia(0.6);				 					// range 0.1 to 1, adds a sepia tone to the image 
+	brightness(4.2);			 				// range 0.1 to 10; changes brightness 
+	contrast(6.3);				 				// range 0.1 to 10; changes the contrast 
+	hue-rotate(180deg);			 				// range 1deg to 360deg; applies a rotation to the hue 
+	invert(0.7);				 				// ange 0.1 to 1; inverts the colors, producing a negative 
+	saturate(7.2);				 				// range 0.1 to 10; saturates the colors 
+	opacity(0.7);				 				// range 0.1 to 1; changes the opacity 
+
+	filter: blur(10px) grayscale(0.5) hue-rotate(180deg);			// filters must be placed all on one line for them to work 
+
+
+-the transform property can modify an HTML elements position after it's been created. it takes functions as parameters:
+
+	transform: scale(0.8, -1.2);	 	// change size of the element by multiplying with the integer. units are decimal values. 
+						 				// negative values will invert the image along that axis. if only one argument is given, 
+										// the same multiplier is applied to both x & y 
+
+	transform: rotate(180deg);	 		// units are: deg, grad, rad, turn. negative values go the other direction 
+
+	transform: skew(3rad, 2rad);	 	// units are: deg, grad, rad, turn. can include up to 2 arguments for horizontal & vertical angles 
+						 				// skew changes the symmetry of the object. if only 1 argument is given, only the horizontal axis is modified 
+
+	transform: translate(100px, 200px);	// units are: px, pt, %, rem, em. changes the elements relative position by a number of pixels 
+						 				// negative pixels move up / left. if only 1 argument is given, only the x axis is modified 
+									    // the origin pixel (0,0) is at the top left of the screen 
+
+	transform: scale(0.8, -1.2) rotate(180deg) skew(3rd, 2rd); 	// multiple transform functions applied at once. remember to consider the order of functions, 
+																// because earlier functions effect the state for later functions
+
+other transform functions: scaleX(x), scaleY(y), skewX(angle), skewY(angle) 
+
+-you can also do 3D transforms in HTML, which use a z axis. transform has the following functions for this purpose: 
+
+	transform: perspective(500px);					// this must be called before other 3D functions, it adds depth to the element 
+	transform: scale3d(0.8, -1.2, 2.5);		 		// same as 2D scale w/ a z value 
+	transform: rotate3d(0, 1, 0, 45deg);			// rotates the element on a specific axis by the angle amount. x, y, z defines a vector 
+								 					// the vector values are relative: 10, 20, 10 is the same as 1, 2, 1
+	transform: translate3d(100px, 200px, 100px);	// units can only be px. works the same as 2D translate w/ a z value 
+
+
+-these properties are similar to the perspective function, and create more realistic 3D effects. they're set on the parent and effect its children:
+	perspective: 500px; 			// like perspective function but works on the parent. creates a 3D box that children are contained in 
+	perspective-origin: 25% 25%;	// units are: px, %, center, left, right, top, bottom. changes the x y coordinates of the viewer. default values are 50% 50% 
+	backface-visibility: visible;	// can be visible or hidden. determines whether the back of the element can be visible or not. default is visible
+
+-combining transforms with pseudo-classes can make them user input driven. :hover is an example - when you mouse over this it will trigger the transform: 
+	header:hover {
+		transform: rotate(5deg);
+	}
+
+-there are a variety of transition properties which, combined with a pseudo-class like the hover class, can create a fluid animation:
+	transition-property: transform color font-size;		// here you list all the properties that will be part of the animation
+	transition-duration: 1s;
+	transition-timing-function: ease-in-out;		    // ease, ease-in, ease-out, ease-in-out, linear, step-start, step-end 
+	transition-delay: 0s;								// time before the animation begins
+
+	transition: transform, color 1s ease-in-out 0s;		// multiple property specifier. 
+														// the order is: transition-property, transition-duration, transition-timing-function, transition-delay 
+									 					// separate multiple transition-property parameters by commas
+-the above animations specify only a starting & ending state. 
+-there are a variety of properties for creating more complex animation. they're used in combination with @keyframes:
+
+span {
+	animation-name: animation_class;  	// lists the @keyframes animation classes to include in this animation, can use multiple animations separated by commas 
+	animation-duration: 1s;
+	animation-timing-function: ease-in-out; 	// ease, ease-in, ease-out, ease-in-out, linear
+	animatin-delay: 0s;
+	animation-iteration-count: infinite;		// number of times the animation will be executed, can be an integer or infinite 
+
+	animation-direction: alternate-reverse;		// normal, reverse, alternate, alternate-reverse. controls the sequencing of the animations keyframes 
+								 				// alternate will mix the keyframes, playing odds and then evens 
+								 				// reverse plays the keyframes backwards 
+
+	animation-fill-mode: both; 					// none, forwards, backwards, both. defines how the animation handles styles 
+								 				// forwards will retain the style of the final animation frame at the end 
+												// backwards initializes styles using the first frames styles. 
+												// both combines both forwards & backwards  
+}
+@keyframes animation_class {
+	0% {							// % determines the timing of the frame 
+		background: #FFFFFF;
+	}
+	25% {
+		background: #444444;
+	}
+	50% {
+		background: #888888;
+	}
+	75% {
+		background: #BBBBBB;
+	}
+	100% {
+		background: #000000;
+	}
+}
+
+_____________________________________________________________________________________________________________________________________________________
+
+CHAPTER 4 - WEB DESIGN:
+
+***block elements have a custom size and add line breaks above / below themselves
+***inline elements are the size of the content, not a custom size, and do not add line breaks
+
+-block elements are suitable for distinct sections, columns, etc.; inline elements are suitable for content (because they don't insert line breaks)
+
+***the display property allows you to change this layout formatting for an element: 
+	block
+	inline
+	inline-block			// allows you to set a custom width / height for inline elements 
+							// only inline-block allows you to give custom sizes for elements on the same line
+	none					// removes the element from the page - useful when changing the page w/ javascript 
+
+-for very old browsers don't support HTML5 or block, display can ensure they render these as blocks:
+	header, section, main, footer, aside, nav, article, figure, figcaption {
+		display: block;
+	}
+
+-while diplay: none removes the element from the page, the visibility property merely hides it. 
+	#menu {
+		visibility: hidden; 				// hidden, visible 
+	}
+
+-block elements can use the float property to position themselves to the left or right: 
+	#chessboard {
+		display: block;
+		float: right;						// right, left, none 
+	}
+***floated elements don't add line breaks anymore, read for more details 
+
+-browsers can't calculate container sizes if they contain float elements. 
+-float elements should never be larger than their container or they will overflow it.
+-if the container does not have a custom size one strategy is to keep the float element smaller than other elements in the container
+
+-the overflow property w/ parameter auto can be used to fix this; the browser will consider the size of floating elements while it's sizing itself:
+	section {
+		overflow: auto;
+	}
+	section img {
+		float: left;
+		margin: 0px 10px;
+	}
+
+-the clear property controls the flow next to floated elements. it specifies what should happen with the element that is next to a floating element.
+-clear causes the browser to recalculate its size 
+-clear has the following parameters: 
+	none
+	left
+	right
+	both
+	initial					// sets property to its default value 
+	inherit					// inherits this property from its parent element  
+
+***if there is no sibling element, one trick to get a container to recalculate its size is to create empty <div> and add it after the floated element:
+	.clearelement {
+		clear: both;
+	}
+	...
+	<p class="floatelement"> ... </p>
+	<div class="clearelement> </div>
+-this trick does the same thing as the overflow property, but clear is better because it doesn't add scroll bars or effect other aspects of the document 
+
+-the position property has the following arguments: 
+	fixed			// stays fixed in the browsers view
+	static			// not explained in detail
+	absolute		// coordinates are absolute. the element is removed from its position in the flow layout & other elements fill its place 
+					// to use the parents coordinate system instead of the whole browser window you must set the position property in the parent 
+					// or you can just use relative positioning & not have to modify the parent 
+	relative		// coordinates modify the position in relation to its default position
+					// with this positioning floated elements spill over into the next line 
+
+-position works together with the direction properties to specify the elements position. they work differently depending on what position is set to:
+	top
+	bottom
+	left
+	right
+
+-typically you use float for positioning large, important content and smaller, trivial content may be positioned with absolute & relative position
+-when elements with absolute positioning overlap other elements the first element declared will be on top unless the z-index specifies otherwise 
+
+-a higher z-index makes the element on top, a lower z-index makes it on bottom. a negative index is lower than a default index.
+	#parentbox {
+		position: relative;
+		width: 600px;
+		z-index: -2;
+	}
+	#box-1 {
+		position: absolute;
+		top: 25px;
+		z-index: -1;
+		width: 140px;
+		margin: 5px;
+	}
+	#box-2 {
+		position: relative;
+		z-index: 0;
+		width: 150px;
+		margin: 10px;
+	}
+
+-absolute and relative positions are typically used for animations because they can modify the position 
+
+-this is an image that reveals a title when hovered over. the technique creates drow-down menus or sliding boxes:
+	#parentbox{
+		position: relative;
+		width: 300px;
+		height: 250px;
+		overflow:hidden;		 		// prevents the sliding elements from being rendered outside the container 
+	}
+	#container {
+		position: absolute;
+		top: 0px;
+		width: 300px;
+		height: 300px; 
+		transition: top 0.5s ease-in-out 0s;		// makes the movement of the title bar gradual rather than instant 
+	}
+	#topportion {
+		width: 300px;
+		height: 250px;
+	}
+	#bottomportion {
+		width: 300px;
+		height: 35px;
+		padding-top: 15px;
+		background-color: #999999;
+	}
+	#container:hover {
+		top: -50px;
+	}
+	...
+	<section id="parentbox">
+		<img src="picture.jpg" width="300" height="250">
+		<div id="full_container">
+			<div id="topportion"></div>
+			<div id="bottomportion"> <span>title of image</span> </div>
+		</div>
+	</section>
+
+
+-there are properties, specified on the parent element, for dividing any child elements into columns. Often useful with text. 
+-these column properties include:
+	column-count: 3;
+	column-width: auto;		 	// units can be: auto, px, %, em, rem, pt, mm, cm 
+	column-span: all; 		 	// units are: all, none. specifies if the child elements can span multiple columns. 
+								// default is none; all allows them to span across columns
+	column-fill: auto;		 	// units are: auto, balance. 
+								// w/ auto the columns are filled w/ content sequentially, leaving some empty 
+						 		// w/ balance the content is divided equally into the columns 
+	column-gap: 30px;		 	// units can be: px, %, em, rem, pt, mm, cm 
+	columns: 3 30px;			// combined specifier. the author implies it only sets the column count and width, read for more details 
+
+-there are also properties for styling the gap between columns, which is empty by default:
+	column-rule-style: double;		 		// units are: hidden (default), dotted, dashed, solid, double, groove, ridge, inset, outset 
+	column-rule-color: #993377;
+	column-rule-width: 1px;			 		// width of the line that divides the columns 
+	column-rule: 1px solid #000000;		 	// combined specifier (width, style, color)
+
+-use this to disable the default margins / padding of elements. default styles often negatively effect design:
+	* {
+		margin: 0px;
+		padding: 0px;
+		border: 0;
+	}
+-there are downloadable "Reset Style Sheets" that remove this default styling 
+
+-wrapping elements with a div allows you to move the div around while the internal elements remain in the right positions:
+
+  #logoheader {
+		width: 96%;
+		height: 150px;
+		padding: 0% 2%;
+	}
+	#logoheader > div {
+		width: 960px;
+		margin: 0px auto;	// auto is for keeping the wrapper centered / fixed in place as the size of the outer element grows beyond the wrappers fixed size
+	}
+
+-li and ul tags have display:list-item set by default. this causes them to stack vertically, and shows bullets. 
+-you can change their display mode to remove this styling. one common place to do this is in nav tags, where you want a horizontal list: 
+	#nav_id > li {
+		display: inline-block;				// change default styling of li, the vertical stack should become horizontal 
+		padding: 15px 10px 0px 10px;
+		margin-right: 5px;
+	}
+	#nav_id > li:hover {
+		background-color: #CC8877;		 	// change color on hover 
+	}
+	#nav_id > a {					 		// modify the link elements in the list 
+		font: bold 18px Arial, sans-serif;
+		color: #333333;
+		text-decoration: none;
+	}
+
+-you can modify the bullets themselves:
+	list-style-type: square; 				// none, square, circle, decimal 
+	list-style-position: inside;			// inside, outside
+	list-style-image: url("bullet.jpg");
+
+-article tag will often contain time tags to specify the date the article is posted or written
+-% is typically preferred over px
+-usually a website has a basic layout that most or all pages use - so you often want one stylesheet for all the pages, though sometimes not
+
+-the following code creates a drop down menu in the title bars nav list:
+
+	<ul id="nav_list">
+		<li><a href="index.html">Home</a></li>
+		<li><a href="photos.html">Photos</a>
+		<ul>
+			<li><a href="family.html">Family</a></li>
+			<li><a href="vacations.html">Vacations</a></li>
+		</ul>
+		<li><ahref="videos.html">Videos</a></li>
+		<li><a href="contact.html">Contact</a></li>
+	</ul>
+	...
+	#nav_list > li {
+		position: relative;					 	// needed for using absolute on the drop down menu items 
+		display: inline-block;
+		height: 35px;
+		padding: 15px 10px 0px 10px;
+		margin-right: 5px;
+	}
+	#nav_list li > ul {						 	// this ul wraps the whole submenu
+		display: none;						 	// the submenus will not display by default
+		position: absolute;					 	// position the whole submenu list 50px below the title
+		top: 50px;
+		left: 0px;
+		background-color: #CC0099;
+		box-shadow: 3px 3px 5px rgba(100, 100, 100, 0.7);
+		border-radius: 0px 0px 5px 5px;
+		list-style: none;					 	// get rid of the default bullets styling 
+		z-index: 1000;						 	// cause submenus to overlap other elements 
+	}
+	#nav_list li > ul > li {					// these are the individual submenu boxes 
+		width: 120px;
+		height: 35px;
+		padding-top: 15px;
+		padding-left: 10px;
+	}
+	#nav_list li:hover ul {						// this will cause the submenu to display when the menu item is hovered over 
+		display: block;
+	}
+	#titlebar a {
+		font: bold 18px Arial, sans-serif;
+		color: #333333;
+		text-decoration: none;
+	}
+	#titlebar li:hover {
+		background-color #558822;
+	}
+
+-There are many limitations to using absolute / relative / float: 
+	hard to expand columns to fit available space
+	hard to center the content of a box vertically
+	hard to extend a column from top to bottom independent of its content 
+-flexbox solves these probems. it allows boxes to change their size as their parents change size. traditional boxes can't change size.
+-flexbox still uses absolute/relative positioning but replaces float 
+
+-to use flexbox you set the display property in the parent, then use the flex property in the children: 
+	display: flex; 				// a flexible block 
+	display: inline-flex; 		// a flexible inline element 
+
+	flex-basis: 100px;			// declares initial size for the box. also used in calculating the adjusted size. 
+								// if 0 or undeclared the initial size is based on the boxes content 
+								// can also be set to auto, where the width property will be used for specyfing the size, and width will become mutable 
+	flex-grow: 2;				// specifies how the box can expand its size. all siblings flex-grow numbers are tallied and the parent is split up proportionately
+	flex-shrink: 1;				// specifies the rate at which box sizes will be reduced to fit the available space. 
+	flex						// parameters in order are: flex-grow, flex-shrink, flex-basis
+
+
+-the way a flexbox changes shape is determined by its siblings
+-note if flex-grow or flex-shrink are set to 0 the box will not change size in that way
+-if one of the siblings has a fixed size the other boxes will mold themselves accordingly
+
+-example: 
+	#parentbox {
+		display: flex;
+	}
+	#parentbox > div {
+		height: 145px;
+		margin: 5px;
+	}
+	#childbox-1 {
+		flex: 1 1 200px; 
+	}
+	#childbox-2 {
+		flex: 1 5 100px; 
+	}
+	#childbox-3 {
+		flex: 1 5 100px; 
+	} 
+	#childbox-4 {
+		flex: 1 5 100px
+	}
+
+-there are also the following properties for setting the limits of how much a box can shrink or expand:
+	min-wdith: 15px;
+	max-width: 30%;
+	min-height: 220px;
+	max-height: 100%;
+
+-flex's main axis can be defined as x or y. cross axis is the axis perpendicular to the main
+-there is also a starting point which by default is at the top left 
+-properties that manipulate positions of flex boxes use the main & cross axis and the starting point 
+-by default the starting point is at the top left & the main axis is the x axis 
+
+-the following properties are used to position the flex boxes:
+	flex-direction: column-reverse;			// declared in the parent. row, row-reverse, column, column-reverse 
+											// this sets the orientation and order of the boxes 
+
+	order: 1;			 					// declared in each box. manually sets the boxes position in the order of siblings 
+											// units are integers, typically from 1 to total box count 
+
+	justify-content: space-around;	 		// declared in the parent. flex-start, flex-end, center, space-between, space-around
+											// controls how empty space is used along the main axis. there are different ways of distributing empty space 
+											// used when siblings have fixed or limited sizes 
+
+	align-items: stretch;					// flex-start, flex-end, center, baseline, stretch. 
+											// it's justify-content for the cross axis, like when you have excess height 
+						 					// stretch is the default, where boxes are stretched to fit the height of the parent. stretch is extremely useful 
+
+	align-self: flex-end;		 			// flex-start, flex-end, center, baseline, stretch. 
+											// same as align-items for 1 box, aligns the self along the cross axis
+
+	flex-wrap: wrap-reverse;				// no-wrap, wrap, wrap-reverse. 
+											// sets whether flex items are forced onto one line or can wrap onto multiple lines
+											// will accommodate flex-basis by moving boxes to new lines before shrinking them
+											// when moved to the new line, the box will grow to fit that entire line
+											// with wrap-reverse the new line will placed on top (or at the start) of the cross axis and the other boxes move down 
+											// justify-content is often used in combination to handle the empty space left over after boxes are moved to new lines
+
+	flex-align: space-around;				// flex-start, flex-end, center, space-between, space-around, stretch. 
+											// works w/ flex-wrap, deals w/ space between multiple lines 
+											// this is like align-items, but it's for wrapped lines instead of separate sections of the cross axis 
+
+-example of a grid layout: 
+
+	#grid_container {
+		display: grid;						// grid, inline-grid. turns this element into a grid container 
+		column-gap: 50px;					// you can set the gap between the grid rows in the grid container 
+		row-gap: 50px;
+
+		grid-template-columns: 80px 200px auto 40px;			// set the number of columns and their sizes 
+		grid-template-rows: auto auto auto;						// set number and size of rows. here they'll all have the same size since they're all auto 
+
+		justify-content: space-evenly;				// justify-content horizontally arranges the children when their total width doesn't use all the grid space
+		align-content: center; 						// same as justify-content but for vertical axis  
+	}
+	#child1 {
+		grid-column-start: 1;				// the grid is made up of dividing lines. 
+  		grid-column-end: 3; 				// you arrange child elements in the grid by specifying the lines they start and end at
+		grid-row-start: 1;					// childs horizontal axis starts at line 1 and ends at line 3
+		grid-row-end: 2;
+	}
+	#child2 {
+		grid-row: 1 / 4;					// these are shorthands for specifying start & end at once 
+		grid-column: 1 / 2;
+	}
+	#child3 {
+		grid-area: 1 / 2 / 3 / 4;			// shorthand for specifying start & end of rows and columns at once. this says row lines 1-3, column lines 2-4 
+	}
+
+	#grid_container_2 {
+		display: grid;
+		grid-template-columns: repeat(6, 1fr);					// makes six columns 1fr wide 
+    	grid-auto-rows: minmax(100px, auto);					// minimum row size is 100px 
+		grid-template-areas:									// you can also use words to specify the layout this way 
+			'header header header header header header'
+			'menu main main main right right'
+			'menu footer footer footer footer footer';
+	}
+	#child3 { grid-area: header; }
+	#child4 { grid-area: menu; }
+	#child5 { grid-area: main; }
+	#child6 { grid-area: right; }
+	#child7 { grid-area: footer; }
+
+-note that it's easy to rearrange grids for different screen sizes using media queries, and this is a preferred method
+
+_____________________________________________________________________________________________________________________________________________________
+
+CHAPTER 5 - RESPONSIVE WEB DESIGN:
+
+-media queries are reserved rules in CSS that let you detect the clients device type & display size / resolution. 
+
+-there are a variety of keywords that work with media queries to detect the device: 
+	all 			// apply the styles to all devices
+	print 			// apply the styles when printing
+	screen 			// if a color screen is detected apply the styles
+	speech 			// if there's a speech synthesizer apply the styles
+	width 			// the specific browser window width the styles will be applied to 
+	height
+	min-width
+	max-width
+	aspect-ratio 	// the aspect ratio at which the styles will be applied (4:3, 3:2, etc.?)
+	orientation 	// units are: landscape, portrait. can be used to target mobile devices 
+	resolution 		// units are: dpi (dots per inch), dpcm (dots per centimeter), dppx (pixel ratio). 
+					// used to determine the pixel density at which the styles will be applied.
+
+-these keywords can be applied when linking to the style sheet, and cause the styles to only be applied to certain device configurations:
+	<link rel="stylesheet" media="(max-width: 480px)" href="styles.css">
+
+-you can also apply these in CSS using @media decorators:
+	@media screen and (max-width: 900px) and (min-width: 600px)		// each key:value pair must be in parenthesis. they can be combined using booleans 
+	@media (width:768px) and (orientation:portrait)					// this will target iPads w/ 768px screens 
+
+-CSS styles are applied in a cascade: new ones will overwrite old ones where necessary. 
+	So create a general style then define device-specific styles after it to cover all cases.
+-it is usually easier to use @media rules than link to multiple stylesheets
+
+-common practice is not to set a specific width for a device, but to define ranges using min-width / max-width and use flex boxes or grid layout. 
+	these intervals are called breakpoints 
+-common breakpoint values: 320, 480, 768, 1024
+-at breakpoint intervals you might move flexboxes around, redo columns, etc.
+
+-whether you use min-width or max-width depends on the order you create then modify the screen sizes:
+	@media (max-width: 1024px) {
+		body {
+			background-color: #3333FF;
+		}
+	}
+	@media (max-width: 768px) {						// max-width works with descending order 
+		body {
+			background-color: #2222AA;				// you redefine selectors directly within @media
+		}
+	}
+	@media (max-width: 480px) {
+		body {
+			background-color: #111199;
+		}
+	}
+	@media (max-width: 320px) {
+		body {
+			background-color: #000077;
+		}
+	}
+
+
+-the viewport is the browser view window. in cellphones the viewport size is typically the same as the screen size, but some cellphones code it differently. 
+-to fix this issue use viewport meta tags to set the viewport to match the device size:
+
+	<meta name="viewport" content="width=device-width, initial-scale=1"> 
+
+-viewport meta tags can do other things like set min / max, or allow users to zoom, etc. 
+
+-the total size formula (size + margin + padding + borders) makes it hard hard to get the perfect 100% when combining %s and px's. box-sizing can fix this:
+	box-sizing: border-box; 	 		// forces the browser to include the padding and border as part of the calculated width. 
+										// afterwards total element size = width + margin 
+
+-with float, to allow an element to change size without effecting neighbors, put it in the padding of a neighboring fixed size element & use a negative margin.
+	the fixed box must always be declared after the flexible one in the HTML document, otherwise the flexible box will be covered up & unclickable: 
+
+	section {
+		float: left;
+		width: 100%;
+		padding-right: 250px;
+		margin-right: -250px;		 		// the aside will spill into the element until it hits the margin 
+		box-sizing: border-box;		 		// the border-box property makes this technique possible 
+	}
+	section > div {
+		background-color: #FF00CC;	 		// styles normally assigned to section can be assigned to a div wrapper inside sections padding
+	}
+	aside {
+		float: left;
+		width: 250px;						// the dynamic width 
+	}
+	.clearfront {
+		clear: both;
+	}
+
+-to create 3 columns w/ a flexible one in the center & fixed columns on both sides use the above technique twice in a multilayered fashion 
+
+-browsers have standard font sizes that change according to the device. em and rem are units relative to the standard size 
+	2.5em 				// 2.x the elements inherited standard size. inherits changes to standard size made to its parent
+						// i.e. if the parent used 1.5em and the child uses 2em this is converted to 3em (1.5 * 2 = 3)
+	0.5rem 				// half the root elements (the body's) standard size. does not inherit changes to the standard size made in its parent 
+
+-some actually use em/rem units in place of % to declare sizes of containers so that the aspect ratio between font size & container size is always preserved 
+
+-% is typically used with images. sometimes max-width / min-width are also used.
+-if the image won't fit, or depending on the screens pixel density, you might want to change the image you use
+	with background images this is easy, just use CSS media queries and change the background-image & size properties
+	otherwise this can be done with the following tags:
+
+	<picture>
+		<source media="(max-width: 480px)" srcset="small_logo.jpg">			// selects a source depending on a media query 
+		<source media="(resolution: 2dppx)" srcset="normal_logo@2x.jpg">	// the resolution keyword here detects higher density screens 
+																			// the low/high density photos must have the same name w/ @2x or @3x
+		<img src="normal_logo.jpg">						// img always comes at the end, after all the source elements, and declares the default source 
+	</picture>
+	...
+	img {
+		max-width: 350px; 				// when working with low/high res images you must specify the size of the image for it to display more densely 
+	}		 							// % specifies a max percentage of the images original size, different for both images 
+										// read for how to work with max-width in this scenario. the author suggests using the low-density size 
+
+-another common technique in response design is to hide or show elements based on the resolution using display: none 
+
+-this javascript will respond to clicks on a button and show or hide the pulldown menu depending on its state:
+	<script>
+		var visible = false;
+		function initiate() {									// initialize the event listener for the button click
+			var elem = document.getElementById("button_img");
+			elem.addeventListener("click", showMenu);			// show or hide on button click 
+		}
+		function showMenu() {
+			var elem = document.getElementById("mainmenu");
+			if (!visible) {
+				elem.style.display = "block";
+				visible = true;
+			}
+			else {
+				elem.style.display = "none";
+				visible = false;
+			}
+		}
+		window.addEventListener("load", initiate);			// wait until the window is loaded to setup the listeners 
+	</script>
+
+_____________________________________________________________________________________________________________________________________________________
+
+CHAPTER 6 - JAVASCRIPT:
+
+-like CSS, there are 3 ways of including javascript: inline, script tags, or loaded from an external file
+-inline javascript comes in the form of special attributes:
+	<p onclick="alert('message')">... </p>		 		// onclick is a javascript inline attribute 
+
+-here are the most common mouse-related inline javascript attributes:
+	onclick  						// left click 
+	ondblclick  					// left double click
+	oncontextmenu  					// right click 
+	onmouseup  						// left click is released 
+	onmouseenter / onmouseleave  	// mouse enters / leaves the elements area
+	onmouseover / onmouseout  		// mouse is on top of / off of the element or any of its children (not sure how this is different)
+	onmousemove  					// mouse is over the element and moving
+	onwheel  						// mouse wheel is moved
+
+-inline javascript attributes used with elements that take keyboard input (like textarea): 
+	onkeypress / onkeydown / onkeyup 			// when the elemenet is focused and a key is pressed / down / up
+	onload 										// fires when document or resource has finished loading 
+												// often used to execute code after main page has finished loading
+	onunload 									// fires when document or resource has been unloaded (not sure when that happens)
+
+-elements can contain multiple javascript inline attributes and execute multiple codes
+-events are also caused by the browser. onload will trigger when resources are finished loading, often used to execute code after everything else loads. Note that by load we mean loaded into the DOM structure, not necessarily rendered on the screen:
+	<body onload="alert('message')"> ...
+
+-these are called event attributes. there are many more events than those listed above. they are a critical part of javascript
+-event attributes are not suitable for large applications or long scripts. writing the code within script tags is a more workable option, typically it's placed in the header (like the CSS style element). placing script tags in the header causes the browser to execute the script before processing the rest of the document
+-if the code gets too large or repeats across multiple document, coding inside script tags becomes problematic - the browser would have to redownload the script multiple times, the document becomes cluttered. in this case it's best to include the javascript from a separate document using the src attribute of script instead:
+	 <script src="program.js"></script>
+
+-javascript files use the .js extension, otherwise they are coded the same as what would appear inside script tags
+-script also has boolean attributes async and defer. If present, async causes the code to be executed asynchronously (while the document is processed). defer will wait until after the document is processed to execute
+-code is executed sequentially in the browser in javascript - don't forget the capability of it
+-javascript comments are: // and /* ... */, different than HTML comments
+-these operators are also part of the language: ++, --, +=, -=, *=, /=
+-\r\n can be used in combination to divide text into multiple lines; \r returns the cursor to the beginning of the line, apparently
+-alert() is the equivalent of print(); it is useful in debugging at various stages
+	var number = 13;
+	alert("the # is: " + number);	// remember string + int concatenation w/ alert
+
+-undefined vs. null: undefined is for variables there were declared but nothing was assigned to them; null is for a lack of value
+-remember you can change array elements to [], undefined, or null, which is similar to removing them
+-remember that arrays are objects & they have methods
+-instructions outside of functions, including those in blocks, are in global namespace by default.
+-you can have the same variable name defined in both global and local memory, though this is bad coding. the most local accessible variable will be used
+-you can also omit var / let when creating local variables inside functions, and they'll become global variables automatically
+-function is a keyword used to declare all functions
+	function add_two(value) {
+		return value += 2;
+	}
+
+-anonymous functions can be passed as values or assigned to variables. the semicolon at the end is added on anonymous functions:
+	var callback_function = function(value) {
+		return value += 2;
+	};					// note the semicolon
+
+-anonymous functions can be executed immediately with trailing parenthesis. in this case, the result of the function is assigned to the variable. the semicolon is placed after the ():
+	var result = function(value) {
+		return value += 2;
+	}(20);					// note the semicolon is placed after the ()
+
+
+-the author mentions the following as common javascript functions: isNaN(value), parseInt(value), parseFloat(value), encodeURIComponent(value), decodeURIComponent(value)
+	-isNaN(value) returns a boolean. can be useful for adding error checking
+	-parseInt(value) converts the first portion of an address to an integer, though it is often used for simply converting a string number to an integer (there are more efficient ways).
+	-parseFloat(value) is similar to parseInt but it works with floats instead
+	-encodeURIComponent(value) is used to encode a string into a valid URI; it's used when the string contains characters not supported in URIs (i.e. space, ?, &, others)
+	-decodeUTIComponent(value) just decodes the output of encodeURIComponent(value)
+
+-when a string is provided by a user and it needs to be included in a URL, always use the encodeURIComponent function; even spaces need encoding. the encoded characters will have % followed by a hex number in the output:
+
+	var name = "John Smith";
+	var encoded_name = encodeURIComponent(name);
+	var input_URL = "http://www.example.com/contact.html?name=" + encoded_name;	// John Smith is encoded as: John%20Smith
+
+-note that objects can also contain methods via anonymous functions. the author says objects are like small programs
+-if you need to access an objects property using a variable that holds the property name, you must use brackets instead of dot notation.
+-you also must use bracket notation to access properties with invalid variable names:
+	var object = {name: "John", 34: 30, "my age":70};
+	var property_name = "name";
+	alert(object[property_name]);			// object.property_name will not resolve the variable name to "name"
+	alert(object[34]);				// object.34 is an invalid name
+	alert(object["my age"];				// object."my age" will also not work
+
+-for objects within objects, double dot notation can be used:
+	var object = {name: "John", bike: {model: "Suzuki", year:1980}};
+	alert(object.bike.model);
+
+-the this keyword is used to reference the object from within its own methods / properties.
+-in javascript, a constructor is simply an anonymous function that creates an object & returns it:
+	var constructor = function() {
+		var obj = {name: "Joe", age: 34};
+		return obj;
+	}
+
+-constructors are like object factories. creating a class is simply done by creating a constructor.
+-use === or !== to check if variables are referencing the same object or different objects.
+-you can also use the global Object w/ its boolean is() method:
+	Object.is(var1, var2);		// are the two variables referencing the same object or not?
+
+-to encapsulate the class correctly you must use closures.
+-for closures, you create variables within the constructor function - but not within the object the constructor returns. you can access those variables within the return object methods, but not with the objects properties.
+	var constructor = function(){
+		var private_variable = 17;								// private variables are declared like this in the constructor
+		obj = {name: "Joe", get_private_variable: function(){return private_variable;}};	// private variables are then accessed in the objects methods
+		return obj;
+	}
+
+-closures work because functions maintain a link to the space inwhich they were created. the return objects functions maintain a link to the constructor functions namespace. through this link they can access the private variables despite being called from the object
+-note that with closures, the private variables do not require the this keyword.
+-besides closures and literals, there is third way of creating objects: the new keyword.
+-new was added just to maintain consistency with C++; you do not technically need it.
+-new works with defined functions, not anonymous functions.
+-the function will not return the object; its variables will become the properties of the object.
+-the functions private variables must also use the this keyword. that's different from closures.
+	function the_object(){
+		this.private_variable = 17;
+		this.name = "Joe";
+		this.get_private_variable = function(){return this.private_variable;};
+	}
+	var obj = new the_object();
+
+-the author does not say how encapsulation works with new
+-inheritance in javascript is achieved using prototypes, and a method of the global Object called create().
+-with create, you can create a new object that inherits from an old object, then modify the new object afterwards by adding properties / methods directly to it.
+-the new object is linked in a prototype chain with the old object, and changes to the old object will effect the new object:
+	var parent = {name: "Joe", age: 30, get_name: function(){return this.name;}};		// create parent object w/ literal notation
+	var child = Object.create(parent);
+	child.showage = function(){return this.age;};
+	parent.height = "173cm";
+
+-all types are implemented as objects in javascript
+-the following type constructors can be used for typecasting or to create variables with new: Boolean(value), String(value), Number(value), Array(value)
+-w/ Array(value), if value is a single integer than an array of that length will be created; multiple values will merely be placed in an array:
+  var arr1 = new Array(4);        // creates [undefined, undefined, undefined, undefined]
+  var arr2 = new Array(4, 5, 6)   // creates [4, 5, 6]
+
+-the advantage of using new w/ these constructors is the input parameter can be any type, and it will be typecasted
+-common string methods / attributes: length, toLowerCase(), toUpperCase(), trim(), trimLeft(), trimRight(), substr(start, length), substring(start, end), split(separator, limit), startsWith(value), includes(search, position), replace(expression, replacement)
+  substr(start, length);              // length is optional. if the length overflows, the string up to the end will be returned
+                                          // start can also be a negative index.
+  substring(start, end);              // does not include the last character specified by end
+  split(separator, limit);            // limit determines the maximum number of splits that will be made
+  startsWith(value);                  // this returns a boolean
+  replace(expression, replacement);   // replaces the expression with the replacement string within the calling string. expression can be a regex or a normal string.
+
+-characters in strings can still be accessed w/ the bracket notation []
+-common array methods / attributes: length, push(values), pop(), shift(), unshift() concat(array), splice(index, remove, values), slice(start, end), indexOf(value, position), lastIndexOf(value, position), filter(function), every(function), some(function), join(separator), reverse(), sort(function), map(function)
+  slice(start, end);                        // last element not included in the slice
+  concat(array);                            // the new array is returned, the original arrays are not modified
+  filter(function(value));                  // all values in the array are sent into the callback function one by one, it will weed out certain values & keep others.
+                                                    // callback must return a boolean. you only pass value, but an index & array reference are implicitly given to the function
+  every(function(value));                   // similar to filter but checks that every value is valid, not just certain ones, and returns true or false.
+  some(function(value))                     // same as every but returns true if just 1 value evaluates true
+  join(separator)                           // creates a massive string of the array values, inserting the separator between them all
+  sort(function(value1, value2))            // the callback receives 2 array values and returns a bool indicating the order.
+  map(function(value))                      // creates a new array with the values returned by the callback function
+
+  var list = [12, 5, 80, 34];
+  var newlist = list.filter(function(value) {
+    return value <= 50;
+  });
+
+  push(1, 7, 12, 3);                        // you can push / shift multiple values; alternatively, you can concat an array of them
+
+-remember that shift/unshift are different than push/pop merely in that they deal with the start of the array
+-in most of the callbacks, an index & array reference are implicitly given to them.
+-splice is all purpose. splice can remove things without undefined remaining, only add things by specifying 0 to remove, or do replacement.
+-sort defaults to ascending sort if no callback argument is provided
+-the Date object stores the date in milliseconds, and the various date accessors / setters merely translate to & from milliseconds
+-some Date methods that may not be known are: Date(), getTime(), getFullYear(), getDate(), toString(), toDateString(), toTimeString()
+  Date()               // the date constructor can take 1 arg (timestamp), 0 arguments for the current date,
+                            // or a string in the form: year, month, day, hours, minutes, seconds, milliseconds
+  Date.getDate();      // returns an integer for the ~day~ of the month (1-31)
+  Date.getTime();      // returns an integer timestamp for the milliseconds since Jan 1 1970. no corresponding setter - to set a timestamp, merely pass 1 argument to the Date constructor
+  Date.getFullYear();  // returns a 4 digit year
+  Date.toString();     // turns date into a full string: Wed Jan 04 2017 22:32:48 GMT-0500(EST)
+  Date.toDateString(); // turns date into a partial string: Wed Jan 04 2017
+  Date.toTimeString(); // turns date into a partial string: 22:32:48 GMT-0500(EST)
+
+  var current_date = new Date();
+
+-for browser consistency it is recommended to pass the arguments to Date() in a comma separated list; though Date can take a string of human readable dates in some formats / browsers
+-the month parameter of the Date constructor is a range of 0-11, so you must decrement the month: 0 is January. Not sure if this is true for other parameters
+-alert() will reformat the Date objects internal representation from milliseconds into a human readable date.
+-Date objects can be manipulated in the following ways:
+  var current = Date();
+  var future = current.setDate(current.getDate() + 35);           // remember getDate is for days. basic arithmetic works, this will add 35 to the date and rollover is handled automatically
+  var interval = future - current;                                // the value returned is in milliseconds and must be manually converted as needed
+  var seconds_interval = interval / 1000;
+  var minutes_interval = seconds_interval / 60;
+  var hours_interval = minutes_interval / 60;
+  var days_interval = hours_interval / 24;
+
+-some comparators do not work correctly with Date objects, so use getTime() and compare the timestamp
+-if you want to compare the dates discluding some parameters like hours/minutes/seconds/milliseconds, reset those values to 0 with the setter methods first
+-MomentJS is a library typically used for working with timezones. there are Date functions for this purpose as well.
+-some Math properties worth mentioning are: random(), sqrt(value), ceil(value), floor(value), round(value), trunc(value), min(value1, value2, ...), max(value1, value2, ...), exp(exponent), pow(base, exponent)
+  Math.trunc(value);                                // removes the fractional digits of a value and returns an integer. not sure how this is different from floor
+  Math.min(value1, value2, ...);                    // returns smallest value in a comma separated list
+  Math.random();                                    // returns a value between 0 and 1. Not sure whether it's inclusive.
+
+  Math.random() * (max - min) + min;                // returns a random float in a range.
+  Math.floor(Math.random() * (max - min) + min);      // returns a random integer in a range
+
+-when any browser window opens, a window object is created. this window object is a property of the global object.
+-in turn, the window object includes additional sub-objects as properties that handle specific aspects of the window & document.
+-the window sub-objects as properties include: location, history, navigator, document.
+-because window is a global object, the interpreter infers that methods & properties belong to it; thus you don't need to precede location or alert with window dot notation:
+  window.location = "http://www.load_url.com";      // location property / subobject; contains information about the origin of the current document. can change the URL (load new document) or return the URL of the document
+  window.history                                    // history property / subobject; contains properties & methods to manipulate navigation history
+  navigator                                         // navigator property / subobject; contains information about the application and device. can be used for geolocation
+  document                                          // document property / subobject; provides access to objects representing HTML elements
+
+-besides these sub-objects, the window object also has its own class properties / methods: innerWidth, innerHeight, scrollX, scrollY, alert(value), confirm(message), prompt(message), setTimeout(function, milliseconds), setInterval(function, milliseconds), open(URL, window, parameters)
+  innerWidth; window.innerHeight;                 // returns width / height of window in px
+  scrollX; window.scrollY;                        // returns number of pixels the document has been scrolled horizontally / vertically
+  alert(value);                                   // alert can be called off a window object, but doesn't have to be
+  confirm(message);                               // similar to alert, but user can choose ok vs. cancel & it will return true/false depending
+  prompt(message);                                // shows a popup window for entering a value & returns the value
+  setTimeout(function, milliseconds);             // executes the function after the specified time. there's also a clearTimeout() method to cancel the process, apparently
+  setInterval(function, milliseconds);            // similar to setTimeout but calls the function repeatedly. clearInterval() cancels this
+  open(URL, window, parameters);                  // opens a document in a new window. the window parameter is the name of the window where the document should be opened.
+                                                          // if no name is provided or the window doesn't exist, it'll create a new window. parameters is a list of configuration options.
+                                                          // the parameters list is separated by commas: "resizable=no,scrollbars=no". not sure if spaces work
+  var timer = setInterval(callback, 500);
+  clearInterval(timer);                    // to use clearInterval / clearTimeout you pass it the reference returned by the setInterval / setTimeout function
+
+-the window object controls aspect of the window, its content, and its metadata
+-the location object can be assigned a URL, or used to access methods & properties
+-location objects methods / properties include: assign(URL), replace(URL), reload(value)
+  location = "http://www.load_url.com";
+  location.assign(URL);
+  location.replace(URL);                        // both assign & replace load new pages, but replace does not modify the browsers history; assign does.
+  location.reload(bool);                        // for refreshing the current document. if bool is true, the document is fetched from the server; if false, fetched from cache if possible.
+
+-setTimeout() & setInterval() are used in creating animations; more detail later
+-the DOM (document object model) is a tree of objects of type Element (they inherit from type Element). These objects maintain a direct link with the HTML documents elements. Changes to them effect the document & vice versa.
+-all these DOM element objects are stored in the document object.
+-the document object has some properties for accessing all elements of a given type: form, images, links
+-these properties all return arrays filled with elements of that type
+  var links = document.links;         // array of all <a> elements. all 3 of these seem useful for webscraping
+  var forms = document.forms;         // array of all form elements
+  var images = document.images;       // array of all image elements
+  links[0].id = "new_id";
+
+-there are also document methods for selecting elements: getElementById(id), getElementsByClassName(class), getElementsByName(name), getElementsByTagName(type), querySelector(selector), querySelectorAll(selectors)
+-these methods can be chained:
+  document.getElementsByTagName(type);          // it wants the type of element, and will return an array of all those elements
+  document.querySelector(selector);            // returns the first element in the document that matches the selector
+  document.querySelectorAll(selectors);        // returns array of elements that match 1 or more selectors. multiple selectors can be separated by commas
+
+  var el = document.getElementsById("main_wrapper").getElementsByTagName("p");      // notice the quotes around the element type
+  var which_el = el[0].id;
+  var el2 = document.querySelect0r("section > p");                                  // and notice the quotes around the selector
+
+-elements have an onload property which waits for the element to load before executing a script:
+  <head>
+    <script>
+      function initiate(){                                  // this merely defines the function, it doesn't execute until it's called
+        var = document.getElementByTagName(p);
+      }
+    </script>
+  </head>
+  <body onload="initiate()">                                // here the calling of the function is deferred until the DOM is loaded
+    <p> ... </p>
+  </body>
+
+-the element objects returned by these methods have properties & methods to change the element.
+-CSS attribute names & javascripts element object names often don't coincide; the two languages did not evolve together.
+-the style property is one such property. style itself is an object which then contains many different style properties: color, background, backgroundImage, backgroundRepeat,
+  backgroundColor, backgroundPosition, backgroundAttachment, border, BorderTop, borderTopStyle, borderTopWidth, borderTopColor (& others), margin, marginBottom (& others), padding,
+  paddingLeft (& others), width, height, visibility, display, position, top, bottom, left, right, cssFloat, clear, overflow, zIndex, font, textAlign, verticalAlign, textDecoration,
+  textDecorationBlink, textDecorationLineThrough, textDecorationNone, textDecorationOverline, textDecorationUnderline, fontFamily, fontStyle, fontVariant, fontWeight
+
+  var el = getElementById("unique_id");
+  el.style.width = "20px";                                // only difference from CSS, besides names, is the values are put in quotes
+  el.style.border = "1px solid #FF0000";
+
+-the element styles are independent of CSS styles; they are not initialized with the CSS properties. Prior to their style being set in javascript they will return empty strings
+-element objects have additional read-only properties to provide information about the elements: clientWidth, clientHeight, offsetTop, offsetLeft, offsetWidth, offsetHeight, scrollTop, scrollLeft, scrollWidth, scrollHeight, & others
+
+  el.clientWidth / el.style.clientHeight;         // returns width / height of element, including its padding
+  el.offsetTop / el.offsetLeft;                   // returns the # of px element is from the top / left of its container
+  el.offsetWidth / el.offsetHeight;               // returns width / height of element including padding and border.
+  el.scrollTop / el.scrollLeft;                   // returns the # of px the element is scrolled to the top or left (no further details given)
+  el.scrollWidth / el.scrollHeight;               // returns width / height of the elements content
+
+-you often have to read from these read-only properties, then use the result to modify the writable properties:
+  var element = document.getElementById("unique_id");
+  var width = element.clientWidth;
+  width += 100;
+  element.style.width = width + "px";                       // nice typecast to string
+
+-element objects also have properties to modify the elements CSS class, changing styles all at once: className, classList
+  el.className;       // sets or returns the elements class
+  el.classList;       // returns a DOMTokenList - an array with the list of classes assigned to the element
+
+-DOMTokenList is an object with a couple methods for modifying the classes in the list: add(class), remove(class), toggle(class), contains(class)
+  var DOMobj = el.classList;
+  DOMobj.add("class1");                     // add / remove classes from the elements class list
+  DOMobj.remove("class3");
+  DOMobj.toggle("class3");                  // adds or removes the class depending on whether it's currently there or not
+  el2.classList.contains("class3");         // boolean that indicates whether the DOMTokenList contains the class
+
+-you can also modify the content of an element with the following properties / methods: innerHTML, outerHTML, insertAdjactHTML(location, content)
+  el.innerHTML;                                 // sets or returns the content
+  el.outerHTML = "<p> ... </p>";                // sets or returns the entire element with its content. author did not show the syntax
+  el.insertAdjacentHTML(location, content);     // inserts content in adjacent locations. location can be: beforebegin / afterend (before or after the element);
+                                                          // or afterbegin / beforeend (within the element, but before / after its children)
+
+  el.innerHTML = el.innerHTML + "append_text";   // appending can be done with insertAdjacentHTML or just this way
+  el.innerHTML = "<p> ... </p>";                 // put a <p> child element inside of el. innerHTML can process HTML code - the <p> child is now a live elemeent.
+
+-notice you can add or remove all kinds of new elements on the fly with these methods, including buttons, text boxes, etc.
+-there's a different way of creating HTML elements: the document object includes the methods: createElement(keyword), appendChild(element), removeElement(element)
+-with this, you can create an element object and modify its properties before you add it as a child of an existing one; or remove the child of an existing one
+-the innerHTML approach works just as well in the document, but if you are sending newly created elements to an API / over a network, the document object approach is needed
+  var new_el = document.createElement("p");         // note the tag type is used to specify what kind of element
+  var old_el = document.getElementById("unique_id");
+  new_el.innerHTML = "...";
+  old_el.appendChild(new_el);
+
+-when a document finishes loading, the load event fires automatically.
+-HTML inline events; onclick, onload, etc. discussed earlier can also be called from element objects inside script tags
+-though we defined onload in the body element earlier, the common practice is to define it off the window object:
+  function click_button(){
+    var el = document.getElementById("unique_id");
+    el.onclick = showmessage;                           // event methods execute functions when they're activated
+  }
+  function showmessage(){
+    alert("...");
+  }
+  window.onload; = click_button;                        // when the entire body loads, window.onload triggers the load event
+
+-the HTML inline event attributes are not all supported by all browsers, and discouraged because they violate separation of HTML from javascript.
+-the window object has methods that can instead be used for events: addEventListener(event, listener, capture), removeEventListener(event, listener)
+  var el = document.getElementById("unique_id");      // element objects inherit from the window object, and can call event listener functions also
+  el.addEventListener("click", showmessage);          // parameters: (event, listener, capture). event will be the name of an inline event in quotes with the prefix "on" removed.
+                                                          // listener is the function waiting to be triggered. capture is a bool that defaults to false
+                                                          // capture determines if the event propagates to other elements or is ignored by them (usually overlapping elements)
+
+-functions that respond to the event listeners automatically receive an Event object that contains information about the event (sometimes other objects are received automatically also)
+-you must still define a parameter for the event object within the functions parameter list. i.e. function(e) or function(event). the name itself does not matter.
+-the Event object has the following properties and methods: target, type, preventDefault(), stopPropagation()
+  event.target;             // reference to the element object that received the event; used inside an event listener function
+  event.type;               // indicates the type of event that happened
+  event.preventDefault();   // cancels the event to prevent default performing of tasks by the system (see chapter 17)
+  event.stopPropagation();  // prevents event from propagating to other elements, like if elements are stacked on top of one another.
+                                    // the first element that receives the event will be the one executing it.
+  function event_function(event){
+    var el = event.target;
+    el.style.color = "#FF0022";
+  }
+
+-you can pass additional information to the handler function via inserting an anonymous function in between:
+  el.addEventListener("click", function(event){
+    var additional_info = 37;                             // note that we initialized the additional parameter with a constant, not a variable
+    showmessage(event, additional_info);
+  });
+
+-when you use this method, if you initialize the additional parameter with a variable, the variables value might be changed by the time the event executes.
+-this problem is solved by using a second anonymous function to wrap the function. it will pass the current value of the variable to the inner function, and return that function:
+
+  el.addEventListener("click", function(received_variable){       // the variable is received in this parameter, in the outer anonymous function
+    return function(event){                                       // the inner function has the event parameter
+      var additional_info = received_variable;
+      showmessage(event, additional_info);
+    }
+  })(variable_name);                                              // here the variable is actually passed
+
+-some events send special event objects instead of normal ones. they inherit from the event object, but have additional methods / properties
+-mouse events send a MouseEvent object, which has the following methods / properties: button, ctrlKey, altKey, shiftKey, metaKey, clientX, clientY, offsetX, offsetY, pageX, pageY, screenX, screenY, movementX, movementY
+  event.button;                                       // returns an integer 0-x for the mouse button that was pressed
+  event.ctrlKey; event.altKey; event.shiftKey;        // boolean indicating if ctrl, alt, or shift was pressed at the time
+  event.metaKey;                                      // boolean indicating if the meta key, i.e. the windows key or command key, was pressed
+  event.clientX; event.clientY;                       // returns coordinates of the mouses X or Y position in px when the event occured. it's defined in terms of the current window view
+  event.offsetX; event.offsetY;                       // same but indicates where the mouse was within the element of the event, not the window view.
+  event.pageX; event.pageY;                           // same but indicates where the mouse is on the page of the document; it takes scrolling into account
+  event.screenX; event.screenY;                       // same but indicates where the mouse was on the screen.
+  event.movementX; event.movementY;                   // returns the difference between previous & current X or Y position of the mouse. used to measure movement - direction & amount.
+                                                            // values returned are in px & position is defined by the screen.
+  function.showposition(event){
+    var button_pressed = event.button;
+    ...
+  }
+  window.addEventListener("click", showposition);
+
+-the screen, browser window, & HTML elements all have their own separate pixel coordinate systems. The origin (0,0) is at the top left in all of them.
+-here is an example of a level bar that follows the mouse using the above properties:
+  <style>
+    #container {width: 500px; height: 40px; padding: 10px; border: 1px solid #999999;}
+    #adjustable_bar {width: 0px;  height: 40px; background-color: #000099;}
+  </style>
+  <script>
+    function initiate(){
+      var el = document.getElementById("container");        // used below to delay initializing the progress bar until the rest of the page loads
+      el.addEventListener("mousemove", movebar);
+    }
+    function movebar(event){
+      var widthbar = event.offsetX - 10;                    // deals with the padding - the mouse position will include the padding, which is inside the element.
+      if (widthbar < 0){
+        widthbar = 0;
+      }
+      else if (widthbar > 500){
+        widthbar = 500;
+      }
+      var el = document.getElementById("progressbar");
+      element.style.width = width + "px";
+    }
+    window.addEventListener("load", initiate);
+  </script>
+
+-keyboard events also have their own special KeyboardEvent object with the following methods / properties: key, ctrlKey, altKey, shiftKey, metaKey, repeat
+  event.key;                  // returns a string that identifies the key or keys that caused the event
+  event.repeat;               // boolean that tells whether the person is holding the key down or not
+
+-the key / keys returned by event.key will all be lowercase. the author never specifies how you would deal with capitalized letters; whether you could check shift, or do something else
+-for unusual keys, there are special strings that are returned by event.key: "Alt", "Control", "Shift", "Meta", "Enter", "Tab", "Backspace", "Delete", "Escape", " ", "ArrowUp, "ArrowDown", "ArrowLeft", "ArrowRight", "Home", "End", "PageUp", "PageDown"
+
+  var code = event.key;
+  switch (code) {
+    case "1":                   // the string can include numbers or lowercase letters; not sure if or how multiple keystrokes are included
+      ...
+    case "ArrowUp":
+      ...
+    case "ArrowDown":
+      ...
+  }
+
+-logic errors will not present in the debugging console, but breakpoints can be used instead.
+-window.console can be used to send debugging messages to the console instead of alert. the console object has the following properties / methods: log(value), assert(condition, values), clear()
+  window.console(log(variable));          // displays the value of the variable in the console
+  console.assert(condition, values);      // if the condition is false, the values will be printed. I think values are a comma separated list, but the author doesn't say
+  console.clear()                         // clears the console, there's also a button on the console to do this
+
+-apparently for loop control variables are updated before the condition is checked, even with postfix notation (x++)
+-errors are another type of event. there's an ErrorEvent object to handle general errors (necessary as your program gets larger & has many APIs)
+-there's a global ErrorEvent object that's a property of window, and other specialized ErrorEvent objects for specific APIs.
+-in addition to its inherited properties, ErrorEvent property / methods include: error, message, lineno, colno, filename
+  function showerror(event){
+    var error_obj = event.error;               // returns an object with info on the error
+    console.log(event.message);                // a string telling what error it was
+    console.log(event.lineno);                 // tells what line number the error happened at
+    console.log(event.colno);                  // tells the column of the document where the instruction that caused the error starts (not sure what column refers to)
+    console.log(event.filename);               // tells the URL of the file where the error happened
+  }
+  window.addEventListener("error", showerror);
+  ...
+  bad_function();
+
+-exception handling: sometimes you know about the possibility of an error and want to handle it.
+-javascript uses throw / try / except for exception handling:
+  <script>
+  function CPU_temperature(temp){
+    max_temp = 120;
+    if (temp > max_temp){
+      var error = {name: "ErrorTemp", message: "CPU temp too high"};  // the error object must have name and message attributes specified
+      throw error;                                                    // if a problem was encountered, throw generates the exception
+    }                                                                   // throw is similar to return, it ends the function and returns an error object
+    try{                                                              // try tries the code
+      CPU_temperature(temp);
+    }catch{                                                           // catch catches any exception
+      console.log(error.message);                                     // if an exception was thrown while within the try block, the catch block executes
+    }
+  }
+
+-an API is the part of the program or library you can interact with from the outside; the part you must learn to use the library or application
+-HTML5 specified many standard libraries. These libraries are native to the browser & accessible via their APIs.
+-in addition to the standard libraries, there are many external libraries such as: jQuery, React, AngularJS, Node.js, Modernizr, Moment.js, Three.js, Google Maps
+  React - used for creating GUIs & graphics
+  jQuery - multipurpose, simplifies many things, Ajax included
+  AngularJS - makes HTML elements more dynamic & interactive
+  Node.js - server side library, used for creating network applications
+  Modernizr - can detect the available features in the browser, including CSS, HTML elements, Javascript APIs
+  Moment.js - date processing library
+  Three.js - 3D graphics library based on WebGL
+
+  <head>
+    ...
+    <script src="modernizr-custom.js"></script>
+    ...
+    <script>
+      function initiate(){
+        var el = document.getElementById("picture");
+        if (Modernizr.boshadow){                           // modernizr can detect if a property is available, then you can add it to an element
+          el.innerHTML = "box shadow is available";
+        }
+      }
+      window.addEventListener("load", initiate);           // wait until the document loads to check & add these things
+    </script>
+  </head>
+
+___________________________________________________________________________________________________________
+CHAPTER 7 - FORMS API:
+
+-the form API is available to forms and form elements.
+-the form API includes the following javascript methods & events: submit(), reset(), checkValidity(), input, change
+  reset() - reset the form elements to default values
+  checkValidity() - returns a boolean indicating if the form is valid
+  input - an event, fired if an input fields characters are changed, or if a new value is selected
+  change - an event, fired if a new value is selected
+
+  <script>
+    function intiiate(){
+      var button1 = document.getElementById("send_button");
+      button1.addEventListener("click", send_function);
+    }
+    function send_function(){
+      var form1 = document.querySelector("form[name='info_form']");
+      form1.submit();
+    }
+    window.addEventListener("load", initiate);
+  </script>
+  ...
+  <form name="info_form" method="get" action="process.php">
+    <button type="button" id="send_button">Submit Form</button>
+  </form>
+
+-document.forms returns an array with references to all forms in the document (if you have multiple forms) - an alternative to using getElementById or other selectors
+-the submit method used above skips input validation, in contrast with the input elements submit type.
+-to validate the form before submitting it, use checkValidity().
+-remember there are a variety of ways that form validation can be set up: using specific types of form elements (like email or pattern); the boolean required property
+-with the forms API you can add more complex validation, such as checking that fields from different elements match or requiring 1 of 2 fields, etc..
+-Element objects representing form elements have a method: setCustomValidity(message). You can set custom error messages with it.
+-custom errors are necessary to describe the mistake users make when interacting w/ a custom validation setup
+
+  name1.addEventListener("input", validate);
+  name2.addEventListener("input", validate);
+  validate();                                   /* this is called so that validation is tested in the beginning, before any events are fired (to prevent immediate submissions) */
+  ...
+  function validate(){
+    if (name1.value == "" && name2.value == ""){
+      name1.setCustomValidity("input at least one name");
+      name1.style.background = "#FFDDDD";       /* the error message is only displayed if the user tries to submit the form, but the field colors will change with each event */
+      name2.style.background = "#FFDDDD";
+    } else{
+      name1.setCustomValidity("");
+      name1.style.background = "#FFFFFF";
+      name2.style.background = "#FFFFFF";
+    }
+  }
+
+-if a user tries to submit an invalid form, and invalid event is triggered on the element that produced the error.
+-the invalid event can be listened on from the overall form element - if you pass true as a third argument when adding the listener:
+
+  form1.addEventListener("invalid", validate, true);      /* true here will cause the event to be propagated up the DOM */
+  ...
+  function validate(event){
+    let el = event.target;              /* event.target will get the specific element that fired the invalid event */
+    el.style.background = "#FFDDDD";
+  }
+
+-the above will validate the form when it is submitted. For constant, dynamic custom validation use the ValidityState object:
+-the ValidityState object, accessed through an elements validity property, has boolean properties that indicate a forms current validation status:
+  valid, valueMissing, typeMismatch, patternMismatch, tooLong, rangeUnderflow, rangeoverflow, stepMismatch, customError
+
+  valid:               returns true if the input is valid. not sure how this differs form checkValidity
+  valueMissing:        true if boolean required was declared & the value is missing
+  tooLong:             if maxLength was used & the input exceeds it
+  rangeUnderflow:      if the min attribute was used & the input is smaller than it
+  rangeOverflow:       if the max attribute was used & the input exceeds it
+  stepMismatch:        if the step attribute was used & the properties min, max, & value do not correspond (read further for details)
+  customError:         returns true if a custom error was set (i.e. by using setCustomValidity()).
+
+-switching through these properties can allow you to respond to specific error types:
+
+  var valid = form1.checkValidity();                /* not sure why the author is using checkValidity over validate.valid, or if they're interchangeable */
+  if (valid){
+    form1.submit();
+  } else if (element1.validity.patternMismatch || element.validity.valueMissing){
+    ...
+  }
+
+-CSS also provides pseudo-classes to easily modify the styles of elements that are not currently valid:
+
+  <style>
+    input:valid{                /* this will specifically effect input elements whose fields are valid / invalid
+      background: #EEEEFF;
+    }
+    input:invalid{
+      background: #FFEEEE;
+    }
+    input:optional{ ... }       /* effect form elements based on their boolean required attribute */
+    input:required{ ... }
+
+    <input type="number" name="number1" min="0" max="16">
+    input:in-range{ ... }
+    input:out-of-range{ ... }   /* based on whether they're in or out of min / max range */
+
+_______________________________________________________________________________________________________
+CHAPTER 8: MEDIA (VIDEO, AUDIO, ETC.)
+
+-the <video> element is the tag used to embed videos. it has a variety of attributes:
+  src, width, height, controls, autoplay, loop, muted, poster, preload
+
+  controls:           boolean, include to display an interface
+  autoplay:           boolean, include to cause the video to play automatically when it can
+  loop:               boolean, include for video to repeat in a loop
+  muted:              boolean, if present video is muted
+  poster:             specify an image URL used for the videos wait / loading screen
+  preload:            set to none, metadata, or auto. none will cause the video not to be predownloaded / cached. This is used to minimize traffic.
+                          metadata will preload some important info. auto (the default) will automatically predownload the video.
+
+  <video src="video.mp4" width="700" height="500" poster="image.jpg" preload controls autoplay> ... </video>      <!-- preload was used without none, metadata, or auto. not sure why  -->
+
+-remember that width / height will not stretch the video itself
+-there is no standard video format for the web. Formats use different codecs. the common formats are: MP4, OGG, WebM.
+-OGG contains Theora video codecs & Vorbis audio codecs. MP4 contains H.264 video & AAC audio codecs. WebM contains VP8 video & Vorbis audio codecs.
+-MP4 is the only format supported by Safari / IE, but it has a commercial license.
+-Meanwhile, Firefox / Opera use OGG & WebM.
+-Chrome supports both MP4 and OGG / WebM
+-for compatibility, there is a separate element called <source> that works with the <video> tags. <source> can define multiple sources:
+
+  <video controls>                      <!-- do not include src in the video element -->
+    <source src="video.mp4">            <!-- instead, place multiple source elements inside the video tags -->
+    <source src="video.ogg">
+  </video>
+
+-browsers require videos to be sent by the server with the corresponding MIME type. Every file has a MIME type associated with it. Servers are already configured for MP4,
+  but typically are not configured for OOG or WebM. How to include a new MIME type depends on the characteristics of your server. You might append a line to the .htaccess file.
+  That file is sometimes provided in the root folder of the site. Add this line: Addtype video/ogg ogg (form is: Addtype MIME/type extension)
+
+-<audio> tags work very similarly to <video> tags. <audio> tags have the following identical attributes: src, controls, autoplay, loop, preload.
+-Once again, MP3 codecs are commercially licensed and IE / Safari support only them, while Firefox / Opera use .ogg:
+
+  <audio id="media" controls>
+    <source src="sound.mp3">
+    <source src="sound.ogg">
+  </audio>
+
+-custom media API: instead of adding the controls attribute to <video> or <audio>, there are properties of those elements to create your own video / audio player
+-the advantage is the media players implementation will be browser-independent, and can be customized with CSS/HTML in a variety of ways
+-the following properties / methods of <video> / <audio> exist for this purpose: paused, ended, duration, currentTime, volume, muted, error, buffered, play(), pause(), load(), canPlayType()
+
+    paused:                 return true if media is paused or hasn't started
+    ended:                  return true if finished
+    duration:               return length of duration in seconds
+    currentTime:            set or return where it's currently playing in seconds
+    volume:                 set or return volume in range 0.0 to 1.0
+    muted:                  set or return true (muted) or false (not muted)
+    error:                  returns the error value if an error has happened
+    buffered:               an array that contains every separate piece of the media that's been downloaded.
+                                      has methods start & end to return times of the borders of each piece, i.e. buffered.start(0), buffered.start(1), etc.
+    play()                  play it
+    pause()                 pause it
+    load()                  load the media file (useful for loading it in advance)
+    canPlayType(MIMEtype)   pass a MIME type (i.e. video/ogg, video/mp4) & this returns one of 3 strings indicating whether the browser supports it
+                                       strings can be: "" (empty string, unsupported), "maybe", "probably"
+
+-there are also various events associated with the custom media API. some common ones are: progress, canplaythrough, ended, pause, play, error
+    progress:               fired periodically, provides updates for downloading progress. the information is accessible via the buffered attribute
+    canplaythrough:         fired when it's calculated that the whole media can be played without interruption. calculation is based on current download rate
+                                  there's a similar event called canplay that doesn't consider full situation, only plays when a few frames are available
+    ended:                  fires when it reaches the end
+    pause:                  fires when it's paused
+    play:                   fired when it starts playing
+    error:                  fired when an error happens. the error is delivered to the <source> element that corresponds to the media source producing the error
+
+-note that with the custom media API, you will be creating the buttons in HTML / CSS and then writing javascript to add event listeners & activate them
+-here is an example of code for a play button & progress bar:
+
+    <video id="media" width="720" height="400">
+      <source src="vid.mp4">
+    </video>
+    <input type="button" id="play" value="Play">
+    <div id="bar">
+      <div id="progress"></div>
+    </div>
+    ...
+    #bar {
+      width: 400px;
+    }
+    #progress{
+      width: 0px;
+    }
+    ...
+    var mmedia = document.getElementById("media");
+    var play = document.getElementById("play");
+    var loop;
+    ...
+    function push() {
+      if (!mmedia.paused && !mmedia.ended){    /* if paused and ended are both false, it implies video is playing. author seemed to emphasize this, ... no boolean for playing? */
+        mmedia.pause();
+        play.value = "Play";                    /* text that will be shown if the user wants to play it */
+        clearInterval(loop);                    /* stop the setInterval progress bar update loop */
+      } else {                                  /* will also play if the video has ended */
+        mmedia.play();
+        play.value = "Pause";                   /* text that will be shown if the user wants to pause it */
+        loop = setInterval(status, 1000);       /* status here is a function that updates the progress bar */
+      }
+    }
+    ...
+    var maxim = 400;                          /* max length of the progress bar */
+    function status(){
+      if (!mmedia.ended){
+        var size = parseInt(mmedia.currentTime + maxim / mmedia.duration);        /* calculate how large the progress bar should be in pixels */
+        progress.style.width = size + "px";                                       /* set a new size for the div element representing the progress bar */
+      } else {
+        progress.style.width = "0px";                                              /* if video has ended, reset the progress bar to zero & prime the text for replaying */
+        play.value = "Play";
+        clearInterval(loop);                                                      /* note that status will no longer be repeatedly executed after clearInterval is called */
+      }
+    }
+
+-on page 354 the author also includes javascript code for some other video functions: changing the videos play location w/ the bar, adjusting volume level & mute
+-changing the videos current play time is generally done by adding a click event listener to the bar element, getting the mouse position, and adjusting the currentTime / progress bar width
+-for the volume level there needs to be an input element w/ type range from 0 to 1 created, & the change event will be added. the function must set the medias volume to the elements value.
+-for closed captioning, the <track> element must be added as a child element of <video> or <audio>
+-<track> has a variety of attributes: src, srclang, default, label, kind
+    src:          specificies the location of the file containing the CC text
+    default:      activates CC by default, and specifies which track element (of multiple) will be the default one.
+    label:        provides title for track, useful for user if there are multiple track elements
+    kind:         indicates type of the tracks content. options are: subtitles (the default), captions, descriptions, chapters, metadata. research for more info
+
+    <video width="720" height="400" controls>
+      <source src="video.mp4">
+      <source src="video.ogg">
+      <track src="subtitles.vtt" srclang="en" default>
+    </video>
+
+-<track> apparently does not support cross-origin applications, you need the files all on the same domain (your server). CORS & the crossorigin attribute can apparently circumvent this, but no detail is given.
+-the .vtt captions text file is in WebVTT format (web video text tracks). These files have a specific structure:
+
+  WEBVTT                                                // first line, WEBVTT is mandatory
+
+  00:02.000 --> 00:07.000
+  <v Robert><i>Welcome</i>
+  to the &lt;track&gt; <c.captions>element</c>!
+
+  00:10.00 --> 00:15.000
+  ...
+___________________________________
+  ::cue(.captions){
+    color: #991133;
+  }
+
+-<b>, <u>, <i>, <v>, and <c> are special tags in .vtt files. the first 3 are text styling, v can specify whose voice is speaking, c allows you to provide custom CSS styles.
+-the ::cue(class) css pseudo-element is used to specify the .vtt class
+-there's also a TextTrack object that provides javascript access to the contents of these tracks. This object can be obtained from either the audio/video or track element:
+
+  var video_elem = document.getElementById("the_video");            /* two ways of getting a TextTrack object */
+  var track1 = video_elem.textTracks[0];                            /* the audio/video element has a textTracks array with all tracks in it */
+  ...
+  var track_elem = document.getElementById("the_track");            /* object of a specific track */
+  var track2 = track_elem.track;
+
+-TextTrack objects have the following properties: kind, label, language, mode, cues, activeCues
+  kind:           returns the type of track (subtitles, captions, descriptions, chapters, metadata)
+  label:          returns the tracks label
+  language:       returns the tracks language specified in srclang
+  mode:           returns or sets the tracks mode - disabled, hidden, or showing. This can be used to switch tracks, apparently.
+  cues:           an array containing TextTrackCue objects
+  activeCues:     returns the cues currently shown on the screen as TextTrackCue objects (the previous, current, and next cue)
+
+-TextTrackCue objects are used to access the actual content, and have the following properties: text, startTime, endTime, vertical, line, position, size, align
+  text:           returns the text of the cue
+  startTime:      returns start time of the cue in seconds
+  endTime:        returns end time of cue in seconds
+  vertical:       returns value of the vertical parameter, or empty string if vertical isn't defined.
+  line:           returns value of line parameter, or default value if line isn't defined
+  position:       returns value of position parameter, or default value if position isn't defined
+  size:           returns value of size parameter, or default value if size isn't defined
+  align:          returns value of align parameter, or default value if align isn't defined
+
+-the author doesn't go into detail on what vertal, line, position, size, & align do. research for further details.
+-there are also methods that can create or remove tracks / cues: addTextTrack(), addCue(), removeCue(), VTTCue()
+  video.addTextTrack(kind, label, language);          creates a new track and returns a corresponding TextTrack object. only kind is mandatory. works with video or audio elements
+  track.addCues(object);                              adds a new cue to a specific track. the object is the TextTrackCue object returned by the VTTCue() constructor.
+  track.removeCue(object);                            remove a cue from a specific track. object is the TextTrackCue object returned by the TextTrack object.
+  VTTCue(startTime, endTime, text);                   constructor for a TextTrackCue object, which is needed to add cues to a track via addCues().
+
+  var cues = [
+    { start: 2.000, end: 7.000, text: "Welcome"},
+    { start: 10.000, end: 15.000, text: "Add this text!"}
+  ];
+  var newtrack = video.addTextTrack("subtitles");
+  newtrack.mode = "showing";
+  for (let f = 0; f < cues.length; f++){
+    let cue = new VTTCue(cues[f].start, cues[f].end, cues[f].text);
+    newtrack.addCue(cue);
+  }
+
+_________________________________________________________________________________________
+CHAPTER 9: STREAM API
+
+
+
+_________________________________________________________________________________________
+CHAPTER 21: AJAX LEVEL 2 
+
+-Before AJAX, HTTP responses sent all the data for the page at once. AJAX allowed applications to request information without refreshing the entire page. 
+-AJAX used an old object, the XMLHttpRequest object, to achieve this. 
+-AJAX Level 2, with the new XMLHttpRequest object, is an update to this API with additional features including: 
+	cross-origin communication for interacting with multiple servers simultaneously
+	events handling
+	working with small portions of files
+-Create an XMLHttpRequest object using the XMLHttpRequest() constructor 
+-The XMLHttpRequest object has a few methods to initate / control the request: open(), send(), abort() 
+	var XML_object = XMLHttpRequest(); 
+	XML_object.open(method, url, async); 	// configures a pending request. method is the HTTP request type used to open the connection (GET, PUT, ...) 
+											// async is a boolean the indicates whether the request should be asynchronous or not 
+	XML_object.send(data);					// send the request. there are several versions of this method to handle different kinds of requests. 
+											// data can be a omitted, declared as an ArrayBuffer, a blob, document, string, or FormData object. 
+	XML_object.abort(); 					// cancels the request. not sure if it works after synchronous send() 
+-the following is a code example illustrating the use of AJAX: 
+	index.html: 
+		... 
+		<form name="form"> 
+			<button type="button" id="button">Press Button</button>
+		</form>
+		<div id="databox"></div> 
+		... 
+		<script src="ajax.js"></script>
+
+	ajax.js:
+		var databox;  
+		function initiate(){
+			databox = document.getElementById("databox"); 
+			var button = document.getElementById("button"); 
+			button.addEventListener("click", read); 
+		}
+		function read(){
+			var url = "textfile.txt"; 
+			var request = new XMLHttpRequest(); 
+			request.addEventListener("load", show); 				/* this event will fire when the AJAX request completes */ 
+			requet.open("GET", url, true); 
+			request.send(null); 
+		}
+		function show(e){
+			var data = e.target; 
+			if (data.status == 200){
+				databox.innerHTML = data.responseText; 
+			}
+		}
+		window.addEventListener("load", initiate); 
+
+-page 526, top 
+
+
+
+
+________________________________________________
+SOME QUESTIONS:
+-will html render if inside <code> tags
+-<a>'s target attribute has a _top specifier: what is the difference between this and _self?
+-the form elements label element - what does this do, exactly? what is the purpose of it, why is it distinct from id, name, etc..?
+-just verify that you don't need a second </label> tag after the input element when using for to associate the label with the input element; the author may have committed a typo
+-learn more about the button element and the purpose of the text between the tags
+-background-size: 100px 50px;  		<!-- set the size of background image. parameters: px, %, cover, contain. cover stretches to fit, contain preserves proportionality -->
+	check this, the author said it was the reverse: that contain stretches to fit, but cover preserves proportionality; however, my tests do not seem to indicate this.
+-background-origin: border-box;		<!-- border-box, padding-box, content-box. sets if image is positioned relative to the border box, padding, or content -->
+-background-clip: padding-box; 		<!-- border-box, padding-box, content-box. sets the area to be painted by the image, supposed to clip the image -->
+	get these working, they aren't working.
+-background-image:-webkit-linear-gradient(top, transparent, #777777); verify that this is the correct syntax
+-get this working, verify its syntax: 	filter: drop-shadow(3px, 2px, 10px, #FF00DD);
+-position has a specifier called static, the author does not explain what it does, find out.
+columns: 3 30px;		<!-- combined element; the author implies it only sets the column count and width -->
+	is this correct, does it only set the count and width? verify
+-download some reset style sheets
+-the following media query keyword is unclear: -width: the width at which the properties will be applied - is this resolution or device size?
+	and you might look into this keyword for media queries as well: -aspect-ratio: the aspect ratio at which the styles will be applied (4:3, 3:2, etc.?)
+-the author claims that some browsers still do not support flex box models, and so most developers still use the traditional model (written 2011, updated 2017; find out whether still true)
+-the author never tells how objects created with the new keyword are encapsulated within their function definitions
+-is Math.random() inclusive for 1?
+-el.scrollTop / el.scrollLeft;    // el is an element in the DOM, this returns the # of px the element is scrolled to the top or left (no further details given)
+-el.outerHTML = "<p> ... </p>";  verify this is correct syntax, author doesn't say
+-the key / keys returned by event.key will all be lowercase. the author never specifies how you would deal with capitalized letters; whether you could check shift, or do something else. find out more.
+-console.assert(condition, values); // if the condition is false, the values will be printed. I think values are a comma separated list, but the author doesn't say
+-what is the difference between checkValidity() and validate.valid, if any ...? When would you use one or another...?
+-why was the video elements preload attribute used in the text without specifying a value of auto, metadata, or none?

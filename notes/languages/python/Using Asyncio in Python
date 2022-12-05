@@ -1,0 +1,71 @@
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+CHAPTER 1 - INTRODUCTION
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+asyncio was introduced in python 3.4, and python 3.5 introduced the async and await keywords to use it easily 
+
+large-scale concurrency is a major reason to use asyncio - it circumvents pythons blocking problem 
+asyncio also helps to avoid race conditions in multithreaded programs 
+
+asyncio appears to be an alternative to traditional threading for asynchronous programming
+
+asyncio uses a single threaded event loop. this has the advantage that intra-process race conditions are impossible 
+    note that inter-process races can still occur, though reasoning about them becomes simpler
+    it also minimize waiting
+    but remember that a single threaded event loop can still block if used for CPU-demanding tasks 
+you'd use asyncio over threading for I/O bound tasks for 2 reasons: 
+    1) you want to avoid the possibility of race conditioins
+    2) you need to support thousands of socket connections simultaneously 
+you'd rather use threading for compute-intensive tasks 
+
+for these reasons asyncio is mainly used in network programming 
+
+some common problems when writing servers which asyncio can't address, but which I found interesting: 
+    how to communicate with a database that only allows a few connections, while you have thousands of open sockets 
+    how to terminate connections gracefully when you receive a signal to shut down 
+    how to handle disk access and logging 
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CHAPTER 2 - TRUTH ABOUT THREADS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+tools like Cython and Numba can be used to maneuver around the global interpeter lock and take advantage of threading on multiple cores 
+if you must use threading/forking in Python the ThreadPoolExecutor or ProcessPoolExecutor are high level and make race conditions less likely:
+
+    from concurrent.futures import ThreadPoolExecutor as Executor 
+
+    def worker(data):
+        ... 
+
+    with Executor(max_workers=10) as exe:
+        future = exe.submit(worker, data) 
+
+
+threading adds significant complexity to the code 
+on 32-bit systems large numbers of threads can use up the whole virtual memory space (even if just a few are in memory at once) 
+    less of a problem nowdays 
+    you can reduce the default stack size to mitigate this problem somewhat 
+thousands of threads can lead to performance degradation due to context switching 
+locking becomes harder to get right when you're using third party libraries 
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CHAPTER 3 - ASYNCIO WALKTHROUGH
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+pg 21
+
+
+
+
+
+
+
+
+
+
+
+
+

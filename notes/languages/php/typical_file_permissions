@@ -1,0 +1,9 @@
+rules of thumb for file permissions on various types of files for a website:
+
+html - chmod 644 (644 makes the world able to read it but only you able to read & write it)
+gif/png/jpg - chmod 644 
+css - chmod 644 
+js - chmod 644 
+php - chmod 600 (users dont need read permissions on php files... though he was using suPHP, not sure if it makes a difference)
+directory - chmod 711 (users need only execution rights - read writes allows them to see a list of the directories contents, 
+                       execution lets them open a file if it's readable)

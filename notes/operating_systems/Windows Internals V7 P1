@@ -1,0 +1,791 @@
+--------------------------------------------------------------------------------------------------------------------
+----------------------------------------CHAPTER 1-INTRODUCTION------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+
+download sysinternals tools at: http://www.microsoft.com/technet/sysinternals
+there are also many tools included in the Windows SDK (including debugging tools): https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk/
+download the Dependency Walker tool from http://www.dependencywalker.com (page 34)
+link to debugging symbols server: srv*c:\symbols*http://msdl.microsoft.com/download/symbols 
+
+add all these various tools to your path after installation
+move sysinternals to the root directory for easy access 
+_______________________________________________________________________________________________________________________
+// GENERAL INTRO
+
+-windows 10 marked the completion of "OneCore" - the same windows kernel runs on a wide variety of devices. this started w/ windows 8 
+-there may be some variance in registry settings between devices, but the OneCore kernel is the same 
+
+-Windows API - the user level API (note: these are not the system calls, they're user-level)
+-The old Windows API consisted of C functions. some newer APIs use COM 
+-with COM (components object model), clients communicate with objects (sometimes called COM server objects) through an API. 
+    COM APIs define a group of methods w/ their own virtual table for dispatch
+    The virtual design avoids name conflicts, an advantage over the older C API. You can call COM methods from many different programming languages 
+    COM objects are dynamically loaded rather than statically linked 
+
+-COM Servers refer to DLLs (dynamic link library) or EXEs where the COM classes are implemented 
+-COM has other features: security, process management, & more. 
+-details about the Windows API & about COM are beyond this book. other books cover them in detail 
+
+-the Windows Runtime (WinRT) is a programming environment that facilitates programs running on different devices. 
+-WinRT is an API built on top of COM. It also extends COM itself with modern features (like complete access to type metadata)
+-WinRT is targetted at app development - cross platform development distinct from traditional windows desktop applications
+
+-Desktop apps can still use a subset of WinRT, and cross-platform apps can still use a subset of Win32 (the old Windows API) and COM
+
+-.NET is an older framework which includes the CLR (common language runtime) and FCL (framework class library)
+-.NET provides a runtime that supports languages like C++, C#, Visual Basic, F#
+-The structure of .NET is built something like this: 
+    .NET Application (EXE) 
+    FCL (DLLs)
+    CLR (COM DLL Server)
+    Windows API DLLs 
+    Windows Kernel 
+
+-.NET languages can consume WinRT APIs via special extensions - C++/CX, WinJS, .NET's COM interop layer
+-apparently you can use HTML in constructing Windows Apps as well, and these apps run client side similar to nodeJS 
+
+-There are also a variety of kernel functions. Some are callable (system calls), others are only used by the kernel internally 
+
+-Windows services - these are processes started by the Windows service control manager. 
+    For example, the Task Scheduler runs in a user-mode process that supports the schtasks command 
+
+-DLLs (dynamic linked library): a typical library of binary that can be dynamically loaded by an application 
+    Dynamic libraries have the advantage over Static ones in that multiple applications can use them and only one in-memory copy is needed 
+    note: .NET assemblies are compiled DLLs but without any unmanaged exported functions. Instead, the CLR parses compiled metadata to access them
+
+-handles are the Windows equivalent of UNIX file descriptors 
+
+-processes have a security context. This is an ~access token~ that identifies the user, security groups, privileges, attributes, claims, 
+    capabilities, User Account Control (UAC) virtualization state, session, and limited user account state associated with the process, 
+    as well as the AppContainer identifier and its related sandboxing information
+_______________________________________________________________________________________________________________________
+// HOTKEY COMMANDS 
+-show windows version: 
+    ver 
+    winver          - launches screen with detailed information (build number, currently installed patch) 
+
+-open the task manager: 
+    ctrl + shift + esc 
+    click 'more details' for the full list of tabs 
+
+-quickly open a terminal: 
+    winkey + R 
+    enter 'cmd'
+
+-quickly open a 2nd terminal from terminal: 
+    start cmd 
+
+_______________________________________________________________________________________________________________________
+// SYSTEM INTERNALS TOOLS USED THROUGHOUT 
+
+    Tool                        Image Name          Origin                          BRIEF PURPOSE 
+    Startup Programs Viewer     AUTORUNS            Sysinternals 
+    Access Check                ACCESSCHK           Sysinternals 
+    Dependency Walker           DEPENDS             www.dependencywalker.com        examine functions exported by DLLs
+    Global Flags                GFLAGS              windows debugging tools         
+    Handle Viewer               HANDLE              Sysinternals 
+    Kernel debuggers            WINDBG, KD          WDK, Windows SDK            
+    Object Viewer               WINOBJ              Sysinternals 
+    Performance Monitor         PERFMON.MSC         Windows built-in tool           show every system & performance monitoring statistic imaginable 
+    Pool Monitor                POOLMON             WDK 
+    Process Explorer            PROCEXP             Sysinternals                    very detailed information on processes 
+    Resource Monitor                                Windows built-in tool           simple monitoring of CPU, Network, Disk, & memory than performance monitor 
+    Task (Process) List         TLIST               Windows debugging tools         list all processes in a tree structure 
+    Task Manager                TASKMGR             Windows built-in tool           general process & system information
+_______________________________________________________________________________________________________________________
+// TLIST, TASK MANAGER EXPERIMENTS 
+
+-tabs in the Task Manager: 
+    Processes: 
+        right click the header to show / hide different columns (like PID)
+        the left arrows that expand the process show the visible windows that have been created by it 
+    Details: this tab also shows processes, but provides more detail - more diverse columns
+        right click a process for a detailed list of actions
+        right click the header to show / hide different columns. There are many more columns available here 
+    
+    some key columns to look for: threads, handles, status
+        threads: the # of threads in each process 
+        handles: number of handles opened by threads in the process 
+        status: running, suspended, or not responding  
+
+-status works the following way: 
+    non-UI programs: 
+        these will typically be running, even if waiting on IO. They can be programmatically suspended 
+    UI programs: 
+        running means the UI is responding / waiting for input. 
+        WinRT apps move to suspended after exiting the foreground for 5 seconds. programs can be suspended programmatically as well
+        status becomes not responding if the application doesn't check its UI input queue for 5 seconds
+
+-if the process (or the thread that owns the window) is busy with CPU-intensive work or waiting on IO this can cause the status to be not responding
+-------------------------------------------------
+-while every process has a parent, processes are not terminated when their parent terminates. Nothing relies on a process having an active parent 
+-the creator process is not always the parent - in some cases, an intermediate broker process is the creator but the parent is what shares the handles / memory 
+
+-in the windows debugger tools (part of the SDK), find tlist.exe. run the following command to show a tree of parent / child process relationships (w/ PIDs):
+    tlist /t 
+_______________________________________________________________________________________________________________________
+// PERFORMANCE MONITOR, RESOURCE MONITOR, & DEPENDENCY WALKER EXPERIMENTS 
+
+-search for 'performance monitor' & run the app: 
+    1) select the performance monitor node 
+    2) click on the row at the bottom & press 'delete' - you can delete these measurement counters
+    3) right click in the same place > 'add counters'. you can add many different kinds of measurement counters 
+    4) 'add counters' > 'processor' > select both 'privileged time' and 'user time' - see the difference between the CPU executing in kernel & user mode
+    5) 'add counters' > 'process' > select 'provileged time', 'user time', & a process- you can see the same information on individual processes
+    6) ctrl+h turns on highlighting mode - you can select a specific counter & it will be highlighted 
+    7) 'add counters' > 'show description' - shows you a description of any given counter 
+
+-when Windows has nothing to do it schedules the 'Idle' process, which always executes & kernel mode & does nothing 
+
+-the performance monitor includes hundreds of counters for various system objects. 
+-------------------------------------------------
+-the resource monitor is a simpler way of monitoring performance. It shows less detail than the performance monitor, but more than the task manager.
+    but it's just well presented & easy to understand 
+-resource monitor has four tabs that monitor CPU, disk, network, & memory. click the tabs at the top to get detailed information on each 
+    1) CPU tab - check a process & you can see its open handles, DLLs loaded, & services it hosts
+    2) Memory tab - this shows a breakdown of the entire systems free, in-use, hardware-reserved, modified, & standby memory 
+            there are also details for specific processes memory usage. checking a process seems to just pin it to the top 
+    3) Disk tab - shows processes with disk activity, & per-file disk activity that allows you to see the most-read, most-written, & most-accessed files 
+    4) Network tab - at the top displays active network connections, processes that own them, & how much data is going through them. 
+            also shows TCP connections specifically, with data such as remote & local port & packet latency 
+            also lists listening ports by process at the bottom, along with the protocol & firewall policy (useful for admins). 
+
+-------------------------------------------------
+-run the dependency walker tool (depends.exe). this tools lets you examine a DLLs exported functions  
+    1) select kernel32.dll in the top left. you will see the list of kernel32.dll's exported functions
+    2) examine other system DLLs like user32.dll and advapi32.dll 
+_______________________________________________________________________________________________________________________
+// PROCEXP.EXE EXPERIMENTS
+
+-sysinternals process explorer (procexp.exe) can be used for detailed analysis of processes 
+
+-procexp.exe is more powerful than other process analysis tools. it can examine things such as: 
+    the process security token (lists of groups, privileges, the virtualization state)
+    highlighting to show changes in the process, thread, DLLs, and handles list 
+    lists services inside service-hosting processes
+    other process attributes, such as mitigation policies and their process protection level 
+    processes that are part of a job, job details 
+    processes hosting .NET apps & .NET-specific details, such as the list of AppDomains, loaded assemblies, and CLR performance counters 
+    processes that host the Windows Runtime (immersive processes) 
+    complete list of memory mapped files (not just DLLs) 
+    ability to suspend or kill a process or thread 
+    CPU consumption over time 
+
+procexp.exe also provides access to information: 
+    process tree 
+    open handles of a process, including unnamed handles 
+    list of DLLs (and memory mapped files) in a process 
+    thread activity in a process
+    user-mode and kernel-mode thread stacks, including the mapping of addresses to names using the dbhhelp.dll that comes with the debugging tools for windows 
+    more accurate CPU utilization percentage 
+    integrity level
+    memory manager details such as peak commit charge and internal memory paged and non-paged pool limits
+
+-there's some initial setup information for allowing procex.exe access to debugging symbols on page 16, for more advanced analysis (i.e. call stack info)
+    complete this setup for the symbols - other tools depend on it also 
+
+-procexp.exe's lower pane can show a process's DLLs and handles 
+-hovering over the process also shows a tooltip with detailed information such as:
+    path information
+    services inside service hosting processes 
+    tasks inside task hosting processes
+    COM class information when hosted inside of a Dllhost.exe process (the default COM+ surrogate)
+    package info for WinRT processes
+    the target of a Rundll32.exe process (used for control panel items & other features)
+    provider info for Windows Management Instrumentatoin (WMI) host processes 
+
+-processes hosting services are highlighted in pink. your own processes are blue. jobs are brown once you enable it (Options > Configure Colors)
+-left clicking the "Process" header sorts the processes in a couple different ways. right clicking it lets you choose which columns to show 
+-options > difference highlight duration: this will highlight spawning / terminating processes for a duration
+-double click a process & a box pops up with detailed information 
+_______________________________________________________________________________________________________________________
+// THREADS 
+
+-threads are entities within a process that windows schedules for execution
+-threads have a private storage area called the TLS (thread local storage) that's used by DLLs, run-time libraries, & subsystems
+-threads have a unique identifier called the thread ID, which is itself part of an internal structure called the client ID. 
+    process IDs and threads IDs are generated out of the same namespace, so they never overlap 
+-sometimes threads have their own security context (the token), often used by multithreaded server applications 
+    to impersonate the security context of their clients (?)
+
+-the threads context block consists of its TLS, registers, its stack pointer. the format of the context blocks is architecture-dependent, 
+    but you can access the context block with GetThreadContext()
+-threads of 32-bit applications running on 64-bit machines will have both 32-bit and 64-bit contexts, which Wow64 (windows on Windows 64-bit) 
+    uses to switch between 32 & 64 bit mode. these threads have 2 stacks & 2 context blocks. To get the 32-bit thread context, use Wow64GetThreadContext
+
+-two Windows mechanisms exist to minimize thread context switching (for performance): fibers & user-mode scheduling (UMS) 
+
+-fibers are a lightweight alternative to threads. the application can schedule a fibers execution and not rely on the Windows scheduling algorithm 
+-fibers are implemented in user mode in Kernel32.dll, and are invisible to the Windows kernel 
+-to user fibers, first you convert a thread to a fiber with ConvertThreadToFiber(). To run the fiber you call SwitchToFiber(). 
+-fibers can then create their own sub-fibers & schedule them with CreateFiber()
+-using fibers is considered dangerous because they share the same thread memory (TLS), though they also have their own memory (FLS - fiber local storage)
+-fibers also can't run concurrently on more than one processor (it's not clear what they mean by this - are they serial, hyperthreaded, or multi-core?)
+-read the Windows SDK documentation for more details on fibers 
+
+-user mode scheduling (UMS) threads are a newer improved version of fibers, but are only available on 64-bit systems 
+-UMS threads can run in user mode or kernel mode 
+-in kernel mode UMS threads are visible to the kernel & can issue blocking system calls / safely share system resources. 
+-in user mode UMS threads are invisible to the kernel and can freely context switch between one another 
+-UMS threads enter into a kernel mode when making system calls, where a dedicated kernel-mode thread is switched to (like iOS's main thread)
+-like fibers, UMS threads can't run on multiple processors (again - are they serial, hyperthreaded, or multi-core?)
+
+-processes can share memory via 'file mapping objects' in the Windows API, 
+    or w/ cross-process memory functions like ReadProcessMemory(), WriteProcessMemory (this requires access permission)
+    if a process is running on the same user account, not inside an AppContainer or other sandbox it will usually have these access permissions by default
+
+-each process has a security context and a list of open handles to kernel objects or synchronization objects 
+-kernel objects are things like files, shared memory sections, etc. 
+-synchronization objects are things like mutexes, events, semaphores, etc. 
+
+-each processes security context is stored in an object called an 'access token', which contains various ids and credentials 
+-threads don't have an access token by default, but they can obtain one (allowing threads to impersonate another process, even a remote Windows process)
+
+-virtual address descriptors (VADs) are data structures the memory manager uses to track virtual addresses used by processes 
+
+-Windows provides an extension to the process model called a job. 
+-a job object's allows the management / manipulation of groups of processes as a unit 
+-the author claims the job compensates for the lack of a structured process tree like exists in UNIX, but is also a powerful construct in its own right
+_______________________________________________________________________________________________________________________
+// VIRTUAL MEMORY 
+
+-the memory manager is what maps virtual memory to real memory addresses
+-the memory manager also handles paging 
+-32 bit systems are limited to 4 gigs of virtual memory
+-by default, the lower half of 32 bit virtual memory is set aside for user space & the upper half is kernel space
+-boot-time options like increaseuserva can increase the proportion of user space to kernel space to 3GB/1GB for specially marked processes
+    this reduces the need for certain user space reliant applications like database servers to remap virtual memory to disk blocks 
+-when 3GB isn't enough user-space, Windows has another mechanism called 'Address Windowing Extensions' (AWE)
+-AWE allows 32-bit applications to allocate up to 64GB of physical memory and then map portions of that into its 2GB virtual address space 
+    the developer is required to do this AWE mapping manually, apparently 
+    the core problem here is there's more physical memory available nowdays than 32-bit virtual memory can account for 
+
+-64-bit Windows allows for 128TB of virtual memory on Windows 8.1 & later, making all the above concerns irrelevant 
+    technically 64-bits can provide 16EB worth of memory (1024PB, 1048576TB) but the system doesn't even bother mapping that 
+
+_______________________________________________________________________________________________________________________
+// KERNEL & USER MODE 
+
+-kernel code is stored in a single shared memory space 
+-on processors that support no-execute memory protection, windows marks pages containing user-data as non-executable 
+    if DEP (data execution prevention) is enabled 
+-kernel code has global access & bypasses all Windows security 
+-third party device drivers (running in kernel mode) can take advantage of this security vulnerability. 
+    Windows introduced a driver-signing mechanism that warns the user when adding plug-and-play drivers (but not other drivers) 
+-there's also a mechanism called the 'Driver Verifier' that helps developers identify security flaws in their drivers 
+-on 64-bit and ARM versions of Windows 8.1 the kernel-mode code-signing (KMCS) policy dictates all drivers must have signed certificates 
+    even an admin can't forcd the installation of drivers on these systems. 
+    you can disable this for development / testing purposes & windows goes into a test mode, apparently
+-Windows 10 now only allows 2 of the 20 common certificate authorities to sign drivers, because they use SHA-2 extended validation (the others use SHA-1)
+    Once signed, the driver must then be submitted to Microsoft through the system device (SysDev) portal to receive a Microsoft signature
+    The kernel will no longer accept any driver released after July 2015 that isn't signed by Microsoft
+-Windows Server 2016 is even more restrictive: the driver must pass through stringent Windows Hardware Quality Labs (WHQL) certification
+    as part of the Hardware Compatibility Kit (HCK). This provides compatibility, security, performance, & stability assurances to admins. 
+-this driver verification process will result in significant system stability & security improvements over time 
+-vendors can get customized versions of Windows where these policies are made more stringent or lax to fit their needs
+
+-when processes enter kernel mode they're serviced by the system service dispatching code in the kernel 
+    which calls kernel functions from Ntoskrnl.exe or Win32k.sys
+-one type of an application that typically spends most of its time in kernel mode is a graphics application
+_______________________________________________________________________________________________________________________
+// HYPERVISORS & HYPER-V
+-modern solutions use a hypervisor to handle virtualization & containerization
+-virtual OS's run as guests on the host OS
+-a container is a fully isolated virtual machine soley designed for running a single application stack or framework. 
+    docker is one piece of software that provides containerization 
+-a hypervisor is a specialized & highly privileged component that allows for virtualization and isolation of all resources on the machine 
+    including virtual memory, physical memory, device interrupts, and even PCI and USB devices 
+-Hyper-V is a hypervisor, and it powers the Hyper-V client available in Windows8.1+ 
+-competing products such as Xen, KVM, VMware, and VirtualBox all implement their own hypervisors, with various strengths & weaknesses 
+
+-a hypervisor is so privileged it has even more access than the kernel itself
+-because a hypervisor is so privileged it can do more than merely run multiple guest instances of other OS's. 
+    It can also protect and monitor a host to offer greater security than what the host can provide
+    this is called VBS - virtualization-based security. In Windows 10 Hyper-V now provides a set of VBS services 
+-VBS services offered by Hyper-V include: 
+    1) Device Guard - provides Hypervisor Code Integrity (HVCI) for stronger code-signing guaranteed than KMCS alone. 
+        it also allows customization of the signing policy of the Windows OS
+    2) Hyper Guard - protects key kernel and hypervisor data structures & code 
+    3) Credential Guard - prevents unauthorized access to domain account credentials and secrets, combined with secure biometrics 
+    4) Application Guard - provides an even stronger sandbox for Microsoft Edge 
+    5) Host Guardian and Shielded Fabric - these leverage a virtual TPM (v-TPM) to protect a virtual machine from the infrastructure it's running on 
+
+-the key advantage VBS services have over other Windows security features is they aren't vulnerable to badly written or malicious drivers 
+    this is partly due to the hypervisors implementation of virtual trust levels (VTLs). The regular OS & its components run in a less privileged mode 
+    (VTL 0) than the hypervisor & its VBS services (VTL 1). So the VBS services can't be effected by kernel code. 
+-basically kernel & user mode exist within each VTL, and the hypervisor manages privileges across VTLs (across multiple virtual machines, apparently - read on hypervisors)
+_______________________________________________________________________________________________________________________
+// FIRMWARE & TERMINAL SERVICES 
+
+-typically the boot loader is what loads windows components. system firmware is responsible for securely loading and authenticating the components. 
+    the firmware must conform to Microsofts UEFI standard for secure signing & implementation. 
+-Microsoft can thus manage whitelists / blacklists of firmware from its servers, so if there's an error in a piece of firmware it can be blacklisted, 
+    then Microsoft pushes firmware updates in Windows updates
+
+-Windows Terminal Services provides an interface for remote login similar to SSH. It also transmits the whole GUI (or individual windows) to the client
+-Windows client editions permite a single remote connection to the terminal at a time. If the installation includes Windows Media Center, 
+    there can also be an additional four 'Windows Media Center Extender' sessions (whatever that is)
+-Windows server systems support 2 simultaneous remote terminal connections by default, to facilitate remote management. 
+    If configured as a terminal server the installation can support more than 2 
+-all Windows installations support multiple local sessions, created through a feature called 'fast user switching'. If you were to switch users, 
+    the original users local sessions (including all processes running in that session & data structures) remain active 
+-the Windows API has functions that allow a program to detect whether it's running in a terminal session 
+_______________________________________________________________________________________________________________________
+// KERNEL OBJECTS & HANDLES 
+
+-some of the kernel consists of instances of kernel objects. Examples include process, file, event, and thread objects (among others) 
+    For example, a process is an instance of the process object type, a file is an instance of the file object type, etc. 
+-kernel object handles reference them
+-there is an 'object manager' in the kernel. no further details are given, but it probably contains a list of open handles, among other things
+-not all of the code in the Windows kernel is object oriented. there are 4 important tasks involving kernel objects:
+    1) providing human-readable names for system resources 
+    2) sharing resources and data among processes or providing visible system services to user programs 
+    3) protecting resources from unauthorized access
+    4) reference tracking; tracking which objects are no longer in use so they can be deallocated 
+_______________________________________________________________________________________________________________________
+// SECURITY 
+
+-Windows was designed to meet various industry & government security requirements, allowing it to be used in these areas
+
+-there are four major components to Windows security system: 
+    1) discretionary (need-to-know) and mandatory protection for all shareable system objects (i.e. files, directories, processes, threads)
+    2) security auditing of user actions 
+    3) user authentication at login 
+    4) restricted access of resources (such as memory deallocated by another user)
+
+-Windows has 3 forms of access control over objects: 
+    1) discretionary access control: this is akin to UNIX's user-level or group-level access controls. when a user logs in, they are given 
+        a security context. when they try to access objects, their security context is compared to the resources access control list. 
+        a resources access control list specifies required attributes to gain access to the resource. the resources attributes are accessed quickly 
+        by parsing SQL databases & schemas through Active Directory 
+    2) privileged access control: this is like the superuser level of access 
+    3) mandatory integrity control: this is an additional level of security that applies within the users account. it provides part of the sandboxing 
+        for Windows Apps, the protected mode of internet explorer & other browsers, protects objects created by an admin account from the user, & more 
+
+-In Windows8+ the 'AppContainer' sandbox is what hosts Windows Apps. It isolates the code from regular processes & other AppContainers. 
+    code in AppContainers can communicate with brokers (non-isolated processes running with the users credentials),
+    and sometimes other AppContainers or processes through well-defined contracts provided by the Windows Runtime.
+-One example is Microsoft Edge, which runs inside an AppContainer & provides better browsing security 
+
+-Developers can also leverage AppContainers to isolate their own regular apps (not windows apps)
+-AppContainers enforce a major shift in programming paradigms, from multithreaded single-process applications to multi-process applications
+
+-The Windows API also implements objects based security in the same way Windows does: protecting shared Windows objects from unauthorized 
+    access by giving them Windows security descriptors. The first time an application tries to access a shared object, 
+    the Windows subsystem verifies the applications right to do so
+_______________________________________________________________________________________________________________________
+// REGISTRY
+
+-the registry is the system database that contains information required to boot & configure the system, systemwide software settings, 
+    the security database, and user configuration settings (like which screen saver to use)
+-the registry also provides a window into in-memory data, like the current hardware state (currently loaded drivers, the resources 
+    they're using, etc.) and the Windows performance counters. 
+-The performance counters aren't technically stored in the registry, they are accessed through registry functions (though there's a newer, 
+    better API for accessing them). 
+
+-you can view or change most administration settings with standard admin utilities rather than looking directly in the registry. 
+    most keys you're liable to ever be interested in are in the HKEY_LOCAL_MACHINE (HKLM) section of the registry 
+-if you screw up the registry badly enough it can degrade system performance or cause the system to fail to boot
+_______________________________________________________________________________________________________________________
+// UNICODE 
+
+-Windows uses Unicode (UTF-16LE) internally, unlike other OS's 
+-many Windows functions have 2 versions for 8-bit strings and native Unicode strings. for example, the Windows API function CreateFile 
+    is not actually a function - it's a macro that expands to either CreateFileA (ANSI) or CreateFileW (wide) based on the compilation 
+    constant UNICODE. Unicode is on by default in Visual C++, but you can call these ANSI functions. 
+-the dependency walker tool can shows these pairs of system functions exported by system DLLs (like kernel32.dll) 
+-COM-based APIs typically use Unicode strings, sometimes type as BSTR (a null terminated array of Unicode chars with a 4 byte header specifying length)
+-Windows Runtime API functions use Unicode only, typed as HSTRING (an immutable array of Unicode chars) 
+-using the ANSI functions require extra processing. applications should use UTF-16LE unless memory / storage is a concern
+    (it might be - often memory is more important for performance than processing, especially for large files. requires testing) 
+-applications can take advantage of Windows built in language support functions - a single installation can support multiple languages
+_______________________________________________________________________________________________________________________
+// KERNEL DEBUGGING 
+
+-kernel debugging is examining kernel data structures / stepping through kernel functions. this lets you directly examine the kernel & learn from it 
+-to do kernel debugging in windows you need these files: 
+    debugging symbol files                  
+    debugging tools for windows (part of the windows SDK) 
+
+to use any kernel-debugging tools you must have the correct symbol files for at least the kernel image, Ntoskrnl.exe
+    the symbol files must match the version of the image. if a patch updates the kernel, you need new debugging symbols 
+    microsoft has a symbols server accessed through the service link posted @ the top. the link loads updated symbols & Windows stores them in c:\symbols 
+
+the debugging tools for windows (DTFW) can be used on both user & kernel processes 
+    there are 4 debuggers included in the package: 
+        1) cdb 
+        2) ntsd     cdb & ntsd are the same user-level CLI debugger. ntsd opens a new terminal, cdb doesn't, that's the only difference
+        3) kd       kd is a kernel-level CLI debugger 
+        4) WinDbg   either user or kernel level GUI debugger (using the other debuggers under the hood)
+all these debuggers are based on the same debugging engine implemented in DbgEng.dll (read about this DLL in the tools help file)
+
+the user-level debuggers can initiate debugging using one of 2 functions: 
+    DebugActiveProcess() - attaches to the process. allows you to set breakpoints, read & modify memory, & do other debugging tasks 
+    OpenProcess() - does not attach to the process. you can just read & modify memory
+-you can also open user-mode process dump files with the DTFW 
+
+the kernel-level debuggers can perform 3 types of debugging: 
+    1) open a crash dump file created as a result of a Windows system crash 
+    2) connect to a target system via a LAN & examine the systems state. the target must be booted in debugging mode (using Bcdedit.exe or Msconfig.exe) 
+        you may have to disable secure boot in the UEIF BIOS settings
+        if you're debugging a virtual machine, w/ Windows 7+ guests you can connect by exposing the guest OS's serial port as a named pipe device 
+        w/ Windows 8+ guests it's better to use the LAN & expose a host-only network using a virtual NIC in the guest OS, it will improve performance 
+    3) connect to your local system & examine its state. to initiate local debugging with WinDbg, set the system to debug mode 
+        to put your system in debug mode: msconfig.exe > Boot > Advanced Options > Debug > restart Windows
+        Launch WinDbg w/ admin privileges. Select File > Kernel Debug > Local > OK (or use bcdedit.exe) 
+        Some debugging commands like setting breakpoints or creating memory dumps w/ the .dump command don't work in this local kernel debugging mode, 
+        but they can be done with LiveKd 
+in kernel-debugging mode there are many commands, some of which are preceded by an exclamation mark ! 
+    with these commands you can examine internal data structures such as threads, processes, I/O request packets, and memory management information 
+    read the Debugger.chm help file in the WinDbg installation folder for documentation on the kernel debugger commands 
+    the WDK documentation also has information to help driver writers with using these debuggers  
+    notice the dt command (display type). this can format & output kernel data structures defined by the debugging symbols 
+
+LiveKd is a sysinternals tool that lets you use the above debuggers without booting the target in debug mode. by default it runs kd, but it has a switch 
+command that allows you to switch to different debuggers. 
+LiveKd presents a simulated crash dump to the debugger, so you can perform any operations in LiveKd you could perform on a crash dump 
+    because LinkKd relies on physical memory to generate this dump, sometimes it can be using stale data. 
+    to refresh the data, quit the debugger w/ q. LinkKd will ask if you if you want to relaunch - say yes 
+_______________________________________________________________________________________________________________________
+// OVERVIEW OF WINDOWS SDK, WINDOWS DRIVER KIT, SYSINTERNALS 
+
+In addition to the DTFW, the Windows SDK contains C headers & libraries needed to compile & link Windows applications 
+    The Windows API header files are included. These are by default located at C:\Program Files (x86)\Windows Kits\10\Include 
+    There's also Windows SDK documentation worth reading 
+
+The Windows Driver Kit (WDK) is aimed at driver developers.
+The WDK contains thorough documentation contains a comprehensive description of all Windows kernel support functions used by drivers 
+    this book doens't go this far in depth - it covers the I/O system architecture, drive model, & basic device driver data structures 
+The WDK also contains important header files (ntddk.h, ntifs.h, wdm.h) that define key internal data structures, and interfaces to many system routines 
+    exploring these with the kernel debugger can glean detailed info not seen elsewhere 
+
+the most popular Sysinternals tools are the Process Explorer & the Process Monitor. 
+    Sysinternals tools are updated frequently, so make sure to get the latest version 
+
+--------------------------------------------------------------------------------------------------------------------
+----------------------------------------CHAPTER 2-SYSTEM ARCHITECTURE-----------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+
+-Windows is similar to UNIX in how the kernel is monolithic - the bulk of the OS & driver device code shared teh same kernel-mode protected memory space 
+    this means any OS component or device driver can potentially corrupt data being used by other OS system components 
+
+-the kernel code is written in C. the kernel components adhere to OO principles by emulating it with C
+
+-there are 3 access privilege contexts in Windows: user-mode, kernel-mode, and hypervisor context 
+    the hypervisor context sits below the kernel-mode context, with even more privileges 
+    remember user-processes execute in their own address space, while the kernel runs in a shared address space  
+
+-technically the hypervisor still runs with the same CPU privilege level as the kernel (0), but it uses specialized CPU instructions (VT-x on Intel, SVM on AMD) 
+    that allow it to isolate itself from the kernel whiel also monitoring it (and applications). some people use the incorrect term ring -1 to describe this 
+
+-there are 4 notable types of user-mode processes: 
+    1) user processes - can be the following process types: Windows 32-bit, Windows 64-bit (includes WinRT processes)
+        POSIX 32 / 64-bit applications are no longer supported as of Windows 8. 
+        old Windows 3.1 16-bit & MS-DOS 16-bit process types can only be run in 32-bit Windows processes now 
+    2) service processes - processes that host windows services, like the task scheduler or print spooler services. services generally have the requirement that they run 
+        independently of user logons. Many server applicatoins (i.e. Microsoft SQL Server) also include components that run as services 
+    3) system processes - fixed processes such as the logon process or session manager. they aren't started by the service control manager 
+    4) environment subsystems server processes - implements part of the support for the OS environment. 
+        Windows NT originally shipped with 3 environment subsystems: Windows, POSIX, & OS/2. 
+        Later Windows 7 supported an enhanced POSIX subsystem called Subsystem for UNIX-based Applications (SUA). 
+        All these have been discontinued, only the Windows environment is supported now. 
+        Windows 10 has the Windows Subsystem for Linux (WSL), but this is not a true environment subsystem (will be discussed later) 
+
+-user applications don't call Windows OS services directly. 
+-user, service, & some system processes pass through a layer of subsystem DLLs on their way to the kernel. 
+    subsystem DLLs translate documented functions into internal, generally undocumented system calls. 
+    most of these system calls are implemented in Ntdll.dll 
+    this translation might involve sending a message to an environment subsystem process as well 
+
+-notable kernel-mode components include the following: 
+    1) the Windows executive - contains base OS services like memory management, process & thread management, security, I/O, networking, inter-process communication
+    2) the Windows kernel - consists of low level OS functions like thread scheduling, interrupt handling, multiprocessor synchronization. 
+                                also provides routines & objects the Windows executive uses to implement higher level services 
+    3) device drivers - includes both hardware drivers that translate user I/O function calls into specific hardware device I/O requests 
+                            & non-hardware drivers such as the file system & network drivers 
+    4) the hardware abstraction layer (HAL) - the lowest layer that decouples the kernel, drivers, & executive from the hardware (how is this different from drivers?)
+    5) the windowing & graphics system - implements the GUI functions (better known as Windows USER and GDI functions) 
+    6) the hypervisor layer - this is the hypervisor itself. the hypervisor is made up of multiple components. It has its own memory manager, virtual process scheduler, 
+                                interrupt & timer management, synchronization routines, partitions (virtual machine instances) management, inter-partition communication, & more
+
+-the following list of file names correspond to core Windows OS components: 
+    Ntoskrnl.exe                                            executive & kernel 
+    Hal.dll                                                 HAL 
+    Win32k.sys                                              kernel-mode part of the Windows GUI 
+    Hvix64.exe (intel), Hvax64.exe (AMD)                    hypervisor 
+    .sys files in \SystemRoot\System32\Drivers              core driver files, such as Direct X, Volume Manager, TCP/IP, TPM, and ACPI support 
+    Ntdll.dll                                               internal support functions and system service dispatch stubs to executive functions 
+    Kernel32.dll, Advapi32.dll, User32.dll, Gdi32.dll       core windows subsystem DLLs 
+
+-x86 is the old 32-bit processor. x64 is the new AMD & Intel 64 bit processors. note that support for Intel Itanium was dropped as of Windows Server 2008 
+    newer editions of Windows like Windowss 10 Mobile & Windows 10 IoT support the ARM architecture devices such as Raspberry Pi 2 / 3 
+    support for ARM64 is on the horizon as ARM processors advance to 64 bits 
+
+-the two key components that provide portability across hardware are the kernel (Ntoskrnl.exe) & the HAL. 
+    functions that vary across hardware are in the HAL, functions that are architecture-specific are in the kernel 
+
+-the vast majority of Windows is written in C, with a little in C++ and assembly (for performance sensitive areas or direct communication with the hardware). 
+
+-Windows is a symmetric multiprocessing (SMP) OS, which means there is no master processor. all the processors share the same OS memory space
+    in contrast, in a asymmetric multiprocessing (ASMP) OS there's a master processor that runs kernel code while others only run in user space 
+-Windows also supports four modern types of multiprocessor systems: 
+    1) multicore 
+    2) simultaneous multi-threaded (SMT)
+    3) heterogeneous
+    4) non-uniform memory access (NUMA) 
+
+-SMT refers to hyperthreaded cores introduced by Intel's hyper-threaded technology & later in AMD's Zen architecture 
+    each hyperthread has its own CPU state, but the execution engine & cache are shared
+    this allows one hyperthread to make progrss while another is stalled (possibly by a cache miss or branch misprediction)
+
+-NUMA systems have nodes with their own memory & processors, & nodes are interconnected by a cache-coherent memory bus 
+    Windows still runs as an SMP system on NUMA architectures, it just takes longer to access data stored on other nodes. 
+    Windows tries to improve performance by scheduling threads on processors on the same node as the memory being used. 
+    It also tries to satisfy memory-allocation requests within the node 
+
+-for multicore systems, the original Windows SMP design simply treats each core as a separate processor. 
+    the only exceptions to this are some accounting & identification tasks (such as licensing) 
+    this is especially important when dealing with cache topologies (this refers to the identification mechanism or treating the processor separately? no further info) 
+
+-ARM versions of windows support heterogeneous multiprocessing through an implementation called big.LITTLE
+    With big.LITTLE all the diverse processors execute the same set of instructions
+    some processors are slower, legacy ones & some are faster, modern ones. collections of slower & faster processors are paired together
+    big.LITTLE balances out the load between slower & faster processors to fit the task. this both conserves power & provides adequate processing
+    This is called heterogeneous scheduling policy. Windows coordinates the scheduler & power manager to support this 
+
+-Windows tracks processors (total number, idle, busy, etc.) in a bitmask, also called the 'affinity mask'. this afinity mask is used to directly manipulate bits in a register. 
+    the afinity mask size limits the number of processors supported on the system to the max word size (32 or 64) 
+    to get past this limitation, Windows added a higher-order constructc called 'processor groups'
+    a processor group is a set of processors that can all be defined by a single affinity bitmask (details of how the affinity bitmask works are not provided)
+    the kernel or applications can choose which processor group to refer to during affinity updates 
+-however, the actual number of supported licensed processors depends on the edition of Windows. 
+    this number is stored in the system license policy file %SystemRoot%\ServiceProfiles\LocalService\AppData\Local\Microsoft\WSLicense\tokens.dat 
+        in the variable kernel-RegisteredProcessors
+        (I looked and couldn't find this - maybe this is only for Windows Server, who knows) 
+
+-Windows incorporates a few noteworthy features to support multiprocessing: 
+    1) OS code can run on multiple processors simultaneously 
+    2) fine-grained synchronization mechanisms within the kernel (spinlocks, queued spinlocks, pushlocks) and within device drivers & server processes 
+    3) programming mechansims like I/O completion ports that facilitate efficient implementation of multithreaded server processes 
+
+__________________________
+// WINDOWS VERSIONS
+
+-There are tons of different Windows 10 client & server packages: 
+    6 desktop client versions: Windows 10 Home, Pro, Education, Pro Education, Enterprise, Enterprise LTSB (long term servicing branch) 
+    Windows 10 Mobile, Mobile Enterprise, IoT Core, Iot Core Enterprise, IoT Mobile Enterprise 
+    Windows Server 2016 Datacenter, Standard, Essentials, MultiPoint Premium Server, Storage Server, and Microsoft Hyper-V Server
+-versions differ based on: 
+    number of cores supported 
+    number of Hyper-V containers they can run (client systmes support only namespace-based WIndows containers) 
+    amount of RAM supported 
+    number of concurrent network connections supported 
+    support for a variety of native applications 
+    layered services that come with server editions (directory services, Host Guardian, Storage Spaces Direct, shielded virtual machines, clustering) 
+    support for multi-touch and Desktop Composition (?) 
+-there's a tool SIPolicy.exe mentioned on pg 56 that can be used to query which of the version-dependent features are licensed on your installation 
+-see https://msdn.microsoft.com/en-us/library/windows/desktop/aa366778.aspx for details on Windows 10 version differences 
+-these various versions still share core systems like Ntkrnlpa.exe, the PAE version, HAL, device drivers, DLLs, & base system utilities 
+
+-the system knows the version of windows booted by querying the registry values ProductType and ProductSuite under the HKLM\SYSTEM\CurrentControlSet\Control\ProductOptions key 
+    this can be queried from the user-mode function VerifyVersionInfo() or from a device driver using the kernel function RtlGetVersion and RtlVerifyVersionInfo 
+
+-Windows Server & Client systems are optimized differently. Server is optimized for system throughout, Client is optimized for user responsiveness. 
+__________________________
+// KERNEL DEBUGGING W/ CHECK BUILD / EVENT TRACING 
+
+-there's a special internal debug version of Windows called the 'checked build'. This is an unoptimized recompilation of the Windows source code w/ debug information included. 
+    the checked build was mainly created to help driver developers. It performs more stringent error checking on kernel-mode functions called by device drivers. 
+    on Windows 10+ only the kernel & HAL are included in the checked build (the entire system used to be included). 
+    You can access the checked kenrel & HAL in the WDK's \Debug directory. read WDK docs for more detail
+    much of the additional code in the checked-build binaries is a result of using the ASSERT and NT_ASSERT macros, defined in the WDK header Wdm.h. these are diagnostic macros 
+        make sure to attach the kernel debugger & load the debugging symbols from the symbol server when using this 
+-Most recent Windows versions can use a combination of Windows preprocessor (WPP) or TraceLogging, both built on top of Event Tracing for Windows (ETW). 
+    this is useful to system admins for debugging components not included in the Windows 10+ checked build 
+    the output of these tools can be seen w/ the Windows Performance Analyzer (WPA - formerly known as XPerf), or w/ the !wmiprint kernel debugger command
+__________________________
+// VIRTUALIZATION-BASED SECURITY ARCHITECTURE 
+
+-the kernel can be compromised by driver vulnerabilities, being tricked into installing malicious drivers, or some unpatched part of the kernel is exploited 
+    since the kernel is monolithic the entire kernel is compromised in these cases. 
+-VBS is always active by default in the latest Windows 10 versions if supported by hardware. 
+    otherwise you can activate it via a policy or w/ the 'add windows features' box (select 'isolated user mode'). 
+-VBS requires new code to implement VTLs & isolate memory, CPU resources, & hardware from the kernel. The kernel cant be invoved
+-VSM (virtual secure mode) is another term referring to the VBS's active/inactive state  
+
+-user mode & kernel mode run in VSL0. In VSL1 there's a separate secure kernel running in privileged processor mode & an isolated user mode (IUM) in its own run-time environment 
+    both these sit on top of the hypervisor layer 
+-the secure kernel is its own separate binary - securekernel.exe 
+-the IUM runtime environment restricts the allowed system calls that regular DLLs can make & provides a framework that adds special secure system calls
+    these special system calls are exposed in a similar way as regular ones: through an internal system library named lumdll.dll (the VTL1 version of Kernelbase.dll)
+-this implementation of IUM, mostly sharing the same Win32 API libraries, minimizes the VTL1's memory footprint - basically the same code is used as with VTL0 
+-note that copy-on-write mechanisms prevent VTL0 applications from making changes to binaries used by VTL1 
+
+-the secure kernel doesn't implement the full range of system capabilities. it hand picks which system calls it will forward to the VTL0 kernel. 
+    the secure kernel is basically a proxy kernel
+    any kind of I/O, including file, network, graphics, & registry manipulation is completely prohibited. 
+-the secure kernel does have complete access to VTL0 memory & resources, however. 
+-the secure kernel can use the hypervisor to limit VTL0 OS access to memory by leveraging CPU hardware support known as Second Level Address Translation (SLAT) 
+    SLAT is the basis of Credential Guard, which can store secrets in certain memory locations. SLAT is also used in Device Guard to control execution of instructions in memory 
+-the I/O Memory Management Unit (MMU) is another piece of hardware that effectively virtualizes memory access for devices 
+    this prevents drivers from leveraging hardware devices to directly accessing memory (DMA) 
+    thus the devices cant directly access the hypervisor or secure kernel's physical regions of memory. This would bypass SLAT because no virtual memory is involved 
+
+-the hypervisor is the first system component to be launched by the boot loader, and can program SLAT and I/O MMU as it sees fit, defining the VTL0 and 1 execution environment 
+    then, while in VTL1, the boot loader runs again, loading the secur ekernel, which can configure its system
+    only then is the VTL dropped to 0, allowing the normal kernel to execute 
+
+-malicious user-mode VTL1 processes could still run & cause problems. Therefor only a special class of signed binaries, called Trustlets, are allowed to execute in VTL1
+    each Trustless has a unique identifier & signature, & the secure kernel has hard-coded knowledge of which Trustlets have been created. 
+        It is impossible to create new Trustlets without access to the secure kernel (which only Microsoft can touch), and Trustlets cannot be patched in any way 
+
+-going forward, with hardware changes to buses like PCI & USB, a class of secure devices will be supported, allowing VTL1 segregated access to designated secure devices. 
+__________________________
+// ENVIRONMENT SUBSYSTEMS 
+
+-see pg 61 for a detailed diagram of the OS architecture 
+
+-the role of an environment subsystem is to expose some subset of the base Windows executive services to applications 
+    for example, and application built on SUA can call fork, but a Windows application cannot 
+-each executable image (.exe) is bound to only one environment subsystem 
+    when an exe runs the process creation code examines the subsystem type in the image header to determine which environment subsystem to run it on 
+        this type can be specified in the /SUBSYSTEM linker option of the linker in Visual Studio 
+
+-remember that user-mode processes pass through subsystem DLLs which define an interface. 
+    The 'Windows subsystem DLLs' (such as Kernel32.dll, Advapi32.dll, User32.dll, Gdi32.dll) implement the Windows API functions 
+    The SUA subsystem DLL (Pxsdll.dll) implements the SUA API functions (on old Windows 7 versions that support POSIX) 
+
+-you can see the subsystem type using the Dependency Walker tool - look at the subsystem field. though note that GUI and Console types still use the same Windows subsystem 
+
+-when an application calls a subsystem DLL one of 3 things can occur: 
+    1) the function is entirely implemented in the subsystem DLL, executes in user mode, & no further calls are needed 
+    2) the function requires call(s) to the Windows Executive. for example, the Windows ReadFile and WriteFile functions call the executive services NtReadFile and NtWriteFile 
+    3) the function requires the assistance of the environment subsystem process (which runs in user mode). 
+        the environment subsystem process is responsible for maintaining state on applications running under its control 
+        the subsystem DLL waits for a reply before proceeding 
+
+-subsystem DLLs are started by the session manager (Smss.exe). 
+    subsystem startup information is stored in the registry at HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Subsystems 
+    relevant entries in this registry include: 
+        'Required'      - lists subsystmes that load when the system boots 
+        'Windows'       - the file of the Windows subsystem, csrss.exe (client/server runtime subsystem) 
+        'Kmode'         - the file of the kernel portion of the Windows subsystem, Win32k.sys 
+        'Optional'      - used to reference the SUA subsystem, now it's just blank 
+__________________________
+// THE WINDOWS SUBSYSTEM 
+
+-since Windows was always the primary subsystem, core functions are implemented in there & other subsystems like SUA would call services in the Windows subsystem (especially I/O) 
+
+-the Windows subsystem consists of the following major components: 
+    for each session, the environment subsystem Csrss.exe loads four DLLs - Basesrv.dll, Winsrv.dll, Sxssrv.dll, and Csrsrv.dll - which support the following: 
+        housekeeping tasks related to creating / destroying processes & threads 
+        shutting down Windows applications (through the ExitWindowsEx API) 
+        .ini file to registry location mappings for backward compatibility 
+        sending kernel notification messages (like those from the Plug-and-Play manager) to Windows applications as Windows messages (WM_DEVICECHANGE) 
+        Winsrv.dll hosts kernel-code that handles the raw input thread & desktop thread (responsible for mouse, keyboard, & the desktop window)
+        Cdd.dll (canonical display driver or CDD) - Csrss.exe instances associated with interactive user sessions also contain this fifth DLL 
+            Cdd.dll is responsible for communicating with DirectX support in the kernel on each vertical refresh (VSync) 
+                to draw visible desktop state without traditional hardware-accelerated GDI support 
+    Win32k.sys - a kernel-mode device driver that contains the following: 
+        the window manager which controls window displays - manages screen output, collects input from mouse / keyboard / other devices, and passes messages to applications 
+        the graphics device interface (GDI), a graphics library  
+        wrappers for directX support that is implemented in another kernel driver (Dxgkrnl.sys) 
+    Conhost.exe which supports console applications 
+    Dwm.exe - the desktop windows manager - for compositing visible windows, rendering them into a single surface through CDD & DirectX 
+    subsystem DLLs (Kernel32.dll, Advapi32.dll, User32.dll, Gdi32.dll) that translated Windows API functions into undocumented system calls in Ntoskrnl.exe and Win32k.sys 
+    graphics drivers for displays, printers, and video miniports 
+
+-a full Windows desktop requires all the window manager's capabilities, iOT and mobile devices running Windows do not 
+    for this reason, the functionality of Win32k.sys has been split up into several kernel modules which Win32k.sys loads: 
+        phones          - Win32kMin.sys / Win32kBase.sys 
+        full Desktops   - Win32kFull.sys / Win32kBase.sys 
+        iOT devices     - Win32kBase.sys 
+
+-the GDI contains a set of 2D graphics functions
+-applications call standard Windows USER functions to create UI elements. The window manager relays these requests to the GDI, which passes them to graphics drivers 
+    to finish off, a display driver is paired with a video miniport driver (?) 
+    so the GDI is the layer of abstraction that decouples the graphics system from hardware & drivers 
+
+-remember it's user-mode applications that pass through environmental subsystems like the Windows subsystem
+-because much of the system (especially display I/O functionality) runs in kernel mode only a few Windows functions result in sending a message to the Windows subsystem process:
+    process / thread creation and DOS device drive letter mapping (such as through subst.exe). 
+    Generally a running Windows application only context switches to the Windows process to draw mouse positions, handle keyboard input, & render the screen through CDD
+
+-remember GUI and console are both variants of Windows Subsystem type associated with a process
+-Conhost.exe (console window host) is spawned by a process whose type is console. this is done via the console driver \Windows\System32\Drivers\ConDrv.sys 
+    the spawning process communicates with Conhost.exe via the driver ConDrv.sys, sending it read, write, & I/O requests 
+    Conhost.exe is designated as a server process & the spawning process is the client
+    a separate Conhost.exe process is used for each console window on the system.
+    a single console window can be shared by multiple console applications, however, such as when you launch a child command prompt (?)
+    for example, when you run Cmd.exe it spawns a conhost.exe process. if you created a child window from there both would use the same conhost.exe process (try it in procexp.exe)
+-if a GUI subsystem image calls the AllocConsole Windows API Conhost.exe can also be created
+-Conhost.exe loads a DLL call \Windows\System32\ConhostV2.dll that actually does the bulk of the work communicating with the console driver 
+__________________________
+// PICO SUBSYSTEM 
+
+-the traditional subsystem model had 2 technical disadvantages: 
+    1) because subsystem information is extracted from the Portable Executable (PE) header it required the source code of the original binary & recompilation as a .exe
+        in SUA's case this also changed POSIX system calls to imports from Psxdll.dll
+    2) it's limited by the functionality of either the Win32 subsystem or the NT kernel. It wasn't true emulation, just a wrapper around these Windows systems
+
+-additionally, the subsystem was designed mainly for UNIX & POSIX, but todays Linux applications have grown past those standards 
+
+-the new Pico subsystem model aims to solve these problems
+-a Pico provider is a custom kernel-mode driver that has access to special kernel interfaces through the PsRegisterPicoProvider API
+    1) the provider can create Pico processes / threads while customizing their execution contexts / segments, and storing data in EPROCESS and ETHREAD structures 
+    2) the provider can receive a rich set of notifications whenever processes or threads make system calls, throw exceptions, switch context, suspend / resume, & so fourth 
+
+-Windows 10 has one Pico provider: Lxss.sys and its partner Lxcore.sys. 
+    This pico provider is the interface for the Windows Subsystem for Linux (WSL) 
+
+-Pico receives notification for almost all transitions to & from kernel / user mode, & can provide a fully transparent environment
+-Pico processes are very different from Windows processes. For example, they lack Ntdll.dll (which is always loaded into traditional processes). See CH3 for details 
+-for Linux processes to run without recompilation the LXSS Manager Lxss.sys (a user mode service) works with the Pico provider Lxcore.sys
+    Lxss.sys implements a COM-based interface it uses to communicate with a specialized launcher process, currently Bash.exe, and with a management process Lxrun.exe
+-the Pico provider Lxcore.sys also implements some Linux kernel functions that can't be emulated in Windows
+    for example, while NTFS is used for actual storage, Lxcore.sys has a full implementation of the Linux Virtual File System (VFS) 
+        this includes support for inodes, /sys, /dev, & more 
+    Lxcore.sys also has complex wrapping around Windows sockets such that it can support UNIX domain sockets, Linux NetLink sockets, and standard internet sockets 
+    Lxcore.sys also has a full, from-scratch implementation of UNIX pipes (because they are so different from Windows pipes) 
+__________________________
+// NTDLL.DLL 
+
+-Ntdll.dll is a system support library used by subsystem DLLs and native applications (EXEs that aren't tied to a specific subsystem) 
+
+-Ntdll.dll contains two types of functions: 
+    1) system service dispatch stubs. these invoke the system services dispatcher in kernel-mode, which in turn calls services offered by the Windows executive
+        There are 450 of these stub dispatch functions
+        Most of them are accessible through the Windows API
+    2) internal support functions used by subsystems, subsystem DLLs, & native applications
+
+-remember that isolated user mode (IUM) processes leverage lumDll.dll, the secure kernels equivalent of Ntdll.dll. 
+    lumDll.dll invokes special 'secure system calls' 
+
+-Ntdll.dll also contains a wide variety of system support functions:
+    TYPE OF FUNCTIONS                                           FUNCTION PREFIX
+    image loader                                                Ldr
+    heap manager  
+    Windows subsystem process communication                     Csr
+    general run-time library routines                           Rtl
+    user-mode debugging support                                 DbgUi 
+    Event Tracing for Windows                                   Etw
+    user-mode asynchronous procedure call (APC) dispatcher / exception dispatcher 
+    a subset of the C runtime library (CRT) for strings & standard libraries 
+
+__________________________
+// NATIVE EXES 
+
+-native EXEs dont link to any subsystem, but link directly to Ntdll.dll
+    these are typically built by Microsoft as the native API exposed by Ntdll.dll is undocumented 
+-the session manager (Smss.exe) is one example of a native EXE 
+    Smss.exe is the first user-mode process created, so it can't be dependent on the Windows subsystem - Csrss.exe hasn't started yet 
+    Infact, Smss.exe is responsible for launching Csrss.exe
+-the Autochk utility that runs at startup to check disks is another example - it runs too early to rely on a subsystem (though it's also launched by Smss.exe)
+
+-in Dependency Walker these processes subsystem type is 'Native' 
+__________________________
+// EXECUTIVE 
+
+pg 72
+
+

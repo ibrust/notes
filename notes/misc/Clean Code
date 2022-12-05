@@ -1,0 +1,182 @@
+============ CHAPTER 1 INTRODUCTION ============ 
+-ETC, DRY, and orthogonality are all important 
+-readability should also be emphasized 
+-simple abstractions introduced early are also important and powerful 
+
+-clean up old code when you see it and include the changes in the current PR 
+
+============ CHAPTER 2 NAMING ============ 
+
+-naming is a continuous process. if you think of a better name for something that's already been created, change it 
+-a name should explain why the thing exists, what it does, and how it's used
+-a name should reveal the intent behind the thing. it should show how the thing fits into the greater whole 
+
+-avoid using magic number subscripts. you can replace them with named constants, or refactor the code to use a class 
+    arbitrary subscript:
+        pieceType = gameBoard[x][0]
+    named constant:
+        pieceType = gameBoard[x][PIECE_TYPE]
+    class: 
+        pieceType = gameBoard[x].getPieceType()
+
+-don't use overloaded terms in variable names 
+    i.e. you wouldn't use accountList to refer to an bunch of accounts if the data structure is not a list 
+
+-avoid using names that only vary in small ways unless the things are closely related, because it will confuse people
+
+-avoid non-informative names, like number series names: 
+    this is non-informative: 
+        a2[i] = a1[i]
+    this is informative:
+        source[i] = destination[i]
+
+-don't add words to a variable name just because you need a unique name. that isn't distinct, and is just adding noise to the name
+    don't do this: 
+        getActiveAccount()
+        getActiveAccounts()
+        getActiveAccountInfo()
+
+-the author doesn't like including data types in the name, either, though I'm not sure I always agree. 
+    the author dislikes: 
+        CustomerObject 
+    and prefers: 
+        Customer 
+
+-don't use names that can't be spoken naturally 
+    unspeakable: 
+        Date ymdhms = Date(); 
+    speakable:
+        Date timestamp = Date();
+
+-don't use names that are too short because they aren't searchable, especially if they have a broad scope.
+    for example, e for error is a bad name because you can't search the program and find all the error names
+
+-also don't make a name too long unless it's necessary.
+    you don't want to confuse people with unnecessary information or reduce readability. 
+
+-also it's preferable to make a class name shorter and more general, while the instance name can be slightly longer and more descriptive 
+
+-don't name your variables according to a custom encoding pattern
+    the author argues this is confusing for new programmers, the names aren't pronounceable and can be easily mistyped 
+    also it's a problem if changes in the variables type necessitate changes in the encoded name 
+    sometimes the language necessitates you use a custom encoding pattern due to namespace issues (i.e. obj-c) but this is becoming rare 
+
+-if you must use redundant names between an abstract class and a concrete class, or between an interface and its implementation, 
+    use normal sounding names for the interface and modified names for the implementation 
+
+-use names that minimize the amount of mental translation between domains people must do 
+
+-class and object names should be descriptive nouns or noun phrases 
+    good: 'Customer', 'WikiPage', 'Account', 'AddressParser'
+    bad: 'Manager', 'Processor', 'Data', 'Info'
+
+-method names should be verbs or verb phrases
+    good: postPayment(), deletePage(), save() 
+
+-accessor, mutator, and predicate methods should be prefixed by get, set, and is 
+
+-make overloaded constructors private and wrap them in static methods that describe the new constructors function: 
+    do this: 
+        Complex number = Complex.FromRealNumber(23.0); 
+    instead of this: 
+        Complex number = Complex(23.0); 
+
+-pick one word per concept and stick with it:
+    don't use fetch, get, and retrieve for accessor names in different classes. 
+    don't use Manager, Controller, and Driver in different places throughout the codebase (they're the same concept)
+    i.e. use MonoPayment everywhere in the code base that refers to a third party payment 
+
+-but also don't reuse the same word for different concepts (goes back to not overloading terms)
+    for example, there is a difference between concatenating strings and adding a value to the end of a list; don't call them both 'add' methods 
+
+-it's usually best to favor the language of the solution domain (the programmers technical lingo) over the problem domain (the project managers lingo)
+    simply because programmers will be the ones reading the code 
+
+-names are interpreted in the broader context of other names in the application, so choose names that are suitable on that level.
+    also design (or refactor) your code to encpasulate associated data together, providing the context necessary to interpret the names 
+    for example, refactoring a large function into a class allows you to divide it up but maintain the context of the associations
+
+
+============ CHAPTER 3 FUNCTIONS ============ 
+
+functions should do 1 thing. a function that can be divided up into sections (i.e. declaration, initialization, etc.) is doing too much 
+extract code into smaller functions. this gives you the opportunity to clearly name it, improving readability
+carefully consider whether code blocks (code following an if, else, or while) should be extracted into a separate function
+functions should have 1 or maybe 2 levels of nested logic, but no more. this is for readability sake
+
+the author says functions should work only on one level of granularity or abstraction
+    for example, he doesn't like a high level operation such as parsing HTML being mixed with a low level operation such as appending to a list 
+    this makes the code less readable, ore low level details tend to accumulate within the function over time 
+    therefor this approach is what enables you to keep your functions small 
+    if you follow this rule your functions will form a hierarchy of higher levels and lower levels 
+
+switch statements are large by nature, and it's hard to avoid doing multiple things in them 
+switch statements will cause functions / classes to violate the open closed principle because they must be updated when cases are added 
+switch statements will also cause functions / classes to violate the single responsibility principle - there will be multiple reasons to change them 
+the use of switch statements also will propagate throughout the code if you don't design against this 
+the author recommends only using 1 switch statement by using an abstract switch. see abstractSwitch.py for more details 
+
+a long descriptive function name is better than a long descriptive comment or a short enigmatic name 
+try to make the function / parameter names read like a sentence 
+use consistent names across related functions
+
+keep the number of function parameters to a minimum. zero is ideal, almost never more than 3. 
+    long parameter lists increase code complexity and indicate the function is too large 
+    if your language doesn't have good type checking of parameters this is especially important, mistakes in argument passing are more likely to occur
+inout parameters can be especially confusing, avoid them if possible 
+
+some common single-argument forms: 
+
+    func isValid(payment: CardAllocation) -> Bool                   // returns a boolean indicating something about the argument 
+    func update(payment: CardAllocation) -> CardAllocation          // does a transformation on the arguments & returns it 
+    func passwordAttempts(failedNTimes: Int)                        // this form is more for events. It takes an argument & uses it elsewhere / returns nothing
+
+avoid passing a boolean into a function. it complicates the code and the function probably does multiple things. instead try to split it up into two functions: 
+
+    func saveTenderPlan(isFirstResponse: Bool)                      // the author doesn't like this 
+
+    func saveFirstTenderPlan()                                      // the author prefers splitting the function like this 
+    func saveSubsequentTenderPlan()
+
+if you have difficulty minimizing arguments try bundling the args in a class / changing the function to a method or constructor 
+if a function requires 4 or more arguments it's likely that some of them should conceptually be in a class together
+
+    func makeCircle(x: CGFloat, y: CGFloat, radius: Double) -> Circle
+    vs.     
+    func makeCricle(point: Point, radius: Double) -> Circle                     // x and y can be bundled into a Point class, reducing complexity 
+
+variadic arguments are ok if all the args passed in are treated the same way 
+
+if you need a function to have side effects by modifying outside data turn it into a method and modify instance data
+    still make sure the method only has one responsibillity 
+    prior to OO inout arguments were necessary but now they aren't
+    
+a setter shouldn't return anything 
+
+avoid returning error codes, instead let the caller add exception handling 
+    unnecessary returns like this convolute the calling code 
+    error codes also typically rely on enums / switches instead of subclassing an exception type, which has disadvantages 
+
+structured programming is the idea that every function and block should have only one entry and exit 
+    this means 1 return statement per function, no break or continue statements, and no goto statements. 
+    the author feels this is only beneficial in very large functions (or when writing assembly code), and so it should never be a problem 
+
+a safe practice is to do refactoring using these various ideas after you've covered everything with unit tests 
+
+============ CHAPTER 4 COMMENTS ============ 
+
+nothing is as helpful as a well placed comment 
+nothing can clutter up a module more than useless comments 
+nothing can be as damaging as an old comment with wrong information 
+
+try at all costs to write self documenting code that doesn't need comments, because comments go out of date 
+
+
+
+pg 55, comments do not make up for bad code 
+
+
+
+
+
+
