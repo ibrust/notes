@@ -12,10 +12,10 @@ asyncio appears to be an alternative to traditional threading for asynchronous p
 
 asyncio uses a single threaded event loop. this has the advantage that intra-process race conditions are impossible 
     note that inter-process races can still occur, though reasoning about them becomes simpler
-    it also minimize waiting
+    it also minimizes waiting
     but remember that a single threaded event loop can still block if used for CPU-demanding tasks 
 you'd use asyncio over threading for I/O bound tasks for 2 reasons: 
-    1) you want to avoid the possibility of race conditioins
+    1) you want to avoid the possibility of race conditions
     2) you need to support thousands of socket connections simultaneously 
 you'd rather use threading for compute-intensive tasks 
 
