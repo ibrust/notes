@@ -1,0 +1,37 @@
+python 3.3+ comes with venv 
+
+    pip list                                                    # see the packages currently installed on the system
+
+    python3 -m venv name_of_environment                         # create a virtual environment. conventionally you name the environment venv
+    name_of_environment\Scripts\activate.bat                    # activate the envirnoment 
+
+    where python3                                               # should list a path to the new virtual environoment's interpreter 
+
+    pip list                                                    # see the virtual environment's installed packages (since it's active)
+
+    pip install requests                                        # install packages into virtual environment 
+    pip install pytz 
+
+    pip freeze > requirements.txt                               # create a requirements.txt file from the current list of packages 
+
+    pip install -r requirements.txt                             # reinstalls packages using the requirements.txt file
+
+    deactivate                                                  # deactivate the virtual environment 
+
+
+to delete a virtual environment just delete its directory 
+
+usually you put the venv folder within the project main directory, but you don't want to put any project files in the venv folder
+    this way venv can be thrown away and be rebuilt 
+    also, don't commit venv to source control. you'd add venv to .gitignore 
+        instead you'd just add requirements.txt to source control 
+
+to create a virtual environment that also has access to your system packages from your main python install:
+
+    python3 -m venv venv --system-site-packages 
+    venv/Scripts/activate.bat
+    pip list
+
+    pip list --local                                    # list just the packages installed in venv 
+
+    pip freeze --local > requirements.txt               # freeze only the packages installed in venv 
