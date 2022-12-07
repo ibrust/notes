@@ -1,4 +1,4 @@
-from .CalculatorCoordinator import CalculatorCoordinator
+from .coordinators import CalculatorCoordinator
 
 def main():
     coordinator = CalculatorCoordinator()

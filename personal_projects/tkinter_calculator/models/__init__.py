@@ -1,3 +1,3 @@
-from .CalculatorModel import *
+from ._CalculatorModel import *
 
-__all__ = CalculatorModel.__all__
+__all__ = _CalculatorModel.__all__

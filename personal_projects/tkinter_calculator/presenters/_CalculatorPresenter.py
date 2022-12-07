@@ -22,6 +22,8 @@ class CalculatorPresenter:
 
     @model.setter
     def model(self, model: CalculatorModel.Data):
+        if model is None:
+            return
         if not isinstance(model, CalculatorModel.Data):
             raise TypeError("model must be of type CalculatorModel.Data")
 

@@ -1,3 +1,3 @@
-from .CalculatorPresenter import *
+from ._CalculatorPresenter import *
 
-__all__ = CalculatorPresenter.__all__
+__all__ = _CalculatorPresenter.__all__

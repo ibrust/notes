@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter import ttk
-from . import BaseViewProtocol
+from ._BaseViewProtocol import BaseViewProtocol
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 
@@ -23,7 +23,7 @@ class CalculatorView(BaseViewProtocol):
         return self._viewModel
 
     @viewModel.setter
-    def viewModel(self, viewModel: CalculatorView.Model):
+    def viewModel(self, viewModel: Model):
         if not isinstance(viewModel, CalculatorView.Model):
             raise TypeError("viewModel must be of type CalculatorView.Model")
         self._viewModel = viewModel
@@ -34,7 +34,6 @@ class CalculatorView(BaseViewProtocol):
     def __init__(self):
         self.viewModel = CalculatorView.Model()
         self.delegate = None
-        super.__init__()
 
     def constructViews(self):
         self.mainWindow: Tk = Tk()

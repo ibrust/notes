@@ -1,3 +1,3 @@
-from .CalculatorController import *
+from ._CalculatorController import *
 
-__all__ = CalculatorController.__all__
+__all__ = _CalculatorController.__all__

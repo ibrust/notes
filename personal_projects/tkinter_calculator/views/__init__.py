@@ -1,3 +1,3 @@
-from .CalculatorView import *
+from ._CalculatorView import *
 
-__all__ = CalculatorView.__all__
+__all__ = _CalculatorView.__all__
