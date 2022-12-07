@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from tkinter import *
 
 
 class BaseViewProtocol(ABC):
@@ -15,9 +16,13 @@ class BaseViewProtocol(ABC):
             init(self, *args, **kwargs)
             self.constructViews()
             self.layoutViews()
-            self.decorateViews()
+            self.styleViews()
 
         cls.__init__ = new_init
+
+    @abstractmethod
+    def __init__(self, superView: Tk | Frame):
+        pass
 
     @abstractmethod
     def constructViews(self):
@@ -30,6 +35,6 @@ class BaseViewProtocol(ABC):
         pass
 
     @abstractmethod
-    def decorateViews(self):
+    def styleViews(self):
         "subclasses must provide an implementation to decorate their views with colors, font styling, etc."
         pass

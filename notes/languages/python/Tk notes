@@ -290,7 +290,7 @@ then set the relief option, which specifies the visual appearance of the border.
 
 frames (and all themed widgets) have a style configuration option, which lets you control many aspects of appearance and behavior:
 
-    # simple example of creating a "Warning" frame with a red background and a raised border
+    # simple example of creating a "Warning" frame with a red border
     s = ttk.Style() 
     s.configure('Warning.TFrame', background='red', borderwidth=5, relief='raised')
     ttk.Frame(root, width=200, height=200, style='Warning.TFrame').grid()
