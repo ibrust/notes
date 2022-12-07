@@ -23,10 +23,10 @@ class CalculatorModel(CalculatorControllerDelegate):
         return self._data
 
     @data.setter
-    def data(self, value):
-        if not isinstance(value, CalculatorModel.Data):
+    def data(self, newData: Data):
+        if not isinstance(newData, CalculatorModel.Data):
             raise TypeError("property must be of type CalculatorModel.Data")
-        self._data = value
+        self._data = newData
         self.publisher.on_next(self._data)
 
     def add(self, operand1, operand2):
