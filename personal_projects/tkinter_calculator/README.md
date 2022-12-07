@@ -1,0 +1,1 @@
+TODO: - add a .gitignore file & ignore various python / pycharm files
