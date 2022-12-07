@@ -1,0 +1,79 @@
+RxPY is v3 of python's Rx framework. In v4 it was simply renamed to reactivex: 
+
+    pip install reactivex 
+
+
+an Observable is something like a publisher 
+an Observer is something like a subscriber 
+then there are operators that transform the event stream, like in Combine
+
+to subscribe to an Observable you specify up to 3 callbacks:
+
+    on_next()                   # called each time the Observable emits an item
+    on_completed()              # called when the Observable completes
+    on_error()                  # called when an error occurs 
+
+there are many ways to create an Observable:
+
+    from reactivex import create
+
+    def countToThree(observer, scheduler):
+        observer.on_next(1)
+        observer.on_next(2)
+        observer.on_next(3)
+        observer.on_completed()
+
+    source = create(countToThree)                   # create() is one way to create an Observable 
+
+    source.subscribe(                               # subscribe activates the subscription 
+        on_next = lambda i: print(i),               # you subscribe with up to 3 functions (you don't have to proovide all of them)
+        on_error = lambda e: print(e),
+        on_completed = lambda: print("finished"),
+    )
+
+
+    from reactivex import of
+
+    source2 = of(1, 2, 3)                            # of() is a faster way to create an Observable
+    source2.subscribe( 
+        on_next = lambda i: print(i), 
+        on_error = lambda e: print(e),
+        on_completed = lambda: print("finished"),
+    )
+
+    source3 = of(1, 2, 3)
+    source3.subscribe(lambda value: print(value))    # if on_next is all you need you can just pass a single lambda to subscribe()
+
+
+there are also 130+ Operators available in RxPY:
+
+    from reactivex import of, operators as op
+
+    pub = of(1, 2, 3, 4, 5)
+    pub2 = source.pipe(
+        op.map(lambda i: i * i),
+        op.filter(lambda i: i >= 5)
+    )
+    pub2.subscribe(lambda value: print(value))
+
+
+    reactivex.of("cool", "warm", "hot").pipe(               # here's a shorter version. 
+        op.map(lambda s: len(s)),                           # I'm still not sure if you need to maintain a reference to the subscription 
+        op.filter(lambda i: i > 3)
+    ).subscribe(lambda value: print(value))
+
+
+it seems difficult to get RxPY to respond to updates to collections after the binding occurs (which is the whole point)
+    but apparently you can use a Subject to manually publish values: 
+
+    from rx.subject.subject import Subject
+
+    subject = Subject()
+    subject.subscribe(
+        lambda value: print(value),
+        on_error = lambda e: print(e),
+        on_completed = lambda: print("finished")
+    )
+    subject.on_next(1)
+    subject.on_next([1, 2, 3])
+    subject.on_next("ABC")

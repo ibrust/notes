@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
 
-class BaseView(ABC):
+class BaseViewProtocol(ABC):
     '''
-    base class for use by views throughout application
+    base class interface for use by views throughout application
     subclasses must implement constructViews() and layoutViews().
     during initialization these will automatically be called in order
     '''
@@ -15,15 +15,21 @@ class BaseView(ABC):
             init(self, *args, **kwargs)
             self.constructViews()
             self.layoutViews()
+            self.decorateViews()
 
         cls.__init__ = new_init
 
     @abstractmethod
     def constructViews(self):
-        "subclasses provide an implementation to initialize their widgets"
+        "subclasses must provide an implementation to initialize their widgets"
         pass
 
     @abstractmethod
     def layoutViews(self):
-        "subclasses provide an implementation to arrange their widgets using tkinter's geometry managers"
+        "subclasses must provide an implementation to arrange their widgets using tkinter's geometry managers"
+        pass
+
+    @abstractmethod
+    def decorateViews(self):
+        "subclasses must provide an implementation to decorate their views with colors, font styling, etc."
         pass

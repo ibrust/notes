@@ -1,7 +1,7 @@
-from .CalculatorApp import CalculatorApp
+from .CalculatorCoordinator import CalculatorCoordinator
 
 def main():
-    app = CalculatorApp()
-    app.start()
+    coordinator = CalculatorCoordinator()
+    coordinator.start()
 
 main()
