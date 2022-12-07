@@ -1,5 +1,6 @@
-from .coordinators import CalculatorCoordinator
+from .coordinators import CalculatorCoordinator, CalculatorCoordinatorResult
 from tkinter import *
+import sys
 
 def main():
     mainWindow: Tk = Tk()
@@ -8,10 +9,16 @@ def main():
     mainWindow.title("Calculator")
 
     coordinator = CalculatorCoordinator(mainWindow)
+
+    def callback(result: CalculatorCoordinatorResult):
+        if result.value != CalculatorCoordinatorResult.SUCCESS:
+            sys.exit(f"Error - Coordinator Exited with {result}")
+
+    coordinator.onFinishCallback = callback
     coordinator.start()
 
-    mainWindow.mainloop()
+    mainWindow.mainloop()                       # blocks until the user closes the window
 
-    # would you setup some subscription here to fire a system event or close normally when the coordinator finished...?
+    coordinator.finish(CalculatorCoordinatorResult.SUCCESS)
 
 main()

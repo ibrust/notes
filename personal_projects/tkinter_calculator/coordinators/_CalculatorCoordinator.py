@@ -2,12 +2,20 @@ from ..models import CalculatorModel
 from ..views import CalculatorView
 from ..presenters import CalculatorPresenter
 from ..controllers import CalculatorController
+from ._BaseCoordinatorProtocol import *
 from tkinter import *
+from enum import auto
 
 
-__all__ = ['CalculatorCoordinator']
+__all__ = ['CalculatorCoordinator', 'CalculatorCoordinatorResult']
 
-class CalculatorCoordinator:
+
+class CalculatorCoordinatorResult(CoordinatorResult):
+    SUCCESS = auto()
+    FAILURE = auto()
+
+
+class CalculatorCoordinator(BaseCoordinatorProtocol):
 
     def __init__(self, superview: Tk | Frame):
         self.model = CalculatorModel()
@@ -35,5 +43,5 @@ class CalculatorCoordinator:
             on_next=updateView
         )
 
-    def finish(self):
-        pass
+    def finish(self, result: CoordinatorResult):
+        self.onFinishCallback(result)
