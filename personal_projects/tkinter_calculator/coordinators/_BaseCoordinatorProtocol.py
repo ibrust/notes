@@ -9,6 +9,15 @@ class CoordinatorResult(Enum):
 
 class BaseCoordinatorProtocol(ABC):
 
+    def __init_subclass__(cls, *args, **kwargs):
+        super().__init_subclass__(*args, **kwargs)
+
+        def new_finish(self, result: CoordinatorResult, _finish=cls.finish):
+            _finish(self, result)
+            self.onFinishCallback(result)
+
+        cls.finish = new_finish
+
     # TODO: add support for an input & output event subject, tracking of child coordinators
 
     @abstractmethod

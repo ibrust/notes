@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 class BaseViewProtocol(ABC):
     '''
     base class interface for use by views throughout application
-    subclasses must implement constructViews() and layoutViews().
+    subclasses must implement constructViews(), layoutViews(), and decorateViews().
     during initialization these will automatically be called in order
     '''
 

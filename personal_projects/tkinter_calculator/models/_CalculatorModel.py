@@ -1,5 +1,4 @@
 from reactivex.subject.subject import Subject
-from dataclasses import dataclass
 from ..controllers import CalculatorControllerDelegate
 
 __all__ = ['CalculatorModel']

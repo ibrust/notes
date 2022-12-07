@@ -11,7 +11,8 @@ def main():
     coordinator = CalculatorCoordinator(mainWindow)
 
     def callback(result: CalculatorCoordinatorResult):
-        if result.value != CalculatorCoordinatorResult.SUCCESS:
+        if result != CalculatorCoordinatorResult.SUCCESS:
+            print(result, result.value)
             sys.exit(f"Error - Coordinator Exited with {result}")
 
     coordinator.onFinishCallback = callback

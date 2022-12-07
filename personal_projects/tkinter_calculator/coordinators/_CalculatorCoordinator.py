@@ -18,6 +18,8 @@ class CalculatorCoordinatorResult(CoordinatorResult):
 class CalculatorCoordinator(BaseCoordinatorProtocol):
 
     def __init__(self, superview: Tk | Frame):
+        # TODO: - add some error handling maybe?
+
         self.model = CalculatorModel()
         self.presenter = CalculatorPresenter()
         self.view = CalculatorView(superview)
@@ -44,4 +46,4 @@ class CalculatorCoordinator(BaseCoordinatorProtocol):
         )
 
     def finish(self, result: CoordinatorResult):
-        self.onFinishCallback(result)
+        pass
