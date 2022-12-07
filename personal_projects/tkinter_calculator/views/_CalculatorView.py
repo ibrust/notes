@@ -31,20 +31,19 @@ class CalculatorView(BaseViewProtocol):
 
     delegate: CalculatorViewDelegate
 
-    def __init__(self):
+    def __init__(self, superView: Tk | Frame):
         self.viewModel = CalculatorView.Model()
         self.delegate = None
+        self.superView = superView
 
     def constructViews(self):
-        self.mainWindow: Tk = Tk()
-        self.mainFrame: Frame = ttk.Frame(self.mainWindow, padding="3 3 12 12")
+        self.mainFrame: Frame = ttk.Frame(self.superView, padding="3 3 12 12")
 
     def layoutViews(self):
-        self.mainWindow.columnconfigure(0, weight=1)    # weight=1 allows the frame to resize as the window is resized
-        self.mainWindow.rowconfigure(0, weight=1)
+        pass
 
     def decorateViews(self):
-        self.mainWindow.title("Calculator")
+        pass
 
     def applyModel(self):
         pass

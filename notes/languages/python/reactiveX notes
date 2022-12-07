@@ -77,3 +77,5 @@ it seems difficult to get RxPY to respond to updates to collections after the bi
     subject.on_next(1)
     subject.on_next([1, 2, 3])
     subject.on_next("ABC")
+
+

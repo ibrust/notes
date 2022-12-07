@@ -14,20 +14,20 @@ class CalculatorPresenter:
     publisher: Subject
     def __init__(self):
         self.publisher = Subject()
-        self.model = None
+        self.modelData = None
 
     @property
-    def model(self):
+    def modelData(self):
         return None
 
-    @model.setter
-    def model(self, model: CalculatorModel.Data):
-        if model is None:
+    @modelData.setter
+    def modelData(self, modelData: CalculatorModel.Data):
+        if modelData is None:
             return
-        if not isinstance(model, CalculatorModel.Data):
+        if not isinstance(modelData, CalculatorModel.Data):
             raise TypeError("model must be of type CalculatorModel.Data")
 
-        self.publisher.on_next(self._createViewModel(model))
+        self.publisher.on_next(self._createViewModel(modelData))
 
-    def _createViewModel(self, model: CalculatorModel.Data) -> CalculatorView.Model:
-        return CalculatorView.Model(model.mathExpression)
+    def _createViewModel(self, modelData: CalculatorModel.Data) -> CalculatorView.Model:
+        return CalculatorView.Model(modelData.mathExpression)
