@@ -21,7 +21,7 @@ class BaseViewProtocol(ABC):
         cls.__init__ = new_init
 
     @abstractmethod
-    def __init__(self, superView: Tk | Frame):
+    def __init__(self, superView: Frame):
         pass
 
     @abstractmethod

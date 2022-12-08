@@ -17,7 +17,7 @@ class CalculatorCoordinatorResult(CoordinatorResult):
 
 class CalculatorCoordinator(BaseCoordinatorProtocol):
 
-    def __init__(self, superview: Tk | Frame):
+    def __init__(self, superview: Frame):
         # TODO: - add some error handling maybe?
 
         self.model = CalculatorModel()
