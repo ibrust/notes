@@ -1,15 +1,19 @@
 from reactivex.subject.subject import Subject
 from ..controllers import CalculatorControllerDelegate
+from ..types import ButtonSymbol, CalculatorMode
 
 __all__ = ['CalculatorModel']
 
 class CalculatorModel(CalculatorControllerDelegate):
 
     class Data:
-        mathExpression: str
+        runningTotal: float
+        hasPressedDecimal: bool
 
-        def __init__(self, mathExpression: str = ""):
-            self.mathExpression = mathExpression
+        def __init__(self):
+            self.runningTotal = 0.0
+            self.hasPressedDecimal = False
+            self.mode = CalculatorMode.DECIMAL
 
     publisher: Subject
 
@@ -28,8 +32,25 @@ class CalculatorModel(CalculatorControllerDelegate):
         self._data = newData
         self.publisher.on_next(self._data)
 
-    def add(self, operand1, operand2):
-        pass
+    def add(self): pass
 
-    def subtract(self, operand1, operand2):
-        pass
+    def subtract(self): pass
+
+    def multiply(self): pass
+
+    def divide(self): pass
+
+    def equals(self): pass
+
+    def digitOrDecimalEntered(self, symbol: ButtonSymbol):
+        if symbol != ButtonSymbol.DECIMAL:
+            self.data.runningTotal = float(str(self.data.runningTotal) + symbol.value)
+        else:
+            self.data.hasPressedDecimal = True
+
+    def changeMode(self):
+        self.data.mode = CalculatorMode((self.data.mode.value + 1) % len(CalculatorMode))
+
+    def clear(self):
+        self.data.runningTotal = 0.0
+        self.data.hasPressedDecimal = False

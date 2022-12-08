@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from ._DecimalButtonsView import DecimalButtonsView, DecimalButtonsViewDelegate
 from ._OperationButtonsView import OperationButtonsView, OperationButtonsViewDelegate
 from ._UtilityButtonsView import UtilityButtonsView, UtilityButtonsViewDelegate
-from ..helper import ButtonSymbol, CalculatorMode
+from ..types import ButtonSymbol, CalculatorMode
 
 __all__ = ['CalculatorView', 'CalculatorViewDelegate']
 
@@ -42,7 +42,7 @@ class CalculatorView(BaseViewProtocol, DecimalButtonsViewDelegate, OperationButt
 
     def constructViews(self):
         self.mainFrame: Frame = ttk.Frame(self.superView)
-        self.mathExpressionLabel = ttk.Label(self.mainFrame, text="0")
+        self.runningTotalLabel = ttk.Label(self.mainFrame, text="0")
 
         self.numericalButtonsViewFrame: Frame = ttk.Frame(self.mainFrame)
         self.numericalButtonsView = DecimalButtonsView(self.numericalButtonsViewFrame)
@@ -62,8 +62,8 @@ class CalculatorView(BaseViewProtocol, DecimalButtonsViewDelegate, OperationButt
         self.mainFrame.rowconfigure(0, weight=1)
         self.mainFrame.configure(padding=8)
 
-        self.mathExpressionLabel.grid(column=0, columnspan=2, row=0, sticky=(N, W, E))
-        self.mathExpressionLabel.configure(padding="5")
+        self.runningTotalLabel.grid(column=0, columnspan=2, row=0, sticky=(N, W, E))
+        self.runningTotalLabel.configure(padding=5)
 
         self.numericalButtonsViewFrame.grid(column=0, row=2, sticky=(N, S, W, E))
         self.numericalButtonsViewFrame.columnconfigure(0, weight=1)
@@ -83,10 +83,10 @@ class CalculatorView(BaseViewProtocol, DecimalButtonsViewDelegate, OperationButt
         frameStyle.configure("CalculatorViewMainFrame.TFrame", background="green", borderwidth=5, relief='raised')
         self.mainFrame.configure(style="CalculatorViewMainFrame.TFrame")
 
-        mathExpressionStyle = ttk.Style(self.mainFrame)
-        mathExpressionStyle.theme_use("alt")
-        mathExpressionStyle.configure("CalculatorViewMathExpression.TLabel", foreground="white", background="black", borderwidth=1, relief='raised')
-        self.mathExpressionLabel.configure(style="CalculatorViewMathExpression.TLabel")
+        runningTotalStyle = ttk.Style(self.mainFrame)
+        runningTotalStyle.theme_use("alt")
+        runningTotalStyle.configure("CalculatorViewRunningTotal.TLabel", foreground="white", background="black", borderwidth=1, relief='raised')
+        self.runningTotalLabel.configure(style="CalculatorViewRunningTotal.TLabel")
 
         numericalButtonsViewFrameStyle = ttk.Style(self.mainFrame)
         numericalButtonsViewFrameStyle.theme_use("alt")

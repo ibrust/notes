@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import ttk
 from ._BaseViewProtocol import BaseViewProtocol
 from abc import ABC, abstractmethod
-from ..helper import ButtonSymbol
+from ..types import ButtonSymbol
 
 
 class UtilityButtonsViewDelegate(ABC):
@@ -30,9 +30,10 @@ class UtilityButtonsView(BaseViewProtocol):
     def layoutViews(self):
         self.mainFrame.grid(column=0, row=0, sticky=(N, W, E, S))
 
-        self.buttons[0].grid(column=0, row=0, padx=0, pady=0, sticky=(N, E, S, W))
+        self.buttons[0].grid(column=0, columnspan=2, row=0, padx=0, pady=0, sticky=(N, E, S, W))
+        self.buttons[0].configure(width=11)
+        self.buttons[1].grid(column=2, row=0, padx=0, pady=0, sticky=(N, E, S, W))
         self.buttons[1].configure(width=5)
-        self.buttons[1].grid(column=1, row=0, padx=0, pady=0, sticky=(N, E, S, W))
 
     def styleViews(self):
         frameStyle = ttk.Style(self.superView)

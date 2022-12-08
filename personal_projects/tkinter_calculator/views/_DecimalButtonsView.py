@@ -3,7 +3,7 @@ from tkinter import ttk
 from ._BaseViewProtocol import BaseViewProtocol
 from abc import ABC, abstractmethod
 import math
-from ..helper import ButtonSymbol
+from ..types import ButtonSymbol
 
 
 class DecimalButtonsViewDelegate(ABC):

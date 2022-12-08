@@ -1,24 +1,26 @@
 from ..views import CalculatorViewDelegate
 from abc import ABC, abstractmethod
-from ..helper import ButtonSymbol
+from ..types import ButtonSymbol
 
 __all__ = ['CalculatorController', 'CalculatorControllerDelegate']
 
 class CalculatorControllerDelegate(ABC):
     @abstractmethod
-    def add(self, newOperand: ButtonSymbol): pass
-
+    def add(self): pass
     @abstractmethod
-    def subtract(self, newOperand: ButtonSymbol): pass
-
+    def subtract(self): pass
     @abstractmethod
-    def multiply(self, newOperand: ButtonSymbol): pass
-
+    def multiply(self): pass
     @abstractmethod
-    def divide(self, newOperand: ButtonSymbol): pass
-
+    def divide(self): pass
     @abstractmethod
-    def equals(self, newOperand: ButtonSymbol): pass
+    def equals(self): pass
+    @abstractmethod
+    def digitOrDecimalEntered(self, symbol: ButtonSymbol): pass
+    @abstractmethod
+    def changeMode(self): pass
+    @abstractmethod
+    def clear(self): pass
 
 class CalculatorController(CalculatorViewDelegate):
 
@@ -28,4 +30,19 @@ class CalculatorController(CalculatorViewDelegate):
         self.delegate = None
 
     def buttonTap(self, symbol: ButtonSymbol):
-        print(symbol)
+        if symbol.isDigitOrDecimal():
+            self.delegate.digitOrDecimalEntered(symbol)
+        elif symbol == ButtonSymbol.ADD:
+            self.delegate.add()
+        elif symbol == ButtonSymbol.SUB:
+            self.delegate.subtract()
+        elif symbol == ButtonSymbol.MUL:
+            self.delegate.multiply()
+        elif symbol == ButtonSymbol.DIV:
+            self.delegate.divide()
+        elif symbol == ButtonSymbol.EQUALS:
+            self.delegate.equals()
+        elif symbol == ButtonSymbol.MODE:
+            self.delegate.changeMode()
+        elif symbol == ButtonSymbol.CLEAR:
+            self.delegate.clear()

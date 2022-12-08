@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import ttk
 from ._BaseViewProtocol import BaseViewProtocol
 from abc import ABC, abstractmethod
-from ..helper import ButtonSymbol
+from ..types import ButtonSymbol
 
 
 class OperationButtonsViewDelegate(ABC):

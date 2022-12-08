@@ -9,7 +9,7 @@ class ButtonSymbol(Enum):
     MUL = "x"
     DIV = "÷"
     EQUALS = "="
-    MODE = "MD"
+    MODE = "Mode"
     CLEAR = "C"
     DECIMAL = "."
     ONE = "1"
@@ -22,3 +22,11 @@ class ButtonSymbol(Enum):
     EIGHT = "8"
     NINE = "9"
     ZERO = "0"
+
+    def isDigitOrDecimal(self) -> bool:
+        if self == ButtonSymbol.DECIMAL:
+            return True
+        for i in range(0, 10):
+            if str(i) == self.value:
+                return True
+        return False
