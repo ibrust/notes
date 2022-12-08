@@ -99,4 +99,4 @@ class CalculatorView(BaseViewProtocol, DecimalButtonsViewDelegate, OperationButt
         pass
 
     def buttonTap(self, symbol: str):
-        print(symbol)
+        self.delegate.buttonTap(symbol)

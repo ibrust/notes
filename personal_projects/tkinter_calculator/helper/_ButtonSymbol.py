@@ -1,6 +1,8 @@
 from enum import Enum
 
 __all__ = ['ButtonSymbol']
+
+
 class ButtonSymbol(Enum):
     ADD = "+"
     SUB = "-"
