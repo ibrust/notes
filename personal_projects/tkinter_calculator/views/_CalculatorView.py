@@ -3,25 +3,20 @@ from tkinter import ttk
 from ._BaseViewProtocol import BaseViewProtocol
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-from ._DecimalButtonsView import DecimalButtonsView
-from ._OperationButtonsView import OperationButtonsView
-from ._UtilityButtonsView import UtilityButtonsView
-from enum import Enum, auto
-
+from ._DecimalButtonsView import DecimalButtonsView, DecimalButtonsViewDelegate
+from ._OperationButtonsView import OperationButtonsView, OperationButtonsViewDelegate
+from ._UtilityButtonsView import UtilityButtonsView, UtilityButtonsViewDelegate
+from ..helper import ButtonSymbol, CalculatorMode
 
 __all__ = ['CalculatorView', 'CalculatorViewDelegate']
 
 class CalculatorViewDelegate(ABC):
     @abstractmethod
-    def buttonTap(self):
+    def buttonTap(self, symbol: ButtonSymbol):
         pass
 
-class CalculatorMode(Enum):
-    BINARY = auto()
-    DECIMAL = auto()
-    HEX = auto()
 
-class CalculatorView(BaseViewProtocol):
+class CalculatorView(BaseViewProtocol, DecimalButtonsViewDelegate, OperationButtonsViewDelegate, UtilityButtonsViewDelegate):
     @dataclass
     class Model:
         displayText: str = ""
@@ -51,12 +46,15 @@ class CalculatorView(BaseViewProtocol):
 
         self.numericalButtonsViewFrame: Frame = ttk.Frame(self.mainFrame)
         self.numericalButtonsView = DecimalButtonsView(self.numericalButtonsViewFrame)
+        self.numericalButtonsView.delegate = self
 
         self.operationalButtonsViewFrame: Frame = ttk.Frame(self.mainFrame)
         self.operationalButtonsView = OperationButtonsView(self.operationalButtonsViewFrame)
+        self.operationalButtonsView.delegate = self
 
         self.utilityButtonsViewFrame: Frame = ttk.Frame(self.mainFrame)
         self.utilityButtonsView = UtilityButtonsView(self.utilityButtonsViewFrame)
+        self.utilityButtonsView.delegate = self
 
     def layoutViews(self):
         self.mainFrame.grid(column=0, row=0, sticky=(N, W, E, S))
@@ -99,3 +97,6 @@ class CalculatorView(BaseViewProtocol):
 
     def applyModel(self):
         pass
+
+    def buttonTap(self, symbol: str):
+        print(symbol)

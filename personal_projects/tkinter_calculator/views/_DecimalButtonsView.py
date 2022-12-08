@@ -2,13 +2,13 @@ from tkinter import *
 from tkinter import ttk
 from ._BaseViewProtocol import BaseViewProtocol
 from abc import ABC, abstractmethod
-from enum import Enum, auto
 import math
+from ..helper import ButtonSymbol
 
 
 class DecimalButtonsViewDelegate(ABC):
     @abstractmethod
-    def buttonTap(self):
+    def buttonTap(self, symbol: ButtonSymbol):
         pass
 
 class DecimalButtonsView(BaseViewProtocol):
@@ -24,10 +24,10 @@ class DecimalButtonsView(BaseViewProtocol):
 
         self.digitButtons: [Button] = []
         for i in range(1, 10):
-            self.digitButtons.append(ttk.Button(self.mainFrame, text=str(i)))
-        self.digitButtons.append(ttk.Button(self.mainFrame, text="0"))
+            self.digitButtons.append(ttk.Button(self.mainFrame, text=ButtonSymbol(str(i)).value, command=lambda i=i: self.buttonTap(ButtonSymbol(str(i)))))
+        self.digitButtons.append(ttk.Button(self.mainFrame, text=ButtonSymbol.ZERO.value, command=lambda: self.buttonTap(ButtonSymbol.ZERO)))
 
-        self.decimalButton: Button = ttk.Button(self.mainFrame, text=".")
+        self.decimalButton: Button = ttk.Button(self.mainFrame, text=ButtonSymbol.DECIMAL.value, command=lambda: self.buttonTap(ButtonSymbol.DECIMAL))
 
     def layoutViews(self):
         self.mainFrame.grid(column=0, row=0, sticky=(N, W, E, S))
@@ -51,3 +51,6 @@ class DecimalButtonsView(BaseViewProtocol):
         for button in self.digitButtons:
             button.configure(style="DigitButton.TButton")
         self.decimalButton.configure(style="DigitButton.TButton")
+
+    def buttonTap(self, symbol: ButtonSymbol):
+        self.delegate.buttonTap(symbol)

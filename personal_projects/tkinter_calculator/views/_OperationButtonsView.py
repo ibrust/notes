@@ -2,12 +2,12 @@ from tkinter import *
 from tkinter import ttk
 from ._BaseViewProtocol import BaseViewProtocol
 from abc import ABC, abstractmethod
-from enum import Enum, auto
+from ..helper import ButtonSymbol
 
 
 class OperationButtonsViewDelegate(ABC):
     @abstractmethod
-    def buttonTap(self):
+    def buttonTap(self, symbol: ButtonSymbol):
         pass
 
 class OperationButtonsView(BaseViewProtocol):
@@ -21,10 +21,10 @@ class OperationButtonsView(BaseViewProtocol):
     def constructViews(self):
         self.mainFrame: Frame = ttk.Frame(self.superView, padding="0")
 
-        symbols = ["+", "-", "x", "÷", "="]
+        symbols = [ButtonSymbol.ADD, ButtonSymbol.SUB, ButtonSymbol.MUL, ButtonSymbol.DIV, ButtonSymbol.EQUALS]
         self.buttons: [Button] = []
         for i in range(0, 5):
-            button: Button = ttk.Button(self.mainFrame, text=symbols[i])
+            button: Button = ttk.Button(self.mainFrame, text=symbols[i].value, command=lambda i=i: self.buttonTap(symbols[i]))
             self.buttons.append(button)
 
     def layoutViews(self):
@@ -44,3 +44,6 @@ class OperationButtonsView(BaseViewProtocol):
         buttonStyle.configure("OperationButton.TButton", foreground="black", background="orange", borderwidth=1, relief='raised')
         for button in self.buttons:
             button.configure(style="OperationButton.TButton")
+
+    def buttonTap(self, symbol: ButtonSymbol):
+        self.delegate.buttonTap(symbol)
