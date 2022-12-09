@@ -27,7 +27,6 @@ class CalculatorController(CalculatorViewDelegate):
         if symbol.isDigitOrDecimal():
             self.delegate.digitOrDecimalEntered(symbol)
         elif symbol.isMathOperation():
-            print("here")
             self.delegate.handleMathOperation(symbol)
         elif symbol == ButtonSymbol.EQUALS:
             self.delegate.equals()

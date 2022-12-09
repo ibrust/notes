@@ -38,9 +38,21 @@ class CalculatorModel(CalculatorControllerDelegate):
 
     def equals(self):
         if self.data.previousOperand is not None and self.nextOperation is not None:
-            self.data.currentOperand = str(float(self.data.currentOperand) + float(self.data.previousOperand))
+            self.performMathOperation()
             self.nextOperation = None
             self.data.previousOperand = None
+
+    def performMathOperation(self):
+        op1 = float(self.data.currentOperand)
+        op2 = float(self.data.previousOperand)
+        if self.nextOperation == ButtonSymbol.ADD:
+            self.data.currentOperand = str(op1 + op2)
+        elif self.nextOperation == ButtonSymbol.SUB:
+            self.data.currentOperand = str(op2 - op1)
+        elif self.nextOperation == ButtonSymbol.MUL:
+            self.data.currentOperand = str(op1 * op2)
+        elif self.nextOperation == ButtonSymbol.DIV:
+            self.data.currentOperand = str(op2 / op1)
 
     def digitOrDecimalEntered(self, symbol: ButtonSymbol):
         if self.didJustPressMathOperationButton:
