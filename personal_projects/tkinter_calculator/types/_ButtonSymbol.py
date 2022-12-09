@@ -30,3 +30,7 @@ class ButtonSymbol(Enum):
             if str(i) == self.value:
                 return True
         return False
+
+    def isMathOperation(self) -> bool:
+        return self == ButtonSymbol.ADD or self == ButtonSymbol.SUB \
+                or self == ButtonSymbol.MUL or self == ButtonSymbol.DIV

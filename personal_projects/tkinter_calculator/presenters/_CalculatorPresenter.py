@@ -30,4 +30,4 @@ class CalculatorPresenter:
         self.publisher.on_next(self._createViewModel(modelData))
 
     def _createViewModel(self, modelData: CalculatorModel.Data) -> CalculatorView.Model:
-        return CalculatorView.Model(modelData.runningTotal)
+        return CalculatorView.Model(modelData.currentOperand)

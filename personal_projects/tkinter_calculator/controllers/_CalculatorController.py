@@ -6,17 +6,11 @@ __all__ = ['CalculatorController', 'CalculatorControllerDelegate']
 
 class CalculatorControllerDelegate(ABC):
     @abstractmethod
-    def add(self): pass
-    @abstractmethod
-    def subtract(self): pass
-    @abstractmethod
-    def multiply(self): pass
-    @abstractmethod
-    def divide(self): pass
-    @abstractmethod
     def equals(self): pass
     @abstractmethod
     def digitOrDecimalEntered(self, symbol: ButtonSymbol): pass
+    @abstractmethod
+    def handleMathOperation(self, symbol: ButtonSymbol): pass
     @abstractmethod
     def changeMode(self): pass
     @abstractmethod
@@ -32,14 +26,9 @@ class CalculatorController(CalculatorViewDelegate):
     def buttonTap(self, symbol: ButtonSymbol):
         if symbol.isDigitOrDecimal():
             self.delegate.digitOrDecimalEntered(symbol)
-        elif symbol == ButtonSymbol.ADD:
-            self.delegate.add()
-        elif symbol == ButtonSymbol.SUB:
-            self.delegate.subtract()
-        elif symbol == ButtonSymbol.MUL:
-            self.delegate.multiply()
-        elif symbol == ButtonSymbol.DIV:
-            self.delegate.divide()
+        elif symbol.isMathOperation():
+            print("here")
+            self.delegate.handleMathOperation(symbol)
         elif symbol == ButtonSymbol.EQUALS:
             self.delegate.equals()
         elif symbol == ButtonSymbol.MODE:
