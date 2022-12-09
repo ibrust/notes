@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from ._DecimalButtonsView import DecimalButtonsView, DecimalButtonsViewDelegate
 from ._OperationButtonsView import OperationButtonsView, OperationButtonsViewDelegate
-from ._UtilityButtonsView import UtilityButtonsView, UtilityButtonsViewDelegate
 from ..types import ButtonSymbol, CalculatorMode
 
 __all__ = ['CalculatorView', 'CalculatorViewDelegate']
@@ -16,7 +15,7 @@ class CalculatorViewDelegate(ABC):
         pass
 
 
-class CalculatorView(BaseViewProtocol, DecimalButtonsViewDelegate, OperationButtonsViewDelegate, UtilityButtonsViewDelegate):
+class CalculatorView(BaseViewProtocol, DecimalButtonsViewDelegate, OperationButtonsViewDelegate):
     @dataclass
     class Model:
         displayText: str = "0"
@@ -52,10 +51,6 @@ class CalculatorView(BaseViewProtocol, DecimalButtonsViewDelegate, OperationButt
         self.operationalButtonsView = OperationButtonsView(self.operationalButtonsViewFrame)
         self.operationalButtonsView.delegate = self
 
-        self.utilityButtonsViewFrame: Frame = ttk.Frame(self.mainFrame)
-        self.utilityButtonsView = UtilityButtonsView(self.utilityButtonsViewFrame)
-        self.utilityButtonsView.delegate = self
-
     def layoutViews(self):
         self.mainFrame.grid(column=0, row=0, sticky=(N, W, E, S))
         self.mainFrame.columnconfigure(0, weight=1)
@@ -67,12 +62,11 @@ class CalculatorView(BaseViewProtocol, DecimalButtonsViewDelegate, OperationButt
 
         self.numericalButtonsViewFrame.grid(column=0, row=2, sticky=(S, W))
         self.operationalButtonsViewFrame.grid(column=1, row=1, rowspan=2, sticky=(N, S, E))
-        self.utilityButtonsViewFrame.grid(column=0, row=1, sticky=W)
 
     def styleViews(self):
         frameStyle = ttk.Style(self.superView)
         frameStyle.theme_use("alt")
-        frameStyle.configure("CalculatorViewMainFrame.TFrame", background="green", borderwidth=5, relief='raised')
+        frameStyle.configure("CalculatorViewMainFrame.TFrame", background="black", borderwidth=5, relief='raised')
         self.mainFrame.configure(style="CalculatorViewMainFrame.TFrame")
 
         runningTotalStyle = ttk.Style(self.mainFrame)
@@ -82,15 +76,13 @@ class CalculatorView(BaseViewProtocol, DecimalButtonsViewDelegate, OperationButt
 
         numericalButtonsViewFrameStyle = ttk.Style(self.mainFrame)
         numericalButtonsViewFrameStyle.theme_use("alt")
-        numericalButtonsViewFrameStyle.configure("numericalButtonsViewFrame.TFrame", background="orange", borderwidth=1, relief='raised')
+        numericalButtonsViewFrameStyle.configure("numericalButtonsViewFrame.TFrame", background="black", borderwidth=1, relief='raised')
         self.numericalButtonsViewFrame.configure(style="numericalButtonsViewFrame.TFrame")
-
-        self.utilityButtonsViewFrame.configure(style="numericalButtonsViewFrame.TFrame")
+        self.operationalButtonsViewFrame.configure(style="numericalButtonsViewFrame.TFrame")
 
     def applyModel(self):
         if not hasattr(self, "runningTotalLabel"):
             return
-        print(self.viewModel.displayText)
         self.runningTotalLabel["text"] = self.viewModel.displayText
 
     def buttonTap(self, symbol: str):

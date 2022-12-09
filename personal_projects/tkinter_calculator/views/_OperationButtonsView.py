@@ -37,11 +37,11 @@ class OperationButtonsView(BaseViewProtocol):
     def styleViews(self):
         frameStyle = ttk.Style(self.superView)
         frameStyle.theme_use("alt")
-        frameStyle.configure("OperationButtonsViewMainFrame.TFrame", background="yellow", borderwidth=1, relief='raised')
+        frameStyle.configure("OperationButtonsViewMainFrame.TFrame", background="black", borderwidth=1, relief='raised')
         self.mainFrame.configure(style="OperationButtonsViewMainFrame.TFrame")
 
         buttonStyle = ttk.Style(self.superView)
-        buttonStyle.configure("OperationButton.TButton", foreground="black", background="orange", borderwidth=1, relief='raised')
+        buttonStyle.configure("OperationButton.TButton", foreground="black", background="blue", borderwidth=1, relief='raised')
         for button in self.buttons:
             button.configure(style="OperationButton.TButton")
 

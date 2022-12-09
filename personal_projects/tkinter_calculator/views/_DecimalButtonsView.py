@@ -22,6 +22,13 @@ class DecimalButtonsView(BaseViewProtocol):
     def constructViews(self):
         self.mainFrame: Frame = ttk.Frame(self.superView, padding="0")
 
+        upperSymbols = [ButtonSymbol.MODE, ButtonSymbol.PLUSMINUS, ButtonSymbol.CLEAR]
+        self.topButtons: [Button] = []
+        for i in range(0, len(upperSymbols)):
+            button: Button = ttk.Button(self.mainFrame, text=upperSymbols[i].value,
+                                        command=lambda i=i: self.buttonTap(upperSymbols[i]))
+            self.topButtons.append(button)
+
         self.digitButtons: [Button] = []
         for i in range(1, 10):
             self.digitButtons.append(ttk.Button(self.mainFrame, text=ButtonSymbol(str(i)).value, command=lambda i=i: self.buttonTap(ButtonSymbol(str(i)))))
@@ -32,22 +39,30 @@ class DecimalButtonsView(BaseViewProtocol):
     def layoutViews(self):
         self.mainFrame.grid(column=0, row=0, sticky=(N, W, E, S))
 
-        for i in range(0, 9):
+        for i in range(0, len(self.topButtons)):
+            self.topButtons[i].configure(width=5)
+            self.topButtons[i].grid(column=i, row=0, padx=0, pady=0, sticky=(N, E, S, W))
+        for i in range(0, len(self.digitButtons)):
             self.digitButtons[i].configure(width=5)
-            self.digitButtons[i].grid(column=i % 3, row=math.floor(i / 3), padx=0, pady=0, sticky=(N, E, S, W))
-        self.digitButtons[-1].grid(column=0, columnspan=2, row=3, padx=0, pady=0, sticky=(N, E, S, W))
+            self.digitButtons[i].grid(column=i % 3, row=math.floor(i / 3)+1, padx=0, pady=0, sticky=(N, E, S, W))
+        self.digitButtons[-1].grid(column=0, columnspan=2, row=4, padx=0, pady=0, sticky=(N, E, S, W))
 
         self.decimalButton.configure(width=5)
-        self.decimalButton.grid(column=2, row=3, padx=0, pady=0, sticky=(N, E, S, W))
+        self.decimalButton.grid(column=2, row=4, padx=0, pady=0, sticky=(N, E, S, W))
 
     def styleViews(self):
         frameStyle = ttk.Style(self.superView)
         frameStyle.theme_use("alt")
-        frameStyle.configure("DecimalButtonsViewMainFrame.TFrame", background="yellow", borderwidth=1, relief='raised')
+        frameStyle.configure("DecimalButtonsViewMainFrame.TFrame", background="gray", borderwidth=1, relief='raised')
         self.mainFrame.configure(style="DecimalButtonsViewMainFrame.TFrame")
 
+        topButtonStyle = ttk.Style(self.superView)
+        topButtonStyle.configure("UtilityButton.TButton", foreground="black", background="red", borderwidth=1, relief='raised')
+        for button in self.topButtons:
+            button.configure(style="UtilityButton.TButton")
+
         buttonStyle = ttk.Style(self.superView)
-        buttonStyle.configure("DigitButton.TButton", foreground="black", background="green", borderwidth=1, relief='raised')
+        buttonStyle.configure("DigitButton.TButton", foreground="black", background="gray", borderwidth=1, relief='raised')
         for button in self.digitButtons:
             button.configure(style="DigitButton.TButton")
         self.decimalButton.configure(style="DigitButton.TButton")

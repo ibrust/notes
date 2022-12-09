@@ -67,8 +67,13 @@ class CalculatorModel(CalculatorControllerDelegate):
             self.data.currentOperand = self.data.currentOperand + symbol.value
             return
 
-    def changeMode(self):
-        self.data.mode = CalculatorMode((self.data.mode.value + 1) % len(CalculatorMode))
+    @property
+    def mode(self):
+        return self.data.mode
+
+    @mode.setter
+    def mode(self, value: CalculatorMode):
+        self.data.mode = value
 
     def clear(self):
         self.data.currentOperand = "0"

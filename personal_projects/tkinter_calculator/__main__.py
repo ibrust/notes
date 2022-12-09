@@ -4,9 +4,8 @@ import sys
 
 def main():
     mainWindow: Tk = Tk()
-    # mainWindow.columnconfigure(0, weight=1)
-    # mainWindow.rowconfigure(0, weight=1)
     mainWindow.title("Calculator")
+    mainWindow.resizable(False, False)
 
     coordinator = CalculatorCoordinator(mainWindow)
 
