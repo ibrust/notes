@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import ttk
 from ._BaseViewProtocol import BaseViewProtocol
 from abc import ABC, abstractmethod
-from ..types import ButtonSymbol
+from ..types import ButtonSymbol, Colors
 
 
 class OperationButtonsViewDelegate(ABC):
@@ -41,7 +41,7 @@ class OperationButtonsView(BaseViewProtocol):
         self.mainFrame.configure(style="OperationButtonsViewMainFrame.TFrame")
 
         buttonStyle = ttk.Style(self.superView)
-        buttonStyle.configure("OperationButton.TButton", foreground="black", background="blue", borderwidth=1, relief='raised')
+        buttonStyle.configure("OperationButton.TButton", foreground="black", background=Colors.TERNARY.value, borderwidth=1, relief='raised')
         for button in self.buttons:
             button.configure(style="OperationButton.TButton")
 

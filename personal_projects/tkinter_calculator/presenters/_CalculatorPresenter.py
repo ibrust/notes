@@ -4,14 +4,10 @@ from ..views import CalculatorView
 
 __all__ = ['CalculatorPresenter']
 
-# features to support:
-# shift button for A-F
-# disabling buttons other than 0/1 in binary mode or 0-7 in octal mode
-# buttons for switching between binary / octal / hex / decimal
-
 class CalculatorPresenter:
 
     publisher: Subject
+    MAX_DIGITS: int = 19
     def __init__(self):
         self.publisher = Subject()
         self.modelData = None
@@ -30,4 +26,15 @@ class CalculatorPresenter:
         self.publisher.on_next(self._createViewModel(modelData))
 
     def _createViewModel(self, modelData: CalculatorModel.Data) -> CalculatorView.Model:
-        return CalculatorView.Model(modelData.currentOperand)
+        displayText = modelData.currentOperand
+        hasExceededMaxDigits = False
+        if len(displayText) >= CalculatorPresenter.MAX_DIGITS:
+            # TODO: add logic for handling scientific notation that exceeds the max digit limit
+            displayText = displayText[:CalculatorPresenter.MAX_DIGITS:] + "..."
+            hasExceededMaxDigits = True
+
+        return CalculatorView.Model(
+            displayText=displayText,
+            mode=modelData.mode,
+            hasExceededMaxDigits=hasExceededMaxDigits
+        )

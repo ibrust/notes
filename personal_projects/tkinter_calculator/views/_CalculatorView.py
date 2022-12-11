@@ -1,25 +1,24 @@
 from tkinter import *
 from tkinter import ttk
 from ._BaseViewProtocol import BaseViewProtocol
-from dataclasses import dataclass
-from abc import ABC, abstractmethod
 from ._DecimalButtonsView import DecimalButtonsView, DecimalButtonsViewDelegate
 from ._OperationButtonsView import OperationButtonsView, OperationButtonsViewDelegate
 from ..types import ButtonSymbol, CalculatorMode
+from ._CalculatorViewDelegate import CalculatorViewDelegate
 
-__all__ = ['CalculatorView', 'CalculatorViewDelegate']
-
-class CalculatorViewDelegate(ABC):
-    @abstractmethod
-    def buttonTap(self, symbol: ButtonSymbol):
-        pass
-
+__all__ = ['CalculatorView']
 
 class CalculatorView(BaseViewProtocol, DecimalButtonsViewDelegate, OperationButtonsViewDelegate):
-    @dataclass
+
     class Model:
-        displayText: str = "0"
-        mode: CalculatorMode = CalculatorMode.DECIMAL
+        displayText: str
+        mode: CalculatorMode
+        hasExceededMaxDigits: bool
+
+        def __init__(self, displayText="0", mode=CalculatorMode.DECIMAL, hasExceededMaxDigits=False):
+            self.displayText = displayText
+            self.mode = mode
+            self.hasExceededMaxDigits = hasExceededMaxDigits
 
     @property
     def viewModel(self):
@@ -85,5 +84,5 @@ class CalculatorView(BaseViewProtocol, DecimalButtonsViewDelegate, OperationButt
             return
         self.runningTotalLabel["text"] = self.viewModel.displayText
 
-    def buttonTap(self, symbol: str):
-        self.delegate.buttonTap(symbol)
+    def buttonTap(self, symbol: ButtonSymbol):
+        self.delegate.buttonTap(self.viewModel, symbol)

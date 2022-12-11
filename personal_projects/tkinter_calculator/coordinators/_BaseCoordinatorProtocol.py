@@ -4,6 +4,14 @@ from typing import Callable
 
 
 class CoordinatorResult(Enum):
+    """ the coordinator's return type, passed to finish().
+        implementors should inherit from CoordinatorResult and specify
+        enum cases that make sense given their coordinators design
+        i.e.
+        MyCoordinatorResult(CoordinatorResult):
+            SUCCESS = 1
+            FAILURE = 2
+        """
     pass
 
 
@@ -18,7 +26,7 @@ class BaseCoordinatorProtocol(ABC):
 
         cls.finish = new_finish
 
-    # TODO: add support for an input & output event subject, tracking of child coordinators
+    # TODO: add support for an input & output event subject, child coordinators
 
     @abstractmethod
     def start(self):
@@ -37,6 +45,5 @@ class BaseCoordinatorProtocol(ABC):
     def onFinishCallback(self, callback: Callable[[CoordinatorResult], None]):
         if not isinstance(callback, Callable):
             raise TypeError("property must be of type Callable")
-        # TODO: - inspect the signature of callable & verify it matches the expectation...
 
         self._onFinishCallback = callback

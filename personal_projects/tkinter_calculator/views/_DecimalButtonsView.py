@@ -3,7 +3,7 @@ from tkinter import ttk
 from ._BaseViewProtocol import BaseViewProtocol
 from abc import ABC, abstractmethod
 import math
-from ..types import ButtonSymbol
+from ..types import ButtonSymbol, Colors
 
 
 class DecimalButtonsViewDelegate(ABC):
@@ -53,16 +53,16 @@ class DecimalButtonsView(BaseViewProtocol):
     def styleViews(self):
         frameStyle = ttk.Style(self.superView)
         frameStyle.theme_use("alt")
-        frameStyle.configure("DecimalButtonsViewMainFrame.TFrame", background="gray", borderwidth=1, relief='raised')
+        frameStyle.configure("DecimalButtonsViewMainFrame.TFrame", background=Colors.PRIMARY.value, borderwidth=1, relief='raised')
         self.mainFrame.configure(style="DecimalButtonsViewMainFrame.TFrame")
 
         topButtonStyle = ttk.Style(self.superView)
-        topButtonStyle.configure("UtilityButton.TButton", foreground="black", background="red", borderwidth=1, relief='raised')
+        topButtonStyle.configure("UtilityButton.TButton", foreground="black", background=Colors.SECONDARY.value, borderwidth=1, relief='raised')
         for button in self.topButtons:
             button.configure(style="UtilityButton.TButton")
 
         buttonStyle = ttk.Style(self.superView)
-        buttonStyle.configure("DigitButton.TButton", foreground="black", background="gray", borderwidth=1, relief='raised')
+        buttonStyle.configure("DigitButton.TButton", foreground="black", background=Colors.PRIMARY.value, borderwidth=1, relief='raised')
         for button in self.digitButtons:
             button.configure(style="DigitButton.TButton")
         self.decimalButton.configure(style="DigitButton.TButton")
