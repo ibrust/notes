@@ -437,7 +437,7 @@ python source programs are typically written in 7-bit ascii. but if you're worki
 CHAPTER 3 - TYPES AND OBJECTS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-every piece of data in pythono is an object 
+every piece of data in python is an object 
 
 the built-in id() function returns an integer used to identify an instance, usually its memory address
 the built-in type() function returns the type of an object 

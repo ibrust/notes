@@ -994,6 +994,175 @@ so just keep all tkinter code on the main thread and spin-off asyncio event loop
 MENUS
 ####################################################
 
+you have to code menus carefully to make sure they're compatible across different windowing systems - x11, win32 or aqua (mac)
+
+to find out which windowing system is currently running: 
+
+    root.tk.call('tk', 'windowingsystem')           # returns x11, win32 or aqua 
+
+note that today there's less of a 1:1 mapping between the window system & operating system - i.e. sometimes mac runs x11
+    so typical global variables that indicate which OS is being used, such as tcl_platform or sys.platform, aren't preferred here 
+
+a menu widget contains a number of menu items. 
+menu items have attributes for thigns such as displayed text, a keyboard accelerator, a command callback, etc. 
+menu widgets are arranged in a hierarchy. 
+the menubar itself is a menu widget which contains several items ("File", "Edit", etc.), each of which is a submenu containing more items.
+you can have nested menus and separators between items in menus
+
+menus are part of the classic Tk widgets
+
+before creating any menus it is mandatory to disable the "*tearOff" menu feature by executing this line somewhere in the application: 
+
+    root.option_add('*tearOff', FALSE) 
+
+'*tearOff' was is deprecated and buggy option for win32 and x11 menus that allows the menu to be torn away from the window 
+
+
+each top level window can have 1 menu bar 
+in Windows & Linux menus show up on top of the window, but in mac OS every window has a menu bar that shows up at the top of the screen. 
+    if you don't give a window a menu bar, mac OS will revert to using the root windows built-in default menu bar
+    to avoid this you should either assign every window a menu bar, or give the root window a fallback menu bar
+
+here's how you create a menubar for a new window, add submenus to it, and then add items to the submenus:
+
+    top_level_window = Toplevel(root)
+    new_menubar = Menu(top_level_window)
+    top_level_window['menu'] = new_menubar
+
+    file_submenu = Menu(new_menubar)                                # file_submenu will be beneath new_menubar in the menu heirarchy
+    edit_submenu = Menu(new_menubar)
+    new_menubar.add_cascade(menu=file_submenu, label='File')        # add_cascade is for adding a submenu 
+    new_menubar.add_cascade(menu=edit_submenu, label='Edit')
+
+    file_submenu.add_command(label='New', command=newFile)          # add items to the submenu 
+    file_submenu.add_command(label='Open...', command=openFile)
+    file_submenu.add_command(label='Close', command=closeFile)
+
+
+note that you can use the same menubar for more than one window
+
+to add nested submenus you can use add_cascade in the same way: 
+
+    recent_files_submenu = Menu(menu_file)
+    file_submenu.add_cascade(menu=recent_files_submenu, label='Open Recent')
+    for f in recent_files:
+        recent_files_submenu.add_command(label=os.path.basename(f), command=lambda f=f: openFile(f))
+
+
+you can also add visual separators between the menu items: 
+
+    file_submenu.add_separator()
+
+
+there are also checkbutton and radiobutton menu items that behave analogously, and will show an indicator next to the item: 
+
+    boundvar1 = StringVar()
+    boundvar2 = StringVar()
+
+    file_submenu.add_checkbutton(label='Check', variable=boundvar1, onvalue=1, offvalue=0)
+
+    file_submenu.add_radiobutton(label='One', variable=boundvar2, value=1)  # selecting a radiobutton item sets the bound variable to value
+    file_submenu.add_radiobutton(label='Two', variable=boundvar2, value=2)
+
+
+checkbutton and radiobutton menu items also support the command configuration option 
+
+
+the above methods add items to the end of menus.
+    you can also insert items in the middle of menus via the insert method
+    and you can delete a range of items using the delete method 
+
+    file_submenu.delete(0, 'end')                   # deletes all items in the menu
+
+
+you can also disable menu items using the state configuration: 
+
+    file_submenu.entryconfigure('Close', state=DISABLED)
+
+
+it's important that menu items be disabled when their use is not appropriate in the program. 
+
+you can also change the name of menu items if it's appropriate: 
+
+    file_submenu.entryconfigure(3, label="Hide Bookmarks")
+
+
+you can also create hotkeys for your menu items. 
+
+
+    file_submenu.entryconfigure('File', accelerator='Command+F')            # this method sets the tooltip text for the menu item 
+
+
+hotkey combinations are very platform specific. 
+    common modifiers include:
+    
+    Control
+    Ctrl
+    Option
+    Opt
+    Alt
+    Shift
+    Command
+    Cmd
+    Meta
+
+
+you can also use images in menu items using the image and compound options. 
+    image must be a Tk image object
+    compound can be: bottom, center, left, right, top, none
+
+
+if you're building your own menus, to get your textfields / other widgets to work with typical menu options like copy, paste, delete, etc. 
+    you can use some virtual events provided by tkinter:
+
+
+    root = Tk()
+    ttk.Entry(root).grid()
+    mainMenu = Menu(root)
+    edit_submenu = Menu(mainMenu)
+    mainMenu.add_cascade(menu=edit_submenu, label="Edit")
+    edit_submenu.add_command( 
+        label="Paste", 
+        command=lambda: root.focus_get().event_generate("<<Paste>>")    # <<Paste>> is a virtual event provided by tkinter
+    )                                                                   
+    edit_submenu.add_command(
+        label="Find...", 
+        command=lambda: root.event_generate("<<OpenFindDialog>>")       # <<OpenFindDialog>> is a custom virtual event 
+    )
+    root['menu'] = mainMenu
+
+    def launchFindDialog(*args):
+        ...
+        
+    root.bind("<<OpenFindDialog>>", launchFindDialog)
+    root.mainloop()
+
+
+note you must specify a widget for the virtual event to be sent to
+<<Paste>> must be sent to the widget with the keyboard focus, which is why we use focus_get() to fetch that widget 
+
+tkinter defines the following virtual events for this purpose: 
+
+    <<Clear>>
+    <<Copy>>
+    <<Cut>>
+    <<Paste>>
+    <<PasteSelection>>
+    <<PrevWindow>>
+    <<Redo>>
+    <<Undo>>
+
+
+platform-specific menus for mac os include: 
+
+
+platform-specific menus for windows include: 
+
+
+platform-specific menus for x11 include: 
+
+
+
 
 
 ####################################################

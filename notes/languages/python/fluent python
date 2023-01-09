@@ -1,0 +1,20 @@
+=============================================================
+CHAPTER 1 - The Python Data Model
+=============================================================
+
+the python interpreter typically calls the special methods __*__ 
+    by implementing them you allow your objects to leverage alot of built-in language features
+
+usually you want to avoid calling special methods directly, and call a relevant public function instead 
+    i.e. use len(obj) instead of obj.__len__()
+    the relevant public functions are often better optimized and provide additional services
+
+
+__repr__ is used by debuggers / fstrings and should return a string that, if possible, can be used to recreate the object 
+__str__ is used by print() and should return a human readable string
+
+calls to __str__, if not implemented, fallback to use __repr__ 
+    therefor if the output of __repr__ is readable enough you don't have to implement __str__ 
+
+pg 13
+

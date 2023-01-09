@@ -1,130 +1,89 @@
----------------------------------------------------------
----------------------FLYWEIGHT---------------------------
----------------------------------------------------------
-
-factory method | flyweight
-	"FLYWEIGHT - DIVERSE OBJECTS"
-		a variety of flyweight objects can be obtained, whether from cache or contructed, through a factory API 
-		the go4 models for flywieghts include a factory in the UML
-
-singleton | flyweight | strategy 
-	"FLYWEIGHT - OBJECT CREATION API"
-		from outside to inside: singleton > flyweight > strategy 
-		you have the global interface to this strategy, which handles the internals of retrieving cached objects or creating new objects. 
-		it's a complex strategy internally. I'm not sure what value the strategy pattern adds other than loose coupling of components, 
-		but there are certainly many strategies used internally by the flyweight. 
-		some of these patterns may be useful in parts - for example, a global object cache is useful in contexts outside of a flyweight. 
-
-singleton | facade | flyweight 
-	"FLYWEIGHT - SIMPLE INTERFACE"
-		from outside to inside: singleton > facade > flyweight 
-		this just seems to be a remark on how simple the API to a flyweight is - how all the complexity of caching & managing these objects 
-		is encapsulated, and you access it all through the API. 
-
-flyweight | proxy 
-	"FLYWEIGHT - OBJECT SHELL W/ LAZY LOADING & RECYCLING"
-		I think this is that object shell that acts as a placeholder - like the empty cells in a tableview. 
-		it gets filled in with the more specific and variant state after a call to the factory interface, I think...
-		lazy loading is a part of this too - you don't load the cell until it's about to appear on screen, for example. 
-		this reduces the total number of objects you need in the caches. this is an important part of the flyweight optimization 
-		and when objects move offscreen they get recycled too. so this is an important pattern
-
-flyweight | decorator 
-	"FLYWEIGHT - OBJECT WRAPPERS"
-		these are wrappers that are applied to the shells of objects. i.e. a text editor that allows things like highlighting, bolding, etc. 
-
-*chain of responsibility | flyweight	- 63% done, but still needs work
-	"FLYWEIGHT - PARTITIONED OBJECT DELEGATION"?
-		from outside to inside: chain of responsibility > flyweight 
-		this has something to do with the partitioning of the objects in the flyweight, and sending requests up the chain 
-		it might have something to do with communication between these different layers and delegating responsibility 
-		the chain may actually move up from the base object toward the wrappers, seeing if functionality is attached to the object or not. 
-		so we would call this... a partitioned object delegation request, or something?
-
-flyweight | visitor 
-	"FLYWEIGHT - COMPLEX OBJECT FINDER"
-		The visitor helps build an object in any way that pleases you - remember that these are combinations of objects. 
-		So you can configure the visitor to look for a specific object (or decorators), and maybe even a set of them.  
-		And it also handles making sure the object is unused or shareable before retrieving it.
 
 ---------------------------------------------------------
 ------------------FACTORY METHOD-------------------------
 ---------------------------------------------------------
-factory method 
-	also known as a virtual constructor. It's an abstract constructor, it allows the decision of which type of object 
-	to construct to be made at runtime.
+aka virtual constructor
 
-*factory method | factory method
+factory method | factory method
 	"MULTIPLE FACTORIES"
-		a simpler alternative to an abstract factory.  
-		What are the tradeoffs between multiple factories and an abstract factory? I don't know - elaborate more later  
+		how is this distinct from an abstract factory? maybe in that the factories vary independently. 
+		so does the use of one factory lead to the use of multiple as part of a broader programming style? 
 
 factory method | factory method | adapter 
 	"VIRTUAL ADAPTER"
-		Adapting between the constructs of different factory methods. This is a 1-to-1 mapping between 2 parallel sets of objects. 
+		mappings between 2 sets of objects. 
+		this is an interesting way to organize things, it prevents the propagation of many different adapters 
+		perhaps it suggests the use of multiple adapters as part of a broader design
 
 adapter | adapter | factory method 
-	"BROKER"
-		this is about adaptation between a set of objects. 
-		instead of having N^2 combinations of adapters a broker allows for 2N combinations. All requests for adaptation go through the centralized broker. 
+	"COLLABORATING TYPES"
+		create adapters between all the different types produced by the factory. 
+			now you can easily change an object from one of these types to another
+		it may support reuse throughout the application
+			for example, if I have a set of related objects - maybe a credit card that's used in many different contexts 
+			then a factory could produce these different credit card objects, and the adapters will make subsystems 
+				that used these types easier to work with. their APIs will be easy to navigate, it'll be easy to reuse logic between them 
+		it may also support a programming style that makes broader use of polymorphism (via an abstract parent class of the factory objects) 
+		you're ultimately persisting state between different subsystems & different objects 
+		this also adds definition to the types you adapt between - they are related via their common factory
 
 mediator | factory method
-	"OBJECTS MANAGER"
-		throughout the lifecycle of factory constructed objects - they're allocated / deallocated, their state changes. 
-		the mediator passes messages between the different objects, and provides them all with fresh information. it also handles initialization / deallocation.
-		A common example is a set of views that can be clicked on / backed out of. The view is a factory construct. Clicking allocates / deallocates the view. 
-		within the view you might update some information. This information needs to be relayed somewhere - maybe to other views, maybe to a backend system. 
-		the container can also wrap & organize a field of objects. 
-		The mediator is the wrapper around these factory objects, it manages them...
-		it may sometimes be worth it to have this dedicated class just to manage complex interactions between different factory objects
+	"OBJECT SET CONTROLLER"
+		the mediator passes messages between the different objects, and provides them all with fresh information. 
+		it also handles initialization / deallocation of objects.
+		A common example is a set of views that can be clicked on / backed out of. 
+			The view is a factory construct. Clicking allocates / deallocates the view. the views data also has to be kept fresh
 
-*observer | factory method | facade
-	"CONTEXT-SENSITIVE CONSTRUCTOR"?
-		by combining observation and a factory method you can choose what to instantiate based on context. 
-		this may then be useful for designing a simple interface - like a facade. I'm not really sure of the details... 
-		wouldn't the products of the factory need to share their interface in this case? 
-		the interfaces of the products should have a fairly big effect on the ways you can use them, and how general you can make the code 
+observer | factory method | facade
+	"FACTORY OBJECT API"
+		the factory objects define an API that includes some kind of publisher
+		this allows consumers to observe the objects & respond to events while not having to interact with them on a case by case basis 
+		the factory objects themselves can then decide which events they want to emit, what functionality they support, etc.
+		this seems like a strong way to support the addition of new objects, and reuse of logic for interacting with these objects 
+		you will need some abstract base class for the objects 
 
 ---------------------------------------------------------
 -----------------ABSTRACT FACTORY------------------------
 ---------------------------------------------------------
 prototype | abstract factory 
-	"ABSTRACT PROTOTYPE" (in go4)
-		read go4 for more details
+	"PERSISTING STATE BETWEEN TRANSFORMATIONS"
+		something about abstract factories & prototypes is written in Go4. 
+		when you change from one set of factory objects to another you may lose all the state associated with the current objects 
+		but using prototype constructors you can pass in the existing object to the new object
+		and initialize it using the state that needs to be shared. 
+		the object used for initialization would need to conform to a common interface so that multiple transitions don't lose data. 
+		In real terms I think you'd just put all this configuration data in a data model & pass that in, but the idea is important. 
 
 strategy | command | abstract factory 
-	"ABSTRACT USER INTERFACE"
-		the set of UI buttons & what they do changes based on the factory type. you can change the whole interface this way. 
-		platform independent code is one classic example. 
-		but let's say a new toolbar needs to be shown when the user presses a given menu button. this is a well-designed way to implement that. 
-		each tool bar has a factory and each button is a factory construct w/ unique functionality (also produced by the factory?)
+	"BUTTONS THAT CHANGE BUTTONS"
+		a strategy / command can trigger the changing of UI buttons, and the new buttons turn have different behavior (strategies / commands)
+		example is in WoW where clicking a button causes the set of buttons to change, and the new buttons do new things. 
 
 *abstract factory | observer | observer
-	"OBSERVING SETS OF OBJECTS DIFFERENTLY"?
-		when the set of objects you're creating changes you should also change the observer mechanism you're using
-		the observer & the observed are inseparable, so the association of different observers with different factories is a natural one
-		what about using observation to trigger which factory is instantiated? That doesn't explain the two observers, though... 
-		needs elaboration
+	"REACTING TO UI CHANGES"
+		the abstract factory can listen for events & change its object set based on that 
+		it can also emit events to notify subscribers when it changes its object set 
+		this just seems to be a recognition that it's important to maintain an update cycle in relation to all these UI changes
 
 ---------------------------------------------------------
 ---------------------BUILDER-----------------------------
 ---------------------------------------------------------
+aka streaming constructor
 
 composite | builder
-	"TREE BUILDER" or "PARSER"
+	"STREAMING PARSER"
 		common pattern. a tree is ofter the output of a builder - i.e. the parse tree is the output of the parser
+		this is nice because the entire composite structure doesn't have to be in memory at once.
 		it would be useful to know how to build a streaming parser in C 
 
 builder | state
 	""
-		maybe taking snapshots at different phases of execution, as you continually add to / alter the application state 
-		this is a kind of builder pattern in a sense. and maybe it could be used in to restore state in different contexts
+		you can use a streaming constructor to create a state object. this may be useful because state objects can take up large amounts of memory. 
+
 
 state | builder | composite 
 	"" 
-		it would just be a combination of the parser pattern and the taking of snapshots I think 
-		probably the networking or database integration layer is the place to take the snapshot, 
-		since it's the entry point to the system 
+		
 
 builder | adapter 
 	""
@@ -166,11 +125,9 @@ command | prototype | facade
 ---------------------------------------------------------
 
 singleton | singleton 
-	"SINGLETON / GLOBAL ACCESS PROPAGATION"
-		One singleton often introduces the need for more singletons. With the singleton you have global access, 
-		but from within that global data structure you will find the need for global access to more data structures. The need for global access propagates. 
-		This propagation is probably something to protect against by ensuring your singletons are self-contained subsystems. 
-		then again... if you have one singleton, having multiple may simplify the code, so you may embrace this try to simplify the code 
+	"TENDENCY TO USE MULTIPLE SINGLETONES"
+		One singleton often introduces the need for more singletons because of how it alters the programs structure. The use of global state propagates.
+		so you should be careful in introducing singletones. Find ways of minimizing the need to use multiple. 
 
 observer | singleton | observer 
 	"NOTIFICATION CENTER"
@@ -273,7 +230,7 @@ bridge | template method | interpreter
 -----------------------FACADE----------------------------
 ---------------------------------------------------------
 
-Façade | Decorator
+Facade | Decorator
 	""
  
 Facade | Decorator | Observer
@@ -366,10 +323,10 @@ builder  | factory method  | decorator  | state  |
 
 		
 command  | interpreter  | decorator  | chain of responsibility  | command 
-	// seems like a system that, depending on the input language, a request is propagated until a command receives the input & is triggered, 
-		but what does the decorator do? I think it must be used in the chain of responsibility somehow...? 
-		maybe you add it to an object or set of objects for them to receive the command...? So maybe the decorator is configured by the interpreter?
-		So this would be something like a control interface...? almost like SDN or something? 
+	// different commands... an interpreter layer that delegates the command to do different things based on decorators? 
+	// so some kind of multi-mode command with a layer of changing logic beneath it, or something... 
+	// it's more than that, potentially.. the decorator adds a composability to this. 
+	// and is able to modify the command, and add something to it 
 
 
 visitor  | adapter  | decorator  | factory method  | flyweight
@@ -382,8 +339,6 @@ single patterns: 21%
 random patterns: remainder 
 amended by: any other patterns read about. 
 
-// it's not clear to me that delegation is completely distinct from chain of responsibility. 
-// I guess delegation is a single link, right? whereas the chain of responsibility is the whole link. If that is significant enough or not
 ---------------------------------------------------------
 ---------------------DELEGATION--------------------------
 ---------------------------------------------------------

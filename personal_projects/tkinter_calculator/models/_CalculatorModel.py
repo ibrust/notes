@@ -31,6 +31,7 @@ class CalculatorModel(CalculatorControllerDelegate):
         self.didJustPressMathOperationButton = False
         self.nextOperation = None
 
+        # publish self.data publicly whenever the observed self.data properties change
         self.data.publisher.subscribe(
             on_next=lambda v: self.publisher.on_next(self.data)
         )
