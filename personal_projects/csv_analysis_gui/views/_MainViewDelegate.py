@@ -1,5 +1,4 @@
-from abc import ABC, abstractmethod
-from ..types import ButtonSymbol
+from abc import ABC
 
 __all__ = ['MainViewDelegate']
 

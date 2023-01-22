@@ -4,8 +4,9 @@ import sys
 
 def main():
     mainWindow: Tk = Tk()
-    mainWindow.title("GIS Data Analyzer")
+    mainWindow.title("GIS Dataset Analyzer")
     mainWindow.resizable(False, False)
+    mainWindow.geometry("900x700")
 
     coordinator = MainCoordinator(mainWindow)
 

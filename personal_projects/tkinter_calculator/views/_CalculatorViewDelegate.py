@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from ..types import ButtonSymbol
+from .._types import ButtonSymbol
 
 __all__ = ['CalculatorViewDelegate']
 

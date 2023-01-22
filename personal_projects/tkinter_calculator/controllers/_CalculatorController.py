@@ -1,5 +1,5 @@
 from ..views import *
-from ..types import *
+from .._types import *
 from ._CalculatorControllerDelegate import CalculatorControllerDelegate
 
 __all__ = ['CalculatorController']

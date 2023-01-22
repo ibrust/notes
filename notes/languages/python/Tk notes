@@ -1153,29 +1153,380 @@ tkinter defines the following virtual events for this purpose:
     <<Undo>>
 
 
-platform-specific menus for mac os include: 
+platform-specific menus for mac os: 
+
+    every menubar starts with the system-wide apple icon menu.
+        next is a menu for the active application 
+    when you attach a menubar to the window, if it does not already contain a specially named .apple menu Tk will use its default application menu 
+        note - .apple refers to the application menu, not the apple icon menu
+    the .apple menu (application menu) will automatically be named after the binary executable for your program 
 
 
-platform-specific menus for windows include: 
+        newWindow = Toplevel(rootWindow)
+        menubar = Menu(newWindow)
+        application_menu = Menu(menubar, name='apple')                  # create your .apple applications menu
+        menubar.add_cascade(menu=application_menu)
+
+        application_menu.add_command(label='About My Application')
+        application_menu.add_separator()
+
+        newWindow['menu'] = menubar                                     # add new menubar after the configuration is complete 
+
+    
+    there's always a preferences sub-menu in the .apple application menu. 
+        this sub-menu should be disabled unless you implement it to support the application's configuration options 
+    to implement the preferences sub-menu you must use a special syntax: 
+
+        def showPreferencesDialog():              
+            ...
+        
+        # this event fires when the preferences item within the application menu is selected 
+        rootWindow.createcommand('tk::mac::ShowPreferences', showPreferencesDialog)
 
 
-platform-specific menus for x11 include: 
+    help menus you add are also handled specially by macOS, and must be given the name .help
+    the help menu comes with a search box and a link to a help page. pressing this link triggers the 'tk::mac::ShowHelp' event
+
+        helpmenu = Menu(menubar, name='help')
+        menubar.add_cascade(menu=helpmenu, label='Help')
+        rootWindow.createcommand('tk::mac::ShowHelp', showHelpPage)     # trigger a callback when the help page link is pressed 
+
+    you can add other items to the help menu as desired 
+
+    you can also add a 'window' menu to your application, another standard macOS menu. 
+    tk automatically manages this menu after you add it, though you can still add additional menu options to it if it makes sense
+    
+        windowmenu = Menu(menubar, name='window')
+        menubar.add_cascade(menu=windowmenu, label='Window')
+
+    there are several other lifecycle or menu-item related events which you can handle: 
+
+        tk::mac::Quit:                  # called when the Quit menu item is selected, when a user is trying to shut down the system etc.
+        tk::mac::OnHide:                # called when your application has been hidden.
+        tk::mac::OnShow:                # called when your application is shown after being hidden.
+        tk::mac::OpenApplication:       # called when your application is first opened.
+        tk::mac::ReopenApplication:     # called when a user "reopens" your already-running application (e.g., clicks on it in the Dock)
+        tk::mac::OpenDocument:          # called when the Finder wants the application to open one or more documents (e.g., that were dropped on it). 
+                                        # the procedure is passed a list of pathnames of files to be opened.
+        tk::mac::PrintDocument:         # like OpenDocument, but the documents should be printed rather than opened.
 
 
+platform-specific menus for windows: 
+
+    each window has a "System" menu at the top left of the window frame. it contains itmes like "Close", "Minimize", etc. 
+    if you create a system menu you can add new items below the standard ones: 
+
+        sysmenu = Menu(menubar, name='system')
+        menubar.add_cascade(menu=sysmenu)
 
 
+platform-specific menus for x11: 
+
+    On X11, if you create a help menu, Tk ensures that it is always the last menu in the menubar:
+
+        help_menu = Menu(menubar, name='help')
+        menubar.add_cascade(menu=help_menu, label='Help')
+
+
+contextual menus are created when a user right-clicks somewhere in the application 
+you can capture right-click events & show a context menu 
+    on macOS right-click is the 3rd mouse button, on windows & Linux it's the 2nd mouse button 
+    you can also open context menus using ctrl+click on macOS
+you also need to capture the mouse buttons location to determine where to display the menu 
+    it's important you get the global position rather than the local position within a subview
+
+
+    menu = Menu(rootWindow)
+    for i in ('Menu Item 1', 'Menu Item 2', 'Menu Item 3'):
+        menu.add_command(label=i)
+
+    if (rootWindow.tk.call('tk', 'windowingsystem')=='aqua'):                       # bind to mousebutton 2 for macOS 
+        rootWindow.bind('<2>', lambda e: menu.post(e.x_root, e.y_root))             # x_root and y_root contains the global positions
+        rootWindow.bind('<Control-1>', lambda e: menu.post(e.x_root, e.y_root))     # post is a method that tells a menu to appear at a location 
+    else:
+        rootWindow.bind('<3>', lambda e: menu.post(e.x_root, e.y_root))             # otherwise bind to mousebutton 3
 
 ####################################################
 WINDOWS AND DIALOGS
 ####################################################
 
+toplevel windows are not part of the new themed widgets 
+
+to create a new toplevel window you add it as a child of an existing window 
+    unlike widgets, toplevel windows will appear on screen without you gridding them 
+    once a toplevel window has been created, add widgets to it & grid them as you normally would 
+
+
+    new_window = Toplevel(parent_window)            # create a new window 
+
+    current_title = new_window.title()              # the windows current title
+    new_window.title('new title')                   # set a new title for the window 
+
+    new_window.destroy()                            # destroy the window 
+
+
+note that you can use destroy() on any widget, not just windows 
+when you destroy() a window or widget, all of its children are also destroyed 
+
+you can design an application to hide the root window (by calling its withdraw method) & only allow the user to interact with top level windows. 
+    this will allow the user to close / open any windows without terminating the application 
+
+
+a windows geometry is specified in the format "widthxheight±x±y"
+
+    new_window.geometry('300x200-5+40')         # set the width/height & x/y position of the new window window 
+
+    new_window.update_idletasks()               # normally the render operation triggered by geometry() is asynchronous 
+                                                # update_idletasks() waits for the pending geometry update to finish before we query the new geometry 
+    new_window(new_window.geometry())           # get the new width/height & x/y position
+
+
+note that geometr() sets the windows global position, it doesn't account for safe areas 
+    i.e. in macOS where you have a menubar at the top / bottom, geometry() won't account for that 
+
+note that once you've explicitly set a width/height & position like this the widget will no longer automatically resize 
+    unless you've properly configured its grid properties (sticky, weight, etc.)
+
+
+you can prevent windows from resizing: 
+
+    new_window.resizable(FALSE,FALSE)
+
+
+you can also set a minimum size for the window:
+
+    new_window.minsize(200,100)                         # set the (width, height)
+
+
+to intercept & override the default behavior of the windows close button (maybe to prompt for unsaved changes):
+
+    new_window.protocol("WM_DELETE_WINDOW", callback)
+
+
+to set a windows transparency:
+
+    new_window.attributes("-alpha", 0.5)
+
+
+to make a window fullscreen:
+
+    new_window.attributes("-fullscreen", 1)
+
+
+windows can be in one of five states:
+
+    normal 
+    iconic 
+    withdrawn 
+    icon 
+    zoomed 
+
+
+    _ = window.state()              # returns the windows current state
+    window.state('normal')          # set the windows state to normal 
+    window.iconify()                # transition the window state to 'iconic' (it turns the window into an icon, apparently)
+    window.deiconify()              # transition the window out of the iconic state
+    window.withdraw()
+
+
+the window stackorder is tkinter's equivalent of z-index 
+
+    new_window.attributes("-topmost", 1)                            # set the window as the topmost window (unless another window is also set as topmost)
+    rootWindow.tk.eval('wm stackorder '+str(new_window))            # internal method to get the current stackorder 
+
+    if (rootWindow.tk.eval('wm stackorder '+str(new_window)+' isabove '+str(old_window))=='1'):        # check if one window is above another 
+        ...
+
+    new_window.lift()                       # raise new_window in the stackorder
+    new_window.lift(old_window)             # raise old_window 
+    new_window.lower()                      # lower new_window in teh stackorder
+    new_window.lower(old_window)            # lower old_window 
+
+
+if you have a group of widgets gridded together, it automaticallyraises or lowers their stackorder as a group:
+
+    sibling_window_A = ttk.Label(rootWindow, text="A")
+    sibling_window_B = ttk.Label(rootWindow, text='sibling_window_B')
+    sibling_window_A.grid(column=0,row=0)
+    sibling_window_B.grid(column=0,row=0)
+    # remember after() schedules an event to run in the near future, but doesn't block the event loop 
+    rootWindow.after(2000, lambda: sibling_window_A.lift())                 # will also lift sibling_window_B 
+
+
+you can use winfo to get important information on the screen size:
+
+    print("pixels per inch=" + str(root.winfo_pixels('1i')))
+    print("width=", str(root.winfo_screenwidth()) + " height=", str(root.winfo_screenheight()))
+
+
+there are multiple built-in dialog boxes that allow users to select files or folders (i.e. save, open, etc.). 
+    on mac / windows these invoke the OS dialogues directly. 
+
+
+    from tkinter import filedialog
+
+    filename = filedialog.askopenfilename()             # these calls are synchronous, and return after the user selects a file/folder or cancels
+    filename2 = filedialog.asksaveasfilename()
+    dirname = filedialog.askdirectory()
+
+
+there are many configuration options you can pass to askopenfilename() and asksaveasfilename() 
+    these let you set allowed file types, initial directory, default filename, etc. 
+    see the docs for more details - https://tcl.tk/man/tcl8.6/TkCmd/getOpenFile.htm https://tcl.tk/man/tcl8.6/TkCmd/chooseDirectory.htm 
+
+
+there are also built-in dialogues for selecting a color and selecting a font.
+    again see the docs for more details - http://tkdocs.com/tutorial/windows.html
+
+
+    from tkinter import colorchooser
+    color = colorchooser.askcolor(initialcolor='#ff0000')
+
+
+there's a built in modal alert: 
+
+    from tkinter import messagebox
+    messagebox.showinfo(message="Sorry! We're having technical issues. Please try again later.")
+
+    messagebox.askyesno(message="Are you sure you want to add this payment? It will clear your allocations"
+	                    icon="question"
+                        title="Add PayPal?")
+
+here are the modal alerts supported by tkinter:
+
+    howinfo                                         # returns "ok"             
+    showwarning                                     # returns "ok"  
+    showerror                                       # returns "ok"  
+    askokcancel                                     # returns True / False
+    askyesno                                        # returns True / False
+    askretrycancel                                  # returns True / False
+    askquestion                                     # returns "yes" or "no"
+    askyesnocancel                                  # returns True / False / None (if they cancel)
+
+the modal alerts return a poorly designed mix of strings and Booleans
+
+you can also create your own custom modal alert, though this turns out to be more complicated than it's worth probably: 
+
+
+    def dismiss_alert():
+        modal_alert.grab_release()
+        modal_alert.destroy()
+
+    modal_alert = Toplevel(root_window)
+    ttk.Button(modal_alert, text="Done", command=dismiss_alert).grid()
+
+    modal_alert.protocol("WM_DELETE_WINDOW", dismiss_alert)                 # intercept close button
+    modal_alert.transient(root_window)                                      # modal_alert window is related to root_window
+    modal_alert.wait_visibility()                                           # can't grab until window appears, so we wait
+
+    modal_alert.grab_set()                                                  # ensure all input goes to our window
+    modal_alert.wait_window()                                               # block until window is destroyed
+
+
 ####################################################
 ORGANIZING COMPLEX INTERFACES
 ####################################################
 
+you can create line separators to help organize UI elements: 
+
+    line_separator = ttk.Separator(parent, orient=HORIZONTAL)
+
+
+a Labelframe widget draws a labeled box around a group of elements: 
+
+    label_frame = ttk.Labelframe(parent, text="Label")
+
+
+A panedwindow widget lets you place two or more resizable widgets next to each other. 
+    users can adjust their relative widths (or heights) by dragging a sash located between the widgets. 
+    typically the widgets added to a panedwindow are frames that contain other widgets
+
+
+    paned_window = ttk.Panedwindow(parent, orient=VERTICAL)                     # orient can be VERTICAL or HORIZONTAL
+    top_frame = ttk.Labelframe(p, text='Up here', width=100, height=100)
+    bottom_frame = ttk.Labelframe(p, text='Down here', width=100, height=100)   
+    paned_window.add(top_frame) 
+    paned_window.add(bottom_frame) 
+
+
+add() lets you add a pane, insert() lets you insert a pane at a specific index, forget() lets you remove a pane 
+
+
+a notebook widget is a box with tabs at the top. clicking a tab changes the visible frame
+
+    notebook_widget = ttk.Notebook(rootWindow)
+    frame1 = ttk.Frame(n)
+    frame2 = ttk.Frame(n) 
+    notebook_widget.add(frame1, text='show frame 1')
+    nnotebook_widget.add(frame2, text='show frame 2') 
+
+
+the add(), insert(), and forget() methods also work on notebooks 
+    the text configuration option sets the label of the tab 
+    there's also a state configuration option, which can be normal, disabled, or hidden 
+
+the select() method retrieves the current active frame 
+    you can change the selected window by passing the frame's position as an argument to select()
+
+the tabs() method retrieves a list of all frames contained in the notebook 
+to access or change a tabs configuration options (i.e. its text or state) call tab(tab_position, option=value)
+
+    notebook = ttk.Notebook(...)
+    ...
+    tab_names = [notebook.tab(i, option="text") for i in notebook.tabs()]
+
+
 ####################################################
 FONTS, COLORS, IMAGES
 ####################################################
+
+the label, text, and canvas widgets have a font configuration option you can use to change their font
+    you can also change fonts on some other widgets using styles 
+
+tkinter has some built-in fonts that play well across different platforms:
+
+    TkDefaultFont 
+    TkTextFont 
+    TkFixedFont                     # a standard fixed-width font 
+    TkMenuFont                      # used for menu items 
+    TkHeadingFont 
+    TkCaptionFont 
+    TkSmallCaptionFont 
+    TkIconFont                      # used for icon captions
+    TkTooltipFont 
+
+there are also a variety of built-in platform specific fonts, see the docs for more details 
+
+the built-in fonts are abstractions, and the actual font they refer to will vary based on the platform:
+
+    from tkinter import font
+    font.names()                                        # lists all currently defined font names 
+    font.families()                                     # lists all font families supported
+
+    default_font = font.nametofont('TkDefaultFont')     # get the font that's the default on the current platform 
+    default_font.actual()                               # lists metadata about the font - font family, size, weight, slant, underline, and overstroke 
+    default_font.metrics()                              # info on how tall the font can be & whether it's monospaced - ascent, descent, linespace, fixed 
+    default_font.measure("how many pixels wide is this sentence?")          # tells you how many pixels wide the string will be 
+
+    highlighted_font = font.Font(family='Helvetica', name='appHighlightFont', size=12, weight='bold')       # create a font
+    ttk.Label(root, text='Attention!', font=highlightFont).grid()
+
+
+here's how you create an image and set it to a label: 
+
+    image_obj = PhotoImage(file='image.gif')
+    label['image'] = image_obj
+
+
+tkinter 8.6 supports only GIF, PNG, and PPM/PNM images. 
+but Pillow's ImageTk.PhotoImage() provides a drop-in replacement for Tk's PhotoImage() and supports a broader range of image types:
+
+    pip install Pillow 
+
+
+    from PIL import ImageTk, Image
+    image_obj = ImageTk.PhotoImage(Image.open('image.png')) 
+
 
 ####################################################
 CANVAS
@@ -1192,4 +1543,49 @@ TREEVIEW
 ####################################################
 STYLES AND THEMES
 ####################################################
+
+styles control how widgets look 
+themes are sets of styles for all widgets in the app 
+
+apparently you can't customize some themed entries or buttons with styles and others by directly changing appearance options. 
+    there are a few exceptions, like labels where you can customize the font and colors through both styles and configuration options.
+
+
+    style_manipulators = ttk.Style()                # all theme manipulators are bundled into the ttk.Style class
+    style_manipulators.theme_names()                # list all available themes - alt, default, clam, classic, and some other OS-specific ones 
+
+    style_manipulators.theme_use('clam')            # change to use a different theme, & refreshes the UI of all widgets
+
+
+all themed widgets maintain a set of binary state flags, accessed by the state and instate methods.
+    they all have the same set of state flags, though they may ignore some of them:
+
+    active
+    disabled
+    focus
+    pressed
+    selected
+    background
+    readonly
+    alternate
+    invalid
+
+styles can define different appearances for a widget based on its state 
+
+every style has a name. to use a style you must first know its name 
+
+    button = ttk.Button()
+    # this checks the style configuration option. if empty, it means the widget is using the default style for its class
+    button["style"]             # ""
+    # this retrieves the widget class's default style 
+    button.winfo_class()        # "TButton"
+
+    # creates a new style from derived from the base style TButton. It will inherit everything from TButton, but change 
+    # only the properties you specify 
+    style_manipulators.configure("NewStyle.TButton", font="helvetica 24", foreground="red", padding=10)    
+ 
+    # apply the style to some buttons
+    button["style"] = "NewStyle.TButton"
+    button2 = ttk.Button(parent, text="Press me", style="NewStyle.TButton")     
+
 

@@ -1,6 +1,6 @@
 from reactivex.subject.subject import Subject
 from ..controllers import CalculatorControllerDelegate
-from ..types import ButtonSymbol, CalculatorMode
+from .._types import ButtonSymbol, CalculatorMode
 from ..helpers import reactiveProperty
 
 __all__ = ['CalculatorModel']

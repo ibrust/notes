@@ -3,7 +3,7 @@ from tkinter import ttk
 from ._BaseViewProtocol import BaseViewProtocol
 from ._DecimalButtonsView import DecimalButtonsView, DecimalButtonsViewDelegate
 from ._OperationButtonsView import OperationButtonsView, OperationButtonsViewDelegate
-from ..types import ButtonSymbol, CalculatorMode
+from .._types import ButtonSymbol, CalculatorMode
 from ._CalculatorViewDelegate import CalculatorViewDelegate
 
 __all__ = ['CalculatorView']
