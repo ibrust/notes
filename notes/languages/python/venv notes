@@ -4,6 +4,7 @@ python 3.3+ comes with venv
 
     python3 -m venv name_of_environment                         # create a virtual environment. conventionally you name the environment venv
     name_of_environment\Scripts\activate.bat                    # activate the envirnoment 
+                                                                # when I tried it on mac it was actually . venv/bin/activate
 
     where python3                                               # should list a path to the new virtual environoment's interpreter 
 
@@ -35,3 +36,7 @@ to create a virtual environment that also has access to your system packages fro
     pip list --local                                    # list just the packages installed in venv 
 
     pip freeze --local > requirements.txt               # freeze only the packages installed in venv 
+
+
+there's some difficulty creating a virtual environment for a version of python different than the system version
+    I'm still working on figuring out how to do this

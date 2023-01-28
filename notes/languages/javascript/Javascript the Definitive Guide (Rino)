@@ -42,9 +42,12 @@ to open the javascript console / tools in the browser try:
   f12 
   ctrl+shift+I 
   command+option+I    <- mac 
+javascript Novice to Ninja said something different though: 
+  ctrl shift K        <- in firefox
+  ctrl shift J        <- in chrome
 
 you can open the console as a separate window from the browser
-to run a javascript file in the browser add script tags to an HTML file & open it with the browser:
+to run a javascript file in the browser, add script tags to an HTML file & open the HTML file with the browser:
 
   <script src="filename.js"></script>
 
@@ -84,7 +87,7 @@ ES2020 added support for optionals. they returned undefined if no property is th
 
   let count2 = 2; 
   count === count2;                   // this is the strict equality operator. unlike == it doesn't do type conversion when making comparisons 
-  count !=== count2; 
+  count !== count2; 
 
   function double(x) {
     return x * 2; 
@@ -105,7 +108,7 @@ ES2020 added support for optionals. they returned undefined if no property is th
     noise: "MEOOWW!!"
   }
   cat.meow = function() {             // you can add methods to objects like this
-    return this.noise                 // this references the object itself (though there's weirdness involving the delegate chain that can happen)
+    return this.noise                 // this references the object itself (though there's potential weirdness involving the delegate chain) 
   }
   cat.meow(); 
 
@@ -190,7 +193,7 @@ object types are mutable and primitives are immutable
 javascript has loose type conversion
 == and != do type conversions automatically, but for strict typing use === and !== (best practice is to just always use these)
 
-constants are declaled with const; let and var are both variables 
+constants are declared with const; let and var are both variables 
 
 ES6 added support for binary and octal literals 
   0b1010 
@@ -248,7 +251,7 @@ you cannot mix BigInts with regular Numbers in arithmetic operations, but you ca
   also, none of the Math functions accept BigInts 
 
 javascript strings are UTF-16. 
-UTF-16 uses surrogate pairs - pairs of UTF-16 characters - to specify characters outside the normal range 
+UTF-16 uses surrogate pairs - 2 UTF-16 characters - to specify characters outside the normal range 
 traditional javascript string functions treat all characters at 16-bit, and do not account for possible surrogate pairs (unlike Swift) 
 ES6 made strings iterable - you can use for/of loops to loop over them and do operations. this iteration is compatible with surrogate pairs. 
 
@@ -269,9 +272,9 @@ typically when combining HTML and javascript you use single quoted strings in on
 
 basic string methods: 
 
-  let string1 = "moOoOo!)"; 
+  let string1 = "moOoOo!"; 
 
-  string1.length                        // 4 
+  string1.length                        // 7 
   string1.substring(1, 3);              // oOo
   string1.slice(1, 3);                  // oOo same thing 
   string1.split("O");                   // ["mo", "o", "o!"]
@@ -312,7 +315,7 @@ basic string methods:
 
 
 
-ES6 added template literals, which are backticked strings that can conotain executable javascript codoe (similar tot shell backticked strings): 
+ES6 added template literals, which are backticked (`) strings that can contain executable javascript code (like shell backticked strings or python f strings): 
 
   let name = "Ian";
   let templateString = `hello ${ name }`;       // hello Ian 
@@ -400,7 +403,7 @@ when invoked on these primitives it actually returns the object wrapper around t
   let num = new Number("3");          // returns the primitive wrapped with its object type.
                                       // this is considered old practice & best avoided
 
-certain operators perorm type coercion & are sometimes conveniently used for this purpose. this looks like bad practice, though: 
+certain operators perform type coercion & are sometimes conveniently used for this purpose. this looks like bad practice, though: 
 
   x + ""        // returns String(x) 
   +x            // Number(x) 
@@ -420,7 +423,7 @@ Number() only converts base-10 strings without trailing characters or leading wh
 If you need to convert strings with any of these characteristics use parseInt() or parseFloat(): 
 
   parseInt("3 blind mice");         // 3
-  parseFfloat(" 3.14 meters);       // 3.14 
+  parseFloat(" 3.14 meters);       // 3.14 
   parseInt("-12.34");               // -12 
   parseInt("00FF");                 // 255 
 
@@ -441,7 +444,7 @@ javascript built in classes (such as Array, Function, Date, RegExp, etc.) define
   ({x:1, y:2}).toString();                // "[object Object]" - default implementation
   (function(x) { f(x); }).toString()      // "function(x) { f(x); }
   let d = new Date(2020, 0, 1);
-  d.toString()                            // "Wed Jan 01 2020 00:00:00 GMT-0800 (Pacific Standard Time" 
+  d.toString()                            // "Wed Jan 01 2020 00:00:00 GMT-0800 (Pacific Standard Time)" 
 
   let d = new Date(2010, 0, 1);
   d.valueOf();                            // 1262332800000 - returns the miliseconds since Jan 1, 1970 
@@ -569,7 +572,7 @@ use new to invoke constructors:
 
   let agg = new DataAggregator(local, remote, ccm); 
 
-you can omit the constructors parenthesis if it takes no arguments: 
+you can omit the constructors parenthesis if it takes no arguments:
 
   let obj = new View
 
@@ -623,7 +626,7 @@ for comparisons with == (which does type conversion):
 
 for less than / greater than comparisons: 
 
-  "11" < 3            // false - they prefer to type convert to numbers, not strings 
+  "11" < 3            // false - these comparisons prefer to type convert to numbers, not strings 
   3 < NaN             // false - NaN comparisons return false 
 
 
@@ -648,7 +651,7 @@ the instanceof operator expects a lefthand operand that's an object and a righth
   d instanceof Object;        // true 
 
 instanceof climbs up the prototype chain until it finds a matching class. this is javascripts inheritance mechanism (i.e the type delegation chain).
-to evaluate obj instanceof type, javascript evaluates type.prototype and then looks for that value in obj's prototype chain.
+  javascript evaluates the object's type.prototype to look for the matching type 
 
 the && and || operator actually return the last expression they evaluate: 
 
@@ -763,7 +766,7 @@ a semicolon by itself actually executes an empty statement. if you accidentally 
   for(let x = 0; x < 5; x++) ;          // bug, for loop does nothing 
     i++;                                // executes once 
 
-in a block statement, if there's only one statement to execute, you can omit the parenthesis: 
+in a block statement, if there's only one statement to execute, you can omit the braces: 
 
   if (condition == true) i++; 
 
@@ -804,11 +807,9 @@ there's the uncommon do/while loop:
 
 you don't always have to initialize a variable in a for loop: 
 
-  function tail(node, value) {                      // returns the tail of the linked list 
-    for(; node.next; node = node.next) {            // traverse while obj.next is truthy 
-      node.value = value 
-    }
-  }
+   for(; node.next; node = node.next) {            // traverse while node.next is truthy 
+     node.value = value 
+   }
 
 ES6 added the for/of loop. it works with iterable objects (arrays, strings, set, maps, etc.): 
 
@@ -853,7 +854,7 @@ sets can be a nice way of getting only unique values
     return unique
   }
 
-maps iterator returns key/value pairs: 
+iteration over a Map returns its key/value pairs: 
 
   let m = new Map([[1, "one"], [2, "two"]]);
   for(let [k, v] of m) {
@@ -901,7 +902,7 @@ yield is used in generator functions (CH12):
     }
   }
 
-the throw keyword throws an exception, like in swift 
+the throw keyword throws an exception
 an expression follows the keyword, and its value gets propagated with the exception. it can evaluate to anything you want
 the Error class & its subclasses are used when the javascript runtime throws an exception, and you can use those, but don't have to 
 the Error object carries a name & message 
@@ -951,7 +952,8 @@ the with statement is deprecated and disallowed by strict mode, because the code
     y++;
   }
 
-ultimate it's just easier to reference the property off the object, also avoiding performance issues, so I'm not gona bother using with  
+ultimate it's just easier to reference the property off the object, which also avoids performance issues / adheres to conventions, 
+  so I'm not gona bother using with  
 
 the debugger statement normally does nothing, but if a debugger is attached its implementation may make use of the debugger statement 
 in practice this statement acts like a breakpoint. you add this to code as needed 
@@ -964,26 +966,26 @@ if you have the developer tools open it's supposed to attach a debugger & this s
   }
 
 "use strict" is a directive, not a statement. this means it doesn't contain keywords, and it can only appear at the start of a script or function body 
-any code in an ES6 class is automatically strict 
-  this means if all your code is written as modules then it is automatically strict, and you don't need to use the directive 
+any code in an ES6 class is automatically strict. this includes all code written in modules. 
+  so if you modularize your code it is automatically strict, you don't need to use the directive 
 
 differences in strict mode:
-  the with statement is not allowed 
-  all variables must be declared. in non-strict mode, assigning a value to an undeclared variable implicitly adds it to the global object
-  standalone functions (not methods) have a this value of undefined. in non-strict the global object is set as the functions this value 
-  when a function is invoked with call() or apply() the first argument is the this value. 
+  -the with statement is not allowed 
+  -all variables must be declared. in non-strict mode, assigning a value to an undeclared variable implicitly adds it to the global object
+  -standalone functions (not methods) have a this value of undefined. in non-strict the global object is set as the functions this value 
+  -when a function is invoked with call() or apply() the first argument is the this value. 
     in non-strict, undefined or null arguments are replaced with the global object instead, and non-object values are converted to objects 
-  assignment to non-writable properties, or attempts to create new properties on non-existent objects, throw a TypeError (in non-strict it fails silently)
-  code passed to eval() can't declare new variables or functions in the callers scope. 
-  the Arguments object (CH8) in a function holds a static copy of the values passed to the function. 
+  -assignment to non-writable properties, or attempts to create new properties on non-existent objects, throw a TypeError (in non-strict it fails silently)
+  -code passed to eval() can't declare new variables or functions in the callers scope. 
+  -the Arguments object (CH8) in a function holds a static copy of the values passed to the function. 
     in non-strict the Argument object has "magic" behavior, where elements of the array and named function parameters both refer to the same value 
-  if the delete operator is followed by an unqualified identifier a SyntaxError is thrown. in non-strict the operation does nothing & evaluates to false 
-  an attempt to delete a non-configurable property throws a TypeError 
-  it's a syntax error a function to have multiple parameters with the same name 
-  octal integer literals are not allowed in strict mode apparently 
-  the identifiers eval and arguments are treated like keywords - you aren't allowed to change their value, use them as parameter or function names, etc. 
-  the ability to examine the call stack is restricted. arguments.caller and arguments.callee both throw a TypeError in a strict mode function. 
-    strict mode functions also have caller and callee properties that throw a TypeError when read. 
+  -if the delete operator is followed by an unqualified identifier a SyntaxError is thrown. in non-strict the operation does nothing & evaluates to false 
+  -an attempt to delete a non-configurable property throws a TypeError 
+  -it's a syntax error for a function to have multiple parameters with the same name 
+  -octal integer literals are not allowed in strict mode apparently 
+  -the identifiers eval and arguments are treated like keywords - you aren't allowed to change their value, use them as parameter or function names, etc. 
+  -the ability to examine the call stack is restricted. arguments.caller and arguments.callee both throw a TypeError in a strict mode function. 
+    strict mode functions also have caller and callee properties that throw a TypeError when read.
 
 a function declaration creates a function object and assigns it to the specified name. 
 
@@ -991,7 +993,7 @@ a function declaration creates a function object and assigns it to the specified
     return Math.PI * radius * radius;
   }
 
-functions in a block are processed before any of the blocks code runs, behaving as if they were 'hoisted' - moved to the top of their scope 
+functions declared in a block are processed before any of the blocks code runs, behaving as if they were 'hoisted' - moved to the top of their scope 
 generator declarations use function* as their keyword 
 
 example of a simple class: 
@@ -1058,9 +1060,9 @@ a comma after the last property in an object is actually legal
 object literals return a unique instance each time they're evaluated. thus you can safely initialize sets of objects in a loop 
 
 the new keyword creates and initializes an object from a constructor 
-  you have to use new with constructors, otherwise they won't work. not sure why, maybe something to do with memory space
+  you have to use new with constructors, otherwise they won't work.
 
-every object has a prototype it inherits from. 
+every object has a prototype it inherits from (except for Object.prototype).
 all objects created by object literals have the same prototype, the topmost one - Object.prototype. 
 objects created using new & constructors use the value of the prototype property of the constructor 
   so objects created with new Array use Array.prototype 
@@ -1088,18 +1090,18 @@ the value in the brackets must be a string, or expression that evaluates to a st
   obj1["x"];                      // 1
   obj1["z"] = 3;                  // you can also create properties in this manner 
 
-the [] syntax can do more than the dot (.) syntax because it takes a string, which can be initialized at runtime
+the [] syntax can do more than the dot (.) syntax because it can access properties via a string, which can be initialized at runtime
 so anytime you don't know the property names until runtime you use the [] syntax:
 
   let address_list = ""
   for(let x = 0; x < 4; x++) {
-    address_list += customers[`address{x}`] + "\n";
+    address_list += customers[`customer{x}`].address + "\n";
   }
 
 the [] syntax is powerful when combined with the for/in loop: 
 
-  for(let stock in stock_list) {
-    if stock_list[stock].priceChange < 0 {
+  for(let stockName in stock_list.stockNames()) {
+    if current_stock_prices[stockName].priceChange < 0 {
       ...
     }
   }
@@ -1109,10 +1111,10 @@ here we're using objects like associative arrays. in ES6 the author feels the Ma
 remember that if an object doesn't have a property it will climb the prototype chain looking for it. this is javascripts form of inheritance.
   this continues until an object is found with a null prototype, typically Object.prototype
 
-if you change a property that was inherited a new property is created on your current object & written to. 
-  the prototype chain is examined, though, to determine first if the property is writable or read-only. 
+if you change a property that was "inherited" in this way, a new property is created on your current object & written to. 
+  the prototype chain is examined first, though, to determine if the property is writable or read-only. 
   this means the prototype object is never changed 
-  if the property has an inherited setter method defined for, then the setter method is called off the original object, not the prototype 
+  if the property has an inherited setter method defined for it, then the setter method is called off the original object, not the prototype 
 
 it is not an error to read a property that doesn't exist, it merely returns undefined 
 it is an error, however, to read a property of an object that doesn't exist (i.e. is null or undefined)
@@ -1143,13 +1145,13 @@ there are various ways of checking if an object has a property:
   obj.hasOwnProperty("x");              // true, x belongs to obj 
   obj.hasOwnProperty("toString");       // false, x was inherited 
 
-  obj.propertyIsEnumerable("x");        // true, property belongs to obj and can also be iterated through (the method checks both these)
-  obj.propertyIsEnumerable("toString);                  // false, x was inherited 
-  Object.prototype.propertyIsEnumerable("toString);     // false, it's not enumerable 
+  obj.propertyIsEnumerable("x");                // true, property belongs to obj and can also be iterated through
+  obj.propertyIsEnumerable("toString");                   // false, x was inherited 
+  Object.prototype.propertyIsEnumerable("toString");      // false, it's not enumerable 
 
   obj.x !== undefined                   // true - faster way of checking 
 
-to distinguish between undefined & nonexistent properties this method is unsufficient, use the in operator:
+to distinguish between undefined & nonexistent properties !== is unsufficient, use the in operator:
   let obj2 = {y: undefined}; 
   obj2.y !== undefined                  // false, it's undefined 
   obj2.z !== undefined                  // false, it doesn't exist
@@ -1219,11 +1221,10 @@ NaN and Infinity get serialized to null
 Dates get serialized to a timestamp, then parse() leaves them in string timestamp form and doesn't restore the original Date object 
 Function, RegExp, Error and undefined can't be serialized. they're simply omitted from the output string  
 
-JSON.serialize() only serializes enumerabble properties belonging to the object 
+JSON.serialize() only serializes enumerable properties belonging to the object 
 
 most of what's inherited from Object.prototype are methods - the main methods used by objects 
-
-here's a list of important Object properties, most of which we've covered so far: 
+  here's a list of the important ones, most of which we've covered so far: 
 
   Object.entries()                      // returns an array of key-value pairs
   Object.keys()
@@ -1270,7 +1271,7 @@ if your class uses javascripts built in types you can use their toLocaleString()
 
 valueOf() & any other inherited methods are overridden in the same manner 
 
-Object.prototype does not define a toJSON() methdod, but stringify looks ffor toJSON() on any object it's serializing 
+Object.prototype does not define a toJSON() method, but stringify looks for toJSON() on any object it's serializing 
   if the method exists it's invoked, and its return value is serialized instead of the object 
   thus you can customize how an object serializes
 
@@ -1300,8 +1301,8 @@ if the object is from a third party library it is good practice to define comput
 ES2018 added support for using the spread operator (...) to copy properties into an object literal
 again, duplicate properties are overwritten by the last object in the list: 
 
-  let obj = {x: 1, y, 2}; 
-  let obj2 = {z: 3}; 
+  let obj = {x: 2, y, 2}; 
+  let obj2 = {x: 1, z: 3}; 
   let obj3 = {...obj, ...obj2};
 
 ES6 added support for not having to explicitly name functions defined in object literals:
@@ -1317,17 +1318,18 @@ ES6 added support for not having to explicitly name functions defined in object 
 
 you can also use symbols or variables for the function name: 
 
-  let string = "area1";
-  const symbol = Symbol("area2");
+  let string_name = "area1";
+  const symbol_name = Symbol("area2");
 
   let obj = {
-    [string](x) { return x * x; },
-    [symbol](x) { return x * x * x; }
+    [string_name](x) { return x * x; },
+    [symbol_name](x) { return x * x * x; }
   };
 
-there are cases you need this - to make an object iterable (usable with for/of) you must define a method that uses Symbol.iterator as its key 
+there are some cases where you need symbol method names
+  i.e. to make an object iterable (usable with for/of) you must define a method that uses Symbol.iterator as its key 
 
-objects can have getters/setters. the getter/setter must be named teh same, and they define a new property by their name 
+objects can have getters/setters. the getter/setter defines a new property via their name. they must be named the same
 if only a getter is defined the property is read-only; only a setter and it's write-only (attempts to read it return undefined)
 
   let obj = {
@@ -1377,10 +1379,10 @@ you can also create arrays using the Array() constructor, though it's easier jus
 
 Array.of() is an alternative to the above syntax, but unlike the above it can initialize arrays with 1 numeric element: 
 
-  let array1 = Array.of(1);       // [1] 
-  let array2 = Array.o(1, 2, 3);  // [1, 2, 3] 
+  let array1 = Array.of(1);         // [1] 
+  let array2 = Array.of(1, 2, 3);   // [1, 2, 3] 
 
-array-like objects are objects with integers properties. as a result they emulate arrays
+array-like objects are objects with integer properties. as a result they emulate arrays
 
 Array.from was introduced in ES6. it constructs a new array using an iterable or array-like object. again the values are shallow-copied
 Array.from also can take a callback as its second argument, which maps the input objects properties to new properties:
@@ -1465,7 +1467,7 @@ if you want to skip over missing array elements in a loop do the following:
 
 some Array.protocol methods modify the array, others don't. Some return a new array, others don't. You have to know the method 
 
-some other common Array.protocol iteration methods. callbacks aren't called on missing elements: 
+map and filter are common Array.protocol functional programming methods. their callbacks aren't called on missing elements: 
 
   let numbers = [1, 2, 3, 4, 5];
   let mapped_array = numbers.map(x => x * x);                 // returns a new array 
@@ -1475,21 +1477,20 @@ here's a trick to close gaps in a sparse array, and remove undefined elements:
 
   let dense_array = sparse_array.filter(x => x !== undefined && x !== null); 
 
-find() and findIndex() are like filter, but they stop once the first matching element is found. 
-find() returns that element, whereas findIndex() returns its index. 
+find() returns the matching element, whereas findIndex() returns its index. 
 
   let letter_h = ["a", "l", "h", "f", "j"].find(x => x === "h"); 
 
 every() returns true if all array elements evaluate to true in your callback 
-some() returns true if at least one array element evaluates true in your callback (the equivalent of swift's contains/where):
+some() returns true if at least one array element evaluates true in your callback (the equivalent of swift's contains(where:))
 
   let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
   numbers.every(x => x < 10);           // true 
   numbers.some(x => x == 0);            // false 
 
-if invoked on empty arrays, every() returns true and some() returns false (this is apparently a "mathematical convention")
+if invoked on empty arrays, every() returns true and some() returns false (this is apparently a convention)
 
-includes() returns true if the array contains a specified value (the equivalent of swift's contains)
+includes() returns true if the array contains a specified value (the equivalent of swift's contains())
   includes() can be used to test for NaN, unlike other search methods - it uses a special comparison to evaluate NaN 
 
 reduce() and reduceRight() combine the array elements into a single element, passing them through your callback
@@ -1597,7 +1598,7 @@ in practice I think I'll just use Array.from() to get a real array copy
   Array.from(obj);                                        // ["a", "b", "c"] - get a real array copy 
 
 strings are read-only arrays of UTF-16 chars, though Array.isArray() still returns false for strings (it's a string) 
-similarly to array-like objects, you can still use some array methods on them (but use the string methods when possible). 
+like with array-like objects, you can still use some array methods on strings (but use the string methods when possible). 
 since strings are immutable you can't use methods that modify arrays in-place, though:
 
   let string = "javascript";
@@ -1625,9 +1626,9 @@ function syntax:
 
   const difference = (x, y) => { return x - y; };         // arrow function 
 
-  const difference2 = (x, y) =>  x - y;                   // compact arrow function 
+  const difference2 = (x, y) => x - y;                    // compact arrow function 
 
-  const inc = () =>  counter++;                           // arrow function w/ no args
+  const inc = () => counter++;                            // arrow function w/ no args
 
 in a traditional function declaration the name of the function becomes a variable whose value is the function itself 
   these declarations are hoisted to the top of the scope 

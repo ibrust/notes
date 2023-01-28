@@ -1,5 +1,8 @@
 https://tkdocs.com/tutorial/intro.html
 
+on mac my tkinter was outdated, but this command updated it: 
+    brew install python-tk@3.10
+
 Tk has a long evolution, and you can do most things in many different ways. 
     the newer ways are much superior to the old ways, and this tutorial focuses on newer ways.
     one good indication you're working with older Tk code is it uses the archaic pack instead of grid
