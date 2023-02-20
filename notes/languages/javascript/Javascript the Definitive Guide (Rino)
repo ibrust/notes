@@ -1653,8 +1653,8 @@ here's a trick for determining whether you're in strict mode:
 
   const inStrict = (function() { return !this; }());
 
-methods invocation context is always the invoking object instance. the this pointer is used to reference properties from within methods
-it's a common mistake to assume 'this' within a nested function in a method will refer to the object:
+methods invocation context is always the invoking object instance.
+however, it's a common mistake to assume 'this' within a nested function in a method will refer to the object:
 
   // this is considered a flaw in the javascript language 
   let obj = {
@@ -1680,7 +1680,7 @@ another workaround is to call the bind() method of the nested function to defifn
 
 when you write a method that doesn't have a return value, consider returning the this pointer - doing so allows for method chaining on the object 
 
-constructors (preceded by new) are different then other functions - they have different invocation contexxt, arguments, and return values 
+constructors (preceded by new) are different then other functions - they have different invocation contexts, arguments, and return values 
 
 a constructor creates a new, empty object instance that inherits from the constructors prototype 
 a constructors this pointer actually refers to the newly created object instance 
@@ -1691,7 +1691,7 @@ constructors usually don't use return. instead, the new object is initialized wi
   if the constructor returns a primitive or undefined value then that's just ignored 
 
 Function.prototype has the call() and apply() methods, which invoke the function and let you specify which this pointer to use 
-  call() passes its argument list to the function 
+  call() takes a normal argument list it passes it to the function 
   apply() take an array of arguments and passes that to the function 
 
 some javascript language features invoke functions implicity: 
@@ -1703,7 +1703,7 @@ some javascript language features invoke functions implicity:
 
 javascript does no type checking on function invocations, and doesn't even check the number of arguments passed 
 
-when functions are invoked with missing arguments they get a default value of undefined, but you can set a default value manually: 
+when functions are invoked with missing arguments their value is undefined, but you can set a default value manually: 
 
   func getPropertyNames(obj, arr) {         // remember to put intentionally optional arguments at the end of the parameter list 
     arr = arr || [];
@@ -1711,7 +1711,7 @@ when functions are invoked with missing arguments they get a default value of un
     for(let property in obj) { 
       arr.push(property); 
     }
-    return arr 
+    return arr
   }
 
 in ES6 you can set default values in the parameter list: 
@@ -1784,7 +1784,7 @@ there's also a strange syntax where you can destructure multiple objects with th
 you can also define default parameters in destructured arguments: 
 
   function vectorMultiply({x, y, z = 0}, scalar) {
-    return { xx: x * scalar, y: y * scalar, z: z * scalar}; 
+    return { x: x * scalar, y: y * scalar, z: z * scalar }; 
   }
   vectorMultiply({x: 1, y: 2}, 2);                            // {x: 2, y: 4, z: 0} 
 
@@ -1856,7 +1856,7 @@ this is more secure than defining a static property on the function object, beca
   }()); 
   uniqueInteger(); 
 
-you can also create a first-class function that acts as a factory of these closures. each invocation will return a new, separate scope
+you can also create a first-class function that acts as a factory of these closures. each invocation will return a new, separate scope.
 functions can also share their surrounding scope: 
 
   function counter() {
@@ -1916,12 +1916,10 @@ the name property of a function specifies the name used when it was defined,
   this property is mostly useful when debugging or generating error messages 
 
 all functions except for arrow functions have a prototype property that refers to its prototype object. each function has a different prototype object. 
-  when a function is used as a constructor, the newly creted object inherits properties from the functions prototype object 
+  when a function is used as a constructor, the newly created object inherits properties from the functions prototype object 
 
 call() and apply() allow you to indirectly invoke a function as if it were a method on some other object 
 this first argument is the object on which you are to invoke it - the this pointer will refer to it 
-for call(), any remaining arguments are passed to the function that's being invoked 
-for apply(), its second argument is an array containing the arguments passed to the function being invoked 
 
   func.call(obj, arg1, arg2); 
   func.apply(obj, [arg1, arg2]);
@@ -1943,7 +1941,7 @@ when you invoke bind() on a function and pass an object to it, a new function is
 
 again arrow functions execution context can't be overridden with bind() 
 
-bind() can also be used to perform currying - where the arguments passed are permanently bound too 
+bind() can also be used to perform currying (i.e. creating partial functions) - where the arguments passed are permanently bound too 
 this currying does work with arrow functions
 
 
@@ -1971,7 +1969,7 @@ Function() is ultimately alot like eval(). it differs in that it's globally scop
 CHAPTER 9, CLASSES
 ========================================================================================
 
-classes used prototype based inheritance (different than statically type class-based inheritance)
+classes use prototype based inheritance (different than statically type class-based inheritance)
 
 to implement classes pre-ES6 you had to know more about the internals. 
 
@@ -1981,15 +1979,14 @@ usually instances require further initialization, so Object.create() is not enou
 
   // a hacky way of implementing an initializer with a factory function 
   function range(from, to) {
-    let r = Object.create(range.methods);           // r inherits from our custom prototype object 
+    let r = Object.create(range.PrototypeMethods);            // r inherits from our custom prototype object 
     r.from = from; 
     r.to = to; 
     return r; 
   }
 
-  // custom prototype object. hacky place to put the prototype oobject - defined off the function itself - but it works I suppose 
-  // these methods use the ES6 shorthand syntax for defining methods, which is why we don't see the function keyworod anywhere 
-  range.methods = {
+  // PrototypeMethods is the custom prototype object, which contains the class's methods. this is hacky 
+  range.PrototypeMethods = {
     contains(x) { return this.from <= x && x <= this.to; },   // this.from accesses the object that invokes the prototypes method 
     *[Symbol.iterator]() {                                    // generator which makes class instances iterable. works on numeric ranges only 
       for(let x = Math.ceil(this.from); x <= this.to; x++) {
@@ -2100,9 +2097,9 @@ ES6 classes have streamlined alot of this:
       this.to = to; 
     }
   
-    contains(x) { return this.from <= xx && x <= this.to; }
+    contains(x) { return this.from <= x && x <= this.to; }
     *[Symbol.iterator]() { 
-      for(let x = Math.ceil(this.from); xx <= this.to; x++) {       
+      for(let x = Math.ceil(this.from); x <= this.to; x++) {       
         yield x;
       }
     }
@@ -2272,7 +2269,7 @@ another example of ES6 subclassing:
 
 in ES6 classes the author says you must ~always~ call the superclasses constructor within your constructor 
   if you don't define a constructor the default constructor simply passes all arguments along to its superclasses constructor 
-you cannot use this in your constructor until after calling super() (superclasses must initialize themselves before subclasses do)
+you cannot use the 'this' pointer in your constructor until after calling super() (superclasses must initialize themselves before subclasses do)
 
 remember that new.target identifies the constructor new was used with. 
   so, when you instantiate a subclass, new.target in your superclass constructor will refer to the subclasses constructor 
@@ -2306,7 +2303,7 @@ before modules were added in ES6 javascript had no such namespace mechanism
   people instead had to rely on the weak modularity of classes, objects, and closures 
 
 require() was one way of implementing modularity pre-ES6. this was adopted by Node and is a fundamental part of its programming environment 
-  the author stays practically speaking you still need code bundling tools such as webpack, Parcel, and require() 
+  the author says practically speaking you still need code bundling tools such as webpack, Parcel, and require() 
 
 using classes and objects for modularity is still a useful technique in javascript to avoid polluting global, but it doesn't go far enough
   in particular it offers no way of hiding implementation details. for example, parent classes are accessible via the prototype chain 
@@ -2404,7 +2401,7 @@ to export a single thing, like one class, you can also replace the module.export
     ...
   };
 
-by default exports and module.exports refer to the same object 
+by default, exports and module.exports refer to the same object 
 another approach is to export at the end an object that contains everything:
 
   const mean = data => data.reduce(sum)/data.length;
@@ -2494,7 +2491,7 @@ the import string is interpreted as a URL (browsers) or filepath (Node) relative
   according to ES6 it can't be just a string with no preceding / such as "dog.js" though 
     but many bundling tools sidestep this prohibition and lookup the file for you
 
-note that the import / export statements can only appear at the top level (this makes it much easier for the compiler to analyze the code)
+note that the import & export statements can only appear at the top level (this makes it much easier for the compiler to analyze the code)
 
 one way to use modules is to combine and export other modules:
 
@@ -2517,7 +2514,7 @@ as of 2020 people still use bundling tools like webpack because they tend to lea
 
 ES6 modules are added to a webpage using this tag, which marks the main entry point of an ES6 module program: 
 
-  <script type="module"> ... </script>          // just for the main entry point, the modules being imported don't require it 
+  <script type="module"> ... </script>          // the modules being imported don't require this tag, only the main entry point needs it
 
 only ES6 compliant browsers will run scripts with type="module", old browsers will skip it.
 ES6 compliant browser also support a nomodule syntax that tells them to ignore the script. 
@@ -2539,7 +2536,7 @@ one consequence of this is it makes it difficult to test ES6 modules using file:
 
 sometimes developers use the .mjs extension for their module scripts to denote the difference. 
   web browsers don't care about the extension, but the webserver may need configuration to associate these with the correct MIME type 
-  Node does rely on the .mjs extension to tell which module system to use
+  Node does rely on the .mjs extension to tell it which module system to use
 
 
 the ES6 module syntax we've seen so far is static. they require the browser to wait for all files to arrive before they run the code 
@@ -2559,7 +2556,7 @@ you can also use async/await to achieve this:
     };
   }
 
-you can also use expressions for the module specifies with import() - you aren't limited to compiled string literals 
+you can also use expressions to specify the module used with import() - you aren't limited to compiled string literals 
 
 bundling tools like webpack can also use import() 
   typically these tools will lookup all static imports and assemble one giant file of them 
@@ -2581,7 +2578,7 @@ CHAPTER 11, THE JAVASCRIPT STANDARD LIBRARY
 ========================================================================================
 
 while objects are alot like maps / sets, they're limited to strings and they inherit methods like toString() which complicate their use 
-  for this reason ES6 added official Map and String classes 
+  for this reason ES6 added official Map and Set classes 
 
 the argument to the Set constructor can be any iterable object: 
 
@@ -2678,7 +2675,7 @@ Maps also have a forEach() which actually delegates to Arrays forEach():
     ... 
   })
 
-WeakMap is a variant of Map that only hold sweak references to its keys. 
+WeakMap is a variant of Map that only holds weak references to its keys. 
   why the keys specifically? I guess if you wanted to use objects as keys then this would be the way. it's strange, you'd think it was the values, but no. 
 
   let john = { name: "John" };
@@ -2705,8 +2702,9 @@ Nonetheless they implement many of the same methods as Array plus some of their 
 There are 11 kinds of TypedArrays: 
 
   Int8Array()
-  Uint8Array()                // unsighed byte array with rollover - i.e. if you assign a value outside of 0-255 it will store the modulus of that value 
-  Uint8ClampedArray()         // unsigned byte array without rollover (requires extra type checking, but this is required by the HTML canvas when manipulating pixel colors)
+  Uint8Array()                // unsigned byte array with rollover - i.e. if you assign a value outside of 0-255 it will store the modulus of that value 
+  Uint8ClampedArray()         // unsigned byte array without rollover (requires extra type checking,
+                              // but this is required by the HTML canvas when manipulating pixel colors)
   Int16Array()
   Uint16Array()
   Int32Array()
@@ -2716,7 +2714,8 @@ There are 11 kinds of TypedArrays:
   Float32Array()
   Float64Array() 
 
-the simplest way to construct a TypedArray is by passing the number of elements you want it to hold, but it also have from() and of() factory methods (similar to Array):
+the simplest way to construct a TypedArray is by passing the number of elements you want it to hold, 
+  but it also has from() and of() factory methods (similar to Array):
 
   let arr1 = new Uint8Array(20);                                  // 20 byte array, all values initialized to 0 
   let arr2 = new Uint8ClampedArray.of(255, 255, 255, 0;)          // 4 byte array with 4 initial values
@@ -2774,16 +2773,17 @@ you can test the endianness of your hardware with the following:
 
   let isLittleEndian = new Int8Array(new Int32Array([1]).buffer)[0] === 1;
 
-to be safe, when working with external data, use Int8Array or Uint8Array to view the data as an array of individual bytes. this way you don't have to worry about endianness 
+to be safe, when working with external data, use Int8Array or Uint8Array to view the data as an array of individual bytes. 
+  this way you don't have to worry about endianness 
 but if you must use larger byte sizes the DataView class can specify the byte ordering to read an ArrayBuffer with:
 
   let arr1 = new Uint32Array(1024);
   arr1[0] = 17;
 
   let view = new DataView(arr1.buffer, arr1.byteOffset, arr1.byteLength);
-  let firstInt = view.getInt32(0, false);                              // if the second argument is false or omitted getInt32() reads as big endian, otherwise it's little endian 
-
-  view.setUint32(8, int, false);                                       // if the 3rd argument is false or omitted write in big endian, otherwise it's little endian 
+  let firstInt = view.getInt32(0, false);                               // if the second argument is false or omitted getInt32() reads as big endian, 
+                                                                        // otherwise it's little endian 
+  view.setUint32(8, int, false);                                        // if the 3rd argument is false or omitted write in big endian, otherwise it's little endian 
 
 with TypedArrays and DataViews you have the tools needed to work with any kind of data format 
 
@@ -2794,15 +2794,8 @@ javascript has a built in Date class:
   let now = new Date();                               // with no arguments it uses the current time 
   let epoch = new Date(0);                            // 0 refers to midnight, Jan 1, 1970 GMT 
 
-  let century = new Date(
-    2100,                 // year 
-    0,                    // month - january. one quirk is 0 is the first month
-    3,                    // day 
-    2,                    // hour 
-    4,                    // minute 
-    7,                    // second 
-    5                     // millisecond 
-  );                      // Jan 3, 2100 at 02:04:07.005 local time 
+  let century = new Date(2100, 0, 3, 2, 4, 7, 5);     // Date(year, month, day, hour, minute, second, millisecond)
+                                                      // one quirk is 0 is the first month january
 
 omitting any fields from the Date() constructor defaults them to 0 
 
@@ -2841,7 +2834,8 @@ performance.now() is not an absolute timestamp, it's a timestamp of how much tim
 allowing high-precision timestamping enables websites to fingerprint visitors, so browsers (notably Firebox) may reduce the precision of it by default. 
   there are ways to reenable this precision, though (in Firefox you can set privacy.reduceTimerPrecision to false) 
 
-you can use comparison and mathematical operators with Dates (because the class implements valueOf()). these methods account for overflow & increment the whole date correctly:
+you can use comparison and mathematical operators with Dates (because the class implements valueOf()). 
+  these methods account for overflow & increment the whole date correctly:
 
   let d = new Date();
   d.setMonth(d.getMonth() + 3, d.getDate() + 14);
@@ -2859,7 +2853,7 @@ the following methods convert a date to a string:
   d.toISOString();
 
 there's also a static Date.parse() method, which takes a string and returns a timestamp. 
-  this method is guaranteed to work with input in formats output by toISOString(), toUTCString(), and toString()
+  this method is guaranteed to work with the output of toISOString(), toUTCString(), and toString()
 
 
 any type of value can be thrown or caught, but the Error class is traditionally used 
@@ -2897,7 +2891,7 @@ you can pass a 2nd argument to parse()
 
 you can pass a 2nd and 3rd argument to stringify(). 
   its 2nd argument can be a callback or an array of string. 
-    the callback behaves the like the one passed to parse(), though if it returns nothing or undefined the property will not be included in the serialization
+    the callback behaves like the one passed to parse(), though if it returns nothing or undefined the property will not be included in the serialization
     the array of string specifies a list of properties names - these are the properties that will be serialized, and no others. 
       the returned serialized string will also contain the properties in the order they were specified in the array 
   the third argument is used to make the resulting JSON human readable. 
@@ -3110,7 +3104,8 @@ clearTimeout() and clearInterval() tells the browser to cancel the execution of 
 CHAPTER 12, ITERATORS AND GENERATORS 
 ========================================================================================
 
-ES6 introduced iterable objects. Arrays, Sets, Maps, and strings are all iterable objects 
+ES6 introduced iterable objects. 
+Arrays, Sets, Maps, and Strings are all iterable
 
 ways of iterating over them include: 
 
@@ -3138,22 +3133,22 @@ internally javascript uses 3 structures to perform iteration:
   the iterator                    // has a next() method 
   the iteration result object     // stores the result of an iteration. has the properties 'value' and 'done' 
 
-here's how for/of over an iterable object could be implemented internally: 
+here's how for/of over an iterable object could be implemented: 
 
-  let iterable = [99];
+  let iterable = [1, 2, 3];
   let iterator = iterable[Symbol.iterator]();
   for(let result = iterator.next(); !result.done, result = iterator.next()) {
     ... 
   }
 
-the iterator itself is actually iterable, which can sometimes be useful too: 
+the iterator itself can be used independently of the underlying iterable, which can sometimes be useful: 
 
   let list = [1, 2, 3, 4, 5];
   let iterator = list[Symbol.iterator]();
   let head = iterator.next().value;           // head == 1
   let tail = [...iterator];                   // tail == [2, 3, 4, 5]
 
-you can make your own classes iterable in two ways: with or without using generators.
+you can make your own classes iterable using generators (the easy way) or manually without generators (for demo purposes).
 here's how to do it without generators: 
 
   class RangeOfNumbers {
@@ -3185,7 +3180,7 @@ it is also useful to modify functions to take / return iterables. here's an exam
 
   function map(iterable, closure) {
     let iterator = iterable[Symbol.iterator]();
-    return {      // this object is both an iterator and iterable 
+    return {                                        // this returned object is both an iterator and iterable
       [Symbol.iterator]() { return this; },
       next() {
         let v = iterator.next();
@@ -3201,10 +3196,7 @@ it is also useful to modify functions to take / return iterables. here's an exam
   [...map(new RangeOfNumbers(1, 3)), x => x * x)];    // [1, 4, 9]
 
 
-note that iterators / generators use a streaming approach to processing. 
-  so lets say you need to split a giant string into individual words 
-  if you called split() the entire string has to be processed before the first word is used, and you'll need the entire split array (lots of memory used) 
-  with the iterator you could just call next() once and get the first word, as needed, saving lots of memory / processing time 
+note that iterators / generators use a streaming approach to processing, which saves resources
 
 
 sometimes iterators should do cleanup at the end of iteration - i.e. close open files. However, iterators don't always run all the way to the end. 
@@ -3216,7 +3208,7 @@ sometimes iterators should do cleanup at the end of iteration - i.e. close open 
 generators are much easier to implement than custom iterators, and are the preferred approach 
 to create a generator you use ES6's function* syntax: 
 
-  function oneDigitPrimes() {
+  function* oneDigitPrimes() {
     yield 2; 
     yield 3; 
     yield 5;
@@ -3306,9 +3298,10 @@ note that yield and yield* can only be used within generator functions.
 unlike iterators, generators allow you to pause computation, yield intermediary results, and resume later
 
 generators can also have return statements 
-  void returns simply end execution as you'd expect 
-  with return statement that return values, the final call to the iterators next() will return both a value and done as true.
-    note however that this final return value will be ignored by a for/of loop and spread operators, so better to avoid using it 
+  a return statement that doesn't return a value just ends execution as normal
+  with return statements that return values, the final call to the iterators next() will return both a value and done as true.
+    note however that this final return value will be ignored by a for/of loop and spread operators
+      so only use it to return some indication of the success or failure of the generator
 
 also, remember that yield can also be used as an expression - a call to next() can take one argument, which becomes what yield is evaluated as:
 
@@ -3328,7 +3321,7 @@ also, remember that yield can also be used as an expression - a call to next() c
 while you can't define a custom return method for doing cleanup like you can with iterators, 
   you can use the finally block after try/catch within the generator function to ensure cleanup is always executed 
 
-the author feels that generators are complicated and difficult to read, and sinc async await now encapsulates their main use case, should generally be avoided. 
+the author feels that generators are complicated and difficult to read, and since async await now encapsulates their main use case, should generally be avoided. 
   I'm not sure if I agree or not, we'll see. 
 
 
@@ -3377,6 +3370,7 @@ Node has many APIs that take callbacks:
 
 Node also uses the on() function to register events instead of addEventListener():
 
+
   const httpsModule = require("https");
 
   function fetchFrom(url) {
@@ -3404,7 +3398,7 @@ Node also uses the on() function to register events instead of addEventListener(
     });
   }
 
-a promise object represents the result of an asynchronous operation that is guaranteed go arrive (or return an error) in time. 
+a promise object represents the result of an asynchronous operation that is guaranteed to arrive (or return an error). 
 
 you register one or more callbacks with the promise, and these are invoked when the result arrives 
 
@@ -3421,12 +3415,12 @@ one limitation of promises is they only represent one asynchronous operation, no
   in this cases you'd still resort to using regular callbacks 
 
 
-  getJSON(url).then(data => {       // getJSON() returns a promise. 
-    ...                             // then() executes a callback when the promise is fulfilled 
+  getJSON(url1).then(data => {        // getJSON() returns a promise. 
+    ...                               // then() executes a callback when the promise is fulfilled 
   });
 
   let promise = getJSON(url2);
-  promise.then(data => {            // call then() multiple times, each callback will be invoked when the promise is fulled 
+  promise.then(data => {              // call then() multiple times, each callback will be invoked when the promise is fulled 
     ...
   });
   promise.then(data => {
@@ -3444,16 +3438,16 @@ to handle errors you can pass a second callback to then():
     }
   );
 
-here's how to construct a promise:
+here's an example of how to construct a promise:
 
-  let promise = new Promise(function(successCallback, errorCallback) {
+  let promise = new Promise(function(resolve, reject) {
 
     /* request goes here */ 
 
     if (response.statusCode == 200) {
-      successCallback("success");
-    } else {
-      errorCallback("error");
+      resolve("your promises return value");
+    } else { 
+      reject("an error object");
     }
   });
 
@@ -3514,9 +3508,9 @@ but now we're nesting promises, just like callbacks, which defeats their purpose
   });
 
 promises can be fulfilled or rejected. once a promise is fulfilled or rejected, it is settled. until then, the promise is pending. 
-remember that the promise is an actual value. if the promise is fulfilled, the value is also passed to the first callback 
+remember that the promise is for an actual value. if the promise is fulfilled, the value is also passed to the first callback 
   if the promise is rejected, the value is also passed to the second callback. 
-promises can also be resolved, which is distinct from it being fulfilled. here's an example:
+promises can also be resolved (different from them being fulfilled). here's an example:
 
   function c1(response) {
     let p4 = response.json()
@@ -3527,8 +3521,8 @@ promises can also be resolved, which is distinct from it being fulfilled. here's
   }
 
   let p1 = fetch("/api/user/profile");
-  let p2 = promise1.then(c1);
-  let p3 = promise2.then(c2);
+  let p2 = p1.then(c1);
+  let p3 = p2.then(c2);
 
 the promises value is resolved to be the return value of the callback. 
   normally, if the callback returns synchronously, the promise is also fulfilled at the same time it's resolved. 
@@ -3592,12 +3586,12 @@ here are some ways of creating promise-returning functions, a useful technique:
     });
   }
 
-  function wait(duration, successCallback) {
-    return new Promise(function(successCallback, errorCallback) {
+  function wait(duration, resolve) {
+    return new Promise(function(resolve, reject) {
       if (duration < 0) {
-        errorCallback(new Error("wait duration < 0"));
+        reject(new Error("wait duration < 0"));
       }
-      setTimeout(successCallback, duration);
+      setTimeout(resolve, duration);
     });
   }
 
@@ -3651,8 +3645,8 @@ note that the code within the async function is asynchronous, it just reads like
 the return value of an async function will be a promise. 
   even if you return a normal value, a promise resolved to that normal value will be returned 
 
-because async functions return a promise, you can also await the return values. 
-  hence you can use async/await in nested functions or function hierarchies. 
+because async functions return a promise, you can await the return value from within another async function. 
+  hence you can use async/await in function hierarchies. 
   you only have to handle the promise in a traditional way at the top level.
 
 to await a set of concurrently executing async functions you'd use Promise.all():
@@ -3805,20 +3799,22 @@ they can be changed to non-extensible, but can't be reverted back:
   Object.isExtensible(obj);         // false 
 
 configurable, writable, and extensible are often used in combination to prevent modification to an object 
-  javascript provides convenience methods for configuring all 3 of these properties at once:
+  javascript provides convenience methods for configuring these properties:
 
-  Object.seal()               // makes the object non-extensible, and makes all of its own properties non-configurable 
-                              // this means new properties can't be added, existing properties can't be deleted or configured 
-                              // existing properties that are writable can still be set, however 
+  Object.preventExtensions()    // make an object non-extensible. you can never make the object extensible again afterwards
 
+  Object.seal()                 // like Object.preventExtensions(), but also makes all of its own properties non-configurable.
+                                // this means new properties can't be added, and existing properties can't be deleted or configured.
+                                // existing properties that are writable can still be set, however 
 
-  Object.freeze()             // does everything Object.seal() does, but also makes all properties read-only. so locks it even more tightly 
+  Object.freeze()               // does what Object.seal() does, but also makes all properties read-only. 
 
-  Object.isSealed()           // indicate if object is sealed or frozen 
+  Object.isExtensible()         // indicate if object is extensible, sealed, or frozen 
+  Object.isSealed()
   Object.isFrozen() 
 
-note again that Object.seal() and Object.freeze() only effect the object passed to it, not its prototype chain. 
-  to completely lock down an object you have to seal / freeze its prototype chain also 
+note again that these lockdown methods only effect the object passed to it, not its prototype chain. 
+  to completely lock down an object you have to lockdown its prototype chain also 
 
 
 remember that the prototype property is located on the objects constructor function, not the object itself
@@ -3836,6 +3832,41 @@ remember that the prototype property is located on the objects constructor funct
   Object.getPrototypeOf({});              // Object.prototype 
   Object.getPrototypeOf([]);              // Array.prototype 
   Object.getPrototypeOf(()=>{});          // Function.prototype 
+
+there's also a deprecated __proto__ property which conveniently allows you to access an objects prototype (which is a property of its constructor). 
+  one novel use of __proto__ is in specifying the prototype of an object literal 
+  you shouldn't use this since it's deprecated, but it's included here to illustrate how it works, since its use is still somewhat common. 
+
+  let obj1 = {z: 3}
+  let obj2 = { 
+    x: 1, 
+    y: 2, 
+    __proto__: obj1
+  }
+
+
+the author shows a function he's implemented for getting more descriptive information on built-in types that's not available using typeof(): 
+
+  function classof(obj) {
+    return Object.prototype.toString.call(obj).slice(8, -1);
+  }
+
+  classof(null);        // "Null"
+  classof(undefined);   // "Undefined"
+  classof(1);           // "Number"
+  classof(10n**100n);   // "BigInt"
+  classof(false);       // "Boolean"
+  etc.
+
+prior to ES6 if you used Object.prototype.toString.call() on a custom type it wouldn't work 
+  but now if you implement Symbol.toStringTag it does work: 
+
+  class Range {
+    ...
+    get [Symbol.toStringTag]() { return "Range"; }
+  }
+  let r = new Range(1, 10);
+  Object.prototype.toString.call(r);                   // "Range" - you could add lefthand padding to the output make it work with classof()
 
 
 in ES6 now you can use the extends keyword to easily subclass the built in types:
@@ -3862,12 +3893,727 @@ in the above example Array defines the map() method, SwiftArray inherited it
       how is Symbol.species accessed in the inherited method? why couldn't they just pass the this pointer? read about it if more detail is required  
 
 
+you can implement [Symbol.isConcatSpreadable] if you want your array-like objects to flatten correctly during concatenation:
 
-pg 391, 14.4.5, Symbol.isConcatSpreadable
+  let obj1 = {
+    length: 2,
+    0: "a", 
+    1: "b", 
+    [Symbol.isConcatSpreadable]: true
+  }
+  [].concat(obj1);                        / [1, 2] - would have been [[1, 2]] if we didn't implement Symbol.isConcatSpreadable
 
 
+the author discusses the Reflect API and Proxy objects on page 397-405, reread if you ever need to know about it
+  Proxy objects enable you to transparently wrap and intercept calls to another object, useful for things like logging, debugging, testing, etc. 
 
 
+========================================================================================
+CHAPTER 15, JAVASCRIPT IN WEB BROWSERS
+========================================================================================
+
+for documentation on web browser APIs use https://developer.mozilla.org
+
+though javascript can be written within script tags, usually the script tag's src references a javascript file:
+
+  <script src="script/fileName.js"></script> 
+
+now if this code is referenced in multiple places it won't have to be duplicated.
+  this reduces the amount of code that needs to be fetched from the server 
+  the code can also be JIT compiled & cached, leading to better performance 
+
+webservers can also export javascript files. You can include their remote URL in the src attribute to fetch / execute those files.
+  this allows scripts to be maintained server side. 
+  alot of advertisements use this technique 
+
+if you wrote your program using modules (and didn't use a code bundling tool to combine all modules into a single file)
+  then you must load the top-level module in the program by adding type="module" to the script tags 
+  the files imported by the top level module will then also be loaded 
+
+
+in the old days the only way javascript could effect a documents content was by generating the content as the document was loading 
+  document.write() was used to inject HTML into the document for this purpose 
+  this method is long deprecated, but because injecting HTML is possible, when the HTML parser encounters a script tag it must 
+    run the full script before it renders the document. this can dramatically slow down the rendering of the page 
+
+script tags now have defer and async to disable this blocking behavior. these indicate the script doesn't use document.write(): 
+
+  <script defer src="fileName.js"></script>
+  <script async src="fileName2.js"></script>
+
+defer defers execution of the script until after the HTML document has been fully loaded and parsed, and is ready to be manipulated
+async runs the script as soon as possible but doesn't block document parsing while the script is being downloaded
+
+defer scripts run in the order inwhich they appear in the document. 
+async scripts run as they load, which means they may execute out of order. 
+
+scripts with type="module" are deferred by default. 
+  you can override this by setting the async attribute. the module will then execute once it and all its dependencies are loaded
+
+an alternative to the async and defer attributes is to put your code at the end of the HTML file. 
+
+if a script doesn't need to run immediately you can run it on demand by:
+  a) if it's a module, using the import() method 
+  b) if it's not a module, dynamically adding a <script> tag to the HTML document:
+
+    function importScript(url) {
+      return new Promise((resolve, reject) => {
+        let script = document.createElement("script");
+        script.onload = () => { resolve(); }
+        script.onerror = (e) => { reject(e); }
+        script.src = url
+        document.head.append(script)
+      });
+    }
+
+you can move, remove, add, and edit HTML elements using the DOM API
+the DOM is a tree of Node objects constructed by the browser that mirror & hook into the HTML document 
+
+  Node objects are subclassed into Text and Element classes. Text is the text between tags, and Element are the actual tags
+    there's a subclass of Element corresponding to each specific type of tag
+      i.e. the body tag is represented by an HTMLBodyElement type 
+    some of these subclasses have special methods for working with the tag
+      i.e. the HTMLVideoElement class has a pause() and start() method
+
+there's also one global object per browser window or tab. 
+  all the javascript code running in that window / tab shares this global object (regardless of how many scripts or modules there are)
+  the global object is where the javascript standard library is defined 
+  in browsers it also contains the entry points of various web APIs - document, fetch(), history, etc. 
+
+in the browser there's also a window object, which is just a reference to the global object
+  this is used to access information about the window size
+
+remember if your scripts aren't modularized their properties / methods are visible to all other scripts in that HTML document (window or tab)
+  this may be convenient since you don't need to import / export, but it can lead to namespace conflicts 
+  in ES6 top-level var and function declarations are added to the global object 
+    but top-level let, class, and const declarations aren't added to the global object
+    however they're still added to the shared namespace 
+      so they're still accessible by other scripts, but can't be accessed off of the global object, they just are directly accessed 
+
+a javascript program is loosely defined as consisting of all the code in, or referenced from, a particular HTML document 
+  code within the document of an <iframe> tag has a different global object, window, and HTML document, however. 
+    if both the iframe document & another document were pulled from the same server their code may be dependent and interact 
+    so there's not always a definite boundary we can use to define a javascript program, but generally the definition holds
+
+
+javascript program execution occurs in 2 phases: 
+  1) the document is initially loaded and all the code in <script> tags runs 
+  2) the program listens for / responds to events 
+
+code that executes in phase 1 is more impactful on performance. some code may only execute in either phase 1 or phase 2. 
+
+there are 2 events that mark the start of phase 2:
+  "DOMContentLoaded" - triggered when the HTML document is completely loaded and parsed, & all deferred scripts have finished executing
+  "load" - a window object event triggered when all the external resources (such as images) are also fully loaded, and all async scripts finish executing
+it's common to see programs that take no action (other than registering a handler for these events) until after one of these events have fired 
+
+
+javascript is single-threaded. this reduces complexity, but it means your methods can't run for too long or they'll block the UI. 
+
+web browsers have added web workers for computationally intensive background tasks
+  note that these workers don't have access to document content and can't update the UI
+  they also don't share any data with the main thread or other workers (kind of like pthreads), and to communicate they must send messages
+    this ensures they don't alter the single-threaded execution model 
+
+
+here's a more detailed breakdown of phase 1 of program execution:
+
+  1a) web browser creates a document object and begins parsing the web page, building the DOM with Element and Text Nodes.
+        the property document.readyState is set to "loading" during this stage 
+  1b) when the HTML parser encounters a script tag
+    1ba) if the script is not deferred, async, or a module the HTML parser pauses & the script executes synchronously.
+           the script is allowed to manipulate the parts of the DOM that came before it (have been parsed)
+    1bb) if the script is async it begins downloading the script. if the script is a module, it also recursively downloads all its dependencies. 
+           it then continues parsing the document. the script will be executed the moment it downloads.
+           the script can access parts of the DOM that came before it. they may have access to parts that came after it, but this is not guaranteed or reliable. 
+  1c) when teh document is completely parsed the property document.readyState is set to "interactive" 
+  1d) any deferred scripts are executed in the order they appeared in the document.
+        deferred scripts have access to the entire DOM 
+  1e) the browser fires the "DOMContentLoaded" event. 
+        note there may still be async scripts that haven't yet executed if their downloads aren't complete 
+        and although the DOM is parsed there could also still be content (such as images) that haven't finished loading
+  1f) when all content is finished loading & all async scripts finish executing the document.readyState property is set to "complete" 
+        and the web browser fires the "load" event on the window object 
+
+
+document.URL contains the URL of your current document. you can access query, path, and fragment sections via the object returned 
+
+document.cookie contains data from the HTTP cookie header 
+
+the global navigator property contains some useful information:
+
+  navigator.userAgent                                     // info about the browser & OS 
+  navigator.language                                      // users preferred language 
+  navigator.hardwareConcurrency                           // number of CPUs available 
+  navigator.screen.width / navigator.screen.height        // dimensions of the users display screen 
+
+
+there are 2 top level error handling mechanisms that can be useful for logging: 
+
+  window.onerror - set this to a callback to handle errors that propagate all the way up to the top level 
+    if the callback returns true the error is considered handled and won't be printed to the console 
+    the callback will be passed 3 arguments:
+      1) error message
+      2) URL to the code that caused the error
+      3) line # 
+
+  window.onunhandledrejection - set this to a callback to handle failed promises that aren't handled 
+    the callback is passed the rejected promise object and a reason property
+    if you call preventDefault() on the promise object the error is considered handled 
+
+
+browsers have some built-in security features to be aware of: 
+
+  1) javascript can't write or delete files to the file system 
+  2) network APIs are pass through the browser, which enforces certain security policies
+  3) due to the same-origin policy a script can only read the properties of windows / documents that have the same origin as the document that contains the script.
+       the origin is the unique combination of (protocol, host, port)
+       this typically becomes relevant when using iframes. 
+       also, because every URL is a separate origin, if your program uses more than one document you won't be able to test it locally using a combination 
+         of a real server and mock URLs. you'll have to run a mock web server of some sort instead. 
+       also note it isn't the origin of the script that matters, but the origin of the document inwhich it is embedded. 
+         this is relevant if a script is included in a document via <script>'s src property.
+  4) the same-origin policy also means that HTTP requests can only be sent to the web server that provided the containing document. 
+       unless the web server enables CORS (cross-origin resource sharing)
+         CORS is implemented via the Origin request header and Access-Control-Allow-Origin response header
+  5) cross-site scripting (XSS) - refers to attacks that involve injecting HTML or scripts into a page
+       they're referred to as cross-site because multiple sites (or services) are involved. 
+         there may be a specially crafted link to a malicious site. 
+         or maybe the code is reading private data and relaying it to an external service or website
+
+       user input must be sanitized to avoid this. here are some techniques: 
+         a) remove HTML tags from any untrusted data 
+
+              name = name.replace(/&/g, "&amp;")
+                         .replace(/</g, "&lt;")
+                         .replace(/>/g, "&gt;")
+                         .replace(/"/g, "&quot;")
+                         .replace(/'/g, "&#x27;")
+                         .replace(/\//g, "&#x2F;");
+
+         b) always display untrusted data in an iframe with the sandbox attribute set to disable scripting and other capabilities.
+
+  
+the same-origin policy can be problematic for large sites that use multiple sub-domains.
+  for example, a script from orders.example.com might need to read from documents on example.com 
+  to support multidomain websites, scripts can alter their origin by setting document.domain to a parent domain (it can't be an arbitrary domain):
+
+    document.domain = "example.com"
+
+
+most events on DOM objects will propagate up the DOM tree, even if the events are handled. 
+  i.e. mouseover of an anchor tag (<a>) fires on the tag, then propagates up to its parent tags, evetually reaching the document object, then the window object.
+    sometimes it's more convenient to register event handlers on higher level tags, like the document object, instead of registering tons on the leaf elements
+      i.e. you might register one handler on a <form> tag rather than on every element in the form 
+  to stop the propagation of an event upward you must call a method on the event object (the object passed to the handler)
+  there are also techniques for wrappers intercepting events & doing things like logging before propagating them further upward
+some notable DOM object events that don't propagate up the DOM are "focus", "blur", and "scroll" events
+also, the "load" event on DOM objects propagate up to the document object, but won't continue to reach the window object.
+  the "load" event on the window object is only fired when all elements in the entire document have loaded
+
+some events also have default actions associated with them 
+  i.e. mouseclick on a link, by default, causes the browser to open a new page 
+  this default action can also be prevented by calling a method on the event object
+    this is typically referred to as cancelling the event 
+
+
+there are many different types of events. here are some examples:
+
+  device-specific input events                    // mousedown, mousemove, mouseup, touchmove, touchend, keydown, keyup, etc. 
+
+  device-independent input events                 // input, pointerdown, pointermove, pointerup
+                                                  // these are more generic alternatives not tied to a specific input device. 
+                                                  // i.e. a link click could come from the mouse or keyboard
+                                                  // a pointerdown event could come from a mouse, touchscreen, or stylus
+
+  UI events                                       // focus, change, submit
+                                                  // events generated by the HTML element themselves
+
+  application events                              // DOMContentLoaded, load, online, offline, popstate
+                                                  // online / offline are fired when network connectivity changes
+                                                  // popstate is fired when the user presses the back button 
+  
+  API-specific events                             // some API providing its own custom event types 
+                                                  // for example, <video> elements define events such as waiting, playing, seeking, etc. 
+                                                  // many older APIs created before promises are event-based. i.e. XMLHttpRequest uses a number of events 
+
+
+the old way of registering events is to set a callback on the element that generates the event 
+  but this technique assumes the object has properties for all the event types you need 
+  you can also overwrite previously registered handlers assigned to the property if you aren't careful
+
+  window.onload = function() {
+    ...
+  }
+
+
+these event handler properties can also be set in the HTML. it's bad practice but you may see it in existing code:
+
+  <button onclick="console.log('...');">...</button>
+
+  the string assigned to the property is the body of a callback. 
+    the browser converts the string to a callback in this format (a potential source of confusing bugs): 
+
+      function(event) {
+        with(document) {                // uses the deprecated with statement. includes all properties in the document 
+          with(this.form || {}) {       // properties of the containing form (if any)
+            with(this) {                // properties of the target object 
+              ...
+            }
+          }
+        }
+      }
+
+  the code can't be executed in strict mode.
+  note that the HTML body tag can be used for defining callbacks for the window object, it contains properties for events associated with the window 
+
+
+the new way to add listeners is to call addEventListener():
+
+  <button id="button1">Press</button>
+  ...
+  let button1 = document.querySelector("button1");
+  button1.addEventListener("click", (e) => {            // note that unlike the element event properties, these events don't use the "on" prefix
+    ...                                                 // this way they don't overwrite one another
+  })
+
+calling addEventListener() multiple times on the same object with the same arguments has no effect, the callback is registered only once 
+
+you can also remove listeners using removeEventListener:
+
+  let handler = function(event) { ... }
+  button1.addEventListener("click", handler);
+  ... 
+  button1.removeEventListener("click", handler);        // you need a reference to the handler function to remove it
+
+
+you can pass a third configuration object to these methods as well: 
+
+  button1.addEventListener("click", handler, {
+    capture: true,                                      // if capture == true the handler is registered as a capture handler instead 
+    once: true,                                         // if once == true the handler is cleaned up after one event. false by default 
+    passive: true                                       // if passive == true the handler will never call preventDefault() to cancel event propagation 
+  });
+  button1.removeEventListener("click, handler, true);   // passing just a boolean is a shorthand for specifying only capture's value
+
+passive == true is especially important to set for events that could interfere with smooth scrolling 
+  the touchmove and mousewheel events have passive internally set to true for this purpose, but if you're implementing custom events you must remember to do this 
+
+when invoking removeEventListener, capture is the only option that needs to be the same as it was during setup
+
+events actually originate on the window object, propagate down to the target DOM object, then propagate back up to the window object 
+  if capture == true the handler will fire during the first phase, as the event is on its way down 
+  this allows you to access the event before it reaches its target
+    you can use this for debugging, cancelling the event so that its handlers are never invoked, or rerouting / bypassing elements in the DOM
+
+the event object (passed as an argument to the handler) has the following properties: 
+
+  type                        // type of event 
+  target                      // object on which the event occurred 
+  currentTarget               // for events that propagate, the object on which the current handler was registered
+  timestamp                   // when the event occurred
+  isTrusted                   // true if the event was dispatched by the browser itself, false if dispatched by javascript code 
+
+specific kinds of events may also have additional properties. 
+  i.e. mouse and pointer events have clientX and clientY properties that specify where in the window the event occurred
+
+within the body of a handler the 'this' pointer refers to the target on which the event handler was registered
+  but this doesn't work for handlers defined using arrow functions - they have the same 'this' pointer as the scope inwhich they're defined
+
+before preventDefault() existed event handlers used a boolean return value to indicate to the browser whether to perform the default action for the event
+
+when multiple handlers for the same event are registered the browser invokes them in the order they were registered in. 
+
+HTML elements have many built-in events. i.e. the browser handles clicking on a hyperlink, pressing enter if keyboard focus is on a textbox, etc. 
+  preventDefault() prevents the browser from performing its default action (unless the handler's property passive == true)
+
+stopPropagation() prevents the event from propagating any further
+  this works during both the capture and and bubbling phases 
+
+stopPropagation() will not prevent execution of other handles defined on the current object, however. the event just won't propagate any further along the chain.
+  but stopImmediatePropagation() does prevent execution of other handlers defined on the current object.
+
+javascript objects that can listen for events can also generate their own custom events using dispatchEvent() and CustomEvent()
+
+  document.dispatchEvent(new CustomEvent(
+    "isLoading",                              // first parameter is the name of the event 
+    {                                         // second parameter is an object containing the event's properties. 
+      detail: true,                           // detail is the content of your event (can be a value of any type) 
+      bubbles: true                           // bubbles indicates whether the event will propagate up the DOM if it's generated by a DOM element
+    }
+  ));
+
+  ... 
+
+  document.dispatchEvent(new CustomEvent("isLoading", { detail: true }));
+
+  document.addEventListener("isLoading", (e) => {
+    showSpinner(e.detail)
+  })
+
+
+the document object is the topmost object in the DOM. 
+  it's a property of the global / window object 
+
+querySelector() / querySelectorAll() allow you to access elements using CSS selectors: 
+
+  let obj = document.querySelector(".class_name")
+  let obj2 = document.querySelector("#id_name")
+
+  let obj3 = document.querySelector("div")                  // returns the first div in the document
+  let arrayLikeObj = document.querySelectorAll("div");      // return all divs in the document 
+
+  let real_array = Array.from(arrayLikeObj);
+
+you don't have to call querySelector() / querySelectorAll() off the document object. 
+  you can call them off any DOM element, and they'll only return children of that element
+  
+CSS selectors that won't work right with querySelector() / querySelectorAll() include: 
+  
+  ::first-line 
+  ::first-letter                // these only work with Text nodes, but querySelector searches the HTML Tag nodes
+  :link
+  :visited                      // these could expose personal browsing history information to the application, so they don't work
+
+
+there are also document.closest() and document.matches() methods that take a CSS selector. 
+  closest() climbs the DOM tree looking for matching ancestors instead of doing a full search of the tree beneath the element 
+  matches() just checks the target that invoked the method for whether it matches the selector. 
+
+
+there are other element selector methods but they're considered obsolete now. The CSS selector methods are preferred. 
+  but there's still alot of old code that uses them:
+
+  let obj = document.getElementById("main_window");
+  let obj2 = obj.getElementByName("map");
+  let obj3 = document.getElementsByTagName("h1");               // similar to querySelectorAll() but doesn't support the CSS selector syntax
+  let obj4 = document.getElementsByClassName("class_name");
+
+unlike with querySelectorAll(), the NodeList (the array-like object) returned by these older methods are 'live',
+  i.e. the length and content of the list can change if the document content or structure changes
+
+the document object also contains deprecated shortcut properties for accessing groups of elements. 
+  these old methods return an HTMLCollection object. this is similar to a NdoeList, but it can be indexed by element id or name
+  the author says you shouldn't use these: 
+
+  document.forms.address              // access a form element via an id - <form id="address> this way, but you shouldn't 
+  document.all                        // all elements in the document
+
+
+these methods allows you to access parent / sibling / child Tag elements and ignore Text elements: 
+
+  let obj = document.querySelector("#id_1");
+
+  obj.parentNode;
+  obj.children;
+  obj.children[1];
+  obj.children[1].children[2];
+  obj.childElementCount;          // same as children.length
+  obj.firstElementChild;          // null if node has no children
+  obj.lastElementChild;
+  obj.nextElementSibling;         // refers to the element immediately after the target
+  obj.previousElementChild;
+
+
+these are similar methods that don't ignore Text elements, comment elements, etc.:
+
+  obj.nodeType;             // a number that specifies what type of node it is. document nodes == 9, element nodes == 1, text nodes == 3, comment nodes == 8
+  obj.nodeValue;            // the textual content of a Text or Comment node 
+  obj.nodeName;             // the HTML tag name of an element, converted to uppercase
+
+  obj.parentNode;           // will be null for elements like Document that have no parent
+  obj.childNodes;           // read only, contains all nodal children of any type
+  obj.firstChild;
+  obj.lastChild;
+  obj.nextSibling;
+  obj.previousSibling;
+  
+
+note that the document is very sensitive to changes. 
+  for example, if a newline is inserted into a tags text an additional Text node is added and the document structure changes. 
+  in practice you'd use the property obj.textContent to get an elements text
+
+
+there are also methods for interacting with an elements attributes: 
+
+  obj.getAttribute()
+  obj.setAttribute()
+  obj.hasAttribute()
+  obj.removeAttribute()
+
+but the elements themselves actually have property accessors for their attributes, and it's usually easier to work with those instead:
+
+  let img = document.querySelector("#main_image");
+  let source_url = img.src;
+  if img.id === "main_image" {
+    ...
+  }
+
+  let form_obj = document.querySelector("form");
+  form_obj.action = "https://www.example.com/submit";
+  form_obj.method = "POST";
+
+for some elements, such as <input> tags, some of their attribute names map to differently named properties. 
+
+the property-based attribute API doesn't have any way of removing an attribute, though. So you have to call removeAttribute() for that. 
+
+class is a reserved word in HTML, so the property is named className instead.
+  the class attribute is a comma-separated list of CSS classes
+  because it's difficult to work with a comma-separated string, javascript provides the classList property which makes this easier:
+
+  let spinner = document.querySelector("#spinner");
+  spinner.classList.remove("hidden");
+  spinner.classList.add("animated");
+
+  if spinner.contains("animated") {
+    ...
+  }
+
+
+sometimes it's useful to attach additional data to HTML elements for code to work with.
+  in the HTML, an attribute whose name is lowercase and begins with "data-" is valid for this purpose. these are called dataset attributes.
+  DOM element objects have a dataset property that can access these:
+
+    <h2 id="title" data-section-number="16.1"></h2>                                       // in the HTML the dataset property names are separated by -
+    ... 
+
+    let section_number = document.querySelector("#title).dataset.sectionNumber;           // in javascript the names are reduces to this format, with -'s removed
+
+
+the innerHTML property returns an HTML string representing the child elements wrapped by the target 
+  setting the innerHTML (to a valid HTML string) invokes the web browser's parser and updates the document with the new child elements
+
+  document.body.innerHTML = "<h1>Oops</h1>"
+
+make sure you never set innerHTML from user input. this allows for a cross-site scripting attack via inserting malicious code. 
+
+outerHTML is like innerHTML but it also contains the HTML for the target element itself
+  when you set outerHTML the new content replaces the element itself.
+
+
+element.insertAdjacentHTML() allows you to insert an HTML string somewhere near / around an element. 
+  the first argument specifies exactly where the HTML will be inserted. 
+
+  <h2 id="title">Good morning</h2>
+
+  let obj = document.querySelector("#title");
+  obj.insertAdjacentHTML("beforebegin", "<p>A</p>");        // insert the HTML right before the opening tag
+  obj.insertAdjacentHTML("afterbegin", "<p>B</p>");         // insert right after the opening tag
+  obj.insertAdjacentHTML("beforeend", "<p>C</p>");          // insert right before the closing tag 
+  obj.insertAdjacentHTML("afterend", "<p>D</p>");           // insert right after the closing tag
+  ... 
+
+  <p>A</p><h2 id="title"><p>B</p>Good morning<p>C</p></h2><p>D</p>
+
+
+use textContent to get / set an elements plain text. you don't have to escape characters when setting text this way:
+
+  let p = document.querySelector("p");
+  let text = p.textContent;
+  p.textContent = "Goodbye cruel world!";
+
+textContent works for both Text nodes and Tag nodes 
+  on a Tag node it returns all text in all descendants of the element 
+
+there's also an innerText property similar to textContent, but it's deprecated and has some strange formatting quirks / isn't consistent across browsers
+
+inline <script> elements have a text property useful for storing / retrieving text. since the content of a <script> are not displayed by the browser and ignored 
+  by the HTML parser you can embed arbitrary text in it. just set the <script>'s type to some value the browser won't recognize (such as "text/x=custom-data"). 
+  this way the browser will skip over the script. you can then access the <script> element via the document tree & retrieve its text as needed. 
+
+
+you can also create DOM objects and configure them / arrange them into a tree:
+
+  let p = document.createElement("p");            // create a new paragraph node 
+  let em = document.createElement("em");
+  em.append("World");                             // append() and prepend() take any number of arguments, which can be Node objects or strings
+  p.append("ello", emphasis, "!");                // string arguments are automatically converted to Text nodes
+  p.prepend("H");
+
+  em.before(" ");                                 // before() and after() allow you to insert a node as a sibling before or after the target node 
+
+  p.innerHTML;                                    // "Hello <em>World</em>!"
+ 
+  let em2 = document.createElement("em");
+  em2.append("Mars")
+  em.replaceWith(em2);                            // replaces em with the em2
+  p.innerHTML;                                    // "Hello Mars!"
+
+  em2.remove();                                   // remove the em2 node from the tree
+  p.innerHTML;                                    // "Hello !"
+
+note that you can only insert a DOM object at one location. if it already exists elsewhere in the DOM it will be moved to the new location, not copied.
+  but to make a copy of a node you can use cloneNode():
+
+  let p2 = p.cloneNode(true);
+
+
+there are also the following deprecated methods for inserting / removing DOM content, but they've been replaced by the ones above:
+
+  appendChild()
+  insertBefore()
+  replaceChild()
+  removeChild()
+
+
+the CSS can be modified from within javascript code via the style attribute. here are some scenarios where this is common:
+
+  -setting display to "none" hides an element 
+  -changing position to "absolute", "relative", or "fixed" then setting "top" / "left" / "right" / "bottom" to new coordinates 
+  -using "transform" to rotate, scale, or shift elements
+  -animating changes using "transition". these animations are built into the browser
+
+
+an easy, modular way of changing CSS in code is using classList:
+
+  .hide {                 // css class definition
+    display: none;  
+  }
+  ... 
+
+  let spinner = document.querySelector("#spinner")
+  spinner.classList.add("hide")
+  spinner.classList.remove("hide")
+
+
+for more specific changes you can also use the style property.
+  but the styles property returns only the inline styles, it doesn't include styles defined in a separate CSS stylesheet
+  so if you're querying for a style it probably won't be there:
+
+  spinner.style.display = "block";
+  spinner.style.position = "absolute";
+  spinner.style.top = "0px";                  // all values are specified as strings when working with the style property 
+  spinner.style.left = "0px";                 // units are required as well
+
+
+you can also set or query the entire inline-css string at once, but again these queries won't return CSS styles from a separate stylesheet:
+
+  <p id="main_paragraph" style="color:blue;text-align:center;">...</p>
+
+  ... 
+
+  let new_paragraph = document.createElement("p");
+  let main_paragraph = document.querySelector("#main_paragraph");
+  let inline_styles = main_paragraph.getAttribute("style")                // get all defined inline styles 
+  new_paragraph.setAttribute(inline_styles);                              // sets the entire inline style string
+
+  new_paragraph.style.cssText = main_paragraph.style.cssText;             // same thing - copy all inline styles
+
+
+a better way to query for styles is using computed styles, which will return all inline styles plus all applicable rules from stylesheets. 
+  but these are read-only, and since the styles are computed the returned style may not be in the same format as the stylesheets (notably positional styles):
+
+  let title = document.querySelector("#title");
+  let styles = window.getComputedStyle(title);                            // computed styles are obtained via the window object 
+  let beforeStyles = window.getComputedStyle(title, "::before");
+
+
+javascript can also manipulate CSS stylesheets themselves. 
+  stylesheets are associated with the <style> tags or with <link> tags. both are regular HTML tags so their contents can manipulated like any other. 
+
+  // create a stylesheet & insert it into the document
+  let link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.id = "new_theme";
+  link.href = `themes/${theme_name}.css`;
+
+  if currentTheme = document.querySelector("#theme") {
+    currentTheme.replaceWith(link);
+  } else {
+    document.head.append(link);
+  }
+
+  // insert a <style> tag directly into the HTML document 
+  document.head.insertAdjacentHTML(
+    "beforeend",
+    "<style>body{transform.rotate(180deg)}</style>"
+  );
+
+  
+there's a CSS Object Model API for manipulating the stylesheets that's very detailed, if you want to know more about it read the mozilla docs.
+
+
+two kinds of CSS animations are transitions and keyframes.
+javascript has ways of triggering / interacting with both of them:
+
+  .transparent {                        // this class sets the opacity to 0
+    opacity: 0; 
+  }
+  .fadeable {                           // this transition class listens for changes in opacity and animates them over a 0.5s duration
+    transition: opacity 0.5s ease-in 
+  } 
+
+  <div id="whiteCoverView" class="fadeable"></div>
+
+  ... 
+
+  // this will programmatically cause the view to fade out, since .fadeable listens for opacity changes. it works for fade in too
+  document.querySelector("#whiteCoverView").classList.add("transparent");         
+
+
+you can also monitor the progress of CSS transitions using these events. the target is the element being animated:
+
+  "transitionrun"             // fired when the transition is first triggered, before any visual changes begins
+  "transitionstart"           // fired once the visual changes begin
+  "transitionend"             // fired when finished 
+
+these events propagate an event object that has the following properties:
+
+  propertyName                // specifies the CSS property being animated 
+  elapsedTime                 // how many seconds have passed since transitionStart 
+
+
+keyframe animations are specified in CSS and beyond our scope, but there are similar events fired for them:
+
+  "animationstart"
+  "animationend"
+  "animationiteration"        // if the animation repeats this is fired after each repetition except the last one
+
+and the event object propagated for CSS keyframe animations has some similar properties:
+
+  animationName 
+  elapsedTime 
+
+
+an elements x and y position is measured either relative to the whole document or relative to the viewport (the part currently on screen)
+
+to convert between whole document and viewport coordinates you must subtract the scroll offsets
+
+the CSS overflow property allows elements to have more content than can fit within them. 
+  the element will have a scroll bar added to it, and serve as a viewport for the content within. you can scroll through its content. 
+
+the CSS "position" attribute can be set to:
+
+  relative            // default behavior 
+  fixed               // "top" and "left" will be interpreted as viewport coordinates 
+  absolute            // "top" and "left" are relative to the document or the nearest containing positioned element
+                      // i.e. an absolute element within a relative element is positioned within the relative element
+  
+it's sometimes useful to wrap all your elements in a container whose position is set to relative, then use absolute coordinates within the container.
+  this effectively creates a new coordinate system within the container that is distinct from the document and viewport system
+
+with the introduction of 4K and retina displays a pixel unit no longer always corresponds with 1 pixel (same as in iOS). 
+  window.devicePixelRatio will tell you the current devices hardware pixel vs software pixel ratio
+    unlike in iOS this number doesn't have to be an integer, it can be something like 2.5, etc. 
+  as a result there can also be non-integer coordinates. 
+    i.e. you can have an x coordinate value of 3.33 software pixels. 
+      if the devices dpr is 2 (2 hardware pixels per 1 software pixel) the x of 3.33 would round up to 3.5 
+
+
+call getBoundingClientRect() on an element to get its position in viewport coordinates. 
+  it returns a DOMRect object with properties:
+    top, left, bottom, right 
+    x, y
+    width
+    height
+
+getBoundingClientRect() is sufficient for block elements. 
+  but inline elements can wrap multiple lines, and the last line may not continue to the full width as the line before.
+for inline elements you can call getClientRects() instead, which returns an array of DOMRect's, one for each line
+
+
+to determine what element is at a given location in the current viewport you can call document.elementFromPoint(x, y)
+  it is common to pass in the clientX and clientY coordinates of a mouse event
 
 
 
