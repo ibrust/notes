@@ -329,17 +329,19 @@ there are static properties Double.infinity and Double.Pi, and an instance prope
 CHAPTER 5 - OBJECT TYPES
 =======================================================
 
-object types are enum / class / struct 
+object types are enum / class / struct
+
 object types declared within function bodies only exist in that scope
 
 in a class, static properties or methods can also optionally be declared using the class keyword 
 
-when you add an initializer the default on provided goes away (for classes too - they get a default init apparently)
+when you add an initializer the default one provided goes away (for classes too - they get a default init() if no properties actually require initialization)
 
 be careful not to supply meaningless default parameters, sometimes you want to enforce input of parameters 
 
 within an init you may not refer to self until all instance properties are set except if you're referring directly to an already initialized property
-a delegting init is one which calls another init 
+
+a delegating init is one which calls another init 
 a delegating init can't refer to self at all until after it calls the delegate init - not even to set properties
     so often you end up calling the delegate init at or near the top then afterwards resetting specific properties
 as a result a delegating init also cannot set a constant property because it can only refer to it after it's been set 
@@ -348,14 +350,224 @@ setters aren't called during initialization
 
 you can give instance properties initial values outside of init functions, but can't refer to any other instance properties or methods when doing so. 
     a workaround is to make the property computed or lazy - that way it's value is calculated after self is finished setting up 
-    likewise when initializing instance properties using anonymous function calls dont refer to self - our bottomsheet bug 
-        a fix to this bug is to make the var lazy 
-this restrictions dont apply to static propreties, as static initializers are lazy by default 
+    likewise when initializing instance properties using anonymous function calls dont refer to self, since self is uninitialized (this was our bottomsheet bug)
+        a fix to this bug is to make the var lazy
+these restrictions dont apply to static propreties, as static initializers are lazy by default 
     but use of a static property won't prevent anonymous function initializations that reference self introducing bugs 
-        due to a quirk in the compiler implementation 
+        this is due to a quirk in the compiler implementation 
+
+within the body of a static method self refers to the type, not the instance. 
+    you can't refer to the instance within a static method because it doesn't exist yet 
+
+it's a weird quirk of Swift that instance methods are compiled and reimplemented as static methods behind the scenes. 
+    this allows you to call instance methods as if they were class methods, as long as you pass an instance in as the first parameter: 
+
+    class Dog {
+        var dog_noise_level = 0
+        func bark() {
+            dog_noise_level += 1
+        }
+    }
+    let dogInstance = Dog()
+    let firstClassFunc = Dog.bark(dogInstance)
+    print(dogInstance.dog_noise_level)                              // 1
 
 
-pg 132
+you can add subscripts to your types if it feels appropriate: 
+
+    struct CardNumber {
+        var number: Int
+        ... 
+        subscript(ix: Int) -> Int {
+            get {                                                   // subscripts are implemented via a unique combination of methods + getter & setter syntax
+                let s = String(self.number) 
+                return (Int(String(s[s.index(s.startIndex, offsetBy: ix)])))
+            }
+            set {
+                var s = String(self.number)
+                let i = s.index(s.startIndex, offsetBy: ix)
+                s.replaceSubrange(i...i, with: String(newValue))
+                self.number = Int(s)
+            }
+        }
+    }
+
+
+an enum with a type declaration implicitly adopts teh RawRepresentable protocol. 
+    this means it implicitly has an init(rawValue:) and a rawValue property
+the raw values associated with enums are limited to Ints and Strings
+
+    enum Color: String {
+        case red 
+        case green 
+        case blue
+    }
+
+    let color = Color(rawValue: "red")
+
+    if color.rawValue == "red" {
+        ...
+    }
+
+enums with associated values can't be RawRepresentable 
+    note that associated values are set at runtime, while the rawValues are set at compile time 
+
+you can actually create a struct that works alot like an enum. this is often how Obj-C is bridged to Swift enums: 
+
+    struct Color: RawRepresentable {
+        let rawValue: String
+        static let red: Color = Color(rawValue: "red")
+        static let green: Color = Color(rawValue: "green")
+        static let blue: Color = Color(rawValue: "blue")
+    }
+
+if you need to loop through all of an enum's cases use CaseIterable, which synthesizes the allCases static array:
+
+    enum Color: String, CaseIterable {
+        case red 
+        case green 
+        case blue
+    }
+
+    for color in Color.allCases {
+        ...
+    }
+
+you can't conform to CaseIterable if your enum has associated values, though, because the cases can't be created at compile time. 
+
+enums can't have stored instance properties, they must be computed. 
+
+an enum instance method can actually modify self, changing the instance. 
+    you won't notice this when you call the method, but your instance will actually change
+    such an enum instance method that modifies the enum itself must be marked mutating 
+    
+
+structs lose their default initializer if any of the properties that must be initialized are declared private.
+
+if a struct method sets a property it must be marked as mutating 
+    if a getter sets a property it must be marked as mutating get. setters and subscriptsi are already mutating by default 
+
+a mutating method in a struct changes the instance itself. 
+    you can actually change the instance directly by setting self to a new instance 
+
+since obj-C only has classes your custom types that interact with obj-C should be classes instead of structs 
+
+note that with classes it's possible to have multiple references to the same object. this is not possible with structs.
+    so this makes threading problems possible with classes that can't occur with structs 
+    so you should prefer structs unless you have a good reason to need a class 
+
+note that with a struct, if a mutating method captures self within an escaping closure is an error and won't compile. 
+    you can't mutate the struct at some later time, this could introduce semantic problems. it must be done synchronously. 
+    this can be done via changing the struct to a class though, since mutating the class does not require changing the instance.
+
+use a class if: 
+    1) you need the instance to persist as one copy
+    2) you need recursive references or need to support some other language feature
+    3) you want to save memory
+
+Swift doesn't allow you to have recursive or cyclical references to structs, because accommodating this would complicate memory management:
+
+    struct Dog {
+        var puppy: Dog              // this will not compile as a struct 
+    }
+
+you can have recursive or cyclical references in enums, though, if you mark the case as indirect:
+
+    enum Node {
+        case none(Int)
+        indirect case left(Int, Node)
+        indirect case right(Int, Node)
+        indirect case both(Int, Node, Node)
+    }
+
+when using a class try to make its properties immutable. this protects against potential race conditions. 
+
+in Cocoa (UIKit) NSObject is the one base class that all objects inherit from
+there is no such base class in Swift itself, classes don't have to inherit from something 
+
+
+
+to override a method you must use the same method signature, including same parameter names.
+    however, you can actually replace the type with that of its superclass, or with an optional, and still override the method:
+
+    class Dog {
+        func barkAt(cat: Kitten) { ... }
+    }
+    class BigDog: Dog {
+        override func barkAt(cat: Cat?) { ... } 
+    }
+    class SmallDog: Dog {
+        override func barkAt(cat: Kitten?) { ... } 
+    }
+
+
+to prevent subclasses from overriding a method precede it with the final keyword 
+
+when initializing a class there are some additional rules that ensure all properties in superclasses get initialized too. 
+
+classes have 2 kinds of initializers:
+
+    1) designated initializers - a class can be instantiated only be a call to a designated initializer. initializers are considered designated by default. 
+                                 these inits must ensure all properties are initialized, and can't delegate to another init of the same class. 
+                                 a class with stored properties requiring initialization must have a designated initializer. 
+                                 if the class has no properties that require initialization it gets an init() by default, but this init does nothing. 
+
+    2) convenience initializer - marked with the keyword convenience. this is a delegating initializer - it must contain a call to another init somewhere. 
+
+in a designated initializer, until all properties are initialized, 
+    you can only use self to access a property you're initializing or fetch a property already initialized. 
+
+in a convenience initializer you cannot use self for any purpose until you call a designated initializer. 
+
+if a subclass doesn't have its own initializers, then it inherits its initializers from the superclass 
+    a subclass is also eligible to declare convenience inits without declaring its own designated init, since it can call its superclasses designated init 
+once a subclass declares its own designated init though, no initializers from the superclass are inherited 
+    also, every designated init in the subclass must call a designated init in the superclass. 
+        note that, if you don't add it, swift will try to automatically call a superclass designated init for you behind the scenes, 
+            but this might not work due to access restrictions or something
+
+you must call the superclass's designated init after all the properties of the subclass are initialized,
+    and you can't access properties of the superclass until you call its designated init. 
+
+you can also override inits in the subclass. 
+    you don't need the override keyword to override the superclass's convenience inits 
+    but for overriding designated inits you do need it 
+
+if a subclass overrides all of the superclass's designated initializers, then it automatically inherits all the superclass's convenience initializers. 
+
+failable initializer is another term for init?() 
+
+if an init()? calls an init?() and the second one fails (returns nil) the entire initialization process is aborted immediately 
+an init() can call an init?() using forced unwrapping, but this results in a runtime error if the call fails 
+
+an init() can override an init?(), but not vice versa 
+
+it is impossible to set a constant (let) property in a superclass from a subclass's initializer. 
+    this is because you must call super.init() to even have access to self, and by that point the constant has been initialized once and can't be changed. 
+
+lastly, an init can be preceded by the keyword required. 
+    this means that the subclass must not lack this initializer.
+        so if the subclass implements designated initializers, blocking init inheritance, it must override the required init:
+
+        class Dog {
+            var name: String 
+            required init(name: String) {
+                self.name = name 
+            }
+        }
+        class NoisyDog: Dog {
+            var obedient = false 
+            init(obedient: Bool) {
+                self.obedient = obedient 
+            }
+            required init(name: String) {       // the keyword override isn't needed here, since required is sufficient for the compiler to know 
+                super.init(name: name) 
+            }
+        }
+
+
+pg 170, class deinitializer
+
 
 
 ==============================================================================================================

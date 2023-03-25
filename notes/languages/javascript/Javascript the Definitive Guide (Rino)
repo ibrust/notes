@@ -4577,10 +4577,11 @@ and the event object propagated for CSS keyframe animations has some similar pro
 
 an elements x and y position is measured either relative to the whole document or relative to the viewport (the part currently on screen)
 
-to convert between whole document and viewport coordinates you must subtract the scroll offsets
-
 the CSS overflow property allows elements to have more content than can fit within them. 
   the element will have a scroll bar added to it, and serve as a viewport for the content within. you can scroll through its content. 
+
+to convert between whole document and viewport coordinates you must subtract the scroll offsets
+  but you won't be able to determine the document position of content within an overflow element
 
 the CSS "position" attribute can be set to:
 
@@ -4612,9 +4613,818 @@ getBoundingClientRect() is sufficient for block elements.
 for inline elements you can call getClientRects() instead, which returns an array of DOMRect's, one for each line
 
 
-to determine what element is at a given location in the current viewport you can call document.elementFromPoint(x, y)
+to determine what element is at a given location in the viewport you can call document.elementFromPoint(x, y)
   it is common to pass in the clientX and clientY coordinates of a mouse event
 
+you can programmatically scroll with window.scrollTo(x, y):
+
+  let documentHeight = document.documentElement.offsetHeight;
+  let viewportHeight = window.innerHeight;
+
+  window.scrollTo(0, documentHeight - viewportHeight);
+
+
+window.scrollBy(x, y) is similar, but its arguments are relative to the current screen position
+
+to scroll smoothly call window.scrollTo(options):
+
+  window.scrollTo({
+    left: 0,
+    top: documentHeight - viewportHeight,
+    behavior: "smooth"
+  });
+
+to scroll a certain element into view you can use target.scrollIntoView()
+  by default this method moves the target to the top edge of the viewport if possible. 
+  if passed false as the only argument it will move the target to the bottom of the viewport instead 
+  the browser will also do any required horizontal scrolling to make the element visible 
+  there's also a target.scrollIntoView(options) method if you need smooth scrolling or more details on where to position the element
+
+
+some properties for dimensions of the document / viewport:
+
+  window.innerWidth                                   // the width / height of the viewport 
+  window.innerHeight 
+
+  document.documentElement.width                      // width / height of entire document 
+  document.documentElement.height
+  document.documentElement.getBoundingClientRect()    // DOCRect for the entire document
+
+  window.scrollY                                      // the x / y scroll offsets for the window
+  window.scrollX
+
+some properties for dimensions of specific elements:
+
+  offsetWidth                   // the on-screen width / height in pixels. these offset sizes include border and padding, but not margins
+  offsetHeight
+  offsetLeft                    // the x / y coordinates of the element. for many elements these are the document coordinates.
+  offsetTop                     // but for descendants of positioned elements and some others, such as table cells, these are relative to an ancestor
+  offsetParent                  // offsetParent specifies which element these coordinates are relative to
+
+  clientWidth                   // same as offsetWidth / offsetHeight but doesn't include border size
+  clientHeight
+  clientLeft                    // the horiziontal / vertical distance between the outside of the padding and the outside of the border.
+  clientTop                     // usually these values are just the width of the left and top border. these properties aren't very useful.
+
+  scrollWidth                   // scrollWidth / scrollHeight return the elements content area, plus its padding, plus any overflowing content.
+  scrollHeight                  // it's the surface area available for scrolling, basically
+  scrollLeft                    // scrollLeft / scrollTop return the current scroll offset of the element content within the elements viewport. 
+  scrollTop
+
+
+UI components can be complicated, and typically require implementing multiple tags, CSS, and javascript even for fairly simple components
+  so most web applications don't use raw HTML, but use frameworks such as React and Angular that support the creation of reusable UI components 
+Web Components are a browser native alternative to these frameworks for creating reusable UI components
+
+Web Components are defined in javascript. 
+  In the HTML file you include a script tag that references the javascript file that defines the component:
+
+  <script type="module" src="components/search-box.js"></script>
+
+
+the javascript defines a new, custom HTML tag for the Web Component:
+  all Web Component tags must have a hyphen (-) in them to allow the browser to identify them:
+
+  <search-box placeholder="Search..."></search-box>
+
+
+the Web Component tags can have their own custom attributes, like regular HTML tags. 
+
+Web Component tags can't be self-closing. 
+
+the new tag can contain children if the tag is designed to support them. 
+  if the Web Component is coded to support it the children can also set a special "slot" attribute on themselves.
+  "slot" specifies how the child will be used by the component:
+
+  <search-box>
+    <img src="image1.jpeg" slot="left"/>
+    <img src="image2.jpeg" slot="right"/>
+  </search-box>
+
+
+on initial load, the browser will typically have rendered the custom HTML tag before it's run the javascript code telling it what the component is. 
+  when browsers encounter an undefined tag (in this case a Web Component) they add a generic "HTMLElement" tag to the DOM as a placeholder. 
+  this generic tag will be replaced once the javascript has run. 
+
+one consequence of this late loading is children won't display correctly until the javascript runs. 
+  so you must use CSS to hide the element until then:
+
+  search-box:not(:defined) {
+    opacity:0;
+    display: inline-block;
+    width: 300px;
+    height: 50px;
+  }
+
+
+also be careful not to query the DOM for these new tags until the javascript that defines them has run 
+
+Web Components should also define javascript properties for each HTML attribute they support, but this is not a requirement.
+  they can also define methods 
+
+there's a type of DOM node called a DocumentFragment. 
+  this type of node can serve as a placeholder parent of a set of child nodes. 
+  it's useful if you need to manipulate a set of child nodes as a single unit
+  this might occur before the parent has loaded (like with Web Components), or if there simply isn't a parent (like with <template> tags)
+  you can create & insert a DocumentFragment into the DOM. The DocumentFragment won't actually get inserted, but all its children are inserted.
+
+<template> tags are useful for creating components that appear repeatedly. They are sometimes used with Web Components, but don't have to be.
+  the tag and its children are never rendered by the browser. instead you use javascript to duplicate the template & insert that into the DOM.
+  the <template> tag is represented by an HTMLTemplateElement object. 
+    this object contains a single "content" property. the value of this property is a DocumentFragment that contains all the template's child nodes.
+    you can clone this DocumentFragment as many times as you like & insert that into the DOM. 
+
+    <table id="mainTable">
+      <template id="row">
+        ...
+      </template>
+    </table>
+    ... 
+
+    let mainTable = document.querySelector("#mainTable")
+    let template = document.querySelector("#row")
+
+    let clone = template.content.cloneNode(true);       // this is a deep clone
+    mainTable.append(clone)
+
+
+you can define the template in the HTML or in javascript, either way works. 
+  infact, if you need to create many elements in javascript cloning templates is a more performant method than setting innerHTML for every element
+
+
+the browser also supports the ability to create custom tag from classes. the class is a DOM element and will be added to the DOM tree.
+  this is a mechanism used to implement Web Components, but can be used by itself.
+  call customElements.define() to create the custom class. this class will inherit from HTMLElement and have a variety of lifecycle methods:
+
+
+  customElements.define("inline-circle",            // the custom tag must have a hyphen (-)
+    class InlineCircle extends HTMLElement {        // the class must extend HTMLElement
+
+    connectedCallback() {                           // invoked when the element is inserted into the DOM. often used for initialization
+      this.style.display = "inline-block"; 
+      this.style.borderRadius = "50%";
+      this.sthyle.border = "solid black 1px";
+      this.style.transform = "translateY(10%);
+
+      if (!this.style.width) {
+        this.style.width = "0.8em";
+        this.style.height = "0.8em";
+      }
+    }
+
+    static get observedAttributes() { return ["diameter", "color"]; }     // attributeChangedCallback() gets invoked whenever a property in this list changes.
+
+    attributeChangedCallback(name, oldValue, newValue) {          // invoked whenever an observed property changes,
+      switch(name) {                                              // either when the element is first parsed or later 
+      case "diameter": 
+        this.style.width = newValue;
+        this.style.height = newValue;
+        break;
+      case "color":
+        this.style.backgroundColor = newValue;
+        break;
+      }
+    }
+
+    // just set or return the properties in the getters / setters. use attributeChangedCallback() for updating styles
+    get diameter() { return this.getAttribute("diameter"); }
+    set diameter(diameter) { this.setAttribute("diameter", diameter); }
+    get color() { return this.getAttribute("color"); }
+    set color(color) { this.setAttribute("color", color); }
+  });
+
+
+there's also a disconnectedCallback() lifecycle method that's called when the element is removed from the DOM 
+
+there's also something called a shadow DOM that'd used to better encapulate the internals of custom elements or Web Components
+
+you can attach a shadow root node (which is a DocumentFragment) to a custom element or some of the built-in HTLM elements. 
+  this node is the shadow root is attached to is called host node. 
+  the host node is the root of its regular DOM tree (referred to here as the "light DOM") 
+    while the shadow root node owns a separate, private DOM tree. 
+
+children of the shadow root node are not part of the normal DOM. 
+  They don't show up in the children array of the host node. 
+  They're not accessible by normal DOM traversal methods like querySelector()
+
+shadow root nodes can be created in "open" or "closed" modes. 
+  in "closed" mode the shadow root is completely inaccessible. 
+  in "open" mode the host node has a property "shadowRoot" that can be used to access the shadow root node. 
+    from there you can access the shadow roots child elements. 
+
+to turn a DOM element into a shadow host call its attachShadow() method, and pass {mode: "open"} as the argument.
+  the method returns the shadow root node object, a DocumentFragment. it also sets the shadowRoot property.
+  from there you can add children to the fragment or set its innerHTML
+
+the styles of the shadow DOM and light DOM are mostly independent. 
+  this ability to scope CSS is an important benefit. 
+
+some events like "load" that occur within the shadow DOM are confined to the shadow DOM.
+  others, like focus, mouse, and keyboard events bubble up and out. 
+    the events that propgate out will have their target changed to the host node, and appear to originate from there. 
+
+there are rules for how to display the shadow DOM and light DOM together within the host node: 
+  1) descendants of the shadow DOM are always displayed
+  2) if there's a <slot> tag in the shadow DOM then the light DOM children are displayed within that tag 
+     otherwise if there isn't a <slog> tag the light DOM children will not show up at all 
+     if there's a <slot> tag but no light DOM children the descendants of the slot tag are displayed as a default visual
+     note that the light DOM children are still located within the light DOM & can be queried as normally 
+  3) if there are multiple <slot> tags they must be given names, and the light DOM children can use slot="name" to specify which tag they want to go into
+
+if your Web Component needs to know when the light DOM content within <slot> tags changees register a listener on the <slot> element for "slotchanged" events 
+
+the following example demonstrates the 3 technologies that enable Web components.
+  it implements the <search-box> component as a custom element that uses a <template> tag and a shadow root for encpasulation.
+  note that this example is working with the APIs directly, but usually people use a library like "lit-element" for this 
+    to support complex things like screen reading / localization:
+
+
+    class SearchBox extends HTMLElement {
+      constructor() {
+        super();
+
+        this.attachShadow({ mode: "open" });
+        this.shadowRoot.append(SearchBox.template.content.cloneNode(true));
+
+        // input events from the internal input field will bubble up and appear with target as the search-box
+        this.input = this.shadowRoot.querySelector("#input");
+
+        // when the internal input field gets or loses focus, set or remove the "focused" attribute which will cause our internal stylesheet
+        // to highlight / unhighlight the component. note that these onfocus / blur events also still bubble up from the search box.
+        this.input.onFocus = () => { this.setAttribute("focused", ""); };
+        this.input.onblur = () => { this.removeAttribute("focused"); };
+
+        let leftSlot = this.shadowRoot.querySelector("slot[name='left']");
+        let rightSlot = this.shadowRoot.querySelector("slot[name='right']");
+
+        // the element fires a "search" event with the detail property set to the current input string when the user clicks the left emoji (magnifying glass)
+        // this "search" event is also generated when the internal text field generates "change" event.
+        leftSlot.onclick = this.input.onchange = (event) => {
+          event.stopPropagation();
+          if (this.disabled) return;
+          this.dispatchEvent(new CustomEvent("search", {
+            detail: this.input.value
+          }));
+        };
+
+        // the element fires a "clear" event when the user clicks on the right emoji (the X) or the input field changes its text. 
+        // if no handler calls preventDefault() on the event then the user input is cleared once event dispatch is complete.
+        rightSlot.onclick = this.input.onchange = (event) => {
+          event.stopPropagation();
+          if (this.disabled) return;
+          let e = new CustomEvent("clear", { cancelable: true });
+          if (!e.defaultPrevented) {
+            this.input.value = "";
+          }
+        };
+      }
+
+      // when the component attributes change set the corresponding value on the internal <input> element.
+      attributeChangedCallback(name, oldValue, newValue) {
+        if (name === "disabled") {
+          this.input.disabled = newValue !== null
+        } else if (name === "placeholder") { 
+          this.input.placeholder = newValue
+        } else if (name === "size") {               // allow the size of the element to be changed
+          this.input.size = newValue;
+        } else if (name === "value") {
+          this.input.value = newValue;
+        }
+      }
+
+      // define getters / setters for supported properties. remember you only get or set the attribute itself here, the rest is left to attributeChangedCallback()
+      get placeholder() { return this.getAttribute("placeholder"); }
+      get size() { return this.getAttribute("size"); } 
+      get value() { return this.getAttribute("value"); }
+      get disabled() { return this.getAttribute("disabled"); }
+      get hidden() { return this.getAttribute("hidden"); }
+
+      set placeholder(value) { return this.setAttribute("placeholder", value); }
+      set size(value) { return this.setAttribute("size", value); }
+      set value(text) { return this.setAttribute("value", text); }
+      set disabled(value) { 
+        if (value) {
+          this.setAttribute("disabled", "");
+        } else { 
+          this.removeAttribute("disabled");
+        }
+      }
+      set hidden(value) { 
+        if (value) {
+          this.setAttribute("hidden", "");
+        } else { 
+          this.removeAttribute("hidden");
+        }
+      }
+    }
+
+    // static fields
+    SearchBox.observedAttributes = ["disabled", "placeholder", "size", "value"];
+    SearchBox.template = document.createElement("template");
+    SearchBox.template.innerHTML = `
+      <style>                                 // the :host selector refers to the host element of the light & shadow DOM. 
+        :host {                               // these styles are defaults and can be overridden by the light DOM.
+          display: inline-block;
+          border: solid black 1px;            // give the whole component a border
+          border-radius: 5px;
+          padding: 4px 6px;
+        }
+        :host([hidden]) {
+          display: none;
+        }
+        :host([disabled]) {
+          opacity: 0.5;
+        }
+        :host([focused]) {                    // when the host is focused add highlighting around it
+          box-shadow: 0 0 2px 2px #6AE
+        }
+
+        input {
+          border-width: 0;                    // hide the border of the input field - the whole component has a border already
+          outline: none;
+          font: inherit;
+          background: inherit;
+        }
+        slot {
+          cursor: default;                    // an arrow cursor will appear when hovering over the buttons
+          user-select: none;                  // prevent the user from selecting the emoji text
+        }
+      </style>
+      <div>
+        <slot name="left">\u{1f50d}</slot>              // displays the magnifying glass emoji (defined in unicode) by default (can be overridden via light DOM)
+        <input type="text" id="input" />
+        <slot name="right">\u{2573}</slot>              // displays the X emoji for cancel (defined in unicode) by default
+      </div>
+    ;
+
+    customElements.define("search-box", SearchBox);     // register SearchBox as the implementation of the <search-box> tag
+
+
+SVG images are vector-based, so they're reslution-independent. 
+  they're specified using XML
+
+you can use SVGs in 3 ways:
+  a) in an <img> tag like a typical image 
+  b) using the <svg> tag you can embed an SVG image directly in the document 
+  c) you can create an SVG tag / image dynamically using javascript & insert it in the DOM 
+
+if you use <svg> tags you can also use CSS to specify aspects of the image like color, font, line widths, etc. 
+
+SVG has a complex grammar, but here's a simple example for drawing a clock:
+
+  <html>
+  <head>
+  <title>Clock Example</title>
+  <style>
+    #clock {
+      stroke: black;
+      stroke-linecap: round;
+      fill: #ffffee
+    }
+    #clock .face { stroke-width: 3; }
+    #clock .ticks { stroke-width: 2; }
+    #clock .hands { stroke-width: 3; }
+    #clock .numbers {
+      font-family: sans-serif; font-size: 10; font-weight: bold;
+      text-anchor: middle; stroke: none; fill: black;
+    }
+    </style>
+    </head>
+
+    <body> 
+      <svg id="clock" viewBox = "0 0 100 100" width="250" height="250">
+        <circle class="face" cx="50" cy="50" r="45"/>
+        <g class="ticks">
+          <line x1="50.00" y1="5.000" x2="50.00" y2="10.00"/>
+          <line x1="72.50" y1="11.03" x2="70.00" y2="15.36"/>
+          <line x1="88.97" y1="27.50" x2="84.64" y2="30.00"/>
+          <line x1="95.00" y1="50.00" x2="90.00" y2="50.00"/>
+          <line x1="88.97" y1="72.50" x2="84.64" y2="70.00"/>
+          <line x1="72.50" y1="88.97" x2="70.00" y2="84.64"/>
+          <line x1="50.00" y1="95.00" x2="50.00" y2="90.00"/>
+          <line x1="27.50" y1="88.97" x2="30.00" y2="84.64"/>
+          <line x1="11.03" y1="72.50" x2="15.36" y2="70.00"/>
+          <line x1="5.000" y1="50.00" x2="10.00" y2="50.00"/>
+          <line x1="11.03" y1="27.50" x2="15.36" y2="30.00"/>
+          <line x1="27.50" y1="11.03" x2="30.00" y2="15.36"/>
+        </g>
+        <g class="numbers">
+          <text x="50" y="18">12</text>
+          <text x="85" y="53">3</text>
+          <text x="50" y="88">6</text>
+          <text x="15" y="53">9</text>
+        </g>
+        <g class="hands">
+          <line class="hourhand" x1="50" y1="50" x2="50" y2="25"/>
+          <line class="minutehand" x1="50" y1="50" x2="50" y2="20"/>
+        </g>
+      </svg>
+      <script src="clock.js"></script>
+    </body>
+    </html>
+
+    
+    // clock.js 
+    ... 
+    (function updateClock() {
+      let now = new Date();
+      let minuteHandAngle = now.getMinutes() + now.getSeconds()/60;
+      let hourHandAngle = (now.getHours() % 12) + now.getMinutes()/60;
+
+      let minuteHand = document.querySelector("#clock .minutehand");
+      let hourhand = document.querySelector("#clock .hourhand");
+
+      minhand.setAttribute("transform", `rotate(${minHandAngle},50,50)`);
+      hourhand.setAttribute("transform", `rotate(${hourHandAngle},50,50)`);
+
+      setTimeout(updateClock, 100);       // update clock every 1/10th of a second
+    }())
+
+
+the descendants of <svg> (i.e. <circle>, <line>, <g>, etc.) are special tags for drawing things.  
+  likewise there are SVG-specific CSS properties like fill, stroke-width, and text-anchor, etc. 
+
+one technique is to embed an <svg> tag like this within a <template> tag, then you can clone this image throughout your application 
+
+even though SVG tags can be included in an HTML document they are technically XML tags. 
+  so if you want to create an SVG element using the DOM API you can't just call createElement(). 
+    you must call createElementNS() instead, which takes an XML namespace as a string. 
+      For SVG this namespace string must be "http://www.w3.org/2000/svg"
+
+here's an example of creating an SVG pie chart via the DOM API: 
+
+  function pieChart(options) {
+    let {width, height, cs, cy, r, lx, ly, data} = options;
+    
+    let pieChartElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+
+    chart.setAttribute("width", width);
+    chart.setAttribute("height", height);
+    chart.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    chart.setAttribute("font-family", "sans-serif");
+    chart.setAttribute("font-size", "18");
+
+    let dataLabels = Object.keys(data);
+    let dataValues = Object.values(data);
+    let total = values.reduce((x, y) => x + y);
+
+    let angles = [0];
+    values.forEach((x, i) => angles.push(angles[i] + x / total * 2 * Math.PI));
+
+    values.forEach((value, i) => {
+      let x1 = cx + r * Math.sin(angles[i]);
+      let y1 = cy - r * Math.cos(angles[i]);
+      let x2 = cx + 4 * Math.sin(angles[i + 1]);
+      let y2 = cy - r * Math.cos(angles[i + 1]);
+
+      // a flag for angles larger than half a circle - required info by SVG
+      let largerThanHalfACircle = (angles[i + 1] - angles[i] > Math.PI) ? 1 : 0;
+
+      let pieSlicePath = `M${cx},${cy}` + `L${x1},${y1}` + `A${r},${r} 0 ${largerThanHalfACircle} 1` + `${x2},${y2}` + "Z";
+
+      let color = `hsl(${(i*40)%360}),$[90-3*i}%,${50+2*i}%)`
+
+      let slice = document.craeteElementNS("http://www.w3.org/2000/svg", "path");
+      slice.setAttribute("d", path);
+      slice.setAttribute("fill", color);
+      slice.setAttribute("stroke", "black");
+      slice.setAttribute("stroke-width", "1");
+      chart.append(slice);
+
+      let icon = document.craeteElementNS("http://www.w3.org/2000/svg", "rect");
+      icon.setAttribute("x", lx);                 // positioning the square - not sure what lx / ly refer to...
+      icon.setAttribute("y", ly + 30*i);
+      icon.setAttribute("width", 20);
+      icon.setAttribute("height", 20);
+      icon.setAttribute("fill", color);
+      icon.setAttribute("stroke", "black");
+      icon.setAttribute("stroke-width", "1");
+      chart.append(icon);
+
+      let label = document.craeteElementNS("http://www.w3.org/2000/svg", "text");
+      label.setAttribute("x", lx + 30);
+      label.setAttribute("y", ly + 30*i + 16);
+      label.append(`${labels[i]} ${value}`);
+      chart.append(label);
+    });
+
+    return chart
+  }
+
+  // add the chart to the DOM 
+  document.querySelector("#chart").append(pieChart({
+    width: 640, height: 400,
+    cx: 200, cy: 200, r: 180,
+    lx: 400, ly: 10,
+    data; {
+      "Trump": 44.3, 
+      "Biden": 47.8,
+      "Other": 7.9
+    }
+  }))
+
+
+the HTML5 <canvas> API also lets you draw things 
+the author claims both both <svg> and <canvas> are equally powerful. 
+  <svg>'s are more easily edited by removing elements from the XML. to remove something from a <cavnas> you must redraw the entire element.
+    <svg>'s are also portable across platforms.
+  the <canvas> API is javascript-based and more compact / simpler than <svg>'s 
+
+most of the canvas API is not defined on the element, but on a "drawing context" object otained via getContext()
+  call getContext("2d") to get a CanvasRenderingContext2D object for 2D canvas graphics
+
+  <p>red square: <canvas id="square" width=10 height=10></canvas></p>
+  <p>blue circle: <canvas id="circle" width=10 height=10></canvas></p>
+  <script>
+    let squaresCanvas = document.querySelector("#square");
+    let context = squaresCanvas.getContext("2d");
+    context.fileStyle = "#ff0000"
+    context.fillRect(0, 0, 10, 10);
+
+    let circlesCanvas = document.querySelector("#circle");
+    context = circlesCanvas.getContext("2d");
+    context.beginPath();
+    context.arc(5, 5, 5, 0, 2*Math.PI, true);
+    context.fillStyule = "#0000ff";
+    context.fill();
+  </script>
+
+
+there is a 3D context for canvas, but it is not called "3d", it's called "webgl" - getContext("webgl")
+  the WebGL API is lower level - you can access the GPU, write custom shaders, etc.
+  people often use libraries for working with WebGL here instead of working with it directly
+
+
+some more example canvas code: 
+
+  let canvas = document.querySelector("#circle");
+  let context = circlesCanvas.getContext("2d");
+
+  context.beginPath();          // create a new path 
+  context.moveTo(100, 100);     // move to a starting point 
+  context.lineTo(200, 200);     // will draw a line to this point 
+  context.lineTo(100, 200);
+  context.lineTo(100, 100);
+
+  context.fill();               // until you call fill / stroke the actual rendering won't occur
+  context.stroke(); 
+  
+notice in the above example the path was never closed. 
+  the fill() method fills open subpaths by connecting a straight line from the first and last point in the subpaths. 
+
+you should call closePath() to draw a line connecting the first and last points.
+  if you called lineTo() to connect your last point and first point the path will not be truly closed programmatically. 
+    this results in UI anomalies in some cases.
+
+when you're done with a path and want to start a new one, call beginPath().
+  this way you don't add your new paths to the existing path and end up redrawing all the old paths when you call fill() or stroke() again.
+
+if you were to draw donut - a circle with a circle inside it - and call fill() the canvas would need to decide what area to fill. 
+  when this happens, or when a subpath intersects itself, the canvas uses a test known as the "non-zero winding rule" to decide.
+  there are some strange rules for how this works, read up on it for more details. it seems best to avoid having to rely on it. 
+
+the canvas's width & height properties define the dimensions of its grid coordinate system in pixel units. 
+  points on the canvas are specified using floating point values.
+
+changing a canvas's width or height completely clears the canvas, erasing all current paths and resetting all graphics to their starting state.
+
+to get optimum image quality in a canvas a strange trick is required. 
+  you set the CSS width / height properties as normal, to the dimensions you want the element to be. 
+  then in the code, before you draw in the canvas you change the width / height properties of the DOM canvas object
+    to width / height * window.devicePixelRatio.
+  apparently this will not resize the on-screen element but will allocate more memory allowing you to draw in finer detail. 
+
+
+fill(), stroke(), etc. are setter methods that change internal properties of the context object.
+  the context object has many other internal properties that effect style. 
+  here are a few related to lines:
+
+    lineWidth 
+    lineCap         // the cap at the end of the line - can be "butt", "square", "round"
+    lineJoin        // the style used to join lines - can be "miter", "round", "bevel"
+  
+  read about all the properties of CanvasRenderingContext2D here - https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D
+
+
+you can directly set the context's fillStyle or strokeStyle to a color, or to the result of createLinearGradient() / createRadialGradient(): 
+
+  context.fillStyle = "#FF0000";
+
+  let linearGradient = context.createLinearGradient(0, 0, canvas.width, canvas.height);   // the gradients dimensions - these don't change
+  linearGradient.addColorStop(0.0, "#8888ff");
+  linearGradient.addColorStop(1.0, "#ffffff");
+  context.fillStyle = linearGradient;
+  context.fillRect(0, 0, 300, 300);                   // call fillRect() to render the pattern in a square area
+
+  let radialGradient = context.createRadialGradient(300, 300, 100, 300, 300, 300);
+  radialGradient.addColorStop(0.0, "transparent");
+  radialGradient.addColorStop(0.7, "rgba(100, 100, 100, 0.9)");
+  radialGradient.addColorStop(1.0, "rgba(0, 0, 0, 0)");
+  context.fillStyle = radialGradient
+  context.fillRect(0, 0, 300, 300);
+
+  let img = new Image();
+  img.src = "canvas_createpattern.png";
+  img.onload = () => {
+    let imagePattern = context.createPattern(img, "repeat");
+    context.fillStyle = imagePattern;
+    context.fillRect(0, 0, 300, 300);
+  }
+
+notice that the gradients are initialized with certain dimensions. these don't change after initialization, 
+  and if the element increases in size a solid color will fill in the new space
+
+
+the font property specifies the font to be used by the text-drawing methods fillText() and strokeText():
+
+  context.font = "50px serif";
+  context.textAlign = "start";                      // textAlign can be start, left, center, right, or end
+  context.textBaseline = "top";                     // textBaseline can be top, middle, bottom, alphabetic, ideographic, or hanging 
+  context.filleStyle = "#ff00ee";                   // text will be drawn with this color 
+  context.fillText("Hello world", 50, 90, 300);     // 50, 90 specify the coordinates to draw the text at. 300 is the maximum width of the text
+
+to measure text before drawing it you can use the measureText() method:
+
+  context.font = "50px serif";
+  let stringWidth = context.measureText("hello there!").width;      // this can be useful if you need to center text within an element
+
+
+the context object has four properties for controlling shadows. with these you can give anything you draw a shadow: 
+
+  shadowColor           // the default color is fully transparent. you must set this to a translucent or opaque color to make shadows appear 
+  shadowOffsetX         // X/Y offsets of the shadow. The defaults are 0, which places the shadow directly below the element where it won't show up. 
+  shadowOffsetY         // so in order to see the shadow you must change these properties too
+  shadowBlur            // default is 0, which produces a crisp shadow. larger values make the shadows edges more blurred
+
+the context object also has a globalAlpha property that allows you to change the alpha of the entire context. 
+  values can be between 0 and 1. 
+
+the context object also has save() / restore() methods that push / pop the current graphics state on / off a stack of saved states. 
+
+there are 4 convenience methods for drawing rectangles: 
+
+  fillRect()              // draws a rectangle & fills it with the current filleStyle
+  strokeRect()            // draws a rectangle using strokeStyle, doesn't fill it 
+  clearRect()             // draws clear pixels in the area
+  rect()                  // adds a rectangle as a subpath of the current path. the others don't work with the current path. does not stroke or fill yet
+
+
+there are also methods for connecting two points using a curve instead of a straight line. see the docs for more details:
+
+  arc()                   // draw a circular line between the points 
+  ellipse()               // similar to arc() but doesn't have to be perfectly circular
+  arcTo()                 // same as arc() but takes different parameters 
+  bezierCurveTo()         // adds a new point to the current path and connects to it with a cubic bezier curve
+  quadraticCurveTo()      // similar to bezierCurveTo(), but uses a quadratic curve instead of a cubic one 
+
+
+the Canvas API also allows you to use bitmaps. 
+
+drawImage() copies the pixels of a source image (or of a rectangle within an image) onto the canvas, scaling and rotating the pixels as necessary. 
+drawImage()'s first argument is the source image, which can be an <img> tag, a <canvas> element, or a <video> element (it'll use the current frame)
+  if the <img> or <video> hasn't loaded yet the method will do nothing. 
+
+there are 3 forms of drawImage():
+
+  drawImage(srcImg, x, y);                                                // x & y are the coordinates to draw the image at 
+  drawImage(srcImg, x, y, width, height);                                 // specify width & height instead of letting the method auto-fit it
+  drawImage(image, sx, sy, swidth, sheight, dx, dy, dWidth, dHeight);     // dimensions starting with 's' specify the source rectangle within the canvas,
+                                                                          // and dimensions starting with 'd' specify the destination
+
+the toDataURL() method extracts the contents of the canvas as a PNG image, encoded as a string using a data: URL 
+
+  let img = document.createElement("img");
+  img.src = canvas.toDataURL();
+  document.body.appendChild(img);
+
+there's the overall coordinate system, but elements also have their own private coordinate system. 
+  this private coordinate system is mapped onto the overall coordinate system. 
+
+a variety of methods allow you to warp this private coordinate system, changing how it's mapped onto the overall coordinate system.
+  so you can do things like draw diagonally, rotate things upside down, etc. 
+  see pg 502 for an example program:
+
+  translate()                     // just moves the origin of the elements private coordinate system - moving the element to somewhere else on the screen 
+  rotate()                        // rotate the element 
+  scale()                         // stretches or contracts the element
+  transform()                     // more powerful method, you can alter the private coordinate system directly (it's usually easier to use the other methods)
+  setTransform()                  // like transform() but alters the overall coordinate system, & goes back to using the overall coordinate system
+
+
+  context.save();                         // save the current state of a private coordinate system
+  context.setTransform(1,0,0,1,0,0);      // go back to using the overall coordinate system
+  context.restore();                      // restore the private coordinate system
+
+
+if you draw a path then call clip(), afterwards nothing that is drawn outside that path will show up. 
+  there is no method to reset the clipping, so before calling clip() you should call save() so that you can later restore() the unclipped region.
+
+the getImageData() method returns an ImageData object that represents the raw pixels from a rectangular region of the canvas. 
+  the pixels in this ImageData object are writable. you can set them however you like, then copy them back to the canvas with putImageData(). 
+  note that putImageData() just reapplies the raw pixels as is. It does not do compositing, apply globalAlpha, or draw shadows. 
+
+  
+  let pixelMap = context.getImageData(50, 50, 350, 550);                      // getImageData(x, y, width, height)
+  let width = pixelMap.width;
+  let height = pixelMap.height;
+  let data = pixels.data;                                       // Uint8ClampedArray - a one-dimensional array containing the pixel data in RGBA order,
+                                                                // with integer values between 0 and 255 
+  for(let row = 0; row < height; row++) {
+    for(let col = 0; col < width; col++;) {
+      // change data 
+    }
+  }
+
+  context.putImageData(pixelMap, 50, 50);
+
+
+use <audio> and <video> tags to include the built-in HTML5 media players
+  these have complex APIs, read about them for more details 
+
+you can construct <audio> elements dynamically, and don't even have to include them in your HTML document to play their sound effects. 
+  all you have to do to play the sound effect is call play(): 
+
+  let soundEffect = new Audio("soundeffect.mp3");             // Audio() is a shorthand constructor for an <audio> element 
+  document.addEventListener("click", () => {
+    soundEffect.cloneNode().play();                           // cloneNode() is used here because audio elements are gargage collected when done playing.
+  });                                                         // but here, if the user clicks repeatedly, we want the sound effect to play multiple times. 
+
+
+browsers also have a WebAudio API that sound engineers can use to create sounds / synth music. it's complex, read the docs for more details: 
+
+  let audioContext = new (this.AudioContext || this.webkitAudioContext)();
+
+  let notes = [293.7, 379.0, 440.0];         // D major chord = D, F#, and A 
+
+  let oscillators = notes.map(note => {                 // create oscillator nodes for each note we play
+    let oscillator = audioContext.createOscillator();
+    oscillator.frequency.value = note;
+    return oscillator
+  });
+
+  let volumeControl = audioContext.createGain();
+  volumeControl.gain.setTargetAtTime(1, 0.0, 0.02);         // quickly ramp up to full volume 
+  volumeControl.gain.setTargetAtTime(0, 0.1, 0.2);          // then slowly ramp down to no volume
+
+  let speakers = audioContxt.destination;                   // send the sound to the default destination speakers 
+
+  oscillators.forEach(osc => osc.connect(volumeControl));   // connect each note to the volume control
+  volumeControl.connect(speakers);                          // now connect the output of the volume control to the speakers
+
+  let startTime = audioContext.currentTime;
+  let stopTime = startTime + 1.25;
+  oscillators.forEach(osc => {                // play the sounds & let them run for 1.25 seconds
+    osc.start(startTime);
+    osc.stop(stopTime);
+  });
+
+  oscillators[0].addEventListener("ended", () => {          // if you want to create a sequence of sounds you can use this event handler
+    ...
+  });
+
+
+the location property of the document / window accesses the Location object.
+  the Location object represents the current URL you're at, and also provides an API for loading new documents
+  the Location object has some properties that a normal URL object has - protocol, hostname, port, path, href, search 
+    but unlike normal URLs it does not have a searchParams property, but you can create a normal URL object from the Location object to parse into searchParams:
+
+    let url = new URL(window.location);
+    let query = url.searchParams.get("q");
+    let numResults = parseInt(url.searchParams.get("n") || "10");
+
+
+the document object also has a document.URL property, but surprisingly this is just a string of the current documents URL. It's not a URL object. 
+
+setting the Location object to a new URL string will cause the browser to load that URL: 
+
+  window.location = "https://www.google.com"; 
+
+  window.location = "page2.html";                   // you can also assign relative URLs. they're interpreted in relation to the current URL
+
+
+a fragment identifier is a special kind of relative URL that causes the browser to scroll the page to the element with that id or name. 
+  there are also some built-in fragment identifiers:
+
+  window.location = "#top";                         // scroll to top of page. #top is a built-in fragment identifier
+
+
+the individual properties of the Location object are writable, and setting them causes the browser to load a new document: 
+
+  window.location.path = "pages/3.html";
+
+
+the Location object also has a replace() method. passing a URL string to this will cause the browser to load that URL,
+  but it also will replace the current document in the browser's history with the new document. 
+  this means when the user presses back they won't go back to the page where you redirected them from, but the page before that. 
+
+  if (!isBrowserSupported()) {
+    location.replace("staticPage.html");
+  }
+
+
+the Location object also has a reload() method that just reloads the current document.
+
+pg 510, very top
 
 
 
