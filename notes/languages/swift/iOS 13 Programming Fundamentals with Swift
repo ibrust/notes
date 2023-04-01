@@ -565,9 +565,356 @@ lastly, an init can be preceded by the keyword required.
             }
         }
 
+classes can also define a deinit(), which is called automatically (you never call it yourself).
+    cleanup and logging are two common uses for deinit() 
+    property observers are not called during deinit() 
 
-pg 170, class deinitializer
+classes can also override properties, but the new property can't be a stored property
+    the new overridden property can add didSet / willSet, or be a computed property with has getters / setters 
+    you can access the overridden property via super
 
+classes can also have static or class methods / properties
+
+static methods / properties can't be overridden, but class methods / properties can be. 
+    so the static keyword is functionally equivalent to class final 
+furthermore, static properties can be stored but class properties must be computed. 
+
+the meaning of self depends on the type of the instance, even if self appears in a superclass's code 
+
+polymorphism requires dynamic dispatch, so it has an associated performance overhead. 
+    but if you make a class, method, or property final the compiler will know polymorphism isn't possible, and it won't be forced to use dynamic dispatch 
+
+the keyword 'as' is used for typecasting 
+the keyword 'is' is used for testing type membership 
+
+one use of typecasting is to bridge between Swift and ObjC.
+    i.e. you can typecast between NSString and String 
+    but this is not because the ObjC and Swift types are subclasses of one another. They are actually bridged to one another
+
+    let s: NSString = "bark"
+    let s2: String = "ruff"
+    let s3: NSString = s2 as NSString 
+
+    let i: NSNumber = 1 as NSNumber 
+
+this casting isn't often necessary since the native frameworks do this for you, but sometimes it's needed:
+
+    let ud = UserDefaults.standard
+    let obj = ud.object(forKey:"key1") as? String                   // this call resturns an Any which we must cast to a String 
+                                                                    // use as? to be safe when doing this, since if the obj weren't a string it'd crash 
+
+to get an instance's type (not the variable's type) use type(of:)
+
+    let d: Dog = NoisyDog()
+    print(type(of: d))                 // NoisyDog
+
+
+Self allows an instance to refer to its own type - even if it's called in a superclass or protocol 
+
+you can combine Self and required inits to create factory methods in superclasses. 
+    these can make and return the instance type that invoked it: 
+
+    class Dog {
+        var name: String 
+        required init(name: String) {
+            self.name = name 
+        }
+
+        func makeDog() -> Self {                    // this also works with class methods 
+            return Self(name: "fido")
+        }
+    }
+
+    class NoisyDog: Dog {
+        required init(name: String) {
+            ...
+        }
+    }
+
+
+in some cases it can be useful use the type itself as a value or parameter, which can be done via .Type syntax:
+
+    func breedDog(type: Dog.Type) -> Dog {                      // Dog.Type expects either Dog or one of its subtypes as arguments
+        let maleDog = type.init(name: "rufus")                  // note that you can only return a generic Dog with this method, you don't know the instance yet.
+        let femaleDog = type.init(name: "pricella")             // this can be fixed with generics which will be discussed later
+        let newDog = maleDog.breed(femaleDog)
+        return newDog
+    }
+
+    let d = Dog()
+    let newDog1 = breedDog(type(of: d))
+    let newDog2 = breedDog(NoisyDog.self)                       // .self returns the Type object - suitable for pssing to .Type parameters
+
+you can also do comparison on types using == or 'is'. 
+'is' tests for membership, == tests for identity:
+
+    func breedDog(type: Dog.Type) -> Dog {
+        if type == NoisyDog.self {
+            ...
+        } else if type is Dog.Type {                // 'is' evaluates true for comparisons between subtypes & their parent 
+            ...                                     // but == does not
+        }
+    }
+
+passing types around and comparing types isn't considered good design though, since you aren't leveraging the type system itself for the behavior. 
+
+Swift protocols can interoperate with ObjC protocols 
+    protocols can also allow classes & structs to both conform and act as siblings / have shared polymorphic behavior. 
+    so protocols are useful for bridging ObjC classes to Swift structs 
+
+protocols are types. so you can test protocols using 'is' and 'as' the same as with classes
+
+protocol declaration can only happen at the top level 
+
+protocol properties must be mutable var's 
+to declare a static or class property / method in a protocol precede it with the static keyword 
+    the conforming class can then choose whether to use a class or static property / method 
+to permit a conforming enum or struct to declare a method mutating you must declare it mutating in the protocol 
+    the conforming class can choose whether to make the method mutating or not 
+
+protocol composition allows you to combine protocols on the fly, so you don't have to construct hierarchies of protocols if it's not necessary:
+
+    func makeViewModel(alloc: ChangePaymentsAllocation & Equatable) { ... }
+
+you can also specify a combination of classes & protocols: 
+
+    func scrollView(to: CGPoint, viewController: UIViewController & PaymentsTxScrollingProtocol) { ... }
+
+a protocol declaration can also include the name of the class after the colon. 
+    this means that only that class or its subclasses can adopt the protocol:
+
+    protocol CustomViewProtocol: UIView { ... }
+
+    protocol CustomViewProtocol where Self.UIView { ... }       // where is an alternative notation for this
+
+
+to specify that a protocol can only be adopted by any class (no structs or enums) inherit from AnyObject.
+    this allows the protocol to take advantage of memory management features only available to classes, like using the weak keyword.
+    @objc protocols are all class-constrained protocols, since ObjC only has classes: 
+
+    protocol WalletViewControllerDelegate: AnyObject { ... }
+
+    class WalletTxViewController: WalletViewControllerDelegate {
+        weak var delegate: WalletViewControllerDelegate? 
+    }
+
+ObjC supports optional protocol members, but Swift does. 
+    for this reason you can declare protocol members in Swift as @objc optional, but this isn't meant for use within Swift, it's just a compatibility feature: 
+
+    @objc protocol Organism {
+        @objc optional var legCount: Int? { get set }
+        @objc optional func walk() -> Int { get }
+    }
+
+Swift has to do some gymnastics to accommodate these @objc optional members. 
+Swift wraps these @objc optional vars return value in an optional. so you can in end up with a double wrapped optional here:
+
+    let worm = Worm()
+    if let legCount = worm.legCount {               // worm.legCount is an Int?? 
+        ... 
+    }
+
+also, if you decalre these @objc optionals as { get set } you still can't set the property. the workaround is to use key path notation: 
+
+    let millipede = Millipede()
+    millipede.legCount += 1                 // compile error 
+    millipede[keyPath: \.legCount] += 1     // works fine
+
+@objc optional methods must be optionally called. they also will return optionals: 
+
+    guard let steps = millipede.walk?() else { return }
+
+inits declared in a protocol are implicity required. the classes that implement the protocol must mark those inits as required 
+    this is why, when you inherit from UIViewController & implement an init, you no longer inherit the required init for NSCoder protocol & have to implement it:
+
+    class WalletTxViewController: UIViewController {
+        init() {                                                    // now you no longer inherit the required init for NSCoder 
+            ...
+        }
+        required init?(coder: NSCoder) {                            // this fixes the compilation issue
+            fatalError("init(coder:) has not been implemented")
+        }
+    }
+
+
+there are a variety of protocols that allow your classes to be specified using Swift's built-in literals, including: 
+
+    ExpressibleByNilLiteral
+    ExpressibleByBooleanLiteral
+    ExpressibleByIntegerLiteral
+    ExpressibleByFloatLiteral
+    ExpressibleByStringLiteral
+    ExpressibleByArrayLiteral
+    ExpressibleByDictionaryLiteral
+
+
+    struct ChickenStrips: ExpressibleByIntegerLiteral {
+        var totalChickStrips = 0
+        init() {} 
+        init(integerLiteral val: Int) {
+            self.totalChickStrips = val
+        }
+    }
+
+    func orderChickenStrips(_ totalChickenStrips: ChickenStrips) {
+        ...
+    }
+    orderChickenStrips(3)
+
+
+A generic is a placeholder for a type. The actual type is inserted at runtime:
+
+    func breedDog<DogGeneric: Dog>(_ type: DogGeneric.Type) -> DogGeneric {     // here DogGeneric is constrainted to either be a Dog or some subclass of Dog 
+        return DogGeneric.init(name: "java")
+    }
+
+    let d = Dog()
+    let newDog2 = breedDog(NoisyDog.self)                   // here the type of DogGeneric is inferred from the argument's type
+
+the type is treated as the same concrete type throughout the function.
+
+resolving a type refers to the runtime figuring out, in a given invocation, what type to use for a generic 
+
+    enum Optional<GenericType>: ExpressibleByNilLiteral {       // this is the actual generic implementation of optionals 
+        case none 
+        case some(GenericType)
+
+        init(_ some: GenericType) {
+            ...
+        }
+    }
+
+    let s1 = Optional("hi")                     // the compiler infers the generic type from the argument 
+
+    let s2: Optional<String> = "hello"          // type syntax for specifying a generic 
+
+
+when you use Self in a protocol, Self is actually a generic. This turns the protocol into a generic protocol. 
+
+    protocol Organism {
+        func reproduce(_ other: Self)
+    }
+
+    class Bird: Organism {
+        func reproduce(_ other: Bird) {         // in the implementation you specify the conrete type for the generic Self 
+            ...
+        }
+    }
+
+
+you can also use a generic in a protocol via an associatedtype. This also turns the protocol into a generic protocol. 
+
+    protocol Organism {
+        associatedType GenericType
+        func eat(_ food: GenericType)
+    }
+
+    struct Bird: Organism {
+        func eat(_ food: Berry)                     // use of Berry resolves the generic 
+    }
+
+
+you can also use generics in function parameters. the caller will pass in the concrete type as an argument & resolve the generic: 
+
+    func breed<GenericType>(_ thing1: GenericType, _ thing2: GenericType) -> GenericType { ... }
+
+    breed(Dog(), Dog())
+
+
+you can also use generics within object types: 
+
+    struct Kennel<GenericOrganism> {
+        var organism: GenericOrganism
+        init(_ organism: GenericOrganism) { 
+            self.organism = organism
+        }
+    }
+
+    let kennel = Kennel(Dog())                      // use of Dog() resolves the generic
+
+
+you can also declare multiple generics in angle brackets. the two generics can resolve to different types, though they don't have to be different: 
+
+    func fight<GenericOrganism1, GenericOrganism2>(_ org1: GenericOrganism1, _ org2: GenericOrganism2) { ... }
+
+
+you can check the generics type within the code via .Self, but this is not ideal. find another way to do things instead 
+
+generics are checked for consistency in resolution at compile time. 
+    this type checking ensures that the generic is a homogeneous type
+
+
+you can also constrain a generic to a class or protocol.
+    if constrainted to a class, the concrete type can be either the base class or some subclass of it 
+    if constrainted to a protocol, the concrete type must adopt the protocol
+the value of using generic constraints over regular subclassing or protocols is the enforced homogeny of the type 
+
+you can constrain an associatedtype:
+
+    protocol Organism {
+        associatedType GenericFood: GlutenFreeProtocol
+        func eat(_ food: GenericFood)
+    }
+
+for a generic function or generic object the type constraint appears in the angle brackets: 
+
+    func breed<GenericOrganism: Dimorphous>(_ thing1: GenericOrganism, _ thing2: GenericOrganism) -> GenericOrganism { ... }
+
+    struct SmallKennel<GenericOrganism: SmallSize> {
+        var organism: GenericOrganism
+        init(_ organism: GenericOrganism) { 
+            self.organism = organism
+        }
+    }
+
+by constraining a generic to a particular class / protocol you can use that types methods / properties within the generic implementation 
+
+a generic protocol can only be used as a type constraint. trying to use it in any other way results in a compile error
+    to circumvent this you must use type erasure. for more details read http://robnapier.net/erasure 
+
+
+so far we've mostly resolved generics using inference. you can also resolve them manually, and sometimes this is necessary.
+
+    protocol FlyingCreature {
+        associatedtype GenericFood
+    }
+    struct Bird: FlyingCreature {
+        typealias GenericFood = Berry                       // syntax for manually resolving an associatedtype 
+    }
+
+    class Dog<GenericFood> {
+        var favoriteFood: GenericFood
+    }
+    let d = Dog<Pork>()                                     // syntax for manually resolving the angle-bracket generics of object types (but not functions)
+
+
+gymnastics are needed to manually resolve a functions generic. 
+    you must pass the generic type as a parameter. you don't even need to use the parameter, just passing the type in will resolve the generic: 
+
+    func makeDog<GenericType: Dog>(_:GenericType.Type) -> GenericType {         // here an unused parameter allows us to resolve the generic
+        return GenericType.init(name: "ruffus")
+    }
+
+
+when you subclass a generic class you must ensure the generic will resolve correctly. 
+    the subclass can be a generic class that shares the same generic type, or it can resolve the generic to a concrete type. 
+
+    class Dog<GenericFood> {
+        func eat(_ food: GenericFood)
+    }
+
+    class LargeDog<GenericFood>: Dog<GenericFood> {             // a generic subclass that shares the same generic
+        ...
+    }
+
+    class SmallDog: Dog<Berry> {                                // the generic is resolved to a concrete type 
+        override func eat(_ food: Berry) {                      // overrides will use the concrete type
+            ...
+        }
+    }
+
+
+pg 209, generic invariance 
 
 
 ==============================================================================================================

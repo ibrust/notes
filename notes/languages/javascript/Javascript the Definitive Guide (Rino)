@@ -5397,9 +5397,8 @@ the document object also has a document.URL property, but surprisingly this is j
 
 setting the Location object to a new URL string will cause the browser to load that URL: 
 
-  window.location = "https://www.google.com"; 
-
-  window.location = "page2.html";                   // you can also assign relative URLs. they're interpreted in relation to the current URL
+  window.location = "https://www.google.com";   // both window and document access the same object. 
+  document.location = "page2.html";             // you can also assign relative URLs. they're interpreted in relation to the current URL
 
 
 a fragment identifier is a special kind of relative URL that causes the browser to scroll the page to the element with that id or name. 
@@ -5424,7 +5423,268 @@ the Location object also has a replace() method. passing a URL string to this wi
 
 the Location object also has a reload() method that just reloads the current document.
 
-pg 510, very top
+
+there's also a History object that stores URLs for the browsing history. 
+for security reasons you can't actually access these URLs, 
+  but there are back() and forward() methods you can call. 
+  there's also a go() method that takes an integer argument & moves forward or backwards a number of times:
+  
+
+  window.history.length;                // the number of URLs in the browsing history list 
+  window.history.back();
+  window.history.forward();
+  window.history.go(-2);                // go back 2 pages
+  window.history.go(0);                 // another way to reload the current page 
+
+
+if a window contains child windows (like iframes) the browsing history of the child windows are mixed in with the rest of the history. 
+  so a call to back() might change what's displayed in an iframe instead of the current page, for example
+
+the History object is an old pre-AJAX API. It only detects changes to the page caused by loading an entirely new document.
+  It won't detect changes in the page caused by AJAX, or other dynamic content generation techniques.
+
+there are 2 hacky ways to track the history of AJAX or other dynamic content.
+  the first technique uses the fragment identifier in location.hash, normally used to for scrolling behavior.
+  setting location.hash won't scroll if there's no element with a matching id, but it does still update the URL and the history object
+  setting location.hash programmatically, or pressing the 'back' button, will fire a "hashchange" event on the window object. 
+    so if you create a unique fragment id for every state you'll be notified via "hashchange" as the user navigates forward or backward
+  
+  to implement this, write a function to encode / decode between unique application states and a small fragment id string. 
+    then in window.onhashchange convert the fragment back into application state, read it and drive updates to UI this way
+    and whenever you need to update the UI in a major way you'll have to encode a fragment & set the URL, driving the update through onhashchange
+
+  the second technique uses history.pushState() to add a state object to the history, 
+    then reads / reconstructs this state when it's returned in the "popstate" event that fires when the user presses the back button.
+      the author actually says later the popstate event fires when the user navigates using either the back or forward buttons. I'm not sure how it works. 
+  
+  pushState() takes 3 parameters: 
+    1) the state object               // note the state object is copied using HTMLs structured clone algorithm, 
+                                      // which can copy a few more things than JSON.stringify() - Maps, Sets, Dates, RegExp, typed arrays, & some other things 
+
+    2) title string (not supported)   // this 2nd paramter is not supported by most browsers and should be set to the empty string 
+
+    3) URL (optional)                 // the URL shown in the address bar. note that this allows users to bookmark the URL. but if a user navigates
+                                      // directly to your application from this URL there won't be an event state. So if you use these URLs you must 
+                                      // reconstruct the application state using the URL instead of the event state. 
+
+  there's also another method called replaceState(). this works the same as pushState(), but instead of adding to the history it replaces it entirely. 
+    apparently when using these methods it's a good idea to call replaceState() when your application first loads to define an initial state 
+
+  for an example application that uses pushState() / popstate see pg 514
+
+in response to the user entering a URL into the browser a network request sent automatically
+but there are 3 important network APIs for use within the application:
+
+  fetch()                                 // promise-based API for making HTTP/HTTPS requests 
+
+  server-sent events (SSE) API            // event-based interface for HTTP long polling. 
+                                          // here the server holds the connection open and will send data when it arrives
+
+  websockets                              // streaming socket built on UDP but designed to interopreate with HTTP 
+
+
+fetch() has replaced XMLHttpRequest (XHR). 
+with fetch() there's a parsing step that must occur prior to using the response, so you typically expect two then() calls:
+
+  fetch("/cxo/updateTenderPlan")
+    .then(response => response.json())            // step 1 - parse response into JSON 
+    .then(tenderPlan => {
+      tenderPlanDataSource.store(tenderPlan);     // step 2 - use the parsed object within the application 
+    })
+
+
+  fetch("/cxo/updateTenderPlan")                  // example with error handling
+    .then(response => 
+      if (response.ok && response.headers.get("Content-Type") === "application/json") {       // fetch() resolves its promise once the headers have been parsed 
+        return response.json();                                                               // but before the entire body has been parsed  
+      } else {                                                                                // so you can only examine headers within this step 
+        throw new Error(`Network error: ${response.status}`);
+      }
+    ) 
+    .then(tenderPlan => {                                                                     // now the body has been fully parsed
+      tenderPlanDataSource.store(tenderPlan); 
+    })
+    .catch(error => {                                                                         // this catch() will handle any rejected promise 
+      console.log("updateTenderPlan error: ", error);                                         // in practice it's better to have separate catch() calls
+    })
+
+
+the Headers object returned in the first step is iterable, so you can loop through all the headers: 
+
+  fetch(url).then(response => {
+    for(let [name, value] of response.headers) {
+      ...
+    }
+  })
+
+the Headers object has methods has() for checking if a header exists, and get() for returning the value of a header
+
+fetch() will resolve its promise successfully if it got a response from the server, regardless of if the response contains application errors. 
+  it will only reject the promise if it got no response. so catch() will be what handles these network errors, since it handles rejected promises.
+  you must examine the response itself within then() to handle application errors
+
+
+fetch() also accepts a URL object as its first argument, so this makes including query parameters easy. 
+
+  async function search(term) {
+    let url = new URL("/api/search");
+    url.searchParams.set("q", term);
+    let response = await fetch(url); 
+    if (!response.ok) throw new Error(response.statusText);
+    let resultsArray = await response.json();
+    return resultsArray;
+  }
+
+
+the second argument to fetch() specifies additional options, like headers to include:
+
+  let authHeaders = new Headers();
+  authHeaders.set("Authorization", `Basic ${btoa(username: password)}`);
+
+  fetch("/api/users/", { headers: authHeaders })
+    .then(response => response.json())
+    .then(response => {
+      ...
+    })
+
+
+you can also construct a Request object and pass that to fetch():
+
+  let request = new Request(url, { headers });
+  fetch(request).then(response => {
+    ... 
+  })
+
+
+there are some alternatives to response.json() that return the body in different formats: 
+
+  text()                  // returns the response as raw text 
+  arrayBuffer()           // if the response contains binary you can store it in an ArrayBuffer 
+  blob()                  // use for large binary objects that shouldn't go in an ArrayBuffer
+  formData()              // store the response in a FormData object - use if the body is encoded in "multi-part/form-data" MIME format. rarely used
+
+
+you can also stream in the response in chunks. this is useful for performance, or if you want to display a progress bar: 
+
+  fetch(url)
+    .then(response => streamBody(response))
+    .then(bodyText => JSON.parse(bodyText))
+    .then(parsedResponse => {
+      ... 
+    })
+
+  async function streamBody(response, processChunkCallback) {
+    let expectedBytes = parseInt(response.headers.get("Content-Length"));
+    let bytesRead = 0;
+                                                          // the Response object has a property response.body that's a ReadableStream object.
+    let reader = response.body.getReader();               // getReader() returns a stream reader object. if you already read the body via text() or json() 
+                                                          // the bodyUsed property will be true, and you can't stream in the data anymore. 
+    let bytesToTextDecoder = new TextDecoder("utf-8");
+    let body = ""
+
+    while(true) {
+      let {done, value} = await raeder.read();            // read a chunk. read() returns a promise that resolves to an object with done and value properties.
+                                                          // done indicates the entire body has been read or the stream was closed. 
+                                                          // value is the next chunk of data as an Uint8Array, or undefined if there are no more chunks. 
+      if (value) {
+        if (processChunkCallback) {
+          let processed = processChunkCallback(value);
+          if (processed) {
+            body += processed;
+          } else {
+            body += bytesToTextDecoder.decode(value, {stream: true});
+          }
+        }
+
+        if (done) { break; }
+      }
+    }
+    
+    return body
+  }
+
+there are future plans to make this streaming API (which is new) usable with for/await loops, but as of 2020 this hasn't happened yet. 
+
+
+fetch defaults to use GET requests, but you can change this: 
+
+  fetch(url, {
+    method: "POST",
+    body: "hello world" 
+  }) 
+
+when the body is a string the browser will default the "Content-Type" to "text/plain;charset=UTF-8". 
+  you may need to override this in some cases.
+
+  fetch(url, {
+    method: "POST",
+    headers: new Headers({"Content-Type": "application/json"}),
+    body: JSON.stringify(data)
+  })
+
+
+the body doesn't have to be a string either. you can pass in binary data in a typed array, DataView object, ArrayBuffer, Blob, etc.
+
+some people pass query parameters in the body instead of in the URL. there are 2 ways to do this: 
+
+  1) you can set the body to a URLSearchParams object that contains the parameters. 
+       Content-Type will automatically be set to "application/x-www-form-urlencoded;charset=UTF-8"
+  2) you can set the body to a FormData object. 
+       Content-Type will automatically be set to "multipart/form-data; boundary=..." with a unique boundary string matching the body. 
+
+     using the FormData object is useful when the query parameters you want to upload are long, 
+       or are File or Blob objects which each may have its own unique Content-Type. 
+     FormData objects can be initialized by passing a <form> element to the FormData() constructor. 
+       you can also initialize an empty FormData() object then call the objects set() and append() methods to add data to it. 
+
+
+uploading files to a server from the users computer is a common task. this can be done by setting the body to a FormData object. 
+  a common way to obtain a File object is by listening to "change" events on an <input type="file"> element. 
+    when a change occurs, the files array of the input element should contain at least one File object. 
+  File objects are also available through the HTML drag-and-drop API.
+
+  File objects are similar to a Blob. 
+
+here's an example of uploading a PNG taken from a <canvas> element: 
+
+  async function getCanvasBlob(canvas) {
+    return new Promise((resolve, reject) -> {
+      canvas.toBlob(resolve);
+    })
+  }
+
+  async function uploadCanvasImage(canvas) {
+    let pngblob = await getCanvasBlob(canvas);
+    let formData = new FormData();
+    formData.set("canvas_image", pngblob);
+    let response = await fetch("/upload", { method: "POST", body: formData });
+    let body = await response.json();
+  }
+
+for a cross-origin request, fetch() automatically adds the "Origin" header, and disallows modification of this header. 
+  if the browser responds with the "Access-Control-Allow-Origin" header then the request proceeds. otherwise fetch()'s promise is rejected. 
+
+
+you can abort requests if they're taking too long. the API is a little strange - you must create an AbortController object before issuing the request: 
+
+  function fetchWithTimeout(url, options={}) {
+    if (options.timeout) {
+      let controller = new AbortController();       // this AbortController object is used for aborting other asynchronous APIs as well, apparently 
+      options.signal = controller.signal;           // the signal property is an AbortSignal object which must be set 
+
+      setTimeout() => { controller.abort(); }
+    }
+    return fetch(url, options);
+  }
+
+
+
+
+
+
+
+
+
 
 
 
