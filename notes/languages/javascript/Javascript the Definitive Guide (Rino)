@@ -5678,15 +5678,641 @@ you can abort requests if they're taking too long. the API is a little strange -
   }
 
 
+the 2nd parameter to fetch(), the options object, can support a variety of options: 
+
+  cache             // set this property to override the browsers default caching behavior. read the docs for details 
+
+  default           // specifies the default caching behavior. can be "no-store", "reload", "no-cache", and "force-cache"
+                    // "no-store" makes the browser ignore the cache completely. the cache is not checked, and responses aren't stored in it. 
+                    // "reload" causes the browser to make a new initial request, then use the cache after that 
+                    // "no-cache" (name misleading) tells the browser revalidate both fresh and stale values in the cache before returning them
+                    // "force-cache" tells the browser to use the cache data even if it's stale 
+  
+  redirect          // controls how the browser handles redirect responses from the server. can be "follow", "error", or "manual"
+                    // "follow" makes the browser follow redirects automatically. this is the default, 
+                    // with "follow" you must make sure response status code of 3XX aren't processed by fetch() since the browser is handling it
+                    // "error" makes fetch() reject its promise if it gets back a redirect 
+                    // "manual" means you want to manually handle the redirect. fetch()'s promise will resolve with a 3XX status code. 
+                    // access the "Location" header off the response to know where to redirect. 
+
+  referrer          // this specifies the value of the HTTP "Referer" header. you can set this to a string containing a relative URL
+                    // set this to the empty string to omit the "Referer" from this request. 
+                    // note that "Referer" is actually historically misspelled in HTTP, it should be "Referrer"
+
+SSE keeps the client & server connection open. 
+  this can be expensive for the server, since it means many connections have to stay open. 
+  after a while the connection will close, but it can ber reopened if it's needed. 
+
+the EventSource API is used for SSE: 
+
+  let sse_subscription = new EventSource("script.php");           // this call opens the connection. 
+                                                                  // the server script will write events to the connection as they occur
+
+  sse_subscription.addEventListener("eventName", (event) {        // the server sets the eventName. if omitted, the default is "message" 
+    processResult(event.data);
+  });
 
 
+there are some more features that allow events to be given IDs. 
+  a reconnecting client can tell the server the ID of the last event it received so the server can resend any missed events.
+  this ID handling must be implemented server side. read some documentation on how to write a server supporting javascript's SSE 
 
 
+unlike SSE, websockets support binary data transfers and messages can be sent in both directions. 
+
+to setup a websocket you specify a service URL. but it will start with wss:// instead of https://
+  browsers also restrict websockets to only work in pages that were setup securely with https://
+
+  to establish a websocket connection the browser first sets up a regular http connection, then sends the header "Upgrade: websocket" 
+  the web server must support this protocol for the connection attempt to succeed. 
+
+the websocket is still setting up the connection when the socket is first created. you have to listen for an event indicating the connection is setup. 
+  it has a readyState property that indicates which state the connection is in, which can be one of 4 values: 
+
+  WebSocket.CONNECTING                  // still setting up the initial connection
+  WebSocket.OPEN                        // ready state
+  WebSocket.CLOSING                     // in the process of closing
+  WebSocket.CLOSED                      // finished closing. this can be the result of the initial connection attemptm if it fails
+
+the websocket fires an "open" event when it transitions from .CONNECTING to .OPEN, and a "closed" event when the socket is .CLOSED
+  there's also a "message" event that fires when messages are received from the server
 
 
+  let socket = new WebSocket("wss://website.com/service_endpoint");       // this begins the connection process via the initial HTTP request
+
+  socket.addEventListener("open", (event) {
+    socket.send("message");                           // call send() to send strings, Blobs, ArrayBuffers, typed arrays, or DataView objects 
+  })                                                  // note that send() buffers the data to be sent and returns before the message is actually sent
+                                                      // the bufferedAmount property specifies the number of bytes that are buffered but not yet sent
+  socket.addEventListener("close", (event) {
+    ...
+  })
+
+  socket.addEventlistener("message", (event) {        // the event returned here is a MessageEvent object 
+    let message = event.data                          // note that, unlike other web APIs, websockets don't use the structured clone algorithm to send data
+    ...                                               // the data sent can be either a string or an array of bytes represented by a Blob or ArrayBuffer
+  })
+
+  ...
+
+  socket.close();
+
+note that you are no longer using HTTP with wws://, so there won't be the high level response interface that fetch() has, with its status codes & headers.
+  you must define yourself the custom protocol your server / appication will adhere to. 
+    but there can be complex problems with API versioning when implementing your own custom protocol. 
+    that's why the WebSocket() constructor takes a 2nd parameter, an array of strings specifying which protocols (or which versions of them) the client supports
+    during connection setup the server will choose one of these protocols, or fail with an error if none are supported. 
+    once the connection is established the protocol property of the socket specifies which one the server selected. 
 
 
+there are a few browser APIs for storing data in the browser 
+  data from a given origin can only be accessed by a document with that same origin 
+    this can be useful as a communication mechanism between pages from the same site 
+
+  the lifetime of this data can be set. It can be cleaned up when the page closes, stored a period of time, or stored permanently (until the user clears it)
+
+different types of browser storage include: 
+
+  web storage API                           // both these storage objects are just key/value stores 
+    localStorage object                     // this is most similar to user-defaults in iOS
+    sessionStorage object 
+
+  cookies                                   // remember any data stored here is transmitted to the server with every HTTP request. 
+                                            // only store small amounts of data as cookies
+
+  IndexedDB                                 // an asynchronous API to an object database that supports indexing 
 
 
+note that none of these storage mechanisms should be used for secure data
+
+the localStorage / sessionStorage objects are properties of the window object. 
+  in these objects you can only store strings. if you want to store something else you must encode it to a string. 
 
 
+  let name = window.localStorage.username;              // retrieve a value previously stored
+  if (!name) {
+    name = prompt("enter name: ");
+    localStorage.username = name;                       // store a value 
+  }
+
+  localStorage.clear();                                 // clear everything stored for this origin
+
+  localStorage.getItem("username");                     // alternative syntax
+  localStorage.setItem("username", "joseph_watson");
+  localStorage.removeItem("username");
+
+  localStorage.currentTime = (new Date()).toUTCString();
+  localStorage.numbers = JSON.stringify([1, 2, 3, 4, 5]]);
+
+
+you can do the same things with sessionStorage
+
+the difference between sessionStorage and localStorage is the lifetime and scope of the storage. 
+
+  data in localStorage is permanent. 
+  localStorage is also scoped to the document origin. 
+
+  data in sessionStorage has the same lifetime as the top-level window or browser tap of the script that stored it 
+    note that modern browsers can reopen recently closed tabs and restore the last browsing session, 
+      so sessionStorage will effectively persist a bit longer in this case
+  sessionStorage is also scoped to the document origin, but it's also scoped on a per-window basis. 
+    i.e. if a user has two tabs for the same document open those tabs have separate sessionStorage data. 
+
+
+whenever data in localStorage changes the browser triggers a "storage" event in all others windows that have access to the same localStorage data
+  note the event is not sent to the window where the data was stored, only other windows. 
+  this is a useful broadcast mechanism for keeping different windows in sync 
+
+  the storage event contains the following properties: 
+
+    key 
+    newValue            // if the item was just removed this won't be there, since there is no new value
+    oldValue            // if the item was just added this won't be there 
+    storageArea         // the storage object that changed. this is usually the localStorage object
+    url                 // the url of the document whose script made the change 
+
+
+remember that cookies are implemented as an extension to HTTP, and are used for server-side programming. 
+  but the browser can also manipulate cookies, and there's an API for this - document.cookie 
+  also remember that cookies are not encrypted, they are just plain text 
+
+document.cookie is a very old, crappy API. it returns a string that contains all the cookies for the current document. 
+  the string is a list of key/value pairs separated by "; " (a semicolon + space)
+  you usually have to split this string into key/value pairs, then extract each key/value: 
+
+  func getAllCookies() {
+    let cookies = new Map();
+    let cookieString = document.cookie; 
+    let arrayOfCookies = cookieString.split(": ");
+
+    for(let cookie of arrayOfCookies) {
+      if (!cookie.includes("=")) {
+        continue; 
+      }
+      let index = cookie.indexOf("=")
+      let key = cookie.substring(0, index);
+      let value = cookie.substring(index + 1);
+      value = decodeURIComponent(value);
+      cookies.set(key, value);                          // add extracted cookie to the Map of cookies 
+    }
+
+    return cookies 
+  }
+
+cookies also have attributes that indicate their lifetime and scope. 
+
+by default cookies scope is the document origin + the document path. 
+  this means the cookie is available to the page that created it, and any other pages in the same directory or subdirectories. 
+  you can change this by setting cookie.path - i.e. if you set cookie.path to "/" (the root directory) it'll be available throughout the whole website. 
+
+by default cookies last the duration of the browser session, and are deleted when the browser is closed. 
+  but some sites have multiple subdomains. 
+  to make a cookie available in all subdomains set cookie.path to "/" (root) and set cookie.domain to the parent domain name.
+    i.e. for catalog.example.com and order.example.com you'd set cookie.domain to ".example.com"
+
+
+the browser has limits to how many cookies a single website can use (google says 50 max per domain as of 2020) 
+  the size of your cookies should also not exceed 4KB (one researcher on stackoverflow claims the size of all cookies combined shouldn't exceed 4KB)
+
+
+to add a cookie set document.cookie to a key/value string. the next time you read document.cookie your cookie will be included in the list: 
+
+  let totalDays = 365;
+  document.cookie = `version=11.4.2; max-age=${totalDays*60*60*24}`;                // to alter a cookies lifetime add "; max-age=seconds" to the cookie string
+
+  document.cookie = "hasSeenAdvertisement=true; "; path=/; domain=.example.com";    // set the path / domain this way too 
+
+
+cookie values can't contain semicolons, commas, or whitespace. 
+  for this reason you can use encodeURIComponent() to encocde the value before storing it, then call decodeURIComponent() when you read it later. 
+
+  document.cookie = `version=${encodeURIComponent(document.lastModified)}`;
+
+
+to delete a cookie set it again with a max-age of 0, using the same key / path / domain:
+
+  document.cookie = "hasSeenAdvertisement=true; "; path=/; domain=.example.com; max-age=0";
+
+
+IndexedDB is an object database, not a relational database. it's more powerful than a key/value store like localStorage, 
+  but not as powerful or heavy-duty as a SQL database. 
+
+IndexedDBs are also scoped to the origin of the document.
+  so two web pages from the same origin can share the data. 
+
+each origin can have any number of IndexedDB databases. each one must have a unique name within its origin. 
+
+objects are serialized and stored in IndexedDB using the structured clone algorithm. 
+each stored object must have a unique, sortable key.
+  strings, numbers, and Date objects are valid keys. 
+  
+IndexedDB can automatically generate the keys for you, but often your object will have some property suitable for use as a primary key. 
+  to use a property of the object as the key you specify a key path when you create the database. 
+
+retrieving objects from the database is one thing, but you may also want to be able to search for objects based on a value or the objects other properties. 
+  to do this you can define an index. this index will define a secondary key for the stored objects. 
+    note that these secondary keys don't have to be unique, and you may get multiple objects matching your search. 
+
+IndexedDB supports transactions for atomicity of complex operations 
+
+with an IndexedDB you create object stores, which are kind of like tables but they just store a particular type of object
+
+
+  function withDB(callback) {
+    let openDBRequest = indexedDB.open("zipcode_database", 1);                // version 1 of the database - we never upgrade beyond 1 here 
+
+    openDBRequest.onerror = console.error;                                    // log any errors 
+    openDBRequest.onsuccess = () => {
+      let db = openDBRequest.result;
+      callback(db);
+    };
+    openDBRequest.onupgradeneeded = () => {                   // in our code onupgradeneeded only fires if the database isn't initialized yet, and then
+      initializeDB(openDBRequest.result, callback);           // onsuccess won't fire. onupgradeneeded also fires if the database version is changed,
+    }                                                         // which indicates it needs its schema updated. we don't change the version here though
+  }
+
+  function initializeDB(db, callback) {
+    let zipcode_object_store = db.createObjectStore("zipcode_object_store", 
+                                                   { keyPath: "zipcode" })        // keyPath is the name of the primary key for this object store 
+  
+    zipcode_object_store.createIndex("cities_index", "city");                     // setup an index for quick searching of fields other than the primary key. 
+                                                                                  // "city" is the name of the field to index 
+    
+    fetch("zipcodes.json")                                                        // fetch some remote json data 
+      .then(response => response.json())
+      .then(zipcode_data => {
+        let transaction = db.transaction(["zipcode_object_store"], "readwrite");  // to add data you must always first create a transaction object 
+        transaction.onerror = console.error; 
+
+        let zipcode_object_store = transaction.objectStore("zipcode_object_store");
+
+        for(let record of zipcode_data) {
+          zipcode_object_store.put(record); 
+        }
+
+        transaction.oncomplete = () => {
+          callback(db);                               // after the database is initialized invoke the onsuccess callback
+        };
+      })
+  }
+
+  function getCityFromZip(zip, callback) {
+    withDB(db => {
+      let transaction = db.transaction(["zipcode_object_store"]);                 // this transaction is read-only since we didn't pass a 2nd argument 
+      let zipcode_object_store = transaction.objectStore("zipcode_object_store");
+
+      let requestForObject = zipcode_object_store.get(zip);                       // get() returns an object matching the primary key 
+      requestForObject.onerror = console.error;                                   // similarly, put() stores an object overwriting any existing
+      requestForObject.onsuccess = () => {                                        // and add() stores an object without overwriting any existing
+        let record = requestForObject.result;
+        if (record) {
+          callback(record.city, record.state); 
+        } else {
+          callback(null, null);
+        }
+      };
+    });
+  }
+
+  function getZipCodeFromCity(callback) {
+    withDB(db => {
+      let transaction = db.transaction(["zipcode_object_store"]);
+      let zipcode_object_store = transaction.objectStore("zipcode_object_store");
+
+      let index = zipcode_object_store.index("cities_index");
+
+      let requestForMatchingObjects = index.getAll(city);                   // getAll() searches an index for all matches. you can also search
+      requestForMatchingObjects.onerror = console.error;                    // for a range by creating an IDBRange object then calling getAll()
+      requestForMatchingObjects.onsuccess = () => { 
+        callback(requestForMatchingObjects.result);
+      }
+    });
+  }
+
+
+since javascript is single threaded (without web workers), functions can't run too long or they'll block the event loop. 
+  this is the reason fetch() is asynchronous 
+
+instances of the Worker class represent threads that run concurrently to the main thread / main event loop. 
+  Workers live in a self-contained execution environment with a completely separate global object and no access to the window or document. 
+    This way it's impossible to modify the DOM concurrently.
+  Workers communicate to the main thread only through asynchronous message passing. 
+    
+there are 3 parts of the Worker API: 
+  1) the Worker object                  // defines the API of the worker thread for the parent to interface with
+  2) the WorkerGlobalScope object       // a new global object for use within the new worker 
+  3) a message passing API              // allows workers to communicate with the main thread and with one another 
+                                        // note that this same message passing API is used by iframe's to communicate with the main document 
+
+to create a worker you pass a URL to the script you want it to run. 
+  the URL must have the same origin as the current document.
+  it starts running immediately:
+
+
+  let workerObj = new Worker("scripts/algorithm.js");
+
+  workerObj.postMessage("hello worker");                        // pass messages to the script via postMessage() 
+                                                                // postMessage() can send a variety of data types 
+                                                                // it uses the structured clone algorithm to encode the data
+
+  workerObj.onmessage = function(e) {                           // listen for messages sent back from the script via onmessage
+    let receivedMessage = e.data;                               // the events data property contains the message
+  }
+
+  workerObj.terminate();                                        // terminate() forces the worker to stop running 
+
+
+the worker runs the  script in a new execution environment, isolated from the rest of the application.
+
+the WorkerGlobalScope object also has a postMessage() method and an onmessage event handler. 
+  so postMessage() from the worker object is received by the onmessage event handler of the global object, and vice versa. 
+
+when you create a worker you can pass a second parameter to the constructor. 
+  if you pass an object with a name property the new global objects name property will be set to that. 
+  the worker can then use this name when logging or sending messages
+
+
+the WorkerGlobalScope has some noteworthy characteristics: 
+
+  a) it does not have a window property. self is a reference to the global object itself. 
+  b) it has a location property that contains the URL passed to the worker constructor 
+  c) it has a close() method that will cause the worker to terminate itself. 
+  d) it has a navigator object (traditionally a window property) with these properties: appName, appVersion, platform, userAgent, online
+  e) it supports event methods like addEventListener() / removeEventListener() 
+  f) it includes some important APIs such as the console object / fetch() / the IndexedDB API
+  g) it also includes the Worker() constructor, so workers can spawn more workers 
+
+
+the WorkerGlobalScope object also has a special importScripts() method for importing other scripts.
+importScripts() takes one or more scripts URLs as arguments and synchronously loads / executes them all in the order they're specified.
+if any of these scripts fails with a network error, or execution throws an error, none of the remaining scripts are loaded.
+
+  importScripts("utils/Histogram.js", "utils/BitSet.js"); 
+
+
+in order to use other modules in workers you must pass a second argument object to the Worker() constructor: 
+
+  let worker = new Worker("./script.js", { type: "module" });           // the object must have type: "module" as a property
+
+when a worker loads a module instead of a script the importScripts() function is no longer defined on the global object. 
+as of 2020 Chrome was the only browser that supported true modules and import declarations within workers 
+
+worker threads run all imported scripts & modules synchronously, then enter an asynchronous phase where they respond to events 
+  if a worker registers a "message" event handler it will never exit as long as there's a possibility new messages could arrive 
+  if a worker doesn't listen for messages, it will run until there are no more pending tasks (such as fetch() promises or timers)
+there are no properties on the worker object that indicate the worker has finished, so you'll have to send a message to convey this information
+  
+
+uncaught exceptions in workers trigger an error event on the workers global object. 
+  if preventDefault() isn't called on this error it'll propagate to the main script, where an error event will fire on Worker object itself.
+  if again preventDefault() isn't called the error will propagate up to the window object
+
+
+  // workerScript.js 
+  self.onerror = function(e) {
+    console.log(`error in worker: ${e.message}`)
+    e.preventDefault();
+  }
+
+  // mainScript.js
+  worker.onerror = function(e) {
+    console.log(`error in worker: ${e.message}`)
+    e.preventDefault();
+  }
+
+
+like window objects, workers also have a special handler for uncaught promises you can use: 
+
+  // workerScript.js
+  self.onunhandledrejection = (e) => {                            // e contains the same e.promise & e.reason properties as the window version 
+    if (e.reason?.code === "ptx_handle_transaction_closed") {
+      ...
+      event.preventDefault();
+    }
+  };
+
+
+there's a MessageChannel class that is just a wrapper around a UNIX pipe. 
+  the way worker / parent threads communicate via postMessage() / onmessage is implemented using a MessageChannel object. 
+
+a MessageChannel object contains two MessagePort objects. 
+  a single MessagePort supports communication in one direction via postMessage() / onmessage.
+  this way the MessageChannel supports bi-directional communication 
+
+like with pipes, messages are queued, and aren't sent until an onmessage handler is defined or until the start() method is called 
+
+
+postMessage() takes an optional 2nd argument for values to pass by reference instead of by value. 
+  you can pass Arraybuffers or MessagePorts through here 
+  this allows you to setup multiple communication channels, or channels between workers 
+
+
+  let worker = new Worker("algorithm.js");
+
+  let controlChannel = new MessageChannel();
+
+  let controlPort = highPriorityChannel.port1; 
+  
+  worker.postMessage({ command: "setControlPort", value: controlChannel.port2 },    // notice you pass the port in both the 1st and 2nd arguments
+                     [ controlChannel.port2 ])
+
+
+if the first argument contains an ArrayBuffer or any value (such as typed array) that has an ArrayBuffer
+  then the ArrayBuffer will appear as the 2nd argument
+
+when you pass an Arraybuffer or MessagePort to a worker like this the object will no longer be usable in the original thread.
+  this prevents threading problems from occurring 
+
+
+iframes act as embedded but independent windows. the iframe element has a contentWindow property that is the window object for the iframe. 
+  and within the iframe the window.parent property refers to the parents window object.
+  so if both the iframe & parent have the same origin then each of them can access the contents of the others window 
+  but if they have a different origin they cross-origin policy prohibits them from accessing one anothers window object
+    for this the 2 windows have their own postMessage() / onmessage API that allows them to safely exchange messages despite their separate origins
+
+the windows postMessage() method works a little differently - it has 3 parameters. its 1st and 3rd work like the Worker's postMessage() parameters. 
+  but its 2nd parameter is a string specifying the origin of the document that the message is intended for. 
+    this ensures that the webpage won't receive your message.
+    you can pass "*" as the origin to send messages to any origin
+
+the event received via window.onmessage also works differently
+  event.data still contains the actual message sent 
+  but there's also event.source and event.origin properties 
+    event.source is a reference to the window object that sent the message. 
+      thus you can send a reply message via event.source.postMessage()
+    event.origin specifies the origin of the content in the source window. 
+      for security purposes you should verify the origin before handling the event  
+
+
+the performance property of the window object provides a way to time your application:
+  
+  window.performance.now()          // current time (high resolution) 
+  window.performance.mark()         // mark a critical point in your code 
+  window.performance.measure()      // measure the elapsed time between marks in your code 
+
+
+calling these various performance tracking methods creates PerformanceEntry objects. 
+  browsers also create PerformanceEntry objects when they load a new page or send network requests. 
+  you can access all these objects via window.performance.getEntries() 
+
+
+the CSP (content security policy) is a standard adopted by browsers to protect against a variety of security threads
+  threats include cross-site scripting (XSS), clickjacking, code injection, etc. 
+
+there's a Content-Security-Policy header whose value is a list of security directives separated by semicolons. directives include:
+
+  default-src       defines the default policy for fetching resources - scripts, images, CSS, fonts, making network requests, frames, HTML5 Media
+
+  // these all define the valid sources of a specific type of asset 
+  script-src 
+  style-src         CSS
+  img-src 
+  connect-src       network requests. you'll receive a 400 response if not allowed
+  font-src          
+  object-src        valid sources of plugins, i.e. <object>, <embed>, <applet>
+  media-src         audio or video 
+  frame-src         valid source for loading frames
+
+  sandbox           enables a sandbox for the requested resource similar to the iframe sandbox attribute
+                    the sandbox applies a same origin policy, prevents popups, plugins and script execution is blocked
+                    you can keep the value empty to keep all restrictions in place, or add values like allow-forms, allow-same-origin, etc.
+                    read for more details 
+
+  form-action       defines valid sources that can be used in a <form> action        
+
+  frame-ancestors   defines valid sources for embedding a resource using <frame>, <iframe>, <object>, <embed>, or <applet>
+
+  plugin-types      defines valid MIME types for plugins invoked via <object> and <embed>
+
+  base-uri          defines a set of allowed URLs which can be used in the src attribute of <base> tags
+                    (the <base> tag specifies the base URL and/or target for all relative URLs in a document)
+
+  worker-src        restricts the URLs which may be loaded as a Worker, SharedWorker or ServiceWorker
+
+  navigate-to       restricts the URLs that the document may navigate to by any means. 
+                    i.e. when a link is clicked, a form is submitted, or window.location is invoked
+
+
+there are compilers that allow you to compile C/C++/Rust to WebAssembly and run the program in the browser at close to native speed. 
+
+
+the window and document objects hae some other useful properties: 
+
+  the window object has alert(), confirm(), and prompt() - different ways of showing debugging alerts
+
+  the window object has navigator and screen properties. read docs for more details 
+
+  all Element objects have requestFullScreen() and exitFullScreen() methods. try calling this on a video or canvas element 
+
+  the window object has a requestAnimationFrame() method. 
+    it takes a callback that will be executed just before the browser renders the next frame. 
+    when making UI changes (especially repeated or animated ones) passing the code to requestAnimationFrame() helps ensure smooth rendering
+
+  if the user selects text within the document you can call window.getSelection().toString() to get their currently selected text. 
+    some browsers also have a window.navigator.clipboard property which provides an asynchronous API for reading the system clipboard 
+
+  Element objects can be edited if they have the property contendeditable="true"
+    document.executeCommand() enables rich-text editing of editable content. 
+
+  the MutableObserver class allows observation of changes to an Element or one of its children. 
+    create one via the MutationObserver() constructor, passing a callback that will get called when changes occur.
+      then call the observe() method to specify which parts of the element should be monitored. 
+
+  there's also an IntersectionObserver class that allows you to determine which elements are on/off screen at a given time
+    this can be useful in scrolling applications that need to load content on demand 
+
+
+here are some more event types that may be useful:
+
+  the window object fires "online" and "offline" when internect connectivity changes 
+
+  the document object fires "visibilitychange" when the document becomes visible or invisible (usually due to switching tabs)
+    you can also check document.visibilityState to determine the current state, which can be "visible" or "hidden"
+
+  there's a complicated drag-and-drop API. read docs for more info 
+
+  there's a Pointer Lock API that allows you to hide the mosue pointer and get raw mouse events from relative movements (useful in games)
+    call requestPointerLock() on the elemnt you want all mouse events directed to. 
+      after you do this, "mousemove" events delivered to that element will have movementX and movementY properties. 
+  
+  the Gamepad API adds support for game controllers. use window.navigator.getGamePads() to get connected Gamepad objects.
+    the window object also fires "gamepadconnected" when a new controller is plugged in. 
+    read about the GamePad object for more details on the API 
+
+
+a ServiceWorker is a type of worker that intercepts & inspects / handles network requests. 
+  the same ServiceWorker gets saved / reused whenever the user visits the website
+  the ServiceWorker can cache network responses, enabling rapid startup or offline use. 
+  read docs for more details (there's also a book written on them)
+
+the Cache API can cache the Request / Response objects of the fetch() API. 
+  ServiceWorkers use this API, but it can also be used within the application code. It can be useful in enabling offline use. 
+
+the Notificatios API allows the app to display notifications using the native OS notification system on mobile & desktop.
+  note that it requires user permission to active. 
+
+a Web Manifest is a JSON file that describes the web app. it includes a name, URL, and links to icons of various sizes. 
+  if your app uses a ServiceWorker and includes a <link rel="manifest"> tab that references a .webmanifest file, 
+    browsers may give you an option to add an icon for the app on your desktop or home screen (this is especially common in mobile browsers)
+
+the Push API allows apps with a ServiceWorker to subscribe to push notifications from a server, and display them when the application isn't running. 
+  this also requires user permission. 
+  (it seems like a ServiceWorker can run after the website is closed...)
+
+
+there are a number of APIs that are useful for web apps running on mobile devices (some of these are only available on Android): 
+
+  the GeoLocation API lets you do things like get the users physical location - i.e. window.navigator.geolocation.getCurrentPosition()
+    iOS does support this API 
+  
+  window.navigator.vibrate() causes the device to vibrate (doesn't work on iOS). 
+    useful combined with gestures for providing tactile feedback 
+
+  the ScreenOrientation API lets you query for the current orientation of the mobile screen, or to lock the orientation. 
+
+  the window object has events "devicemotion" and "deviceorientation". these report acceleratometer and magnetometer data. 
+    iOS does support this API 
+
+  the Sensor API enables you to access the full suite of mobile device sensors, including accelerometer, magnetometer, gyroscope, and ambient light sensors. 
+    with this you can do more specialized things, like detect if the user is shaking their phone.
+    this is only available in Chrome with Android devices
+
+
+File objects are binary files. tthe File class is a subclass of Blob. there's an API for working with these. 
+javascript can't access the filesystem. but the user can upload a file via the <input> tag, or via drag-and-drop, and these return a File object. 
+  you can then use a FileReader object to asynchronously get the contents of the file as an ArrayBuffer of string. 
+  (in some browsers you can skip using the FileReader object and use the text(), arrayBuffer(), or stream() methods defined by the Blob class)
+when working with binary you may also need the TextEndoer / TextDecoder classes for translating between binary & text formats 
+
+
+the window.navigator.mediaDevices.getUserMedia() methods allow you to request access to the microphone / camera. 
+  a successful request return sa MediaStream object. 
+  you can display video streams using <video> tags by setting the srcObject property to the stream.
+  still frames of video can be captured into an offscreen <canvas> with the canvas drawImage() method, resulting in a low-res photograph.
+  audio / video streams returned by getUserMedia() can be recorded and encoded into a Blob with the MediaRecorder object. 
+  the WebRTC API enables the transmission and reception of MediaStreams over networks 
+
+
+the window.crypto property has a getRandomValues() method for cryptographically secure pseudorandom numbers. 
+  other methods for encryption, decryption, key generation, digital signatures, etc. are available through window.crypto.subtle 
+    it's named subtle as a warning that you should know what you're doing before using it. 
+  
+the CredentialManagement API and Web Authentication API allow you to generate, store, and retrieve public key credentials
+  an enables account creation / login without passwords. 
+  important methods are window.navigator.credentials.create() and window.navigator.credentials.get()
+  note that substantial infrastructure is required server-side to get these methods to work, and these APIs aren't yet universally supported by browsers.
+
+the Payment Request API adds browser support for making creditcard payments. 
+  it allows you to store payment information security in the browser. 
+  apps that want to request a payment just create a PaymentRequest object and call show(), this will display a request to the user 
+
+
+many of these APIs will only work over HTTPS connections. you should just use HTTPS everywhere in your web app. 
+
+
+========================================================================================
+CHAPTER 16, SERVER-SIDE JAVASCRIPT WITH NODE
+========================================================================================
+
+
+pg 577
