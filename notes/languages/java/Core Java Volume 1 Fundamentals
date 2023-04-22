@@ -68,6 +68,8 @@ to test whether you installed the JDK correctly type in the terminal:
     javac --version 
 
 
+note that javac / other java CLI tools are migrating from using a single-dash format (i.e. -version) to a more standard double-dash format (--version)
+
 the Java library source files are in the JDK folder under lib/src.zip. 
     for exploration you can create a folder and unzip the source in there 
     if you want more source (for the compiler, VM, native methods, private helper classes) go to http://openjdk.java.net 
@@ -1121,10 +1123,11 @@ you can specify an entry program for the JAR file to make it executable.
 
 on Windows there are wrapper utilities that turn JAR executables into Windows executables - Launch4J adn IzPack are 2 of them 
 
-when Java9 introduced modules and strong package encapsulation some APIs had to be reached differently. 
-    Java provides multi-release JARs to address this
-with multi-release JARs, newer Java9 copies of source files are in the META-INF/versions directory, while the old Java 7/8 copies are used normally
-to add multi-release class files to an existing JAR or create a multi-release JAR, compile using --release (pg 196 / read docs for details) 
+when Java9 introduced modules and strong package encapsulation it changed the way classes were compiled and linked.
+    library providers needed to compile their code differently based on the version of Java being used.
+    Java provides multi-release JARs to facilitate this.
+in multi-release JARs there's a META-INF/versions folder where you can put different source files for different versions of Java.
+to add multi-release class files to an existing JAR or create a multi-release JAR you must compile using --release (see pg 202 for details) 
 
 the JDK contains a tool called javadoc that generates HTML documentation from comments starting w/ /** in your source files 
     this way documentation + code are the same place place 
@@ -1232,12 +1235,39 @@ all methods in a final class are made final (but not fields)
 
 classes should generally be made final unless you need the polymorphism or inheritance. the compiler can inline & optimize the bound final methods this way
 
-try to use polymorphism instead of typecasting objects if possible. the typecasting may be a sign of design problems: 
+enumerations and records are always final
+
+try to use polymorphism instead of typecasting objects if possible. the typecasting may be a sign of design problems.
+    an incorrect typecast will throw a runtime error. 
+    for safety use instanceof to check if a cast succeeds first, because instanceof does not throw a runtime error:
+
 
     Animal animal = (Animal) dog;
 
     if (animal instanceof Dog) {            // instanceof checks that this is a valid type conversion, avoiding an runtime error 
-        dog = (Dog) animal; 
+        myDog = (Dog) animal; 
+        myDog.bark();
+    }
+
+
+testing for class membership then assigning the object to a variable is common enough that Java16 added pattern-matching support for it: 
+
+    if (animal instanceof Dog myDog) {                  // check for membership and assign to the myDog variable
+        myDog.bark();
+    }
+
+    if (animal instanceof Dog myDog && myDog.hoursSinceWalked > 5) {    // you can use the new variable in the same expression via && 
+        myDog.walk();                                                   // but note that || would cause a run-time error since it doesn't short-circuit
+    }
+
+    int hoursSinceWalked = animal instanceof Dog mydog ? myDog.hoursSinceWalked() : 0;      // the ternary operator also short-circuits
+
+
+Java 17 extended this pattern-matching variable declration to switch statements: 
+
+    boolean needToWalk = switch(animal) {
+        case Dog myDog -> myDog.hoursSinceWalked() > 5;
+        case Bird -> false;
     }
 
 
@@ -1263,19 +1293,24 @@ Object's equals() method tests if two variables refer to the same object.
     to test whether two objects have the same state you must override equals() in the class
     be sure to implement equals() at all levels of your class hierarchies: 
     
+
+    import java.util.Objects
     
-    @Override public boolean equals(Object rvalue){     // the parameter must be of type Object to successfully override the equals() method
+    @Override public boolean equals(Object rvalue){     // note: the parameter must be of type Object to successfully override the Object.equals() method
                                                         // @Override is a decorator. If you mess up the parameters and don't override anything, it throws an error
         if (this == rvalue){                            // if the two are the same object, return true
             return true; 
         }
-        if (rvalue == null){                            // rvalue is null, return false. equals() returns true if both are null, false if only 1 are null 
-            return false;
+        if (rvalue == null){                            // rvalue is null, return false. 
+            return false;                               // equals() should return true if both are null, false if only 1 is null 
         }
         if (this.getClass() != rvalue.getClass()){      // classes don't match, return false
             return false; 
         }
-        if (this.field1 == rvalue.field1 && this.field2 == rvalue.field2){      // now test the state of the two objects
+
+        // now test the state of the two objects
+        if (this.dog.equals(rvalue.dog)                                             // here we call equals() to ensure correct handling if dog is null
+                && this.libraryTimeRemaining == rvalue.libraryTimeRemaining) {      // no need to use equals() for an integer field, since it can't be null
             return true; 
         }
     }
@@ -1286,6 +1321,22 @@ for equals() comparisons between sibling classes use instanceOf() instead of get
     so you use instanceOf() to make sibling class comparisons work, and getClass() to ensure same-class comparisons work 
 
 to compare arrays, use Arrays.equals() instead of the default Object.equals() 
+
+
+
+
+
+
+
+
+pg 242, very top
+
+
+
+
+
+
+
 
 the Object class has a hashCode() method that calculates a unique hashcode for a given object using its memory address. 
     the String class (and the Objects class, and numerous other classes) overrides hashCode().
@@ -1299,8 +1350,11 @@ if you override equals(), you must also override hashCode() if you want your obj
         return Objects.hash(string_field, double_field, date_field);        // Objects.hash() returns a hash using a parameter list 
     }
 
+records are convenient because they automatically synthesize equals(), among other things
 
-use Arrays.hashCode() to produce a hashcode from an array 
+Arrays.equals() checks arrays for equality, and Arrays.deepEquals() checks multi-dimensional arrays
+
+use Arrays.hashCode() to create a hashcode from an array.
 
 Object.toString() is another important method that stringifies objects. override it to stringify your objects.
     conventionally the resulting strings have the class name followed by field/value pairs inside square brackets: 
