@@ -1320,41 +1320,34 @@ for equals() comparisons between sibling classes use instanceOf() instead of get
     but only implement instanceOf() in the parent in a final equals() method - otherwise the comparison won't make sense.
     so you use instanceOf() to make sibling class comparisons work, and getClass() to ensure same-class comparisons work 
 
-to compare arrays, use Arrays.equals() instead of the default Object.equals() 
+there are a few methods for calculating unique hashcodes for objects using their memory addresses:
 
+    // defined in java.lang.Object
+    int hashCode()                      // called off the object, and returns a hash for it. 
 
+    // defined in java.util.Objects
+    static int hashCode(Object a)       // returns 0 if a is null, otherwise returns a valid hash
+    static int hash(Object... objects)  // returns a hash code for a variadic list of objects. it does this by calling Objects.hashCode() for each object
+                                        // so it is null safe
 
-
-
-
-
-
-pg 242, very top
-
-
-
-
-
-
-
-
-the Object class has a hashCode() method that calculates a unique hashcode for a given object using its memory address. 
-    the String class (and the Objects class, and numerous other classes) overrides hashCode().
-        Strings get a unique hashcode based on the letters of the strings
-
-if you override equals(), you must also override hashCode() if you want your object to work with Java's hash tables
+if you override equals() you must also override the hashCode() method in java.lang.Object if you want your object to work with Java's hash tables
     to do this, calculate the new hashcode using all those fields that were used in the equals() comparison: 
 
+    import java.lang.Object;
+    import java.util.Objects;
 
-    public int hashCode(){
-        return Objects.hash(string_field, double_field, date_field);        // Objects.hash() returns a hash using a parameter list 
+    public int hashCode() {
+        return Objects.hash(string_field, double_field, date_field); 
     }
 
-records are convenient because they automatically synthesize equals(), among other things
 
-Arrays.equals() checks arrays for equality, and Arrays.deepEquals() checks multi-dimensional arrays
+the String class (and numerous other classes) override Object's hashCode(). Strings get a unique hashcode based on the letters of the strings
 
-use Arrays.hashCode() to create a hashcode from an array.
+to compare arrays use Arrays.equals() instead of the default Object.equals()
+    there's also Arrays.deepEquals() for comparing  multi-dimensional arrays
+    and Arrays.hashCode() to create a hashcode from an array.
+
+records are convenient because they automatically synthesize equals(), hashCode(), and other things
 
 Object.toString() is another important method that stringifies objects. override it to stringify your objects.
     conventionally the resulting strings have the class name followed by field/value pairs inside square brackets: 
@@ -1365,6 +1358,7 @@ Object.toString() is another important method that stringifies objects. override
             return getClass.getName() + "[field1=" + field1 + ",field2=" + field2 + "]";
         }
     }
+
     public class obj2 extends obj1{
         ...
         public String toString(){                   // a 2nd pair of brackets is the common way of overriding toString() in subclasses
@@ -1377,10 +1371,16 @@ toString() is invoked by the Java compiler when objects are concatenated, and in
     It's very useful in debugging and should be overridden.
     Object.toString() (the default) simply prints the class name followed by a hashcode for the object 
 
-to stringify arrays: 
+to stringify arrays use the static Arrays method. array's toString() method inherited from Object outputs in a very archaic format and shouldn't be used: 
 
     Arrays.toString(array1)             // normal array 
     Arrays.deepToString(array2)         // multidimensional arrays 
+
+
+another trick is, instead of calling toString() directly, to use concatenation to get the string. 
+    toString() can only be called off Object types, but won't work on primitives. concatenation works with both: 
+
+    String description = "" + x;            // x is stringified as part of concatenation
 
 
 the size of a regular array can be initialized using variables, and is static afterwards: 
@@ -1391,65 +1391,68 @@ the size of a regular array can be initialized using variables, and is static af
 
 
 ArrayList is Java's equivalent of Vector 
-there are multiple ways of declaring / accessing elements in an ArrayList:
+there are multiple ways of declaring an ArrayList:
 
-    // initialization shyntax
+    import java.util.ArrayList;
+
     ArrayList<Fish> fishlist1 = new ArrayList<Fish>(200);   // the vector starts with 200 potential elements
+                                                            // note that the ArrayList doesn't have elements yet, it just has space available.
 
-    var fishlist2<Fish> = new ArrayList<Fish>(200);         // var works in Java10+ 
+    var fishlist2 = new ArrayList<Fish>(200);               // var works in Java10+ 
 
     ArrayList<Fish> fishlist3 = new ArrayList<>();          // if you specify the type parameter on the left you don't need to specify it on the right
 
-    var fishlist4 = new ArrayList(200);                     // ArrayList without <> will create an ArrayList of raw Object types 
+    var fishlist4 = new ArrayList(200);                     // note that ArrayList without <> will create an ArrayList of raw Object types 
 
-
-    // capacity & size
-    fishlist1.ensureCapacity(1000);                         // expands capacity in one operation, more resource efficient if you have an idea how much you need  
-
-    fishlist1.add(new Fish());
-    int current_length = fishlist1.size();                  // size() for arrayLists, length for arrays
-                                                            // size() returns the actual number of elements in the vector, not the max capacity
-
-    fishlist1.trimToSize();                                 // trim the ArrayList to match the current size - useful if you don't need all the capacity
-    
-
-    // CRUD methods
-    fishlist1.set(3, new Fish("fishfood"));                 // note: you can't use [] w/ arrayList
-    obj1 temp = fishlist1.get(3); 
-
-    for (int x = 0; x < 30; x++){
-        fishlist1.add(new Fish());
-    }
-    fishlist1.add(15, new Fish());                          // inserts an element into the middle 
-    fishlist1.remove(12);                                   // remove an element from the middle 
-
-
-    // foreach loops
-    for (Fish x : fishlist1) {}
-        x.swim();
-    }
-
-
-    // converting to regular Array
-    var fishlist5 = new Fish[fishlist1.size()]; 
-    fishlist1.toArray(fishlist5);                           // this is useful to avoid dealing with the ugly syntax of ArrayList
-
-
-note that ArrayList's add() / set() are a bit dangerous - they don't do type checking. 
-    and if you add the wrong type of element it will cause a runtime error when you get() it & cast it later. 
 
 ArrayList was created before Java added generic type constraints.
-    the type ArrayList is the unconstrained version. ArrayList<Dog> is the new version with the generic type constraint
+    so an ArrayList<> or ArrayList just uses the Object type. ArrayList<Dog> is the type constrained version.
     at runtime, all ArrayLists are all compiled down to the unconstrained version
 
-    so typecasts to ArrayList vs. ArrayList<Dog> are indistinct
-    and mistakes like adding the wrong type to an ArrayList<Dog> are possible, and don't get caught by the compiler. 
-    you can also pass a constrained ArrayList<Dog> to a method that takes an unconstrained ArrayList
-        but this can cause bugs - within that method the wrong type could get added to your list
+    this means typecasts to either ArrayList or ArrayList<Dog> are indistinct after the code has been compiled down.
+        mistakes like adding the wrong type to an ArrayList<Dog> are possible, and don't get caught by the compiler. 
+        and you can pass a constrained ArrayList<Dog> to a method that takes an unconstrained ArrayList
+            this can cause bugs - within that method the wrong type could get added to your list
+
+        and ArrayList's add() / set() are dangerous because they don't do type checking. 
+            if you add the wrong type of element it will cause a runtime error when you get() it & cast it later. 
 
     for safety the compiler will show warnings in these situations. if you're satisfied with the behavior you can suppress these warnings: 
 
-        @SuppressWarnings("unchecked") ArrayList<Dog> dogs = (ArrayList<Dog>) untypedList.find(myDogs)
+        @SuppressWarnings("unchecked") ArrayList<Dog> dogs = (ArrayList<Dog>) untypedList.find(myDogs);
+
+
+here are some common ArrayList operations:
+
+    // capacity & sizing
+    fishlist1.ensureCapacity(1000);                 // expands capacity in one operation. more resource efficient if you have an idea how much you need  
+
+    int current_length = fishlist1.size();          // size() returns the actual number of elements in the vector, not the max capacity
+                                                    // size() for arrayLists is like length for arrays
+
+    fishlist1.trimToSize();                         // trim the ArrayList to match the current size - useful if you don't need all the capacity
+    
+
+    // CRUD methods
+    fishlist1.set(3, new Fish("fishfood"));         // you can't use [] w/ an ArrayList (java doesn't support operator overloading)
+    obj1 temp = fishlist1.get(3); 
+
+    for (int x = 0; x < 30; x++) {                  // add() will expand the capacity of the array if needed. set() will not.
+        fishlist1.add(new Fish());                  // so only use set() to replace existing elements, not to add new elements.
+    }
+
+    fishlist1.add(15, new Fish());                  // inserts an element into the middle 
+    fishlist1.remove(12);                           // remove an element from the middle 
+
+
+    // foreach loops
+    for (Fish x : fishlist1) {
+        x.swim();
+    }
+
+    // converting to an ArrayList to a regular Array - this is useful to avoid dealing with the ugly syntax of ArrayList
+    var fishlist5 = new Fish[fishlist1.size()]; 
+    fishlist1.toArray(fishlist5);
 
 
 all the primitives have associated wrapper classes:
@@ -1463,7 +1466,7 @@ all the primitives have associated wrapper classes:
     Character
     Boolean
 
-if you want an ArrayList of integers you'd be forced to use the wrapper class: 
+if you want an ArrayList of integers you're forced to use the wrapper class, because ArrayList can't support primitives directly: 
 
     var int_list = new ArrayList<Integer>();
 
@@ -1484,19 +1487,22 @@ the wrapping / unwrapping is mostly invisible, but not always.
     so if you use == to with Integer objects the behavior is unreliable, and will usually fail.
         it won't always fail because sometimes the compiler optimizes the code to reuse the primitive wrappers.
             this wrapper reuse is actually required by the java specification for 1 byte literals - i.e. ints from -127 and 128, but don't rely on it 
-        why they didn't just override the comparison operator of the wrapper class to work normally I don't think anyone knows.
-    
-    so instead when comparing numbers just use equals():
+        they couldn't override the comprision operator because Java doesn't allow overriding of operators.
 
-    if (x.equals(y)) {
+    so instead when comparing wrapped numbers you must use equals():
+
+    if (x.equals(y)) {              // here if x or y are primitives they'll just get autoboxed, so this call is safe
         ...
     }
 
 
-also, since it's possible for reference variables to be null, operations involving these wrappers can throw a NullPointerException:
+also, since it's possible for reference variables to be null, operations that automatically unwrap can throw a NullPointerException.
+    so never assign null to a wrapper type. better yet, never construct one - just let the runtime handle wrapping / unwrapping.
+    the wrapper constructors are actually scheduled to be deprecated:
+
 
     Integer n = null;
-    System.out.prin(2 * n);                 // throws NullPointerException
+    System.out.prin(2 * n);                 // throws NullPointerException - unwraps the null object
 
 
 if you use both an Integer and Double type in an expression, the Integer type will be unwrapped then rewrapped as a Double
@@ -1554,6 +1560,8 @@ enums are actually implemented internally using classes. each case has 1 instanc
 
 you can add methods / properties / constructors to an enum:
 
+    import java.util.Enum;
+
     public enum Size {
 
         SMALL("S"), MEDIUM("M"), LARGE("L");
@@ -1569,6 +1577,7 @@ you can add methods / properties / constructors to an enum:
         }
     }
 
+
 all enums are subclasses of the Enum class, which has some useful methods:
 
     Size.SMALL.toString();                          // returns the case name as a string - "SMALL"
@@ -1581,8 +1590,104 @@ all enums are subclasses of the Enum class, which has some useful methods:
                                                     // ordinal() returns an int of the cases position in the declaration list, starting from 0
 
 
-the reflection library allows you to introspect a class or object at runtime
-    this is an advanced API that's useful in special circumstances, but we'll skip it for now. read pg 264 later if needed
+sealed classes (added in Java 17) allow you to restrict subclassing to just a certain set of classes.
+    contrast this with final which prevents all subclassesing. 
+    one of the advantages of sealed classes is improved compile-time checking.
+    they also can ensure that polymorphic code doesn't get misused by random subclasses.
+
+the subclass of a sealed class must declare themselves as final, sealed, or non-sealed (open to subclassing):
+
+
+    public abstract sealed class LargeMammal permits Dog, Moose, Bear, Human, Whale {
+
+        public String makeNoise() {                     // switches work with sealed classe 
+            return switch (this) {                      // the compiler checks every case is covered - no default is required
+                case Dog dog -> "ruff!";
+                case Moose moose -> "rrruuuaahhh";
+                case Bear -> "grunt";
+                case Whale -> "click";
+                case Human -> "hello!";
+            }
+        }
+    }
+
+    public final class Dog extends LargeMammal {        // subclass declares itself final 
+        ...
+    }
+
+
+the subclasses of a sealed class must be accessible from the sealed class. 
+    if these subclasses are public the rules are more stringent - they must be in the same package as the sealed class.
+
+the reflection library allows you to introspect classes in a variety of ways.
+
+Java maintains a type identifier for all objects during runtime. 
+    the class named Class allows you to work with this information at runtime: 
+
+
+    import java.lang.Class;
+    import java.lang.reflect.Constructor;                   // newInstance() is defined here in reflect 
+
+    Dog dog = new Dog();
+
+    Class class_obj = dog.getClass();
+
+    System.out.println(class_obj.getName());                // if the class is in a package the package name is part of the class name
+                                                            // note that, for historical reasons, getName() returns obscure names for array types
+    String className = "java.util.Random";
+    Class class_obj2 = Class.forName(className);            // obtain a Class object using the class name (seems fragile)
+                          
+    Class class_obj3 = Double[].class;                      // or just get a Class objects using the actual class
+    Class class_obj4 = int.class;                           // note that int is a primitive type, not a class, but nonetheless has an associated Class object
+    Class class_obj5 = Dog.class;                           // Class objects really describe types, not classes.
+
+
+    Object dog = class_obj5.getConstructor().newInstance();             // a Class object can get its classes zero-argument constructor via getConstructor()
+                                                                        // you can then construct instances of that class
+                                                                        // but if the class doesn't have a zero-argument constructor this call will throw
+
+
+Class is actually a generic. Dog.class actually returns an object of type Class<Dog>
+    the virtual machine manages a unique class object for each type.
+    therefor you can use the == operator to compare class objects.
+    unlike instanceof comparisons, class comparisons don't evaluate true for subclasses:
+
+
+    if (obj1.getClass() == Dog.class) {
+        ...
+    }
+
+
+there are 2 kinds of exceptions: checked and unchecked. 
+    the compiler validates that you're handling checked exceptions, but it doesn't validate unchecked ones. 
+
+if a method contains a checke exception you have to add a throws clause at the end.
+    any method that calls this method will also need a throws clause:
+
+
+    public static void feedDog() throws NullPointerException {
+        dog.eat();
+        dog.walk();
+    }
+
+
+the Class class provides a somewhat hacky service for locating resources (images, text files etc.):
+
+    var class_obj = DogResources.class;                 // get the class object of a class that contains resources
+
+    URL url = class_obj.getResource("dog.gif");         // some classes, such as getImage() in the ImageIcon class, 
+                                                        // have methods that accept URLs for fetching resources
+                                                        // if the class doesn't have one of these methods you'll need to call getResourceAsStream()
+
+the point is that the JVM knows how to locate a class, so it can then search for the associated resource in the same location.
+    i.e. lets say DogResources is in the dog package. this means it's in a Dog/ directory. 
+        place your resources in the same directory as the class file and you'll be able to access them via these methods
+        you can also place the resources in a location relative to Dog/ and use a relative URl to access them
+
+
+the rest of the reflection API is very niche meta programming that you probably won't need for a while. 
+    rd pg 287, 5.9.4 for the remainder of it.
+
 
 ______________________________________________________________________________________________________________________ 
 CHAPTER 6: INTERFACES, LAMBAD EXPRESSIONS, AND INNER CLASSES
@@ -1603,7 +1708,6 @@ here's an example of a Java interface:
 all methods defined by an interface are automatically public
 
 interfaces can define constants. but they can never have instance variables
-as of Java 8 you can provide method implementations for interfaces
 
 to conform to an interface use the implements keyword:
 
@@ -1664,7 +1768,7 @@ here are some programming techniques for using interfaces:
 
     public interface Mammal extends Animal {        // you can create hierarchies of interfaces
         boolean WARMBLOODED = true;                 // properties are automatically public static final constant
-    }                                               // classes that implement this interface can refer to WARMBLOODED directly in their code
+    }                                               // here classes that implement this interface can refer to WARMBLOODED directly in their methods
 
 
 while each class can only have 1 superclass, classes can have multiple interfaces.
@@ -1674,5 +1778,48 @@ while each class can only have 1 superclass, classes can have multiple interface
     }
 
 
+there are also sealed interfaces that work the same way as sealed classes:
 
-pg 305, 6.1.3
+    public sealed interface LargeMammal permits Dog, Moose, Bear, Human, Whale {
+        ...
+    }
+
+
+Record and Enum classes can't extend other classes (they already extend the Record / Enum class),
+    but they can implement interfaces.
+
+you can have default implementations for interface methods, but they must be tagged with the default keyword:
+
+    public interface Collection {
+        int size();
+        default bool isEmpty {
+            return size() == 0;                 // default methods can call other interface methods
+        }
+    }
+
+    public interface Comparable<T> {            // default methods can be useful in modifying an already public interface, 
+        default int compareTo(T other) {        // classes using the interface won't have to recompile
+            return 0;                           // this is important because JARs may not be recompiled before executing, 
+        }                                       // causing runtime errors when the new interface method gets called
+    }
+
+
+if a class or superclass provides a method the default method will be ignored 
+if two interfaces you're conforming to define methods with the same signature, and one of them provides a default, 
+    your class must provide its own implementation: 
+
+
+    interface Person {
+        default String getName() { return ""; }
+    }
+
+    interface Named {
+        default String getName() { return getClass().getName() + "_" + hashCode(); }
+    }
+
+    class Student implements Person, Named {
+        public String getName() {
+            return Person.super.getName();                  // you can access the interfaces default implementation via this syntax
+        }
+    }
+
