@@ -1804,7 +1804,8 @@ you can have default implementations for interface methods, but they must be tag
     }
 
 
-if a class or superclass provides a method the default method will be ignored 
+if a class or superclass provides a method, any interface's default method with the same signature will be ignored 
+    so you can never define an interface default method with the same signature as an Object method, since it's always ignored
 if two interfaces you're conforming to define methods with the same signature, and one of them provides a default, 
     your class must provide its own implementation: 
 
@@ -1822,4 +1823,204 @@ if two interfaces you're conforming to define methods with the same signature, a
             return Person.super.getName();                  // you can access the interfaces default implementation via this syntax
         }
     }
+
+
+here's an example of how you'd change the default behavior of Comparator for a built-in class.
+    in this case we sort strings by length instead of alphabetically:
+
+
+    public interface Comparator<T> {                           // the Comparator interface defined in the standard library
+        int compare(T first, T second);
+    }
+    __________________________________________
+    // LengthComparator.java
+
+    class LengthComparator implements Comparator<String> {
+        public int comprae(String first, String second) {
+            return first.length() - second.length();
+        }
+    }
+
+    var string1 = "RAT";
+    var string2 = "RAAAAAT";
+    var customComparator = new LengthComparator();
+    if (customComparator.compare(string1, string2) > 0) {       // compare() is called off the comparator object 
+        ...                                                     // instead of the string itself
+    }
+
+    String[] friends = ["Paul", "John", "Ringo", "George"];
+    Arrays.sort(friends, new LengthComparator());               // Arrays.sort takes a custom comparator as a parameter 
+
+
+classes can conform to Clonable to implement a deep-clone method. 
+    the default cloning operation inherited from Object is a shallow copy. 
+        note that a shallow copy is fine if the shared state (the references that aren't deep-copied) is immutable or never mutated. 
+
+by default instances can't be copied via calling clone(), because the default Object clone() method is protected, so can't be accessed from the outside. 
+    to make it clonable from the outside the class must implement the Clonable interface, override the clone method to be public, and call super.clone()
+        to do deep copying the class must also change the implementation of clone() 
+
+if you try to clone an object that doesn't implement Clonable you'll throw an exception 
+
+
+    class Dog implements Clonable {
+        ... 
+
+        public Dog clone() throws CloneNotSupportedException {
+            return (Dog) super.clone();
+        }
+    }
+
+
+    class Fish implements Clonable {
+        FishTank tank = FishTank()
+
+        public Fish clone() {                               // since we use try/catch and handle the error internally 
+            try {                                           // we don't need to declare the exception in the signature - it won't propagate
+                Fish clonedObj = (Fish) super.clone();
+                clonedObj.fishTank = FishTank();
+                return clonedObj;
+            } catch CloneNotSupportedException {
+                return null;
+            }
+        }
+    }
+
+be careful of parent classes implementing a public clone() method. if subclasses inherit this it could lead to incorrect cloning of your objects. 
+    some people recommend avoiding the use of clone() because of this, it's only used in about 5% of the java standard library
+
+
+lambda functions were added in Java 8. here's what the syntax looks like: 
+
+
+    (String first, String second) -> {  
+        return first.length() - second.length();
+    }
+
+    () -> {
+        for (int x = 0; x < 100; x++) {
+            System.out.println(x);
+        }
+    }
+
+
+here's the String comparable we wrote earlier: 
+
+    Comparator<String> comp = (first, second) -> { 
+        first.length() - second.length();               // you never specify the result type of a lambad. it is always inferred from the context
+    }
+
+
+the compiler can infer first & second are Strings from the Comparable<String> type
+    if the callback has a single parameter & its type is inferred you can even omit the parenthesis: 
+
+
+    ActionListener listener = event -> { 
+        System.out.println("time: " Instant.ofEpochMilli(event.getWhen()));
+    }
+
+
+you can use var to denote an inferred type, but this isn't common. this syntax was created for attaching annotations (see CH8 vol 2 for details):
+
+    (@NonNull var first, @NonNull far second) -> first.length() - second.length()
+
+
+it's illegal for a lambda to return a value in some branches but not others. 
+
+in the past java didn't support callbcaks, and objects were passed in instead. many old interfaces still expect a callback-style object
+    for this reason you can now supply a lambda in place of an object for an interface with a single abstract method.
+        the runtime will automatically convert the lambda to an object that implements the interface. 
+        interfaces like this are called functional interfaces. some examples where this can happen are Comparator and ActionListener
+    
+
+    Arrays.sort(friendNames, (first, second) -> {                   // the second parameter to this method is a Comparator. 
+        first.length() - second.length();                           // the runtime is converting this lambda to a Comparator object behind the scenes
+    });
+
+    var timer = new Timer(1000, event -> {                                          // ActionListener is the functional interface used with Timer objects
+        System.out.println("time is: " + Instant.ofEpochMilli(event.getWhen()));
+    });
+
+
+conversion to these functional interfaces is the only thing you can do with callbacks in Java.
+    functional interfaces are the syntax for passing a callback to a method.   
+    in other languages you can declare a variable or parameter with the functions signature as its type, but not in Java.
+
+    however, you can assign lambdas to variables whose type is a functional interface.
+        java.util.function defines alot of generic functional interfaces you can use. 
+            BiFunction<T, U, R> is one such example - its abstract method has two generic parameters and one generic return type
+
+    import java.util.function;
+
+    BiFunction<String, String, Integer> comparator = (first, second) -> first.length() - second.length();
+
+
+note that you still won't be able to pass a BiFunction to Arrays.sort(), since Arrays.sort() doesn't expect a BiFunction type
+but some methods are compatible with java.util.function's generic functional interfaces. 
+    Predicate is a useful generic functional interface that defines a single boolean method. methods like this can be used in boolean logic. 
+        ArrayList has a remoteIf method that takes a Predicate.
+    Supplier is another useful generic functional interface that defines a get() method.
+        Supplier is used by LocalDate to implement lazy evaluation.
+
+
+    // definitions in java.util.function;
+    public interface Predicate<T> { 
+        boolean test(T t);
+    }
+    public interface Supplier<T> {
+        T get();
+    }
+
+    // your code 
+    arrayList.removeIf(obj -> obj == null); 
+
+    LocalDate hireDay = Objects.requireNonNullElse(     
+        day, 
+        LocalDate.of(1970, 1, 1)                        // takes a Supplier and waits to call it / construct the LocalDate object until it's necessary
+    );
+    
+
+if your lambda will only wrap a single method call with the same signature, and nothing else, 
+    you can pass that method directly instead of creating the lambda. this is called a method reference.
+    like with lambdas, the runtime will convert this method to a functional interface object with a matching signature & pass it in: 
+
+
+    var timer = new Timer(1000, event -> System.outprintln(event));
+
+    var timer2 = new Timer(1000, System.out::println);                  // method reference 
+
+
+notice the use of the scope resolution operator :: - this operator specifies a method reference. it can be used in 3 different formats: 
+
+    object::instanceMethod              // with this syntax the lambdas arguments are mapped directly to the method
+
+    Class::instanceMethod               // the lambdas first argument will be the implicit parameter of the method (i.e. this), 
+                                        // and subsequent arguments are mapped to the method
+                                        // i.e. String::compareToIgnoreCase is the same as (x, y) -> x.compareToIgnoreCase(y)
+
+    Class::staticMethod                 // again the lambdas arguments are mapped directly to the method
+
+
+some parts of the standard library contain methods meant to be used as method references. 
+    for example, by itself Objects.isNull(obj) doesn't appear to be useful. you could just write object == null instead.
+    but you can use this as a method reference with a Predicate parameter:
+
+
+    arrayList.removeIf(Objects::isNull); 
+
+
+
+pg 347, very top
+
+
+
+
+
+
+
+
+
+
+
+
 

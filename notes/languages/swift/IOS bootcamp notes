@@ -1,10 +1,6 @@
--he says structs are on the stack and classes are on the heap
+it appears that if you set the access level of the whole class it will implicitly set its parameters to that 
 
--it appears that if you set the access level of the whole class it will implicitly set its parameters to that 
-
--you can modify constant variables that point to classes, because they're reference types; this is not the case with enums / structs 
-
--weird optional binding syntax in switch statements, used with where syntax. read more about both. I think the book gave a better example:
+weird optional binding syntax in switch statements, used with where syntax. read more about both. I think the book gave a better example:
 
     var str: String? = nil
     switch (str){
@@ -12,7 +8,7 @@
             ...
     }
 
--array.enumerated().forEach syntax and others:
+array.enumerated().forEach syntax and others:
     var array1 = [1, 2, 3, 4, 5] 
     array1.forEach { x in 
         print(x) 
@@ -24,32 +20,17 @@
         print(index, value) 
     }
 
--inout syntax creates a reference parameter: 
+
+inout syntax creates a reference parameter: 
     func function1(_: inout String) {
         ...
     } 
     ...
-    function1(&string1)
-
--as? does not cast, it just converts between parent/child, it appears
-
-________________________________________________________________________________________________ 
--for alpha he checked "over full screen"... combined with changing the alphas we could see through the new view. 
-    without that over full screen option it frees up memory apparently 
-_______________________________________________________________________ 
-
--he's claiming that if you use didSet and you update the variable on a non-main thread it might not use the main thread by default 
-
--so he got an error "must register a nib or a class for the identifier" - you have to register specific UI elements if they're not on the storyboard, basically. 
-    So, for the xib... put this in viewDidLoad(), apparently:
-    let custom_nib = UINib(nibName: "table_view_cell", bundle: nil)    <- "we need to instantiate our NIB" 
-                "the nib name is not the identifier, it's the actual file name with .xib taken off, or the class name, no idea which"
-    self.tableView.register(_ nib: custom_nib, forCellReuseIdentifier: String)  
-
--CaseIterable protocol for enums allows you to iterate & provides a count for them. combine with setting raw values of the enum
+    function1(&string1) 
 
 ____________________________________________________________________________________________________________________________________
--Some notes posted in Skype about the application and View lifecycles : 
+Some notes posted in Skype about the application and View lifecycles: 
+
 # 1. loadView()
 This is where subclasses should create their custom view hierarchy if they aren't using a nib. Should never be called directly.
 
