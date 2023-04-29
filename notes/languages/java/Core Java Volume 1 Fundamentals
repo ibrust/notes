@@ -112,7 +112,7 @@ you run a program by specifying the name of the class that contains the main met
 
     // Dog.java
     public class Dog {
-        private String[] favoriteDogFoods = new int[3];
+        private String[] favoriteDogFoods = ["Turkey", "Beef", "Mangos];
         private bone object = new Bone();
 
         public static void main(String[] args) {                    // notice the keyword public
@@ -1993,6 +1993,7 @@ if your lambda will only wrap a single method call with the same signature, and 
 notice the use of the scope resolution operator :: - this operator specifies a method reference. it can be used in 3 different formats: 
 
     object::instanceMethod              // with this syntax the lambdas arguments are mapped directly to the method
+    super::instanceMethod               // it's also valid to use super in this form
 
     Class::instanceMethod               // the lambdas first argument will be the implicit parameter of the method (i.e. this), 
                                         // and subsequent arguments are mapped to the method
@@ -2009,13 +2010,87 @@ some parts of the standard library contain methods meant to be used as method re
     arrayList.removeIf(Objects::isNull); 
 
 
-
-pg 347, very top
-
+you can also use constructors as method references by passing new as the method name: 
 
 
+    ArrayList<String> friendNames = new ArrayList<String>(4);
+    ... 
+    Stream<Person> stream = friendNames.stream().map(Person::new);
+    List<Person> people = stream.toList();
 
 
+you can also reference the constructors of arrays.
+    i.e. int[]::new is a constructor reference with a parameter for the array length.
+
+
+    Person[] people = stream.toArray(Person[]::new);        // this is a trick for getting an array of a generic type T
+                                                            // normally toArray() would return an array of type Object here
+                                                            // but the stream library added a version of toArray that takes a constructor reference 
+                                                            // it can invoke this constructor to get an array of the correct type, then fill the array 
+
+when you pass a lambda to a function interface, and the runtime translates it into an object,
+    the variables captured in closure become properties of the new object. whether they're copied or references is an undefined and implementation detail
+        but the closured properties are made immutable. you can't change them within the closure, so it doesn't matter.
+        it's also illegal to reference a closured variable within the lambda if that variable is mutated in the parent scope
+        without these restrictions there could be concurrency bugs if the closure is invoked asynchronously or is escaping
+    in the lambdas scope you also can't create properties that have the same name as closure properties
+    lambda expressions capture by closure the "this" pointer of their enclosing scope
+
+
+here are the most common functional interfaces provided by the Java API. 
+    usually you can find a functional interface that meets your needs, and won't need to create one: 
+
+
+    Function Interface Name             Signature                   Description
+    _______________________________________________________________________________________ 
+
+    Runnable                            () -> Void                  runs code - no arguments or return value
+
+    Supplier<T>                         () -> T                     gets a value of type T
+
+    Consumer<T>                         (T) -> Void                 consumes a value of type T
+
+    BiConsumer<T, U>                    (T, U) -> Void 
+
+    Function<T, R>                      (T) -> R 
+
+    BiFunction<T, U, R>                 (T, U) -> R 
+
+    UnaryOperator<T>                    (T) -> T                    unary operatio nperformed on type T       
+
+    BinaryOperator<T>                   (T, U) -> T
+
+    Predicate<T>                        (T) -> boolean              boolean test on type T
+
+    BiPredicate<T, U>                   (T, U) -> boolean
+
+
+
+you may want to use function interfaces that aren't generic sometimes. 
+    maybe because the interface should only accept a certain type of input. 
+    specialized interfaces are also more efficient than generics.
+    the standard library provides 34 specialized functional interfaces for primitive types. google for a list of what's available: 
+
+    
+    public interface IntConsumer {              // an existing interface provided by Java
+        void accept(int value);
+    }
+
+    public void countDown(int total, IntConsumer action) {              // the closure should only pass an integer
+        for (int x = total; x >= 0; x--) {
+            action.accept(x);
+        }
+    }
+
+    countDown(10, x -> System.out.println("Countdown: " + x));
+
+
+if you design your own functional interface you can tag it with the @FunctionalInterface annotation.
+    the compiler will then throw an error if someone accidentally adds another method
+    the javadoc page will also now include a statement saying that your interface is a functional interface
+
+the standard library also provides many default methods for these predefined functional interfaces.
+    i.e. Predicate.isEqual(a) works correctly with null. google for more details.
 
 
 
