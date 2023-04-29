@@ -2065,7 +2065,6 @@ here are the most common functional interfaces provided by the Java API.
     BiPredicate<T, U>                   (T, U) -> boolean
 
 
-
 you may want to use function interfaces that aren't generic sometimes. 
     maybe because the interface should only accept a certain type of input. 
     specialized interfaces are also more efficient than generics.
@@ -2092,7 +2091,56 @@ if you design your own functional interface you can tag it with the @FunctionalI
 the standard library also provides many default methods for these predefined functional interfaces.
     i.e. Predicate.isEqual(a) works correctly with null. google for more details.
 
+the Comparator interface also has many static methods designed to work with method references / lambdas. 
 
+    Person[] beatles = [
+        Person("Paul McCartney"), 
+        Person("John Lennon"), 
+        Person("Ringo Star"), 
+        Person("George Harrison")
+    ];
+
+    Arrays.sort(beatles, Comparator.comparing(Person::getFirstName));       // comparing() can take a method reference that gets a string 
+
+    Arrays.sort(beatles, 
+        Comparator.comparing(Person::getFirstName)
+        .thenComparing(Person::getLastName)                                 // there's also a thenComparing() method that allows you to chain calls
+    );
+
+    Arrays.sort(beatles, 
+        Comparator.comparing(Person::getFirstName, 
+        (s, t) -> Integer.compare(s.length(), t.length())                   // you can also pass in a lambda for doing the comparison 
+    ));
+
+    Arrays.sort(beatles, 
+        Comparator.comparingInt(p -> p.getFirstName.length())               // comparingInt() here does the same thing as the lambda, but more concisely
+    );
+
+    // nullsFirst() / nullsLast() can be used to modify a comparator so it doesn't throw if nulls are encountered, 
+    // but instead ranks them smaller or larger than regular values.
+    // but nullsFirst() / nullsLast themselves need a comaprator. 
+    // naturalOrder() automatically makes a comparator for any class that implements Comparable.
+    Arrays.sort(beatles,                                                    
+        Comparator.comparing(Person::getMiddleName, Comparator.nullsFirst(Comparator.naturalOrder())) 
+    );
+
+    // reverseOrder() is an alternative to naturalOrder()
+    Arrays.sort(beatles,                                                    
+        Comparator.comparing(Person::getMiddleName, Comparator.nullsFirst(Comparator.reverseOrder())) 
+    );
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+skipping the rest of the chapter for now - sections 6.3 - 6.5
+
+______________________________________________________________________________________________________________________
+CHAPTER 7: EXCEPTIONS, ASSERTIONS, AND LOGGING 
+
+skipped for now
+
+______________________________________________________________________________________________________________________
+CHAPTER 8: GENERIC PROGRAMMING 
+
+pg 447
 
 
 
