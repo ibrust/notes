@@ -2140,8 +2140,449 @@ skipped for now
 ______________________________________________________________________________________________________________________
 CHAPTER 8: GENERIC PROGRAMMING 
 
-pg 447
+generics were released with Java 5, and due to backwards compatibility concerns have some uncomfortable limitations. 
 
+before generics people used inheritance to achieve the same reusability 
+    for example, the ArrayList class worked with and returned Object types
+    but this approach required typecasting ArrayList's return values, and there was no way of type checking ArrayList method calls.
+    generics fix both of these problems
+
+here's an example of a generic class: 
+
+    public class Pair<T> {
+        private T first;
+        private T second;
+
+        public Pair() { first = null; second = null; }
+        public Pair(T first, T second) { this.first = first; this.second = second; }
+
+        public T getFirst() { return first; }
+        public T getSecond() { return second; }
+
+        public void setFirst(T newValue) { first = newValue; }
+        public void setSecond(T newValue) { second = newValue; }
+    }
+
+    var pair = Pair<String>();
+
+
+you can use multiple generic types in a class if you want - i.e. Pair<T, U> 
+
+you can also define generic methods: 
+
+    class Dog {
+        ... 
+
+        public static <T> boolean willEat(T obj) {
+            try {
+                return obj.edible == true;
+            } catch (UnsupportedOperationException | NullPointerException error) {
+                logger.log(error);
+                return false;
+            }
+        }
+    }
+
+    var radish = Radish();
+    var dogDidEat = Dog.<Radish>willEat(radish);                    // in Java the <> brackets used in a generic method come before the method name.
+                                                                    // the <> brackets are optional here since the type of radish can be deduced 
+
+
+you can place constraints on a generic type using the extends keyword:
+
+    public static <T extends Comparable> T min(T[] arr) {
+        ... 
+    }
+
+
+like in Swift you can use & to specify multiple constraints. like with inheritance only one of the constraining types can be a class: 
+
+    public <T extends SecurityCodeAllocationProtocol & ChangePaymentsAllocation> boolean shouldShowSecurityCode(T) {
+        ...
+    }
+
+
+the java virtual machine doesn't use objects of generic types. all objects used in the JVM must be ordinary classes. 
+    so the compiler does type eraser on generics, implementing them using a concrete superclass.
+        i.e. if a generic has no constraints the compiler will just implement it using the Object type. 
+        if the generic does have constraints the implementation must use the constrained type. 
+        for multiple generic constraints the compiler implements the class with one of the constrained types and typecasting / typechecking code.
+    the compiler also adds typecasting to generic methods return values and generic properties, converting them from the superclass to the actual type
+
+in C++ the compiler duplicates a templates code for every type that uses it. this is called template bloat. 
+    in Java, since generics are compiled to superclasses, there is no template bloat. 
+
+
+    // before compilation
+    public static <T extends Comparable> T min(T[] arr) { ... }
+
+    // after compilation
+    public static Comparable min(Comparable[] arr) { ... }                  // the compiled code actually looks alot like class extensions
+
+
+to make polymorphism work with generics in all scenarios the compiler may also generate some parallel bridge methods to the Object type.
+    these bridge methods will do type conversion / type checking internally to ensure correct behavior. 
+
+
+before generics alot of generic-like code was implemented using the Object type. 
+    for example, the old ArrayList was implemented using Object internally. then in Java 5 a generic ArrayList was added to the language. 
+    for backwards compatibility you can use generics & these legacy Object types interchangeably. 
+        i.e. you can assign a legacy Object type to a newer generic type, & vice versa. 
+        but you will need to carefully check that your code will work correctly, then turn off the warnings via @SuppressWarnings("unchecked")
+
+
+you can't use a primitive as a generic, you have to use the wrapper class.
+    so there is a Pair>Double>, but not a Pair<double>
+    this is because the generic type must be erased to an Object type
+
+since generics are type erased to concrete classes, this throws off methods like instanceof or getClass(). these shouldn't be used with generics.
+    
+    Pair<String> stringPair = Pair("hello", "goodbye");
+    Pair<Dog> twoDogs = Pair();
+    if (stringPair.getClass() == twoDogs.getClass()) {              // this is true - for both variables getClass() returns Pair.class
+        ...
+    }
+
+    if (stringPair instanceof Pair<String>) {                       // this is a compilation error
+        ... 
+    }
+
+    Pair<String> anotherTwoStrings = (Pair<String>) stringPair.getTwoStrings();         // warning - you can only test that the return type is a Pair
+                                                                                        // you can't validate it's a Pair<String> 
+
+you cannot use generics with arrays. 
+    the reason is arrays strongly validate the types of their input. 
+    but generic type eraser would have to break this validation. 
+    so instead you must use an ArrayList. 
+
+    but there is a strange workaround.
+        this restriction only prevents you from instantiating a generic array.
+        it doesn't prevent you from declaring a variable whose type is a generic array. 
+        you can actually create an array using the wildcard type and assign it to your generic array:
+
+
+    var stringPairs = (Pair<String>[]) new Pair<?> [10];            // legal - but be careful, this array won't do type checking on its input.
+                                                                    // for safety you should just use ArrayList<Pair<String>> instead,
+                                                                    // the compiler can type check that
+
+you can pass generics to variadic parameters. 
+    although the JVM must construct an array of generics for this purpose, and that would seem illegal, the rules have been relaxed for this case. 
+    the compiler will still issue a warning, however. you can disable it via @SafeVarargs
+
+    this exception does allow you to workaround the restriction prohibiting generic arrays. but again this is dangerous since you won't get type checking: 
+
+
+        @SafeVarargs static <E> E[] array(E... array) { return array; }
+
+        Pair<String>[] stringPairs = array(pair1, pair2); 
+
+
+you can't use a generic type within a constructor: 
+
+    public Pair() { 
+        first = new T();                // illegal 
+        second = new T();
+    }
+
+
+the reason is type eraser will change this to Object() calls, and you don't want that. 
+one solution is to pass a constructor as a method reference: 
+
+
+    public static <T> Pair<T> makePair(Supplier<T> init) {
+        return new Pair<>(init.get(), init.get());
+    }
+
+    Pair<String> pair = Pair.makePair(String::new);
+
+
+another solution is to pass in a Class object - Class is a generic: 
+
+    public static <T> Pair<T> makePair(Class<T> cls) {
+        try {
+            return new Pair<>(
+                cls.getConstructor().newInstance(), 
+                cls.getConstructor().newInstance()
+            );
+        } catch (Exception err) {
+            return null;
+        }
+    }
+
+    Pair<String> pair = Pair.makePair(String.class);
+
+
+the same problem occurs with arrays - you can't construct a generic array, so you must pass in either a constructor reference or use reflection: 
+
+    public static <T extends Comparable> T[] sortedArray(IntFunction<T[]> initializer, T... values) {
+        T[] result = initializer.apply(2);
+        ...
+    }
+
+    String[] names = sortedArray(String[]::new, "John", "Ringo", "Paul", "George");
+
+
+    import java.lang.reflect.*;
+
+    public static <T extends Comparable> T[] sortedArray(T... values) {
+        var result = (T[]) Array.newInstance(values.getClass().getComponentType(), 2);
+        ...
+    }
+
+
+generic types can't be used in static methods or variables
+
+
+
+skipping the rest of the chapter for now because it's getting into error handling and reflection, and I skipped that content.
+    read pg 469 for remaining details on generics
+
+______________________________________________________________________________________________________________________
+CHAPTER 9: COLLECTIONS
+
+______________________________________________________________________________________________________________________
+CHAPTER 10: GRAPHICAL USER INTERFACE PROGRAMMING
+
+______________________________________________________________________________________________________________________
+CHAPTER 11: USER INTERFACE COMPONENTS WITH SWING
+
+______________________________________________________________________________________________________________________
+CHAPTER 12: CONCURRENCY 
+
+Java originally supported these data structures: 
+
+    Vector
+    Stack
+    Hashtable
+    BitSet
+    Enumeration
+
+Java 1.2 then added more data structures. 
+    these had to be designed carefully for backwards compatibily, so they separated interfaces & implementations. 
+        there are interfaces for data structures, then a variety of conforming concrete classes
+
+an important java 1.2 interface is the Collection interface. many of the new data structures implement this, though not all (Maps have a separate Map interface)
+Collection has 2 fundamental methods (and several more we'll discuss later): 
+
+    public interface Collection<T> {
+        boolean add(T element);                 // returns true if the collection changed as a result of the add operation (i.e. it wasn't already in there)
+        Iterator<T> iterator();
+        ...
+    }
+
+
+the Iterator interface has 4 fundamental methods: 
+
+    public interface Iterator<T> {
+        T next();
+        boolean hasNext();
+        void remove();
+        default void forEachRemaining(Consumer<? super T> action);
+    }
+
+
+by repeating calling next() you can traverse the collection.
+    but if you traverse off the end an NoSuchElementException will be thrown
+    therefor you must call hasNext() first to check whether it's safe to call next() - unless you know the size of the collection
+    but the for-each loop will do this for you automatically for any object that conforms to the Iterable interface (which collections does):
+
+
+    public interface Iterable<T> {
+        Iterator<T> iterator();
+        ...
+    }
+
+
+    import java.util.Collection;
+    import java.util.Iterator;
+
+    Collection<String> names = ...
+    Iterator<String> iter = names.iterator();
+
+    while (iter.hasNext()) {                            // simple loop
+        String name = iter.next();
+        ...
+    }
+
+    for (String name : names) {                         // the for-each loop creates an iterator automatically
+        ... 
+    }
+
+    iter.forEachRemaining(element -> ...);              // forEachRemaining() works in combination with lambdas like this 
+
+
+the order inwhich elements are visited varies based on the iterator type.
+    an ArrayList's iterator traverses from start to finish
+    a HashSet's iterator traverses in an undefined order (but you're still guaranteed to visit each element once)
+
+unlike in C++, the only way to access an element via a java iterator is by it calling next() - either directly or indirectly 
+    you can't just advance the iterator to a particular index
+
+note that next() actually returns the current element the iterator is pointing to, then advances its pointer to the next element. 
+    so it doesn't technically return the next element
+and remove() deletes the previous element the iterator is pointing to, not the current element.
+    so it deletes the element that was just returned by next().
+    this is useful if you want to remove an element after examining it, 
+        but strange if you want to just delete the next element - you must call next() first.
+
+
+    iter.next();                // advance the pointer
+    iter.remove();              // now move the pointer back 1 and delete that
+                                // this will leave your pointer pointing to the element you had advanced to
+
+
+    for this reason it's actually illegal to call remove() if it wasn't preceded by a call to next().
+        this will throw an IllegalStateException
+        you can't even call remove() multiple times consecutively. 
+
+
+since Collection is generic you can write utility methods that work with everything conforming to Collection:
+
+    public static <T> boolean contains(Collection<T> coll, Object obj) {
+        for (T element : coll) {
+            if (element.equals(obj) { 
+                return true;
+            }
+            return false;
+        }
+    }
+
+
+the Collection interface specifies many useful methods like this. here are some common ones:
+
+    int size()
+    boolean isEmpty()
+    boolean contains(Object obj)
+    boolean equals(Object other)
+    boolean remove(Object obj)
+    void clear()
+    Object[] toArray()
+    boolean removeIf(Predicate<? super T> filter)               // a filter method
+
+
+there's an AbstractCollection class that provides default methods for many of these, but not all.
+    this makes it easier to make your own collection, assuming these implementations will work: 
+
+    public abstract class AbstractCollection<T> implements Collection<T> {
+        ... 
+        public abstract Iterator<T> iterator();
+
+        public boolean contains(Object obj) {
+            for (T element : this) {
+                if (element.equals(obj)) {
+                    return true;
+                }
+                return false;
+            }
+        }
+        ...
+    }
+
+
+there are also a variety of default Collection methods for dealing with streams
+
+
+here's a list of the various Java collections interfaces and what they inherit from:
+
+
+    Iterable -> Collection -> Set -> SortedSet -> NavigableSet
+                           -> List 
+                           -> Queue -> Dequeue
+    Map -> SortedMap -> NavigableMap
+    Iterator -> ListIterator
+    RandomAccess
+
+
+in Lists elements can be accessed either by an iterator (sequentially) or by an index (random access).
+    the List interface predated the RandomAccess interface. it originally defined several methods for random access: 
+
+        void add(int index, E element)
+        void remote(int index)
+        E get(int index)
+        E set(int index, E element)
+
+    and it defined a method for sequential access via an iterator: 
+
+        void add(E element)
+    
+    
+    in practice if your List is backed by an array you should use the random access methods,
+        while if it's a linked list you should use the iterator access methods.
+
+    this aspect of the List interface was poorly designed.
+        it should only be possible to access randomly or sequentially depending on your data structure.
+        so to avoid carrying out random access operations on linked lists, which would have been very performance taxing, 
+            Java 1.4 introduced the RandomAccess interface. this interface has no methods, it's just a tag.
+                it can be used to test whether random access should be used:
+
+
+            if (list instanceof RandomAccess) {
+                ...
+            } else {
+                ...
+            }
+
+
+NavigableSet / NavigableMap contain additional methods for search and traversal of sorted sets and maps.
+    these methods should have been part of the original SortedSet / SortedMap
+    TreeSet and TreeMap are two classes that implement these interfaces.
+
+
+here's a list of the concrete classes that implement these interfaces.
+    all of these implement Collection except for the Maps: 
+
+    
+    ArrayList 
+    LinkedList
+    ArrayDeque              // a circular array 
+    HashSet                 // just a typical unordered set 
+    TreeSet                 // a sorted set that allows traversal
+    EnumSet                 // a set of enum values 
+    LinkedHashSet           // a set that remembers the order inwhich the elements were inserted 
+    PriorityQueue           // designed for efficient removal of elements at the front 
+    HashMap                 // typical key/value map 
+    TreeMap                 // map inwhich the keys are sorted and you can traverse it
+    EnumMap                 // the keys are enum values
+    LinkedHashMap           // a map that remembers the order inwhich the key/values were inserted
+    WeakHashMap             // map that doesn't store strong references
+    IdentityHashMap         // map whose keys are compared by ==, not equals()
+
+
+the main benefit of using a LinkedList over an ArrayList is you can remove elements from the middle much more efficiently
+
+    var names = new LinkedList<String>();
+    names.add("John");
+    names.add("Paul");
+    names.add("Ringo");
+    names.add("Geoorge");
+
+    Iterator<String> iter = names.iterator();
+
+    String firstName = iter.next();
+    String secondName = iter.next();
+    iter.remove();
+
+
+note that with a LinkedList the position of the iterator matters. 
+    if you add() an element when the iterator is in the middle it will be inserted in the middle.
+    calling add() off an iterator only makes sense for ordered data structures where you can insert elements into the middle like this. 
+        for this reason add() isn't part of the Iterator interface, it's defined on ListInterface instead.
+            this way unordered data structures like Set can implement Iterator without having to implement an add() method for it.
+
+ListIterator has these two methods for backwards traversal:
+
+    E previous()
+    boolean hasPrevious()
+
+
+ListIterator's add() method is also weird in that it inserts the element before the iterators position. 
+    likewise previous() moves the iterator back one, but returns the element it was first pointing to.
+
+    if you call add() multiple times the elements are inserted in order before the current iterators position.
+
+
+
+pg 516, top
 
 
 
