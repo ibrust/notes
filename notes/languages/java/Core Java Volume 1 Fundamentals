@@ -2550,6 +2550,10 @@ here's a list of the concrete classes that implement these interfaces.
 
 the main benefit of using a LinkedList over an ArrayList is you can remove elements from the middle much more efficiently
 
+    import java.util.List;
+    import java.util.LinkedList;
+    import java.util.ListIterator;
+
     var names = new LinkedList<String>();
     names.add("John");
     names.add("Paul");
@@ -2579,12 +2583,35 @@ ListIterator's add() method is also weird in that it inserts the element before 
     likewise previous() moves the iterator back one, but returns the element it was first pointing to.
 
     if you call add() multiple times the elements are inserted in order before the current iterators position.
+    
+    to add() an element at the very end of the list the iterator must point past the last element, where hasNext() will return false 
+
+an iterator's remove() is even weirder. if you've just called next() it'll remove the element before the one you're pointing to. 
+    but if you've just called previous() it'll remove the element in front of the one you're pointing to.
+
+    and an iterator's set() works the same weird way too - it overwrites the element you were just pointing to, 
+        which varies based on whether you just called next() or previous()
+
+things could get buggy if two iterators structurally modified the same list at once. i.e. if one iterator removed an element that another iterator was pointing to.
+    so if an iterator detects that its collection has been structurally modified by another iterator it throws a ConcurrentModificationException 
+    structural modification means a call to add() or remove(). calls to set() do not cause problems
+    you can use multiple iterators as long as only 1 of them ever calls add() or remove(), and the rest just read from it or call set()
+
+LinkedList has a get() method that's random access. it allows you to get an element at a particular index.
+    if you're using this too frequently it's better to just use an array. 
+    also be sure to never call get() inside a loop, this is very inefficient. 
+
+LinkedList has methods that tell you the current pointer position.
+    nextIndex returns the index of the element that would be returned by a call to next()
+    previousIndex does the same for a call to previous(). note that previousIndex will always be 1 less than nextIndex
+
+LinkedList.listIterator(int Index) is a static method that returns an iterator pointing to a specified index. 
+
+in general you should just avoid using LinkedLists if an ArrayList will work due to the strange interface and potential performance inefficiencies
+    use a LinkedList if it's important to be able to insert into the middle, otherwise use an ArrayList
 
 
 
-pg 516, top
 
 
-
-
-
+pg 523, 9.3.2

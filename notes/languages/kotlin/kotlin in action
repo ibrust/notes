@@ -1,0 +1,138 @@
+
+this book covers kotlin 1.0 and was released in 2017
+
+========================================================
+CHAPTER 1: KOTLIN - WHAT AND WHY 
+========================================================
+
+kotlin and its compiler / related libraries / tooling are open source. 
+
+these 2 IDEs are typically used with kotlin:  
+    IntelliJ IDEA
+    Android Studio -  based on IntelliJ IDEA, but specializes in developing for Android 
+
+the kotlin plugin for IntelliJ IDEA / Android Studio was developed alongside the kotlin compiler
+    this plugin is included out of the box with these IDEs 
+
+interoperability with Java was a cornerstone of kotlins design 
+    kotlin can be used anywhere Java is used, and works with all existing Java libraries / frameworks 
+        so like Java, kotlin is mainly used in server-side programming and Android development
+            server-side programming is a broad category, but roughly includes web servers, mobile app servers, and microservices
+    you can use kotlin in an existing Java codebase as well
+        you can even extend existing java classes with kotlin or annotate java methods & fields in certain ways
+
+there are followup efforts to make kotlin compile to javascript or to native code 
+there's an intel multi-OS engine that can be used to run kotlin on iOS devices (probably won't work on apple silicon though)
+you can also use kotllin with TornadoFX to build desktop applications
+
+kotlin is statically typed
+
+in declarations you aren't required to specify a type if the type can be inferred: 
+
+    val x = 2               // inferred to be an Int 
+
+
+kotlin handles null values in a way that's similr to swift 
+kotlin also has built in support for function types, unlike Java 
+
+kotlin supports functional programming. these are apparently the key concepts of functional programming: 
+
+    1) functions are first class objects, so they can be passed as parameters, stored in variables, and returned 
+    2) the objects you work with are immutable 
+    3) functions do not have side effects. for example, they work with a copy of the data, and won't modify the state of objects 
+
+    these features allow for safe multithreading 
+
+
+kotlins key features for supporting functional programming are: 
+
+    1) function types
+    2) lambdas 
+    3) data classes - a concise syntax for creating immutable value objects 
+
+
+there's a special kotlin compiler-plugin for supporting the Android framework. 
+    there's also an Anko library (built by the kotlin team) which adds alot of kotlin adapters for many standard Android APIs
+    not sure if either are still needed.
+
+kotlin's design makes runtime errors less of a problem. 
+    for example, its handling of null values makes NullPointerException not a problem 
+
+alot of boilerplate in Java (like getters / setters) is implicit in kotlin. this makes the language more concise 
+
+kotlin reuses java libraries as much as possible. it extends javas standard library to make it easy to use with kotlin.
+
+kotlin source files end in .kt extension. the kotlin compiler generates .class files from these:
+
+    kotlinc file.kt -include-runtime -d jarName         // compile a kotlin file to a JAR
+    java -jar jarName                                   // now execute the JAR file 
+
+
+if you run kotlinc with no arguments it'll launch the kotlin interactive shell
+    they call this shell the REPL 
+
+code compiled using the kotlin compiler kotlinc depends on the kotlin runtime library.
+    this contains the definitions of kotlin's own standard library classes and the extensions kotlin adds to the standard Java APIs 
+    this runtime library needs to be distributed with your application (hence the JAR?)
+
+typically people use Maven, Gradle, or Ant to build instead of doing it manually 
+    all these build systems do support building mixed projects of Java & Kotlin 
+    Maven and Gradle will also take care of including the kotlin runtime library 
+
+IntelliJ IDEA has a Java to kotlin converter built in. 
+    if you paste Java code into a kotlin file it will do this conversion automatically.
+    you can also open a java file and select Code > Convert Java File to Kotlin File 
+
+========================================================
+CHAPTER 2: KOTLIN BASICS
+========================================================
+
+the main function can be declared at the top level - you don't need to put it in a class as in Java: 
+
+    fun main(args: Array<String>) {
+        println("Hello World!")                         // println instead of System.out.println
+    }                                                   // the kotlin standard library provides many wrappers around Javas standard library methods 
+
+
+the semi-colon at the end of lines is optional 
+
+use a colon to denote a functions return value: 
+
+    fun max(a: Int, b: Int): Int {
+        return if (a > b) a else b 
+    } 
+
+
+in the above code the if/else has a return value, and works similar to the ternary operator.
+    in kotlin most control structures (except for the various loops) are expressions that return a value. 
+    but assignment statements are not expressions and don't return a value (unlike in Java)
+
+if a function consists of a single expression you can omit the curly braces and return statement: 
+
+    fun max(a: Int, b: Int): Int = if (a > b) a else b
+
+
+infact, for these single expression functions you can even omit the return type, since kotlin can infer it. I think I'd rather include it anyway though:
+
+    fun max(a: Int, b: Int) = if (a > b) a else b
+
+
+pg 20, 2.3.2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
