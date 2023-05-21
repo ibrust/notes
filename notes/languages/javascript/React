@@ -31,7 +31,7 @@ JSX extends the syntax of javascript, allowing you to use HTML elements in code:
 
 any valid javascript expression can go inside the curly braces. 
 
-if a tag is empty you can close it immediately like in XML.
+if a tag is empty you can close it immediately like in XML. 
 in JSX all tags must be closed.
 
     const element4 = <img src={imageURL}/>;             // curly braces can be used in property assignment
@@ -55,8 +55,8 @@ you can pass objects in JSX, within curly braces {}. You may end up with double 
 
 
 the React DOM escapes values embedded in JSX before rendering them. 
-    it prevents injection attacks by ensuring you only inject code within the application 
-everthing is also converted to a string before being rendered, which helps prevent cross-site scripting attacks 
+    it prevents injection attacks by ensuring you only inject code from within the application 
+everything is also converted to a string before being rendered, which helps prevent cross-site scripting attacks 
 
 
 JSX expressions are compiled to React.createElement() function calls, which return ReactDOM elements 
@@ -64,8 +64,8 @@ JSX expressions are compiled to React.createElement() function calls, which retu
 
 
     const element = (                                       // JSX version 
-        <h1 className="greeting">Hello, world!</h1>         // since class is a reserved word JSX uses className instead 
-    );                                                      // otherwise, property names are typically their camelcase equivalents
+        <h1 className="greeting">Hello, world!</h1>         // property names are typically their camelcase equivalents 
+    );                                                      // but class is an exception - since class is a reserved word JSX uses className instead 
 
     const element = React.createElement(                    // compiled version 
         'h1', {className: 'greeting'}, 'Hello, world!'
@@ -85,8 +85,7 @@ a ReactDOM element is a javascript object with the following format:
 React reads these objects and uses them to construct / update the DOM
 
 
-the idea of using JSX was to allow you to put logic & HTML in the same place - view logic, essentially 
-    though I find this dubious, I suppose you do need some very limited view logic, like we have in applyModel() 
+the idea of using JSX was to allow you to use logic & HTML in the same place
 
 
 empty tags <></> are called fragments. 
@@ -153,7 +152,7 @@ React elements are immutable. Once created, their children & attributes can't be
 but most React apps actually only call root.render() once.
     instead they use stateful components to update the UI, which will be covered later
 
-when updating the UI React will go back & compare the the updated state with the prior state, 
+when updating the UI React will go back & compare the updated state with the prior state, 
     & the screen only rerenders the DOM elements that have changed. 
 
 
@@ -164,14 +163,12 @@ COMPONENTS AND PROPS
 the HTML is constructed from components, which are independent reusable pieces 
 components accept a single props object as input and return ReactDOM elements:
 
-you can use functional components:
-
+    // you can use functional components
     function WelcomeBanner(props) {
         return <h1>Hello, {props.name}</h1>;
     }
 
-or class components:
-
+    // or class components
     class WelcomeBanner extends React.Component {
         render() {
             return <h1>Hello, {this.props.name}</h1>;
@@ -199,7 +196,6 @@ here's a full example:
     const root = ReactDOM.createRoot(document.getElementById('root'));
     const element = <welcomeBanner name="Joseph Watson" />;
     root.render(element);
-
 
 
 components can refer to other components in their output.
@@ -259,7 +255,7 @@ the parent component will always receive any child elements in a prop called chi
 STATE AND LIFECYCLE
 ================================
 
-here's an example of how to make a class component rerender itself (so that you don't have to call root.render() repeatedly on it):
+here's an example of how to make a class component rerender on an interval:
 
     class Clock extends React.Component {
         render() {
@@ -309,7 +305,7 @@ remember it's important to initialize / free up resources in components when the
         }
 
         tick() {
-            this.setState({
+            this.setState({                                         // setState() seeks kind of like applyModel() 
                 date: new Date()
             });
         }
@@ -349,7 +345,7 @@ to fix this bug there's a special form of setState() that takes state & props as
 
 when you call setState(), behind the scenes React merges the object you provide into the current state object.
 
-this state is local & encapsulated
+this state is local & encapsulated.
     neither parent nor child will know whether the class or functional components they use contain state information. that's an internal implementation detail.
     however, a component can pass its state down to a child component via the props object, the child just won't know that's where it came from. 
         this aspect of the data flow is thus top-down and unidirectional 
@@ -439,8 +435,7 @@ as an example, let's say you wanted to control an on-screen video's play / pause
 
 
 be mindful that, by default, useEffect() runs after every render, so you can create infinite loops if you set state from within useEffect(). 
-    that would trigger enough rerender, which would trigger another useEffect(), and so on. 
-
+    that would trigger another rerender, which would trigger another useEffect(), and so on. 
 you tell React to skip unnecessarily re-running the effect by specifying an array of dependencies as the second argument to useEffect()
     in the above code, useEffect() will only rerun when isPlaying has changed from the previous render. 
 
@@ -448,7 +443,7 @@ an empty dependency array [] tells React to only run useEffect() once, when the 
 
 
 during development React will actually mount / unmount / mount your components very quickly during initial load 
-    it does this to help you find bugs related to not propertoy cleaning up your components. 
+    it does this to help you find bugs related to not properly cleaning up your components. 
 useEffect() can return a function. this returned function is used for cleanup of things setup within useEffect().
 
     useEffect(() => {
@@ -465,6 +460,95 @@ apparently this double-mount behave is used to weed out alot of bugs, and if you
 ================================
 HANDLING OF EVENTS
 ================================
+
+handling events on ReactDOM elements is similar traditional DOM elements, but there are some important differences:
+    1) react events are named using camelCase instead of all lowercase 
+    2) with JSX you pass a function as the event handler instead of a string 
+
+    // HTML version 
+    <button onclick="walkDog()">Walk Dog</button>
+
+    // React version 
+    <button onClick={walkDog}>Walk Dog</button>
+
+
+    3) you cannot return false to prevent default behavior in React, you must call preventDefault explicitly
+
+    // HTML version 
+    <form onsubmit="console.log('submit button pressed'); return false">
+        <button type="submit">Submit</button>
+    </form>
+
+    // React version 
+    function Form() {
+        function handleSubmit(e) {                        // this is actually a SyntheticEvent, a custom event type synthesized by react.
+            e.preventDefault();                           // it's a cross-browser compatible wrapper around a regular event
+            console.log('submit button pressed');         // read for more info: https://legacy.reactjs.org/docs/events.html
+        } 
+        
+        return (
+            <form onSubmit={handleSubmit}>
+                <button type="submit">Submit</button>
+            </form>
+        );
+    }
+
+
+instead of calling addEventListener() you usually add listeners in the render() method of the component.
+    often the event handler will be a method of the class component, too:
+
+    class Toggle extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {isToggleOn: true};
+        
+            // calling bind() here is necessary to make `this` work in the handleClick() callback
+            this.handleClick = this.handleClick.bind(this);
+        }
+    
+        handleClick() {                                         // event handler 
+            this.setState(prevState => ({
+                isToggleOn: !prevState.isToggleOn
+            }));
+        }
+    
+        render() {
+            return (
+                <button onClick={this.handleClick}>             // set onClick listener 
+                    {this.state.isToggleOn ? 'ON' : 'OFF'}
+                </button>
+            );
+        }
+    }
+
+
+you must be careful about the meaning of `this` in JSX callbacks. 
+    if you forget to bind() the callback to `this`, `this` will be undefined when the callback is invoked
+remember when writing closures that the `this` pointer is actually a javascript keyword, not a variable 
+    thus you can't capture through closure the `this` pointer 
+    so if you need to access `this` within a closure you must use either an arrow function (its `this` pointer is the surrounding function scope), 
+    call bind(), or assign `this` to a variable in the surrounding scope and capture that variable 
+
+        but here in react you don't want to use an arrow function, since this will recreate the callback on each render(). 
+            this is inefficient, and if the callback is passed as a prop to lower components this will cause unnecessary rerenders of those components. 
+
+    so in react if you refer to a method without () after it (passing it as a callback), i.e. onClick={this.handleClick}, you should bind that method
+
+
+in a loop you may need to pass arguments to a JSX callback. here's two ways to do that: 
+
+    <button onClick={(e) => this.walkDog(leash, e)}>Walk Dog</button>           // using an arrow function isn't ideal 
+
+    <button onClick={this.walkDog.bind(this, leash)}>Walk Dog</button>          // using bind() is preferred. walkDog() will still receive e here, 
+                                                                                // because with bind() any further arguments are automatically forwarded 
+
+================================
+CONDITIONAL RERENDERING
+================================
+
+
+
+
 
 
 

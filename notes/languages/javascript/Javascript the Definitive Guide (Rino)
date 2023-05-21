@@ -1903,10 +1903,10 @@ while using two closures that share a local scope is a notable technique, most c
     return funcs;                       // defines a block that is independent of the others, with a new set of variable bindings for i  
   }
 
-it's also important to remember, when writing closures, that the this pointer is actually a javascript keyword, not a variable 
-  thus you can't capture through closure the this pointer 
-  so if you need to access this within a closure you must use either an arrow function (its this pointer is the surrounding function scope), 
-  call bind(), or assign this to a variable in the surrounding scope and capture that variable 
+it's also important to remember, when writing closures, that the `this` pointer is actually a javascript keyword, not a variable 
+  thus you can't capture through closure the `this` pointer 
+  so if you need to access `this` within a closure you must use either an arrow function (its `this` pointer is the surrounding function scope), 
+  call bind(), or assign `this` to a variable in the surrounding scope and capture that variable 
 
 the length property of a function specifies the number of parameters in its parameter list 
   if the function has a variadic parameter it isn't counted as part of length 
@@ -6314,5 +6314,66 @@ many of these APIs will only work over HTTPS connections. you should just use HT
 CHAPTER 16, SERVER-SIDE JAVASCRIPT WITH NODE
 ========================================================================================
 
+in node console.log() outputs to stdout and console.error() writes to stderr 
 
-pg 577
+you can configure a node script using command line arguments and environment variables
+
+process.argv is the array that contains command line arguments 
+  the first element is the path tot he node executable. 
+  the second element is the path to the javascript file that's being executed
+
+when you run node, anything after the script will be put into process.argv:
+
+  node --trace-uncaught script.js arg1 arg2 
+
+
+process.env is the object that contains the environment variables
+
+
+-h or --help shows a list of command line options:
+
+  node -h | less 
+
+  node --print --eval 'process.env'               // prints the process.env object 
+
+  node --p --e 'process.argv' arg1 arg2           // prints process.argv, passing it 2 arguments 
+                                                  // notice in the output argv doesn't contain a script as the 2nd element because you used eval
+
+
+the script specified at the command line acts like a main function. it often imports & executes other modules and scripts
+
+a node program will naturally keep running until the initial file is finished executing, all callbacks have been called, and there are no more pending events. 
+  i.e. a node-based server listening for incoming connections will keep running until that listener is torn down 
+
+  but you can end execution early by calling process.exit(), or by pressing ctrl+C 
+    note that a program can ignore ctrl+C by registering a signal handler via process.on("SIGINT", () => {}) 
+
+  if your program throws an uncaught exception it will also output and error message then exit 
+
+
+since node uses a single-threaded, asynchronous execution model, if an exception occurs in a callback or event handler it must be handled within that block.
+  but to prevent these miscellaneous errors from crashing your entire program node lets you register a global error handler: 
+
+    process.setUncaughtExceptionCaptureCallback(e => {
+      console.error("uncaught exception: ", e);
+    });
+
+
+if a promise is rejected and there's no .catch() invocation to handle it a similar problem arises. 
+  as of Node 13 this won't crash your program, but in a future version of Node it will.
+  but node also lets you register a global rejected promise handler to prevent this: 
+
+    process.on("nhandledRejection", (reason, promise) => {
+      ... 
+    });
+
+
+pg 581
+
+
+
+
+
+
+
+
