@@ -44,4 +44,32 @@ the catalan looks interesting, but there's alot involved in getting to it. if I 
     I'd also need to learn different kings indian defense / gruenfeld lines. 
 
 
+_______
+Reti: 1… Nf6 2. c5 - 35% 2200 / 44% 2500 
+	2… g6 3. d4 - typical kings indian / gruenfeld setup, I’m fine with this, the engine prefers white 
+	2… e6 3. g3 - transposes into a typical catalan or a queens indian, but it avoids the bogo that can occur in the usual anti-nimzo setup 
+	2… c5 3. Nc3 - symmetrical 3 knights variation - good winrate and unique 	
+    2… c6 3. g3 - high winrate of 51%, restricted options for black, novel response to the slav, looks good  
+
+1… d5 2. c4 - Reti gambit - 32% 2200 / 32% 2500 
+    this line is interesting and avoids many of the main lines that'd be encountered otherwise from the QGA and semi-slav 
+        it's worth testing to see how well it works out, if it doesn't work we can play the regular lines 
+    another option here is the kings indian attack ... 
+        the only issue with that is... you aren't using the kings indian attack against 1... Nf6, so that's not entirely consistent 
+    you could also just play the semi-slav / QGA, and switch from playing 1... Nf6 2. c5 c6 3. g3 to a more standard semi-slav line 
+
+
+1… c5 2. e4 - 11% 2200 /  9% 2500 - sicilian transposition
+
+    another option here would be go into the symmetrical variation, which may throw the opponent off more 
+
+1... g6 2. ? - 4% 2200 / 4% 2500 - modern
+
+    nothing different here from when playing 1.e4
+
+1... e6 2. ? - 4% 2200 / 2% 2500 - ?
+
+
+
+
 
