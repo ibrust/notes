@@ -1,11 +1,12 @@
 simple calculator program 
 
-the MD button changes the mode of the calculator between Binary, Decimal, and Hex.
+to run: 
+    pip install -r requirements.txt
+    python -m tkinter_calculator
 
-to run: python3 -m tkinter_calculator
+built using tkinter
+architecture is like MVVMC, but there's no navigation, the coordinator is just doing initialization
 
-built using tkinter and MVVMC architecture
-the data flow is: CalculatorModel > CalculatorPresenter > CalculatorView > CalculatorController
-CalculatorCoordinator sits above the data flow & sets it up / manages it
-CalculatorModel.Data is where the data that drives updates is located 
-_ReactiveProperty.py contains a function used to create data bindings in CalculatorModel.Data
+_ReactiveProperty.py contains a function used to wrap properties in CalculatorModel.Data and observe updates
+    the observed properties aren't immutable, that's one problem with this design in python
+    there's a reactive framework that uses namedtuples to achieve immutability that could be worth looking into 
