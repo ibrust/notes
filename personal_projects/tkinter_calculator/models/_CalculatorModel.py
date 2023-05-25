@@ -1,22 +1,21 @@
 from reactivex.subject.subject import Subject
 from ..controllers import CalculatorControllerDelegate
-from .._types import ButtonSymbol, CalculatorMode
+from .._types import ButtonSymbol
 from ..helpers import reactiveProperty
 
 __all__ = ['CalculatorModel']
 
-class CalculatorModel(CalculatorControllerDelegate):
 
+class CalculatorModel(CalculatorControllerDelegate):
     class Data:
         previousOperand: str = reactiveProperty("previousOperand", str)
         currentOperand: str = reactiveProperty("currentOperand", str)
-        mode: CalculatorMode.DECIMAL = reactiveProperty("mode", CalculatorMode)
         publisher: Subject
+
         def __init__(self):
             self.publisher = Subject()
             self.previousOperand = None
             self.currentOperand = "0"
-            self.mode = CalculatorMode.DECIMAL
 
     publisher: Subject
     data: Data
@@ -95,14 +94,6 @@ class CalculatorModel(CalculatorControllerDelegate):
             self.data.currentOperand = self.data.currentOperand + symbol.value
             return
 
-    @property
-    def mode(self):
-        return self.data.mode
-
-    @mode.setter
-    def mode(self, value: CalculatorMode):
-        self.data.mode = value
-
     def clear(self):
         self.data.currentOperand = "0"
         self.data.previousOperand = None
@@ -114,4 +105,5 @@ class CalculatorModel(CalculatorControllerDelegate):
         elif self.data.currentOperand[0] == "-":
             self.data.currentOperand = self.data.currentOperand[1:]
 
-
+    def turnOff(self):
+        exit(0)

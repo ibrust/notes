@@ -22,7 +22,7 @@ class DecimalButtonsView(BaseViewProtocol):
     def constructViews(self):
         self.mainFrame: Frame = ttk.Frame(self.superView, padding="0")
 
-        upperSymbols = [ButtonSymbol.MODE, ButtonSymbol.PLUSMINUS, ButtonSymbol.CLEAR]
+        upperSymbols = [ButtonSymbol.CLEAR, ButtonSymbol.PLUSMINUS, ButtonSymbol.OFF]
         self.topButtons: [Button] = []
         for i in range(0, len(upperSymbols)):
             button: Button = ttk.Button(self.mainFrame, text=upperSymbols[i].value,
@@ -31,10 +31,16 @@ class DecimalButtonsView(BaseViewProtocol):
 
         self.digitButtons: [Button] = []
         for i in range(1, 10):
-            self.digitButtons.append(ttk.Button(self.mainFrame, text=ButtonSymbol(str(i)).value, command=lambda i=i: self.buttonTap(ButtonSymbol(str(i)))))
-        self.digitButtons.append(ttk.Button(self.mainFrame, text=ButtonSymbol.ZERO.value, command=lambda: self.buttonTap(ButtonSymbol.ZERO)))
+            self.digitButtons.append(ttk.Button(self.mainFrame,
+                                                text=ButtonSymbol(str(i)).value,
+                                                command=lambda i=i: self.buttonTap(ButtonSymbol(str(i)))))
 
-        self.decimalButton: Button = ttk.Button(self.mainFrame, text=ButtonSymbol.DECIMAL.value, command=lambda: self.buttonTap(ButtonSymbol.DECIMAL))
+        self.digitButtons.append(ttk.Button(self.mainFrame,
+                                            text=ButtonSymbol.ZERO.value,
+                                            command=lambda: self.buttonTap(ButtonSymbol.ZERO)))
+        self.decimalButton: Button = ttk.Button(self.mainFrame,
+                                                text=ButtonSymbol.DECIMAL.value,
+                                                command=lambda: self.buttonTap(ButtonSymbol.DECIMAL))
 
     def layoutViews(self):
         self.mainFrame.grid(column=0, row=0, sticky=(N, W, E, S))

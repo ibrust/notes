@@ -20,8 +20,8 @@ class CalculatorController(CalculatorViewDelegate):
             self.delegate.handleMathOperation(symbol)
         elif symbol == ButtonSymbol.EQUALS:
             self.delegate.equals()
-        elif symbol == ButtonSymbol.MODE:
-            self.delegate.mode = CalculatorMode((viewModel.mode.value + 1) % len(CalculatorMode))
+        elif symbol == ButtonSymbol.OFF:
+            self.delegate.turnOff()
         elif symbol == ButtonSymbol.CLEAR:
             self.delegate.clear()
         elif symbol == ButtonSymbol.PLUSMINUS:

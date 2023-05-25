@@ -13,13 +13,8 @@ class CalculatorControllerDelegate(ABC):
     @abstractmethod
     def handleMathOperation(self, symbol: ButtonSymbol): pass
 
-    @property
     @abstractmethod
-    def mode(self): pass
-
-    @mode.setter
-    @abstractmethod
-    def mode(self, value): pass
+    def turnOff(self): pass
 
     @abstractmethod
     def clear(self): pass

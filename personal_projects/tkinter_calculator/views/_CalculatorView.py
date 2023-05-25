@@ -3,7 +3,7 @@ from tkinter import ttk
 from ._BaseViewProtocol import BaseViewProtocol
 from ._DecimalButtonsView import DecimalButtonsView, DecimalButtonsViewDelegate
 from ._OperationButtonsView import OperationButtonsView, OperationButtonsViewDelegate
-from .._types import ButtonSymbol, CalculatorMode
+from .._types import ButtonSymbol
 from ._CalculatorViewDelegate import CalculatorViewDelegate
 
 __all__ = ['CalculatorView']
@@ -12,12 +12,10 @@ class CalculatorView(BaseViewProtocol, DecimalButtonsViewDelegate, OperationButt
 
     class Model:
         displayText: str
-        mode: CalculatorMode
         hasExceededMaxDigits: bool
 
-        def __init__(self, displayText="0", mode=CalculatorMode.DECIMAL, hasExceededMaxDigits=False):
+        def __init__(self, displayText="0", hasExceededMaxDigits=False):
             self.displayText = displayText
-            self.mode = mode
             self.hasExceededMaxDigits = hasExceededMaxDigits
 
     @property
@@ -65,17 +63,27 @@ class CalculatorView(BaseViewProtocol, DecimalButtonsViewDelegate, OperationButt
     def styleViews(self):
         frameStyle = ttk.Style(self.superView)
         frameStyle.theme_use("alt")
-        frameStyle.configure("CalculatorViewMainFrame.TFrame", background="black", borderwidth=5, relief='raised')
+        frameStyle.configure("CalculatorViewMainFrame.TFrame",
+                             background="black",
+                             borderwidth=5,
+                             relief='raised')
         self.mainFrame.configure(style="CalculatorViewMainFrame.TFrame")
 
         runningTotalStyle = ttk.Style(self.mainFrame)
         runningTotalStyle.theme_use("alt")
-        runningTotalStyle.configure("CalculatorViewRunningTotal.TLabel", foreground="white", background="black", borderwidth=1, relief='raised')
+        runningTotalStyle.configure("CalculatorViewRunningTotal.TLabel",
+                                    foreground="white",
+                                    background="black",
+                                    borderwidth=1,
+                                    relief='raised')
         self.runningTotalLabel.configure(style="CalculatorViewRunningTotal.TLabel")
 
         numericalButtonsViewFrameStyle = ttk.Style(self.mainFrame)
         numericalButtonsViewFrameStyle.theme_use("alt")
-        numericalButtonsViewFrameStyle.configure("numericalButtonsViewFrame.TFrame", background="black", borderwidth=1, relief='raised')
+        numericalButtonsViewFrameStyle.configure("numericalButtonsViewFrame.TFrame",
+                                                 background="black",
+                                                 borderwidth=1,
+                                                 relief='raised')
         self.numericalButtonsViewFrame.configure(style="numericalButtonsViewFrame.TFrame")
         self.operationalButtonsViewFrame.configure(style="numericalButtonsViewFrame.TFrame")
 

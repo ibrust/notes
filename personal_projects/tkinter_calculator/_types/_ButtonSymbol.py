@@ -9,7 +9,7 @@ class ButtonSymbol(Enum):
     MUL = "x"
     DIV = "÷"
     EQUALS = "="
-    MODE = "MD"
+    OFF = "OFF"
     PLUSMINUS = "+/-"
     CLEAR = "C"
     DECIMAL = "."

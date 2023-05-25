@@ -35,6 +35,5 @@ class CalculatorPresenter:
 
         return CalculatorView.Model(
             displayText=displayText,
-            mode=modelData.mode,
             hasExceededMaxDigits=hasExceededMaxDigits
         )
