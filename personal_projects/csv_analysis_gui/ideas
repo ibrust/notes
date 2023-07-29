@@ -1,0 +1,15 @@
+what should this program do?
+
+- it should use numpy to do some sort of analysis probably
+
+- i want to be able to choose a random location in the united states
+
+- i want to be able to filter the set that I'm choosing from based on a variety of criteria
+    I'm not sure how this feature should work
+    should there be a window where I enter a field, or something like a SQL expression? kinda like arc's SQL builder
+
+    you'll get the data from a CSV file
+    so you could also just populate a table with the fields and detect the type of data it is
+        then have some reasonable input or search box show up based on the data type
+    these may be things you can do with numpy
+

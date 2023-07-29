@@ -1,0 +1,121 @@
+--------------------------------------------
+GENERAL OVERVIEW
+--------------------------------------------
+
+a project in Android Studio uses a file structure consisting of one or more module. The types of modules include:
+    app modules
+    library modules
+    Google App Engine modules
+
+
+there's also a top-level section Gradle Scripts that contains all build files
+
+an app module contains the following 3 folders:
+
+    manifests: contains the AndroidManifest.xml file 
+    java: the Kotlin / Java source files, including those for unit tests
+    res: all non-code resources (strings, images)
+
+the file hierarchy can be seen from the Project tab
+note that the Android project structure on disk differs from this flattened representation
+    there's a dropdown at the top left - change "Android" to "Project" to see the real file structure on disk
+
+you can use gradle to build the app either from the command line or from within Android Studio 
+
+Android Studio's build files for configuring Gradle are named build.gradle.kts (a kotlin file) or build.gradle (a Groovy file) 
+    changes made using Android Studio's Gradle plugin will update these build files.
+every project has one top-level build file for the whole project, and separate module-level build files for each module 
+
+.apk is a file format used by the Android operating system for distributing / installing mobile apps 
+
+with the build system you can build different versions of the same app with different configuration settings (like building for different markets).
+    a single build can also be configured to produce multiple .apk files for different screen densities or CPU architectures.
+    the build process also can perform resource-shrinking, where unused resources are removed from the packaged app or library dependencies 
+
+build dependencies are specified by name in the module-level build script. 
+    here you can declare module dependencies, remote binary dependencies, and local binary dependencies. 
+    gradle will search & find these dependencies, & link them during the build. 
+
+Android Studio configures Maven to use the Maven Central Repository by default. this configuration is specified in the top-level build file. 
+
+during the build Android Studio also does linting, code inspections, and supports Java annotations 
+
+--------------------------------------------
+GET TO KNOW THE UI / KEYBOARD SHORTCUTS
+--------------------------------------------
+
+double-shift opens up a search pane for searching throughout the project (same is true in PyCharm)
+
+there are different types of code completion in Android Studio (some of this works in PyCharm but not all): 
+
+    basic completion (ctrl + space) - display basic suggestions. call twice in a row for more results 
+    smart completion (ctrl + shift + space) - display suggestions based on the context. call twice in a row for more results 
+    statement completion ((ctrl or command) + shift + enter) - complete current statement for you (didn't work in PyCharm)
+    quick-fix (alt + enter) - show suggestion / perform a suggested quick fix 
+
+(command or ctrl) + E shows a "Recent Files" window for quick navigation (works in PyCharm)
+    this lists tool windows on the left and recent files on the right
+
+(command or ctrl) + F12 shows a breakdown the different classes / methods in your current file and lets you jump to them (works in PyCharm)
+
+may want to change these if on windows to use O instead of N (and maybe even use alt instead of ctrl, so the keystroke is the same):
+    (command + O) or (ctrl + N) - navigate to a particular class
+    (command + shift + O) or (ctrl + shift + N) - navigate to a particular file
+    (command + option + O) or (ctrl + shift + alt + N) - navigate to a particular method / property 
+
+(alt + F7) or (option + F7) - find all code referencing the code at the current cursor position (not working)
+(ctrl + alt + L) or (option + command + L) - reformat code 
+(ctrl + alt + I) or (ctrl + option + I) - auto-indent lines
+(ctrl or command) + tab - move through open files & all tool windows 
+
+F10 - open main menu (doesn't work) 
+Alt + F - open file menu (windows only - see if you can set this on mac) 
+
+(Alt + Home) or (option + Fn + Left) - activate navigation bar (change this hotkey, it's not convenient)
+    then use the arrow keys to navigate between items in the navigation bar
+    and press space to open up a window displaying the contents of the current item (doesn't work)
+
+F2 or Shift + F2 - jump to next compilation error in the current file
+
+(shift + F10) or (ctrl + R) - build and run 
+(ctrl + F9) or (command + F9) - build
+(shift + F9) or (ctrl + D) - debug 
+
+Esc - return to editor 
+(ctrl + shift + F12) or (command + shift + F12) - hide all tool windows
+    there's also a distraction free mode (in both PyCharm / Android Studio) you can create a keyboard shortcut for
+        this will hide / show all active windows
+
+on the left is a panel with tabs for common tool windows. there are many other tool windows. 
+    at the very bottom left there's a window icon that shows a window list for showing / hiding different ones 
+        (in Pycharm this is 3 dots and a little higher)
+    (alt or command) + 1 shows / hides the file hierarchy tool window 
+    (alt or command) + other numbers show various other tool windows (in both PyCharm and Android Studio)
+
+(ctrl or command) + F - find 
+
+(Alt + F1) - jump to current file 
+    not working - change this to Alt + J
+    in Android Studio look in Settings > Keymap > Other > Project View Options
+    in PyCharm look in Settings > KeyMap > Other > Bookmark
+
+shift + F4 - open current tab in new window
+(alt or ctrl) + left or right arrows - navigate between open editor tabs 
+(crtl + shift + backspace) or (command + shift + delete) - go back to the last edit location 
+(ctrl + F4) or (command + W) - close active tab 
+Esc - return to editor window from a tool window 
+shift + Esc - hide active or last tool window 
+(ctrl + G) or (command + L) - go to line 
+(ctrl + 0) or (command + 0) - fit to screen (not working) 
+(ctrl or command) + / - comment or uncomment a block (didn't work in pycharm - fix this)
+(ctrl + alt + O) or (ctrl + option + O) - optimize imports 
+(ctrl or command) + B or (ctrl or command) + click - go to declaration 
+(ctrl + alt + B) or (command + option + B) - go to implementations 
+(ctrl + Y) or (command + delete) - delete current line 
+
+--------------------------------------------
+MANAGING YOUR PROJECT OVERVIEW
+--------------------------------------------
+
+
+

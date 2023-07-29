@@ -1,5 +1,5 @@
-from ..views import *
 from ._MainControllerDelegate import MainControllerDelegate
+from ..views import *
 
 __all__ = ['MainController']
 
