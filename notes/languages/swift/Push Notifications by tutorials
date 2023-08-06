@@ -87,9 +87,9 @@ __________________________________________________________________________
 -the cloud can send HTTP headers to APNS in addition to the payload & device tokens 
 -apns-collapse-id: an HTTP header that specifies to collapse multiple notifications into one when a newer one supercedes and old one 
 -you add a unique identifier to this headers field and it will only reduce notifications which share that id. best practice is to use a guaranteed unique id 
--note that if you use a 3rd party delivery service (?) they will have to provide a for you to identify this header 
+-note that if you use a 3rd party delivery service (?) they will have to provide a way for you to identify this header 
 
--apns-push-type: as of IOS13 you must add this header to specify which type of push notification is being sent. exlamples include: alert, background 
+-apns-push-type: as of IOS13 you must add this header to specify which type of push notification is being sent. examples include: alert, background 
 
 -apns-priority: specifying a value of 10 will send the notification immediately. this is appropriate for an alert, sound, or badge update. 
 -any notification which includes the content_available key must specify a priority of 5, apparently. notifications with 5 priority may be grouped and delivered in batches

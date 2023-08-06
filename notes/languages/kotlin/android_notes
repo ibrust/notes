@@ -1,0 +1,54 @@
+
+--------------------------------------------
+UDEMY COURSE
+--------------------------------------------
+
+layout elements that contain other views (i.e. LinearLayout, ConstraintLayout, etc.) are called "ViewGroups" or "Containers" 
+
+the unit type most commonly used in Android for width / height is density independent pixels (dp):
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp" />
+
+to add an image to the project
+    1) open the resource manager tab on the left 
+    2) click on the "drawable" tab 
+    3) drag & drop the image into the tab 
+    4) name the resource - it should be all underscores and snake case
+    5) set ImageView's src attribute to the image location using @drawable
+
+        <ImageView
+            src="@drawable/image_name"
+            android:layout_width="100dp"
+            android:layout_height="100dp" />
+
+
+padding applies space within the element, margins apply space around the element 
+
+
+RadioGroup is a type of LinearLayout that groups RadioButton elements together, and ensures only one is selected at a time 
+
+    <RadioGroup 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton 
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="option 1" />
+        <RadioButton 
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="option 2" />
+    </RadioGroup>
+
+
+an EditText element is like a textfield 
+
+    <EditText 
+        android:input_type="number"
+        android:hint="Card Number"
+        android:layout_margin="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />

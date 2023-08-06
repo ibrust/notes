@@ -7,8 +7,7 @@ a project in Android Studio uses a file structure consisting of one or more modu
     library modules
     Google App Engine modules
 
-
-there's also a top-level section Gradle Scripts that contains all build files
+there's also a top-level section "Gradle Scripts" that contains all build files
 
 an app module contains the following 3 folders:
 
@@ -40,82 +39,174 @@ Android Studio configures Maven to use the Maven Central Repository by default. 
 
 during the build Android Studio also does linting, code inspections, and supports Java annotations 
 
+
 --------------------------------------------
 GET TO KNOW THE UI / KEYBOARD SHORTCUTS
 --------------------------------------------
 
-double-shift opens up a search pane for searching throughout the project (same is true in PyCharm)
-
-there are different types of code completion in Android Studio (some of this works in PyCharm but not all): 
-
-    basic completion (ctrl + space) - display basic suggestions. call twice in a row for more results 
-    smart completion (ctrl + shift + space) - display suggestions based on the context. call twice in a row for more results 
-    statement completion ((ctrl or command) + shift + enter) - complete current statement for you (didn't work in PyCharm)
-    quick-fix (alt + enter) - show suggestion / perform a suggested quick fix 
-
-(command or ctrl) + E shows a "Recent Files" window for quick navigation (works in PyCharm)
-    this lists tool windows on the left and recent files on the right
-
-(command or ctrl) + F12 shows a breakdown the different classes / methods in your current file and lets you jump to them (works in PyCharm)
-
-may want to change these if on windows to use O instead of N (and maybe even use alt instead of ctrl, so the keystroke is the same):
-    (command + O) or (ctrl + N) - navigate to a particular class
-    (command + shift + O) or (ctrl + shift + N) - navigate to a particular file
-    (command + option + O) or (ctrl + shift + alt + N) - navigate to a particular method / property 
-
-(alt + F7) or (option + F7) - find all code referencing the code at the current cursor position (not working)
-(ctrl + alt + L) or (option + command + L) - reformat code 
-(ctrl + alt + I) or (ctrl + option + I) - auto-indent lines
-(ctrl or command) + tab - move through open files & all tool windows 
-
-F10 - open main menu (doesn't work) 
-Alt + F - open file menu (windows only - see if you can set this on mac) 
-
-(Alt + Home) or (option + Fn + Left) - activate navigation bar (change this hotkey, it's not convenient)
-    then use the arrow keys to navigate between items in the navigation bar
-    and press space to open up a window displaying the contents of the current item (doesn't work)
-
-F2 or Shift + F2 - jump to next compilation error in the current file
-
-(shift + F10) or (ctrl + R) - build and run 
-(ctrl + F9) or (command + F9) - build
-(shift + F9) or (ctrl + D) - debug 
-
-Esc - return to editor 
-(ctrl + shift + F12) or (command + shift + F12) - hide all tool windows
-    there's also a distraction free mode (in both PyCharm / Android Studio) you can create a keyboard shortcut for
-        this will hide / show all active windows
-
 on the left is a panel with tabs for common tool windows. there are many other tool windows. 
     at the very bottom left there's a window icon that shows a window list for showing / hiding different ones 
         (in Pycharm this is 3 dots and a little higher)
-    (alt or command) + 1 shows / hides the file hierarchy tool window 
-    (alt or command) + other numbers show various other tool windows (in both PyCharm and Android Studio)
 
-(ctrl or command) + F - find 
+these are my hotkeys - many have to be changed from the defaults 
 
-(Alt + F1) - jump to current file 
-    not working - change this to Alt + J
-    in Android Studio look in Settings > Keymap > Other > Project View Options
-    in PyCharm look in Settings > KeyMap > Other > Bookmark
+double-shift                            search throughout everything in the project - files, classes, methods, variables
+(command or Alt) + O                    search for a class
+(command or Alt) + shift + O            search for a file
+(comamnd or Alt) + ctrl + shift + O     search for a method / property
 
-shift + F4 - open current tab in new window
-(alt or ctrl) + left or right arrows - navigate between open editor tabs 
-(crtl + shift + backspace) or (command + shift + delete) - go back to the last edit location 
-(ctrl + F4) or (command + W) - close active tab 
-Esc - return to editor window from a tool window 
-shift + Esc - hide active or last tool window 
-(ctrl + G) or (command + L) - go to line 
-(ctrl + 0) or (command + 0) - fit to screen (not working) 
-(ctrl or command) + / - comment or uncomment a block (didn't work in pycharm - fix this)
-(ctrl + alt + O) or (ctrl + option + O) - optimize imports 
-(ctrl or command) + B or (ctrl or command) + click - go to declaration 
-(ctrl + alt + B) or (command + option + B) - go to implementations 
-(ctrl + Y) or (command + delete) - delete current line 
+there are different types of code completion in Android Studio:
+    ctrl + space                        basic completion        display basic suggestions. call twice in a row for more results
+    ctrl + shift + space                smart completion        display suggestions based on the context. call twice in a row for more results
+    (command or Alt) + shift + enter    statement completion    complete current statement for you 
+    (command or Alt) + enter            quick-fix               show suggestion / perform a suggested quick fix 
+
+(command or Alt) + E                    shows a "Recent Files" window for quick navigation 
+                                            lists tool windows on the left and recent files on the right
+
+(command or Alt) + left arrow           navigate back           move to previous file 
+(command or Alt) + right arrow          navigate forward        move to next file 
+
+(command or alt) + B                    file structure          shows a breakdown the classes / methods in current file / lets you jump to them 
+
+(command or alt) + L                    reformat code 
+(command or alt) + shift + L            reformat file 
+
+ctrl + tab                              switcher                move through open files & all tool windows 
+
+ctrl + click                                    go to declaration 
+(command or alt) + click                        find usages 
+(command or alt) + shift + click                find usages in file
+(command or alt) + ctrl + shift + click         find usages in settings
+
+(command or alt) + J                    jump to current file 
+
+(ctrl or command) + F                   find 
+
+ctrl + R                                build and run 
+ctrl + B                                build 
+ctrl + D                                debug
+ctrl + T                                stop 
+Esc                                     return to editor from a tool window
+shift + Esc                             hide active or last tool window 
+
+(command or alt) + H                    hide all tool windows
+(command or alt) + shift + H            distraction free mode
+
+(command or alt) + 1                    shows / hides file hierarchy tool window 
+                                            other numbers show various other tool windows 
+
+(command or alt) + left arrow           select previous tab 
+(command or alt) + right arrow          select next tab 
+
+(command or alt) + shift + backspace    last edit location
+(command or alt) + G                    go to line:column
+(command or alt) + /                    comment or uncomment a block with //
+(command or alt) + shift + /            comment or uncomment a highlighted section using /* */ 
+
+(command or alt) + N                    jump to navigation bar
+                                            then use the arrow keys to navigate between items in 
+                                            the navigation bar / press enter to select 
 
 --------------------------------------------
 MANAGING YOUR PROJECT OVERVIEW
 --------------------------------------------
 
+modules are alot like plugins
+    modules can use other modules as dependencies
+    you can independently build, test, and debug each modjule
+
+you can create a new module via File > New > New Module 
+
+remember there are 3 types of modules: 
+
+    app modules - contains the typical source code, resource files, a build file, and a manifest. 
+        there are many types of app modules for different devices: Phone & Tablet, Automotive, Wear OS, Television, others
+
+    feature modules - use for features that leverage "Play Feature Delivery", where users can use the app without installing it 
+        these apps are served from google's servers. conceptually it's similar to a web page but it's more full featured like an app 
+
+    library modules - just a container for code that can be imported by other modules (i.e. PaymentsUIShared) or even by other projects. 
+        there are 3 types of library modules: 
+            Android Library: can contain all file types found in a typical Android project except native C++ code. 
+                compiles to an AAR (Android Archive) file 
+            Android Native Library: like an Android Library but can also contain native C++ code. also compiles to an AAR 
+            Java or Kotlin Library: contains only Kotlin or Java files. compiles to a JAR file 
+
+        add this to build.gradle.kts in your app to link to a library module:
+
+            dependencies {
+                implementation(project(":my-library-module")) 
+            }
+
+modules are sometimes referred to as subprojects because gradle referes to them as individual projects. 
 
 
+the actual file structure of an app module looks more like this: 
+
+    moduleName/
+        build/                              contains build output 
+        libs/                               private libraries
+        src/ 
+            androidTest/                    instrumentation tests that run on an Android device (functional tests...?)
+            cpp/                            contains native C/C++ using the Java Native Interface (JNI)
+
+            main/                           contains your main source files 
+                java/
+                kotlin/
+                res/                        contains application resources like drawable images and UI strings 
+                assets/                     contains files compiled into an apk without modification (i.e. textures, game data) 
+                                                you can navigate this folder using the AssetsManager
+
+            test/                           local tests that run on the host systems JVM 
+
+        build.gradle.kts or build.gradle 
+
+    build.gradle.kts or build.gradle        this defines build configurations that apply to all modules
+
+
+to compile & build C/C++ code you need to install the NDK (Android Native Development Kit). read docs for more info 
+you add C/C++ code in the cpp directory. when you build this will be compiled into what they call a "native library" (it's not actually native...)
+    Java / Kotlin code can then call the C/C++ functions using the Java Native Interface (JNI) 
+
+
+--------------------------------------------
+WRITING CODE 
+--------------------------------------------
+
+Android Studio has a tool called Vector Asset Studio accessed via click File > New > Vector Asset 
+    it helps you create images supporting each screen density
+    upload your own SVG or select a Google-provided material design icon
+
+resources are organized into type-specific directories inside the module's res/ directory. 
+    you can add different versions of files for different devices
+
+Resources in your final app file can come from three sources:
+
+    the main source set (generally located in src/main/res/)
+    build variant source sets
+    Android libraries (AARs)
+
+when all resources from each source set or library are unique, they're all added into the final app. 
+    If there are two or more matching versions of the same resource, build tools select the version to keep based on the following priority:
+        build variant > build type > product flavor > main source set > library dependencies
+
+
+--------------------------------------------
+RUN, DEBUG, AND TEST THE APP
+--------------------------------------------
+
+to view details about the build process select View > Tool Windows > Build or click the hammer icon on the left 
+
+unit tests are located in /src/test/java/
+    these tests run on the local JVM 
+
+instrumented tests are located at /src/androidTest/java/
+    these sound are integration and functional UI tests. they run on a hardware device or emulator
+    instrumented tests are compiled into a separate .apk, and have their own manifest file
+        the manifest is auto-generated, but you can create one at /src/androidTest/AndroidManifest.xml and it will be merged with the generated one
+
+before running any tests make sure the project is synchronized with Gradle by clicking Sync Project button 
+to run all tests in a directory or file, right click it and select "Run" 
+
+to launch the emulator in a separate window go to Settings > Tools > Emulator > uncheck "Launch in a tool window"
