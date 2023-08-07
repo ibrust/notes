@@ -1,0 +1,71 @@
+these are my hotkeys - many have to be changed from the defaults. 
+    these were originally created for Android Studio but should be the same in other Jetbrains IDEs
+
+if in windows be sure to turn off sticky key alerts & related accessibility keyboard shortcuts
+
+double-shift                            go to any - files / classes / methods / properties
+(command or alt) + O                    go to class
+(command or alt) + shift + O            go to file
+(command or alt) + ctrl + shift + O     go to method / property
+
+ctrl + F                                find in current file
+ctrl + shift + F                        find in any file (searches for the string everywhere, including in code)
+
+(command or alt) + shift + backspace    last edit location
+(command or alt) + G                    go to line:column
+
+there are different types of code completion in Android Studio:
+    ctrl + space                        basic completion        display basic suggestions. 
+                                                                    call twice in a row for more results
+    ctrl + shift + space                smart completion        display suggestions based on the context. 
+                                                                    call twice in a row for more results
+    (command or alt) + shift + enter    statement completion    complete current statement for you 
+    (command or alt) + enter            quick-fix               show suggestion / perform a suggested quick fix 
+
+(command or Alt) + E                    shows a "Recent Files" window for quick navigation 
+                                            lists tool windows on the left and recent files on the right
+to just show a list of all tool windows:
+    in Android Stuio at the very bottom left there's a window icon you can hover over
+    in Pycharm there are 3 dots on the left side of the screen you can click on
+
+(command or alt) + left arrow               navigate back           move to previous file in history
+(command or alt) + right arrow              navigate forward        move to next file in history
+
+(command or alt) + shift + left arrow       select previous tab     move to previous file in top bar
+(command or alt) + shift + right arrow      select next tab         move to next file in top bar
+
+(command or alt) + B                    file structure          shows a breakdown the classes / methods in current file
+                                                                and lets you jump to them 
+
+(command or alt) + L                    reformat code 
+(command or alt) + shift + L            reformat file 
+
+ctrl + tab                              switcher                move through open files & all tool windows 
+
+ctrl + click                                    go to declaration 
+(command or alt) + click                        find usages 
+(command or alt) + shift + click                find usages in file
+(command or alt) + ctrl + shift + click         find usages in settings
+
+(command or alt) + J                    jump to current file
+
+ctrl + R                                build and run 
+ctrl + B                                build 
+ctrl + D                                debug
+ctrl + T                                stop 
+Esc                                     return to editor from a tool window
+shift + Esc                             hide active or last tool window 
+
+(command or alt) + H                    hide all tool windows
+(command or alt) + shift + H            distraction free mode
+
+(command or alt) + 1                    shows / hides file hierarchy tool window 
+                                            other numbers show various other tool windows
+                                            you may want to consider what to set these to, but it may vary
+
+(command or alt) + /                    comment or uncomment a block with //
+(command or alt) + shift + /            comment or uncomment a highlighted section using /* */ 
+
+(command or alt) + N                    jump to navigation bar
+                                            then use the arrow keys to navigate between items in 
+                                            the navigation bar / press enter to select 

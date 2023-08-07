@@ -1,7 +1,6 @@
 __all__ = ['reactiveProperty']
 
 def reactiveProperty(propertyName: str, propertyType):
-
     internalPropertyName = "_" + propertyName
 
     @property

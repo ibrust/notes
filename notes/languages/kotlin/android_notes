@@ -1,54 +1,19 @@
-
 --------------------------------------------
-UDEMY COURSE
+DEVICE COMPATIBILITY 
 --------------------------------------------
 
-layout elements that contain other views (i.e. LinearLayout, ConstraintLayout, etc.) are called "ViewGroups" or "Containers" 
+many different kinds of devices run android, with a wide range of device configurations
+    some devices might not have a compass sensor, for example
+    dimensions also vary greatly between devices 
 
-the unit type most commonly used in Android for width / height is density independent pixels (dp):
-    <ImageView
-        android:layout_width="100dp"
-        android:layout_height="100dp" />
+to support different devices you can provide configuration-specific app resources in static files 
+    android will then select the correct resource for the current device 
+    for example, different XML files for different layouts on different devices 
 
-to add an image to the project
-    1) open the resource manager tab on the left 
-    2) click on the "drawable" tab 
-    3) drag & drop the image into the tab 
-    4) name the resource - it should be all underscores and snake case
-    5) set ImageView's src attribute to the image location using @drawable
+    another approach is to restrict the types of devices that can install your app 
+        devices in the google app store can be restricted based on screen sizes, device features, and version
 
-        <ImageView
-            src="@drawable/image_name"
-            android:layout_width="100dp"
-            android:layout_height="100dp" />
+    you can also disable certain optional features at runtime based on what the device supports 
 
 
-padding applies space within the element, margins apply space around the element 
 
-
-RadioGroup is a type of LinearLayout that groups RadioButton elements together, and ensures only one is selected at a time 
-
-    <RadioGroup 
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <RadioButton 
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="option 1" />
-        <RadioButton 
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="option 2" />
-    </RadioGroup>
-
-
-an EditText element is like a textfield 
-
-    <EditText 
-        android:input_type="number"
-        android:hint="Card Number"
-        android:layout_margin="8dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
