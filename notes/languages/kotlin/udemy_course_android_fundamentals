@@ -48,3 +48,406 @@ an EditText element is like a textfield
         android:layout_margin="8dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
+
+
+in MainActivity, in its onCreate() method there’s a call setContentView(R.layout.activity_main) which sets the main view 
+    here R.layout.activity_main means resource file > layout file > activity_main 
+        (activity_main.xml is the name of the XML file in this demo app)
+
+remember the folder path from the root folder java/ has to match the package path at the top of the java file 
+
+in the project view click on the gear icon, go to Tree Appearance > Compact Middle Packages. 
+    this option will compact the deeply nested empty folders
+
+
+add this to the bottom of onCreate() to show a simple toast: 
+
+	Toast.makeText(this, "Show a toast", Toast.LENGTH_LONG).show()
+
+
+to get a reference to a view element from within the java call findViewById()
+	you assign the view an ID in the XML then pass it into that method 
+
+	// XML file
+	<Button
+		android:layout_width=“100dp”
+		android:layout_height=“100dp”
+		android:id=“@+id/unique_id” />					// you must add the @+id/ prefix before the id name
+
+	// Java file
+	Button button1 = findViewById(R.id.unique_id);
+
+	button1.setOnClickListener(new View.OnClickListener() {
+            @Override 
+
+            public void onClick(View v) {
+
+                // in a lambda you must specify what this refers to - in this case MainActivity.this
+
+                Toast.makeText(MainActivity.this, "Show a toast", Toast.LENGTH_LONG).show()
+            }
+        })
+
+An activity provides the window in which the app draws its UI. This window typically fills the screen, but may be smaller than the screen and float on top of other windows. Generally, one activity implements one screen in an app.
+
+the main activity is the first screen to appear when the app is launched 
+
+activities are loosely coupled. activities can start / navigate to activities belonging to other apps. 
+
+To use activities you must register information about them in the app’s manifest, and you must manage activity lifecycles
+
+LinearLayout is kind of like a stack view
+	RelativeLayout is kind of like a regular auto layout view - all the views within are relative, and need additional constraints.
+	to layout views relative to one another within RelativeLayout you must give them IDs. 
+
+	<RelativeLayout 
+		android:layout_height=“match_parent”
+		android:layout_width=“match_parent” />
+
+		<TextView
+			android:id=“@+id/textview_1“							// plus symbol when you’re adding the id 
+			android:layout_centerHorizontal=“true”
+			android:layout_height=“wrap_content”
+			android:layout_width=“wrap_content”
+			android:textSize=“24sp”								// sp is specifically for text, it makes the size adjustable
+			android:text=“Hello!” />
+
+		<TextView
+			android:id=“@+id/textview_2“
+			android:layout_centerHorizontal=“true”
+			android:layout_below=“@id/textview_1”					// notice there’s no + symbol now 
+			android:layout_height=“wrap_content”
+			android:layout_width=“wrap_content”
+			android:textSize=“24sp”
+			android:text=“Hello!” />
+
+	</RelativeLayout>
+
+
+
+here’s an example of how to add a MaterialUI CardView (a popular google component) to your project: 
+
+	// build.gradle (groovy)
+	dependencies {
+   		implementation "androidx.cardview:cardview:1.0.0"		// fetches the remote dependency during the build phase
+	}
+
+	// XML file 
+	<androidx.cardview.widget.CardView 
+		android:layout_height=“wrap_content”
+		android:layout_width=“200dp”
+		android:id=“@+id/cardview1” >
+
+		<LinearLayout 									// apparently CardView doesn’t give you much control over its child elements 
+			android:layout_height=“wrap_content”		// so we create a LinearLayout and then add children in there 
+			android:layout_width=“match_parent”
+			android:orientation=“horizontal”>
+
+			// add child views here 
+
+		</LinearLayout>
+
+	<androidx.cardview.widget.CardView />
+
+
+note that in a RelativeLayout, to constrain elements to one another, they should be direct siblings of one another.
+	so you wouldn’t constrain one element to another siblings child, for example 
+
+when you’re adding images to your resources… if they’re high density make sure you specify the density as high density. 
+	if you don’t specify this, and Android puts the high res photo in a standard drawable folder… 
+    then it tries to draw this on a high-res phone. it will upscale the image, making it even more dense. 
+    this will cause the app run out of memory to crash because the image is too large. 
+
+android:gravity positions an elements children 
+android:layout_gravity positions an element within its layout 
+
+there’s a ScrollView element. it can also only have 1 child - so use a RelativeLayout or LinearLayout
+
+	<ScrollView
+		android:layout_height=“match_parent”
+		android:layout_width=“match_parent”>
+
+		<RelativeLayout
+			android:layout_height=“wrap_content”    // wrap_content allows RelativeLayout content to exceed the height of the ScrollView
+			android:layout_width=“match_parent”>
+		</RelativeLayout>
+
+	</ScrollView>
+
+
+the build.gradle file is used by gradle for fetching dependencies and compiling.
+	the AndroidManifest.xml contains metadata used by Android (the OS, build tools, and Google Play store)
+	it must list all components used in the app: activities, services, broadcast receivers, and content providers 
+		for example, it’s used to declare device capabilities of these various components, and specifies the hardware / software requirements  
+	it also specifies permissions for the app to access protected parts of the OS or other apps, or to allow other apps access 
+
+	<activity
+    	android:name=".MainActivity"
+   		android:exported="true">
+    		<intent-filter>
+        		<action android:name="android.intent.action.MAIN" />				// this code must be in the activity that first launches the app
+        		<category android:name="android.intent.category.LAUNCHER" />
+    		</intent-filter>
+	    </activity>
+	<activity android:name=“.SecondActivity” />						// if there’s no info to put inside you use the self closing tag instead
+
+
+an Intent allows you to move between one Activity (screen) and the next. 
+
+	// AndroidManifest.xml
+	<activity android:name=“.SecondActivity” 
+		android:label=“Second Screen title”			// label sets the title for this activity in the nav bar. if unspecified it uses the parents title 
+		android:parentActivityName=“.MainActivity”		// setting the parent will show a back button that takes you back to the parent activity 
+		/>
+
+
+	//  MainActivity.java
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_view);
+		someSubview = findViewById(R.id.someSubview);			// you can add an onClickListener to any view
+
+		someSubview(new View.OnClickListener(){
+			@Override public void onClick(View v) {
+				Intent moveToSecondView = new Intent(MainActivity.this, SecondActivity.class);			// this is an explicit intent - we’re going to
+				startActivity(moveToSecondView);													// a known location within our app
+			}
+		});
+	}
+
+
+here’s how you create a ListView: 
+
+	// XML file 
+	<ListView 
+		android:id=“@+id/list_view
+		android:layout_width=“match_parent”
+		android:layout_width=“match_parent” />
+
+	//  MainActivity.java
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_view);
+
+		ListView listView = findViewById(R.id.list_view);
+
+		String[] itemsInList = {
+			“Wukong”,
+			“Rammus”,
+			“Kindred”
+		}
+		// ArrayAdapter converts an array of viewmodels into an array of views
+		ArrayAdapter<String> stringToViewAdapter = new ArrayAdapter<>(
+			this,
+			android.R.layout.simple_list_item_1,				// simple_list_item_1 is a native Android XML layout that only shows a label
+			itemsInList									// so it only needs a string as its viewmodel
+		);
+
+		listView.setAdapter(stringToViewAdapter);			// pass the adapter and an array of views will be constructed for our listView 
+	}
+
+
+you can also create implicit Intents. These can do things like navigate to a Android native app. 
+	here’s an example of opening up gmail:
+
+	//  MainActivity.java
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_view);
+
+		sendEmailButton = findViewById(R.id.sendEmailButton);
+
+		sendEmailButton(new View.OnClickListener(){
+			@Override public void onClick(View v) {
+				Intent launchGmailIntent = new Intent(Intent.ACTION_SENDTO);		// ACTION_SENDTO specifically launches the native mail app
+				launchGmailIntent.setData(uri.parse(“mailto:helpdesk@walmart.com”);	// set the data to send to the new activity you’re launching
+				startActivity(launchGmailIntent);									// in this case gmail expects a mailto: uri as data 
+			}
+		});
+	}
+
+
+
+surprisingly you must download the recyclerview (and many other google androidx views) as a dependency to use it: 
+
+	// build.gradle 
+	dependencies {
+		implementation “androidx.recyclerview:recyclerview:1.3.1”
+	}
+
+	// main recyclerView's XML file 
+    // you can configure a recyclerViews layout like a collectionView. layoutManager facilitates that
+	<androidx.recyclerview.widget.RecyclerView 
+		xmlns:android=“http://schemas.android.com/apk/res/android” 
+		xmlns:app=“http:/schemas.android.com/apk/res-auto”			// the app namespace is used for components that aren’t native
+        android:id=“@+id/main_recycler_view”
+		android:layout_width=“match_parent”
+		android:layout_height=“match_parent”
+		app:layoutManager=“androidx.recyclerview.widget.LinearLayoutManager” />
+
+
+	// cell_layout.xml - the RecyclerView cell’s XML file - note that the names of XML files must always be lowercase, so use snakecase 
+	<androidx.cardview.widget.CardView
+        xmlns:app="http://schemas.android.com/apk/res-auto"         // cardCornerRadius is not a native property
+        xmlns:tools="http://schemas.android.com/tools"              // properties in the tools namespace will only show up during development
+		android:layout_width=“match_parent”
+		android:layout_height=“wrap_content”
+        android:layout_margin="12dp"                   // note that CardView ignores padding. It works similar to a FrameLayout
+        app:cardCornerRadius="6dp"
+        >
+
+		<RelativeLayout
+			android:layout_width=“match_parent”
+			android:layout_height=“wrap_content”>
+
+            <androidx.cardview.widget.CardView              // since ImageView doesn't allow you to round the corners
+                android:layout_width=“wrap_content”         // nesting it in a CardView is a quick and dirty way to do that
+			    android:layout_height=“wrap_content”        // but there are libraries for working with images you can use instead
+                android:id="@+id/icon_wrapper"
+                android:layout_margin=“12dp”
+                app:cardCornerRadius="6dp"
+                app:cardElevation="0dp"                     // get rid of any shadow since we don't want that here
+                >
+                <ImageView 
+                    android:layout_width=“80dp”
+                    android:layout_height=“80dp”
+                    tools:src=“drawable/ic_launcher_background”			    // this is a native image. it's in tools so it'll show up during debug only
+                    android:id=“@+id/cell_icon”
+                    android:scaleType="centerCrop"                          // the way Android will rescale the image
+                    />                                                      // fitCenter, centerCrop, and fitXY are commmon scaleTypes
+            </androidx.cardview.widget.CardView>
+
+			<TextView
+				android:layout_width=“match_parent”
+				android:layout_height=“wrap_content”
+				android:text=“title”
+                android:fontFamily="sans-serif-medium"
+                android:textColor="#222222"
+                android:textSize="18sp"
+				android:id=“@+id/cell_textfield_title”			// there’s also a layout_toEndOf that is used for localization 
+				android:layout_toRightOf=“@id/icon_wrapper”		// in US it’ll put the textview to the right of the imageView 
+				android:layout_alignTop=“@id/icon_wrapper />	// for countries that read right to left it will put the textview to the left
+
+			<TextView 
+				android:layout_width=“match_parent”
+				android:layout_height=“wrap_content”
+				android:text=“description”
+                android:fontFamily="sans-serif-light"
+                android:textColor="#888888"
+                android:textSize="14sp"
+				android:id=“@+id/cell_textfield_description”
+				android:layout_toRightOf=“@id/icon_wrapper”
+				android:layout_below=“@id/cell_textfield_title”
+				android:layout_marginTop=“4dp” />
+ 
+		</RelativeLayout> 
+	</androidx.cardview.widget.CardView>
+
+ 
+	// activity JAVA file 
+ 
+	@Override 
+	protected void onCreate(Bundle savedInstanceState) { 
+		super.onCreate(savedInstanceState); 
+		setContentView(R.layout.activity_view);
+
+        // the instructor says if you have alot of images try to keep the image size to around 100-200KB if possible 
+        // also he set the image density to "no density" when he imported them to prevent resizing 
+        // he says later we'll use some special library to optimize for image performance and we won't have to do this
+        CellData[] data = {
+            new CellData("first cell", "test data", R.drawable.icon1),          // note the type of R.drawable here is int
+            new CellData("second cell", "test data", R.drawable.icon2)
+        };
+
+        RecyclerView recyclerView = findViewById(R.id.main_recycler_view);
+        CellDataAdapter customAdapter = new CellDataAdapter(data);
+        recyclerView.setAdapter(customAdapter);
+	}
+
+
+    // cell data JAVA file 
+    public class CellData {
+        String title;
+        String description;
+        int icon;                   // the resource ID (accessed via R.drawable.icon_name) returns an integer
+
+        CellData(String title, String description, int icon) {
+            this.title = title;
+            this.description = description;
+            this.icon = icon
+        }
+    }
+
+    // custom adapter JAVA file 
+    // the generic here specifies the viewholder type for the adapter
+    public class CellDataAdapter extends RecyclerView.Adapter<CellDataAdapter.CustomViewHolder> {           
+
+        private CellData[] data;                // you need a property to store the data passed into the adapter
+
+        public CellDataAdapter(CellData[] data) {
+            this.data = data
+        }
+
+        // you must implement these 3 abstract methods from RecyclerView.Adapter 
+        @Override 
+        public int getItemCount() {
+            return data.length;
+        }
+
+        @NonNull 
+        @Override 
+        public CustomViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int ViewType) {
+            // we need to pass in our cell view to CustomViewHolder's constructor, that's what it expects
+            // to do that we must inflate the view (create a programmatic view from a layout file)
+            // for the context - we're not in the main activity, so we can't just use "this". we have to get the context from the ViewGroup parent.
+            View view = LayoutInflater.from(parent.getContext()).inflate(
+                R.layout.cell_layout,
+                parent,                             // the ViewGroup we already have access to - given to us by the adapter automatically
+                false                               // boolean for attachToRoot - just put false, read docs for more info
+            );
+            return CustomViewHolder(view);
+        }
+
+        // called on each cell when its view needs to be updated
+        @Override 
+        public void onBindViewHolder(@NonNull CustomViewHolder holder, int position) {          
+            holder.bind(data[position]);
+        }
+
+        // static is convenient here so we don't have to construct a new instance to use this class
+        // RecyclerView.ViewHolder is basically the viewmodel for a RecyclerView cell 
+        // when cells are reused the viewHolder will change but the underlying view will remain the same 
+        static class CustomViewHolder extends RecyclerView.ViewHolder {
+            private ImageView iconView;
+            private TextView titleTextView;
+            private TextView descriptionTextView;
+
+            public CustomViewHolder(@NonNull View itemView) {               // required constructor 
+                super(itemView);
+                // here we take the infalted views and store a reference to them in the adapter. 
+                // this way we can update the views directly using the datum in bind().
+                // you must call findViewById() off of itemView because it has the right context
+                iconView = itemView.findViewById(R.id.cell_icon);
+                titleTextView = itemView.findViewById(R.id.cell_textfield_title”);
+                descriptionTextView = itemView.findViewById(R.id.cell_textfield_description");
+            }
+
+            // kind of like applyModel() - this is just a method to be called in onBindViewHolder() to update the view
+            public void bind(CellData datum) {
+                iconView.setImageResource(datum.icon);
+                titleTextView.setText(datum.title);
+                descriptionTextView.setText(datum.description);
+            }
+        }
+    }
+
+
+
+
+
+
+
+

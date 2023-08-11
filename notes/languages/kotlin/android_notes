@@ -10,10 +10,98 @@ to support different devices you can provide configuration-specific app resource
     android will then select the correct resource for the current device 
     for example, different XML files for different layouts on different devices 
 
-    another approach is to restrict the types of devices that can install your app 
-        devices in the google app store can be restricted based on screen sizes, device features, and version
+    using the manifest you can also restrict the types of devices that can install your app.
+        devices in the google app store can be restricted based on screen sizes, device features, and version:
 
-    you can also disable certain optional features at runtime based on what the device supports 
+        <manifest ... >
+            <uses-feature android:name="android.hardware.sensor.compass"
+                          android:required="true" />                        // if required=true it's required for installation
+            ... 
+        </manifest>
 
+
+    you can also disable certain optional features at runtime based on what the device supports:
+
+        <manifest ... >
+            <uses-feature android:name="android.hardware.sensor.compass"
+                          android:required="false" />                       // if required=false it can still be installed.
+            ... 
+        </manifest>
+
+        // java file
+        // now you'll have to check for device support in the code and enable / disable the feature accordingly
+        if (!packageManager.hasSystemFeature(PackageManager.FEATURE_SENSOR_COMPASS)) {
+            disableCompassFeature()
+        }
+
+
+you can specify the minSdkVersion and targetSdkVersion version in the manifest and build.gradle files 
+    the version info in the build.gradle file will take precedence over the manifest, but the two should match 
+    targetSdkVersion is the highets version for which you've optimized the app 
+
+    // build.gradle 
+    android {
+        defaultConfig {
+            applicationId 'com.example.myapp' 
+            minSdkVersion 21 
+            targetSdkVersion 33 
+            ...
+        }
+    }
+
+    // AndroidManifest.xml 
+    <manifest ... > 
+        <uses-sdk android:minSdkVersion="21"
+                  android:targetSdkVersion="33"
+                  android:maxSdkVersion="33" />
+    </manifest>
+
+
+you can also check the version in code: 
+
+    // SDK_INT is the current version - compare it to VERSION_CODES
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) { 
+        disableYourFeature()
+    }
+
+
+Android categorizes screens by size and density. 
+    to support these different screens you should provide images at different densities (or use vector graphics), 
+        and use flexible layouts as much as possible
+
+    there are 4 screen sizes: 
+        small
+        normal
+        large
+        xlarge
+    
+    there are 6 primary densities. to provide images for different densities use a 3:4:6:8:12:16 ratio.
+        place the images in the appropriate subdirecotry in the res folder:
+
+        ldpi (low)                                          ~120 dpi, 0.75x     36x36 image
+        mdpi (medium)                                       ~160 dpi, 1x        48x48
+        hdpi (high)                                         ~240 dpi, 1.5x      72x72
+        xhdpi (extra high)                                  ~320 dpi, 2x        96x96
+        xxhdpi (extra-extra high)                           ~480 dpi, 3x        144x144
+        xxxhdpi (extra-extra-extra high)                    ~640 dpi, 4x        192x192
+
+        nodpi (resources for all densities)
+        tvdpi (intended for TVs, apps don't need it)        somewhere between mdpi and hdpi
+
+    if you only provide low-resolution images Android will scale them up for larger screens. 
+        this scaling degrades the image and can look bad, so remember to provide high density photos. 
+        and remember not to add a high res photo as a low-resolution image, 
+            because when it gets scaled up you may run out of memory and crash the app 
+
+
+    Vector graphics are often provided as SVGs, but Android doesn't support this format 
+        so you must convert SVG files to Android's vector drawable format: 
+
+        1) right-click the res directory and select New > Vector Asset
+        2) Select Local file (SVG, PSD) 
+        3) Locate the file you want to import and make any adjustments > click Next
+        4) confirm the source set where you want the file (probably the main one) > click Finish 
+
+        the vector image will appear as an xml file in res/drawable 
 
 

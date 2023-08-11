@@ -42,15 +42,14 @@ to just show a list of all tool windows:
 
 ctrl + tab                              switcher                move through open files & all tool windows 
 
-ctrl + click                                    go to declaration 
-(command or alt) + click                        find usages 
-(command or alt) + shift + click                find usages in file
-(command or alt) + ctrl + shift + click         find usages in settings
+(command or alt) + click                                        go to declaration 
+(command or alt) + shift + click                                go to type declaration 
+ctrl + click                                                    find usages 
+ctrl + shift + click                                            find usages in file 
 
 (command or alt) + J                    jump to current file
 
-ctrl + R                                build and run 
-ctrl + B                                build 
+ctrl + R                                build & run
 ctrl + D                                debug
 ctrl + T                                stop 
 Esc                                     return to editor from a tool window
@@ -69,3 +68,6 @@ shift + Esc                             hide active or last tool window
 (command or alt) + N                    jump to navigation bar
                                             then use the arrow keys to navigate between items in 
                                             the navigation bar / press enter to select 
+
+?                                       generate code
+?                                       show parameter names for method completion 
