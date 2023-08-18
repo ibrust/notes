@@ -125,7 +125,8 @@ LinearLayout is kind of like a stack view
 
 
 
-here’s an example of how to add a MaterialUI CardView (a popular google component) to your project: 
+here’s an example of how to add a MaterialUI CardView (a popular google component) to your project
+	you can also just import the enitre MaterialUI library if you want: 
 
 	// build.gradle (groovy)
 	dependencies {
@@ -445,8 +446,17 @@ surprisingly you must download the recyclerview (and many other google androidx 
     }
 
 
+java / kotlin get compiled to java bytecode, which then gets compiled into DEX bytecode by the DEX compiler. 
+	the DEX bytecode runs in either the ART (android runtime) or, prior to API 21 (Lollipop), its precedessor the DVM (Dalvik Virtual Machine)
+	the ART / DVM are Android's modified version of the JVM 
 
 
+here's how to write kotlin code: 
+
+	var age: Int = 37
+	val name: String = "Ian Rust"				// val is a constant, like let 
+
+	var hairColor = "Blonde"					// hairColor will be a String variable - the type can be inferred
 
 
 

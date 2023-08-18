@@ -1,7 +1,7 @@
 import random
 
 def selectHerb():
-    herbs = open("league/epic_items").readlines()
+    herbs = open("league/lol_champs_jungles").readlines()
     print(random.choice(herbs))
 
 if __name__ == '__main__':
