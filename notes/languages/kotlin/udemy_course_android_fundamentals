@@ -460,4 +460,239 @@ here's how to write kotlin code:
 
 
 
+here’s how to code an activity in Java: 
+
+	class MainActivity : AppCompatActivity() {
+		override fun onCreate(savedInstanceState: Bundle?) {
+			super.onCreate(savedInstanceState)
+			setContentView(R.layout.activity_main)
+
+			val button1: Button = findViewById(R.id.button1)
+			button1.setOnClickListener {					// this is an interface with 1 method so we can use a callback like this
+				handleButtonClick()
+			}
+		}
+	}
+
+	private func handleButtonClick() {
+		val textfield1: TextInputEditText = findViewById(R.id.materalUITextfield1)
+		val toastString = textfield1.text.toString() + “ entered”
+		Toast.makeText(this, toastString, Toast.LENGTH_LONG).show()
+	}
+
+
+kotlin handles nulls safely like Swift does:
+
+	var personsName: String? = null			 	// you must assign optionals an initial value in kotlin, it won’t let you default to null 
+	personsName?.toUpperCase()
+
+	personsName!!.toUpperCase()				// forced unwrapping is done with !! 
+	
+	val helloString = “my name is: “ + personsName 			// helloString will actually be null if personsName is null here
+
+
+you can output to LogCat in the code:
+
+	Log.d(“tag name here”, “message here”)
+
+
+kotlin introduced string templates, which are basically format strings: 
+
+	val firstName = “Ian”
+	val lastName = “Rust”
+	val greeting = “My name is $firstName $lastName”			// if you interpolate a non-string kotlin will convert it by calling toString() on it 
+
+here’s how you write a function: 
+
+	fun dogBark() {							// no need to specify void return type
+		println(“bark”)						// note that kotlin uses the word Unit instead of void 
+	}
+
+	fun feedDog(newBones: Int): Unit {			// Unit is void, you don’t need to specify this but you can 		self.bones = self.bones + newBones	}
+	
+	fun getBones(): Int {
+		return self.bones
+	}
+
+	fun square(number: Int): Int = number * number			// this is a function expression
+														// since it’s one line it can infer the return statement and {} braces, like in swift 	
+	func square(number: Int) = number * number 				// function expressions (1 liners) can even infer the return type 
+
+
+there are 4 levels of access in Java: 
+	public 						can be accessed from any file, any class, any package 
+	protected 					can be accessed from either a class in the same package or a subclass 
+	default 						used when you don’t explicitly specify an access level. can be accessed from a class in the same package only
+	private 						can only be accessed from within the class 
+
+
+note that in Java when you create a class instance you don’t need the new keyword: 
+
+	var dog = Dog()
+
+
+kotlin doesn’t let you use the .class property the way java does 
+	when you create an intent you have to pass the Java class (the class compiled from the Kotlin). here’s how you do that in Kotlin: 
+
+	val launchAddPayments = Intent(
+		this, 
+		AddPaymentsFragment::class.java				// ::class actually accesses the kotlin class, .java accesses the compiled class 
+	)
+
+be careful when integrating kotlin with Java classes. 
+	the Java class won’t handle nulls using optionals, but its properties can still be null. Kotlin won’t be able to type-check for optionals. 
+		this can be a problem when using Android framework code, for example.
+
+	in Kotlin an integrated Java class’s data types are referred to as platform types, and are handled in a special way. 
+		Platform types are non-denotable, meaning that you can't write them down explicitly in the language
+		
+		so your Kotlin variables can rely on type-inference (since this happens at runtime and the type will be known then) in these assignments, 
+			or you can declare the type that’s expected explicitly. 
+		
+		thus you can choose to treat the platform-type as an optional or non-optional - it’s up to you, kotlin will allow either. 
+			for safety I think you should just always handle these as optionals unless you have a good reason not to.
+
+		sometimes the compiler / IDE need to display type information for these platform types even though they don’t have it, so they use the following syntax: 
+			
+			T! 								means T or T? 
+			(Mutable)Collection<T>!			means a java collection of type T! - not really sure if the collection is mutable either
+			Array<(out) T>!					means a java array of type T!
+
+	But if the Java class’s types have nullability annotations these don’t have to be represented as platform types. 
+		Instead we can compile using actual nullable or non-null Kotlin types. 
+
+		there are several different ways of doing nullability annotations depending on the annotations package you use.
+			it looks like our Android app is using @Nullable and @NotNull from the org.jetbrains.annotations package
+	
+
+in Android Activities do not have a reference to one another, so it’s not straightforward to pass data between them. 
+You can add data to the Intent:
+
+	// Wallet Activity 
+	override fun onCreate(savedInstanceState: Bundle?) {
+		…
+	
+		val addPaymentsIntent = Intent(this, AddPaymentsActivity::class.java)
+	
+		addPaymentsIntent.putExtra(“tpid”: “123”)					// putExtra adds data to the intent
+		addPaymentsIntent.putExtra(“isSPFEnabled”: true)			// use key/value pairs 
+		addPaymentsIntent.putExtra(“isPBBEnabled”: true)
+	}
+
+	// Add Payments Activity 
+	override fun onCreate(savedInstanceState: Bundle?) {
+		…
+
+		val isSPFEnabled = intent.getBooleanExtra(“isSPFEnabled”)				// you need to know the type of the data you’re getting 
+		val tpid = intent.getStringExtra(“tpid”)								// if the key doesn’t exist or you’re getting the wrong type this will return null 
+		val isPBBEnabled = intent.getBooleanExtra(“isPBBEnabled”, false)		// false here will be the default value if this is null 
+	}
+
+
+here’s how you construct an array in kotlin:
+
+	val dogNames: Array<String> = arrayOf(“Java”, “Chili”, “Big Red”)			// arrayOf is an array constructor in kotlin 
+
+
+in kotlin a class constructor can be specified as a parameter list next to the class name 
+	adding val/var in the parameter list makes the property static or dynamic
+	you can also set access levels in the parameter list
+	if you use this technique you don’t redeclare the properties within the class, they’re synthesized automatically 
+	this technique allows properties to be non-null because these properties are demanded in the constructor 
+	he said the properties are public by default (I don’t know why default isn’t used or if he misspoke here) 
+
+
+	class Dog(var boneCount: Int, protected val favoriteToy: String?, name: String, isLoud: Bool) { 
+
+		fun giveDogBone() {
+			boneCount = boneCount + 1
+		}
+
+		override fun toString(): String {				// here’s how you override a method in kotlin - no longer an annotation
+			return “my name is $name”
+		}
+
+		fun bark() = if (isLoud) “BARK” else “bark”				// use if/else for ternary expressions in kotlin 
+	}
+
+	val dog = Dog(1, “dragon”, “Java”, false)				// you don’t need the new keyword to create an object in Kotlin 
+
+
+you can create data classes (kind of like a struct). 
+	data classes come with some default behavior defined, such as a useful toString method() 
+	read about java data classes for more info: 
+
+
+	data class Bone(val color: String, val size: Int)
+
+
+to pass a custom object as data through an Intent you have to serialize it.
+	if you wanted to send the object to something outside the current runtime (another app, or close / restart the app and reconstruct the object), 
+		you’d need to persist it (store it in the filesystem, a database, a different area of memory on the phone, etc.)
+	you even have to use this persistence to pass data between Activities in the same app, surprisingly 
+	an Intent automatically persists primitives and Strings, or anything that is serializable.
+		but a custom object can’t be automatically persisted until it conforms to Serializable 
+
+	 
+	data class Bone(val color: String, val size: Int) : Serializable 	
+
+	// Main Activity 
+	val intent = Intent(this, DogLunchActivity::class.java)
+	intent.putExtra(“bone”, Bone(yellow, 10))
+
+	// Dog Lunch Activity 
+	val bone: Bone = intent.getSerializableExtra(“bone”) as Bone	 		// note you must cast the type
+																	// be careful with the “as” keyword, it will crash if it fails
+
+kotlin supports lateinit variables. this allows you to not make the variable an optional type while still initializing it after the constructor call.
+	if you use this you must carefully ensure that the property gets initialized before you try to use it 
+	
+	class Dog { 
+		lateinit var leash: DogLeash 
+
+		fun walkDog() {
+			leash = DogLeash()
+
+			leash.adjust()				// you don’t need to use optionals with a lateinit
+		}
+
+		func pullDogOutOfRoad() {
+			leash.apply {				// apply() is a kotlin conveniece method
+				reduceLength()		// everything within this apply block will be called off the leash instance 
+				pullToward()
+				giveSlack()
+			}
+		}
+	}
+	
+
+to add a localizable string add it to the string.xml resource file. 
+	you can reference these strings from within your XML files / code: 
+
+	// strings.xml 
+	<resources>
+		<string name=“wallet_title”>Wallet</string>
+		<string cvv=“enter_cvv”>Enter CVV</string>
+	</resources>
+
+	// main_layout.xml
+	<TextView 
+		android:layout_width=“match_parent”
+		android:layout_height=“wrap_content”
+		android:hint=“@string/enter_cvv”
+		/>
+
+
+the default strings go into res/values/strings.xml 
+	for other languages you create a new values folder with a different suffix for the language type, and put a new strings file in it: 
+
+	res/values-fr/strings.xml			french strings 
+	res/values-ja/strings.xml			japanese strings 
+
+
+
+
+
+
+
 
