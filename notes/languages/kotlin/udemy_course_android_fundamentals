@@ -689,3 +689,1372 @@ the default strings go into res/values/strings.xml
 	res/values-fr/strings.xml			french strings 
 	res/values-ja/strings.xml			japanese strings 
 
+
+there are two files in res/values that control the apps theme / colors: 
+
+	// AndroidManifest.xml 
+	<application
+		… 
+		android:theme=“@style/CustomAppTheme”>			// here we apply the CustomAppTheme resource to all activities in the app 
+
+
+	// styles.xml 
+	<resources>
+		<style name=“CustomAppTheme” parent=“Theme.AppCompact.Light.DarkActionBar”>
+			<item name=“colorPrimary”>@color/colorPrimary</item>					// @color refers to resources in colors.xml 
+			<item name=“colorPrimaryDark”>@color/colorPrimaryDark</item>			// you can change this to point to a different resource
+			<item name=“colorAccent”>@color/colorAccent</item>				// but for the theme to work here the name fields must remain the same 
+		</style>
+	</resources>
+
+	// colors.xml 
+	<resources>
+		<color name=“colorPrimary”>#6200EE</color>
+		<color name=“colorPrimaryDark”>#3700B3</color>
+		<color name=“colorAccent”>#03DAC5</color>
+	</resources>
+
+
+
+ConstraintLayout is a newer improved version of RelativeLayout. It appears to mainly be a performance optimization
+	Both use constraints, but there are some differences in which constraints you can use
+		for example, in ConstraintLayout you can set size as a ratio, and use constraint chains 
+			(a chain is like like a stackview, it’s a horizontal / vertical group of views linked with bi-directional constraints)
+		you also can’t use layout_centerHorizontal in ConstraintLayout 
+
+	to understand the change in ConstraintLayout we must understand the 3 phases of Android draws views on screen: 
+
+		1) measure - the system does a top-down traversal of the view tree to determine how large each ViewGroup / View should be. 
+					when a ViewGroup is measured it also measures its children
+		2) layout - the system does a second top-down traversal, with each ViewGroup determining the positions of its children 
+					using the sizes determined in the measure phase
+		3) draw - the system does a third top-down traversal.  For each object in the view tree, a Canvas object is created to send a list 
+					of drawing commands to the GPU. These commands use the ViewGroup and View sizes and positions
+
+		since there are multiple top-down traversals of the view tree a deeply nested view tree is taxing to performance 
+ 			for this reason we try to keep a flat view hierarchy on android if possible 
+
+	using LinearLayout / RelativeLayout often results in views that are nested. 	
+		ConstraintLayout allows you to build complex layouts without having to nest Views / ViewGroups, keeping the view hierarchy flat 
+
+	(1) Relative Layout:
+	android:layout_centerInParent="true"    
+	(1) Constraint Layout equivalent :
+	app:layout_constraintBottom_toBottomOf="parent"
+	app:layout_constraintLeft_toLeftOf="parent"
+	app:layout_constraintStart_toStartOf="parent"
+	app:layout_constraintRight_toRightOf="parent"
+	app:layout_constraintEnd_toEndOf="parent"
+	app:layout_constraintTop_toTopOf="parent"
+
+	(2) Relative Layout:
+	android:layout_centerHorizontal="true"
+	(2) Constraint Layout equivalent:
+	app:layout_constraintLeft_toLeftOf="parent"
+	app:layout_constraintStart_toStartOf="parent"
+	app:layout_constraintRight_toRightOf="parent"
+	app:layout_constraintEnd_toEndOf="parent"
+
+	(3) Relative Layout:
+	android:layout_centerVertical="true"    
+	(3) Constraint Layout equivalent:
+	app:layout_constraintBottom_toBottomOf="parent"
+	app:layout_constraintTop_toTopOf="parent"
+	
+	(4) Relative Layout:
+	android:layout_alignParentLeft="true"   
+	(4) Constraint Layout equivalent:
+	app:layout_constraintLeft_toLeftOf="parent"
+
+	(5) Relative Layout:
+	android:layout_alignParentStart="true"
+	(5) Constraint Layout equivalent:
+	app:layout_constraintStart_toStartOf="parent"
+
+	(6) Relative Layout:
+	android:layout_alignParentRight="true"
+	(6) Constraint Layout equivalent:
+	app:layout_constraintRight_toRightOf="parent"
+
+	(7) Relative Layout:
+	android:layout_alignParentEnd="true"    
+	(7) Constraint Layout equivalent:
+	app:layout_constraintEnd_toEndOf="parent"
+
+	(8) Relative Layout:
+	android:layout_alignParentTop="true"
+	(8) Constraint Layout equivalent:
+	app:layout_constraintTop_toTopOf="parent"
+
+	(9) Relative Layout:
+	android:layout_alignParentBottom="true" 
+	(9) Constraint Layout equivalent:
+	app:layout_constraintBottom_toBottomOf="parent"
+
+	(10) Relative Layout:
+	android:layout_alignStart="@id/view"
+	(10) Constraint Layout equivalent:
+	app:layout_constraintStart_toStartOf="@id/view"
+
+	(11) Relative Layout:
+	android:layout_alignLeft="@id/view" 
+	(11) Constraint Layout equivalent:
+	app:layout_constraintLeft_toLeftOf="@id/view"
+
+	(12) Relative Layout:
+	android:layout_alignEnd="@id/view"  
+	(12) Constraint Layout equivalent:
+	app:layout_constraintEnd_toEndOf="@id/view"
+
+	(13) Relative Layout:
+	android:layout_alignRight="@id/view"
+	(13) Constraint Layout equivalent:
+	app:layout_constraintRight_toRightOf="@id/view"
+
+	(14) Relative Layout:
+	android:layout_alignTop="@id/view"  
+	(14) Constraint Layout equivalent:
+	app:layout_constraintTop_toTopOf="@id/view"
+
+	(15) Relative Layout:
+	android:layout_alignBaseline="@id/view" 
+	(15) Constraint Layout equivalent:
+	app:layout_constraintBaseline_toBaselineOf="@id/view"
+
+	(16) Relative Layout:
+	android:layout_alignBottom="@id/view"
+	(16) Constraint Layout equivalent:
+	app:layout_constraintBottom_toBottomOf="@id/view"
+
+	(17) Relative Layout:
+	android:layout_toStartOf="@id/view"
+	(17) Constraint Layout equivalent:
+	app:layout_constraintEnd_toStartOf="@id/view"
+
+	(18) Relative Layout:
+	android:layout_toLeftOf="@id/view"  
+	(18) Constraint Layout equivalent:
+	app:layout_constraintRight_toLeftOf="@id/view"
+
+	(19) Relative Layout:
+	android:layout_toEndOf="@id/view"
+	(19) Constraint Layout equivalent:
+	app:layout_constraintStart_toEndOf="@id/view"
+
+	(20) Relative Layout:
+	android:layout_toRightOf="@id/view"
+	(20) Constraint Layout equivalent:
+	app:layout_constraintLeft_toRightOf="@id/view"
+
+	(21) Relative Layout:
+	android:layout_above="@id/view" 
+	(21) Constraint Layout equivalent:
+	app:layout_constraintBottom_toTopOf="@id/view"
+
+	(22) Relative Layout:
+	android:layout_below="@id/view" 
+	(22) Constraint Layout equivalent:
+	app:layout_constraintTop_toBottomOf="@id/view"
+
+
+here’s an example of a ConstraintLayout:
+
+	<androidx.constraintlayout.widget.ConstraintLayout
+		xmlns:app=“http://schemas.android.com/apk/res-auto”
+		android:layout_width=“match_parent”
+		android:layout_height=“match_parent” >
+
+		<Button
+			android:id=“@+id/button_1”
+			android:layout_width=“wrap_content”
+			android:layout_height=“wrap_content”
+			android:text=“Test button 1”
+			app:layout_constraintBottom_toBottomOf=“parent”
+			app:layout_constraintEnd_toEndOf=“parent” />
+
+		<Button
+			android:id=“@+id/button_2”
+			android:layout_width=“wrap_content”
+			android:layout_height=“wrap_content”
+			android:text=“Test button 2”
+			app:layout_constraintBottom_toTopOf=“@id/button_1”
+			app:layout_constraintEnd_toEndOf=“parent” />
+
+		<ImageView
+			android:id=“@+id/image_view_1”
+			android:layout_width=“wrap_content”
+			android:layout_height=“150dp” 
+			app:layout_constraintTop_toTopOf=“parent”
+			android:src=“drawable/ic_launcher_background”
+			android:scaleType=“center”
+			/>
+
+		<Button
+			android:id=“@+id/button_3”
+			android:layout_width=“0dp”				// 0dp will default to determine the width automatically from the existing constraints 
+			android:layout_height=“wrap_content”
+			android:layout_marginTop=“24dp”
+			app:layout_constraintTop_toBottomOf=“@id/image_view_1”
+			app:layout_constraintEnd_toEndOf=“parent”						// these are opposing constraints 
+			app:layout_constraintStart_toStartOf=“parent” 					// you can’t use center constraints in ConstraintLayout
+			/>												// the default behavior of opposing constraints is to center the view 
+
+		<TextView
+			android:id=“@+id/text_view_2”
+			android:layout_width=“wrap_content”
+			android:layout_height=“wrap_content” 
+			app:layout_constraintTop_toBottomOf=“@id/button_3”		// opposing constraints can be applied between both siblings and parents
+			app:layout_constraintBottom_toBottomOf=“parent”		// so they’re more powerful than the old center constraints
+			app:layout_constraintEnd_toEndOf=“parent” 				
+			app:layout_constraintStart_toStartOf=“parent” 
+			/>
+
+	</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+here’s how you match constraints of other views. 
+	here we’ll make a view fill the available space between 2 other views. 
+	we’ll also make an image fill 25% of the screen 
+	to do both these things we must use 0dp to allow the system to determine the width from existing constraints: 
+
+	<androidx.constraintlayout.widget.ConstraintLayout>
+		<ImageView
+			android:id=“@+id/top_image_view”
+			android:layout_width=“wrap_content”
+			android:layout_height=“0dp”
+			app:layout_constraintHeight_percent=“0.25”					// make the top image fill 25% of the screen
+			app:layout_constraintTop_toTopOf=“parent”
+			android:src=“drawable/ic_launcher_background”
+			android:scaleType=“center”
+			/>
+
+		<ImageView
+			android:id=“@+id/middle_image_view”
+			android:layout_width=“0dp”								
+			android:layout_height=“0dp” 								// this view will automatically stretch to fill the space 
+			app:layout_constraintBottom_toTopOf=“@id/bottom_button”
+			app:layout_constraintTop_toBottomOf=“@id/top_image_view”
+			android:src=“drawable/rat_birthday_cake”
+			android:scaleType=“center”
+			/>
+
+		<Button
+			android:id=“@+id/bottom_button”
+			android:layout_width=“0dp” 
+			android:layout_height=“wrap_content”
+			android:text=“Submit”
+			app:layout_constraintBottom_toBottomOf=“parent”
+			app:layout_constraintEnd_toEndOf=“parent” 
+			app:layout_constraintStart_toStartOf=“parent”  
+			/>
+	</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+note that match_parent actually isn’t officially allowed within ConstraintLayouts, so you must use 0dp to get that behavior as well 
+
+
+the BottomNavigationView is a standard bottom navigation bar for android apps 
+	this is the bar at the bottom of an app that contains buttons like “Home”, “Account”, etc.
+	pressing the button can do things like show / hide certain fragments on screen:
+
+	// XML layout file  
+	<androidx.constraintlayout.widget.ConstraintLayout
+		xmlns:app=“http://schemas.android.com/apk/res-auto”
+		android:layout_width=“match_parent”
+		android:layout_height=“match_parent” 
+		>
+	
+		<FrameLayout 							// we’re using FrameLayout instead of fragment here
+			android:layout_height=“0dp”			// and later we’ll manually put the fragments in this frame 
+			android:layout_width=“0dp”			// this is the more manual way of doing things for learning purposes
+			android:id=“@+id/fragment_frame”
+			app:layout_constraintTop_toTopOf=“parent”
+			app:layout_constraintBottom_toTopOf=“@id/bottom_nav”
+			app:layout_constraintStart_toStartOf=“parent”
+			app:layout_constraintEnd_toEndOf=“parent”
+			>
+
+		<com.google.android.material.bottomnavigation.BottomNavigationView
+			android:id=“@+id/bottom_nav”
+			android:layout_width=“0dp”
+			android:layout_height=“wrap_content” 
+			app:menu=“@menu/bottom_nav”					// accesses the menu resource file 
+			app:layout_constraintBottom_toBottomOf=“parent”
+			app:layout_constraintStart_toStartOf=“parent”
+			app:layout_constraintEnd_toEndOf=“parent”
+			>
+
+		</com.google.android.material.bottomnavigation.BottomNavigationView>
+
+	</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+	// res/menu/bottom_nav.xml
+	// menu files are a particular type of resource you can use in Android 
+	// the bottom nav uses this menu file to display the list of icons
+	<menu xmlns:android=“http://schemas.android.com/apk/res/android”>
+		<item 
+			android:id=“@+id/nav_item1”
+			android:title=“@string/item1_title
+			android:icon=“@drawable/item1_icon />
+		<item 
+			android:id=“@+id/nav_item2”
+			android:title=“@string/item2_title
+			android:icon=“@drawable/item2_icon />
+	</menu>
+
+
+the new recommended way of getting references to views is to use jetpack view binding. 
+	once view binding is enabled it generates a binding class for each XML layout file 
+	for the class name, the XML files name will be converted to camel case and “Binding” will be added to the end 
+		i.e. activity_main.xml becomes ActivityMainBinding
+	an instance of a binding class contains direct references to all views that have an ID 
+	in most cases view binding replaces findViewById(): 
+
+
+	// build.gradle - view binding is updated in the module, not at the app level
+	android {		… 
+		buildFeatures {
+			viewBinding true
+		}	}
+	
+	// MainActivity.java 
+	private lateinit var binding: ActivityMainBinding 
+
+	override fun onCreate(savedInstanceState: Bundle?) {
+		super.onCreate(savedInstanceState)
+
+		
+		binding = ActivityMainBinding.inflate(layoutInflater)		// create the view binding class / inflate the views. layoutInflater is 
+															// an Android property inherited from the base activity class 
+		val view = binding.root			// get the root view of the layout 
+		setContentView(view)	
+
+		binding.greetingTextView.text = “Hello”		// now you can directly reference view properties from the binding class 
+											// note that the element name is the camelCase translation of the id, which must be snakecase
+	}
+
+
+Jetpack view binding reduces the amount of code needed
+	it also allows the compiler to type check the view properties. so if you reference a non-existent view property it won’t compile
+
+
+here’s how you make an interface in kotlin: 
+
+	interface ChangePaymentsSerfice {
+		fun fetchTenderPlan()
+		fun updateTenderPlan()
+		fun updateEBTBalance()
+	}
+
+	class TenderPlanService : ChangePaymentsSerfice {
+		override fun fetchTenderPlan() { … }
+		override fun updateTenderPlan() { … }
+		override fun updateEBTBalance() { … }
+	}
+
+
+A fragment is a reusable portion of the UI. 
+A fragment defines and manages its own layout, has its own lifecycle, and can handle its own input events
+Fragments can’t live on their own, they must be hosted by an activity or another fragment. 
+	it’s not possible to move from an activity to a fragment. fragments don’t have a way to create the window and call setContentView()
+	fragments live within the activity or another fragment. 
+	there will be an activity on the screen, then usually a container the fragment will be added to from within the activity.
+		we say the fragment is hosted by the activity 
+		it’s also possible to add a fragment directly in an XML file, but that’s not as common
+The fragment’s view hierarchy becomes part of, or attaches to, the host’s view hierarchy 
+
+each fragment class will have a corresponding XML class
+unlike in activities, in a fragment views are inflated in the onCreateView() lifecycle method
+
+here are the steps of adding a fragment to an activity / showing it on the screen: 
+	1) make a new instance of the fragment in code
+	2) add the fragment to a container in the activity. the fragment will attach itself to the activity behind the scenes 
+	3) once finished attaching the fragments onCreateView() will automatically be called. 
+		in here you inflate the view and show it on screen
+
+fragments can make navigation smoother throughout the app. you can stay on the same screen but swap out views. it’s also useful in paging 
+fragments can also be used to make certain UI elements persist between screens
+	you’d put the persistent elements in one activity, and the rest of the fragments would be what’s swapped out when you change screens 
+fragments also make your UIs more modular by breaking them down into separate components 
+
+here’s how you add and use fragments: 
+
+	// build.gradle at project-level 
+	buildscript {
+		repositories {
+			google() 					// ensure you have the google repo added. it should be here by default 
+		}
+	}
+	allprojects {
+		repositories {
+			google() 
+		}
+	}
+	dependencies {
+		implementation “androidx.fragment:fragment-ktx:1.3.3”		// you can use fragments without this, 
+	}															// but this makes them easier to work with in kotlin
+
+
+	// MainActivity.kt
+	private lateinit var binding: ActivityMainBinding 
+
+	override fun onCreate(savedInstanceState: Bundle?) {
+		super.onCreate(savedInstanceState)
+		
+		binding = ActivityMainBinding.inflate(layoutInflater)
+		setContentView(binding.root)
+
+		// every activity has a fragment manager inherited from AppCompatActivity 
+		// with a fragment manager you can add, remove, or replace a fragment on screen, and perform other actions with fragments
+		// supportFragmentManager is a newer manager backwards compatible with older managers 
+		// each set of fragment changes you commit is called a fragment transaction. 
+		// for example, you can add of replace multiple fragments in one transaction
+		// you can save each transaction to a back stack managed by the fragment manager, allowing users to go back 
+		supportFragmentManager.commit {
+			// add to the fragment to the container 
+			add(
+				R.id.fragment_frame,		// id of the container 
+				FirstFragment()			// create a new instance of the fragment - you’d never create an activity like this 
+			)
+		}
+
+		binding.buttonOne.setOnClickListener {
+			showFirstFragment()
+		}
+		
+		binding.buttonTwo.setOnClickListener {
+			showSecondFragment()
+		}
+
+		private fun showFirstFragment() {
+			supportFragmentManager.commit {
+				replace(						// if you were call add() here it’d draw the new fragment on top of the old one 
+					R.id.fragment_frame, 		// calling replace() removes the existing fragment in the container then adds a new one 
+					FirstFragment() 
+				)
+			}
+		}
+		
+		private fun showSecondFragment() {
+			supportFragmentManager.commit {
+				replace(						// usually you can just use replace() for everything, even the initial add(), 
+					R.id.fragment_frame, 		// because if there’s no fragment on screen replace() still works 
+					SecondFragment() 		// you only really need add() if you want to add multiple fragments at once 
+				)
+			}
+		}
+	}
+
+
+	// FirstFragment.kt
+	class FirstFragment : Fragment() {			// make sure you import the androidx fragment, not the old android fragment 
+		override fun onCreateView(
+			inflater: LayoutInflater, 
+			container: ViewGroup?,
+			savedInstanceState: Bundle?
+		): View? {
+			// inflate the view here and return it 
+			val view = inflater.inflate(
+				R.layout.fragment_one,
+				container, 					// this will be the FrameLayout container we’re adding this into 
+				false 						// this parameter, attachToRoot, is always false in a fragment. this would attach it 
+			)								// to the container. the fragment attaches itself to the activity behind the scenes
+			return view 
+		}
+	}
+
+
+	// fragment_one.xml
+	<androidx.constraintlayout.widget.ConstraintLayout
+		xmlns:android=“http://schema.android.com/apk/res/android
+		xmlns:app=“http://schema.android.com/apk/res-auto”
+		android:layout_height=“match_parent”
+		android:layout_width=“match_parent”
+		>
+		
+		<TextView 
+			android:layout_height=“wrap_content”
+			android:layout_width=“wrap_content”
+			android:id=“@+id/fragment_one_textview”
+			app:layout_constraintTop_toTopOf=“parent”
+			app:layout_constraintBottom_toBottomOf=“parent”
+			app:layout_constraintStart_toStartOf=“parent”
+			app:layout_constraintEnd_toEndOf=“parent”
+			android:text=“Hello there”
+			>
+		
+	</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+	// SecondFragment.kt
+	class SecondFragment : Fragment() { 
+		override fun onCreateView(
+			inflater: LayoutInflater, 
+			container: ViewGroup?,
+			savedInstanceState: Bundle?
+		): View? {
+			// inflate the view here and return it 
+			val view = inflater.inflate(
+				R.layout.fragment_two,
+				container, 
+				false 
+			) 
+			return view 
+		}
+	}
+
+
+	// fragment_two.xml
+	<androidx.constraintlayout.widget.ConstraintLayout
+		xmlns:android=“http://schema.android.com/apk/res/android
+		xmlns:app=“http://schema.android.com/apk/res-auto”
+		android:layout_height=“match_parent”
+		android:layout_width=“match_parent”
+		>
+		
+		<TextView 
+			android:layout_height=“wrap_content”
+			android:layout_width=“wrap_content”
+			android:id=“@+id/fragment_two_textview”
+			app:layout_constraintTop_toTopOf=“parent”
+			app:layout_constraintBottom_toBottomOf=“parent”
+			app:layout_constraintStart_toStartOf=“parent”
+			app:layout_constraintEnd_toEndOf=“parent”
+			android:text=“Goodbye Now”
+			>
+		
+	</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+	// fragment_main_activity.xml 
+	<androidx.constraintlayout.widget.ConstraintLayout
+		xmlns:app=“http://schemas.android.com/apk/res-auto”
+		android:layout_width=“match_parent”
+		android:layout_height=“match_parent” 
+		>
+	
+		<FrameLayout 							// we’re using FrameLayout instead of fragment here
+			android:layout_height=“0dp”			// we’ll manually put the fragments in this frame 
+			android:layout_width=“0dp”			// this is the more manual way of doing things for learning purposes
+			android:id=“@+id/fragment_frame”
+			app:layout_constraintTop_toTopOf=“parent”
+			app:layout_constraintBottom_toTopOf=“@id/bottom_nav”
+			app:layout_constraintStart_toStartOf=“parent”
+			app:layout_constraintEnd_toEndOf=“parent”
+			>
+
+		<Button 
+			android:layout_width=“wrap_content”
+			android:layout_height=“wrap_content”
+			android:text=“Show Fragment 1”
+			android:layout_margin=“12dp”
+			app:layout_constraintBottom_toTopOf=“@id/bottom_nav”
+			app:layout_constraintStart_toStartOf=“parent” 
+			android:id=“@+id/button_one”
+			>
+
+		<Button 
+			android:layout_width=“wrap_content”
+			android:layout_height=“wrap_content”
+			android:text=“Show Fragment 2”
+			android:layout_margin=“12dp”
+			app:layout_constraintBottom_toTopOf=“@id/bottom_nav”
+			app:layout_constraintEnd_toEndOf=“parent” 
+			android:id=“@+id/button_two”
+			>
+
+		<com.google.android.material.bottomnavigation.BottomNavigationView
+			android:id=“@+id/bottom_nav”
+			android:layout_width=“0dp”
+			android:layout_height=“wrap_content” 
+			app:menu=“@menu/bottom_nav” 
+			app:layout_constraintBottom_toBottomOf=“parent”
+			app:layout_constraintStart_toStartOf=“parent”
+			app:layout_constraintEnd_toEndOf=“parent”
+			>
+
+		</com.google.android.material.bottomnavigation.BottomNavigationView>
+
+	</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+for learning purposes we used a FrameLayout for the container in the above code
+	but although you can add fragments to any ViewGroup, Android strongly recommends to use a FragmentContainerView
+	FragmentContainerView extends a FrameLayout, but it does a few extra things internally 
+		to make the swapping & remembering of fragments more secure
+	it also allows you to initialize the FragmentContainerView with a fragment name in the XML 
+		this way you don’t actually have to set the initial fragment in the code at all
+		so you can delete the initial fragment manager commit when using this:
+
+
+	<androidx.fragment.app.FragmentContainerView
+		android:id=“@+id/frame_content”
+		android:layout_width=“0dp”
+		android:layout_height=“0dp”
+		android:name=“com.yourDomainName.yourAppName.FirstFragment”		// set the initial fragment. 
+		app:layout_constraintTop_toTopOf=“parent”							// note you must specify the full path to your fragment 
+		app:layout_constraintBottom_toBottomOf=“@id/bottom_nav”
+		app:layout_constraintStart_toStartOf=“parent”
+		app:layout_constraintEnd_toEndOf=“parent”
+		>
+	
+
+the interface for a button is a View.OnClickListener. this gets passed to the setOnClickListener() callback
+	you can create your own listener class for this purpose. 
+	but a separate class conforming to this interface wouldn’t have access to main activity’s context, so wouldn’t be useful
+	one alternative to using a function interface callback is to conform the activity itself to the interface and pass in this: 
+
+
+	// MainActivity.kt
+	class MainActivity : AppCompatActivity(), View.OnClickListener {
+		private lateinit var binding: ActivityMainBinding 
+
+		override fun onCreate(savedInstanceState: Bundle?) {
+			super.onCreate(savedInstanceState)
+		
+			binding = ActivityMainBinding.inflate(layoutInflater)
+			setContentView(binding.root)
+
+			binding.buttonOne.setOnClickListener(this)		// now you can pass the activity itself as the click listener
+			binding.buttonTwo.setOnClickListener(this)
+		}
+
+		override fun onClick(v: View?) {
+			if (v?.id == R.id.button_one) {					// this approach requires conditional logic if used on multiple buttons
+				Toast.makeText(this, “you pressed button one”, Toast.LENGTH_LONG).show()
+			} else if (v?.id == R.id.button_two) {
+				Toast.makeText(this, “you pressed button two”, Toast.LENGTH_LON).show()
+			}
+		}
+	}
+
+
+you can’t make a completely separate class to implement the listener because it wouldn’t have access to the context of main activity. 
+	but another approach is to use an anonymous class. 
+	this is what the function interface lambda is doing behind the scenes. so you usually don’t need to do this, you can just use the lambda. 
+	but if you want to pass the same anonymous class to multiple click listeners it could be useful:
+
+	// MainActivity.kt
+	class MainActivity : AppCompatActivity(), View.OnClickListener {
+		private lateinit var binding: ActivityMainBinding 
+
+		override fun onCreate(savedInstanceState: Bundle?) {
+			super.onCreate(savedInstanceState)
+		
+			binding = ActivityMainBinding.inflate(layoutInflater)
+			setContentView(binding.root)
+
+			binding.buttonOne.setOnClickListener(object : View.OnClickListener {		// object indicates an anonymous class in kotlin
+				// you can access MainActivity’s context / binding in here if needed
+				override fun onClick(v: View?) {
+					Toast.makeText(this, “you pressed button one”, Toast.LENGTH_LONG).show()
+				}
+			})
+		}
+	}
+
+
+for bottomNav binding, since you only ever have one bottomNav, and since the activity is a good place to put the navigation logic, 
+	it’s conventional to conform MainActivity to OnNavigationItemSelectedListener: 
+
+	// MainActivity.kt
+	class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
+		private lateinit var binding: ActivityMainBinding 
+
+		override fun onCreate(savedInstanceState: Bundle?) {
+			super.onCreate(savedInstanceState)
+		
+			binding = ActivityMainBinding.inflate(layoutInflater)
+			setContentView(binding.root)
+
+			binding.bottomNav.setOnNavigationItemSelectedListener(this)
+		}
+	}
+
+	override fun onNavigationItemSelected(item: MenuItem): Boolean {
+		if (item.itemId == R.id.nav_item1) {		// the id for the first item in the menu resource file we created earlier
+			showFirstFragment()
+			return true						// return true here causes the button UI to remain selected. false would deselect it
+		} else if (item.itemId == R.id.nav_item2) {
+			showSecondFragment()
+			return true
+		} else {
+			return false
+		}
+	}
+	
+
+you can create a gradient overlay using a gradient drawable resource file. 
+	right click on the drawable folder and create a new drawable resource file. the root element should be “shape”:
+
+	// XML file
+	<View 
+		android:layout_height=“match_parent”
+		android:layout_width=“match_parent”
+		android:background=“@drawable/gradient_overlay”
+		/>
+
+	
+	// gradient_overlay.xml 
+	<shape xmlns:android=“http://schemas.android.com/apk/res/android”>
+		<gradient 
+			android:angle=“270”
+			android:startColor=“#00FFFFFF”
+			android:endColor=“#AA000000” />
+	</shape>
+
+
+there’s a special syntax for referring to colors defined in the theme resource file: 
+
+	
+	// theme.xml
+	<resources>
+		<style  name=“Theme.YourAppName” parent=“Theme.MaterialComponents.DayNight.DarkActionBar”>
+			<item name=“colorPrimary”>@color/purple_500</item>				// this was defined in the color resource file 
+			<item name=“colorPrimaryVariant”>@color/purple_700</item>
+			<item name=“colorOnPrimary”>@color/white</item>
+			… 
+		</style>
+	</resources>
+
+	// layout XML file 
+	<TextView 
+		app:layout_constraintTop_toTopOf=“parent”
+		app:layout_constraintStart_toStartOf=“parent”
+		android:layout_width=“wrap_content”
+		android:layout_height=“wrap_content”
+		android:text=“hello”
+		android:textSize=“20sp”
+		android:fontFamily=“sans-serif”
+		android.textColor=“?attr/colorPrimary”			// ?attr refers to any attribute defined in the theme resource file 
+		/>
+
+
+
+ViewBinding in fragments works similar to how it works in activities: 
+
+	// FirstFragment.kt
+	class FirstFragment : Fragment() { 
+		private lateinit var binding: FragmentOneBinding
+		
+		override fun onCreateView(
+			inflater: LayoutInflater, 
+			container: ViewGroup?,
+			savedInstanceState: Bundle?
+		): View {							// the return type can now be non-null because we’re using ViewBinding (it used to be View?)
+			binding = FragmentOneBinding.inflate(
+				inflater,					// the call to inflate is similar as without ViewBinding,  
+				container,  				// but you pass the inflater instead of the resource file
+				false 
+			) 
+			return binding.root
+		}
+	}
+
+
+in fragments it’s best practice not to do anything in onCreateView() other than inflate the view.
+	this is because while view has been inflated here, it’s not actually on the screen yet. 
+		so you can run into problems if you try to work with the view, doing things like setting up click listeners, etc.
+		but there’s another useful method onViewCreated() which can be used to work with the view: 
+
+	// FirstFragment.kt
+	class FirstFragment : Fragment() { 
+		private lateinit var binding: FragmentOneBinding
+		
+		override fun onCreateView(
+			inflater: LayoutInflater, 
+			container: ViewGroup?,
+			savedInstanceState: Bundle?
+		): View { 
+			binding = FragmentOneBinding.inflate(inflater, container, false) 
+			return binding.root
+		}
+
+		override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+			super.onViewCreated(view, savedInstanceState)
+
+			setupOnClickListeners()
+		}
+
+		// when the app crashes android will tell you which method it crashed in 
+		// if all your code is in the lifecycle methods the method name won’t be very helpful 
+		// so it’s good to extract code out of lifecycle methods into separate methods 
+		private fun setupOnClickListeners() {
+			binding.showNextScreenButton.setOnClickListener {
+				val intent = Intent(
+					context, 							// context is a variable inherited from the base Fragment class 
+					SecondActivity::class.java			// it’s a reference to the context of the activity this fragment is bound to 
+				)									// unlike activities, fragments don’t have their own context
+				startActivity(intent)
+			}
+		}
+	}
+
+
+for a switch statement in kotlin use the “when” keyword: 
+
+	when (totalDogBones) {
+		0 -> {							// use a code block if you need multiple lines 
+			println(“dog is hungry”)
+			timeToFeed = true
+		}
+		1 -> {
+			println(“dog is satisfied”)
+			timeToFeed = false
+		}
+		2 -> timeToFeed = false			// if it’s a one line statement you can do it inline 
+		else -> println(“dog heaven”)
+	}
+
+	when (animalSound) {
+		“ruff” -> println(“it’s a dog”)
+		“moo” -> println(“it’s a cow”)
+		“neiigh” -> println(“it’s a horse”)
+		else -> println(“not sure what it is”)
+	}
+
+	// you don’t have to switch off a value, you can just use when like an if/elif/else
+	func isPasswordValid(password: String): Boolean {
+		when { 
+			password.length < 6 -> return false 
+			password == “password” {
+				println(“too predictable”)
+				return false 
+			}
+			password.contains(“aaaa”) {
+				println(“too many repeated a’s”)
+				return false
+			}
+			else -> return true
+		}
+	}
+
+	// you can also return a value from a when expression 
+	func getDifficulty(level: Int): String {
+		val difficulty: String = when (level) {
+			1 -> “easy”
+			2 -> “medium”
+			3 -> “hard”
+			else -> “invalid input”
+		}
+		return difficulty
+	}
+
+	func getDifficultyInline(level: Int): String {
+		return when (level) {
+			1 -> “easy”
+			2 -> “medium”
+			3 -> “hard”
+			else -> “invalid input”
+		}
+	}
+
+	func getDifficultyEvenMoreConcise(level: Int) = when(level) {			// return type String is inferred here
+		1 -> “easy”
+		2 -> “medium”
+		3 -> “hard”
+		else -> “invalid input”
+	}
+
+	// apparently in kotlin’s if/else and when blocks you can just name a value on the last line of the block, and it will be returned
+	override fun onNavigationItemSelected(item: MenuItem): Boolean {
+		return when (item.itemId) {
+			R.id.button_one -> {
+				showFragmentOne()
+				true					// they’ve omitted the return statement here. I don’t really like this syntax 
+			}
+			R.id.button_two -> {
+				showFragmentTwo()
+				true
+			}
+			else -> false 
+		}
+	}
+
+
+
+the BottomNavigtionView’s setOnNavigationItemListener() has been deprecated 
+	and replaced by a more generic binding.bottomNav.setOnItemSelectedListener()
+	so now you should instead conform your activity to NavigationBarView.OnItemSelectedListener.
+	the conformance methods implemented are unchanged:
+
+
+	class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListener {
+		private latinit var binding: ActivityMainBinding
+
+		override fun onCreate(savedInstanceState: Bundle?) {
+			super.onCreate(savedInstanceState)
+
+			binding = ActivityMainBinding.inflate(layoutInflater)
+			setContentView(binding.root)
+
+			binding.bottomNav.setOnItemSelectedListener(this)
+		}
+	}
+
+	
+you can create an options dropdown menu using a menu resource file. 
+	there are a few AppCompatActivity lifecycle methods provided specifically for this purpose: 
+
+
+	// toolbar.xml
+	<menu xmlns:android=“http://schema.android.com/apk/res/android”>
+		<item android:id=“@id/item1”
+			android:title=“@string/item_title_1” />
+		<item android:id=“@id/item2”
+			android:title=“@string/item_title_2” />
+		<item android:id=“@id/item3”
+			android:title=“@string/item_title_3” />
+	</menu>
+
+	
+	// MainActivity.java
+
+	// lifecycle method to inflate the menu view 
+	// the menu parameter is not our menu resource, it’s the container we put our menu resource file into 
+	fun onCreateOptionsMenu(menu: Menu?): Boolean { 	
+		menuInflater.inflate(R.menu.toolbar, menu)		// menuInflater is provided by AppCompatActivity specifically for inflating menus 
+		return true									// if we return true the menu will show, if false it won’t show 
+	}
+
+	// lifecycle method to respond to clicks in the menu 
+	override fun onOptionsItemSelected(item: MenuItem): Boolean {
+		when (item.idemId) {
+			R.id.item1 -> {
+				Toast.makeText(this, “Item 1 selected”, Toast.LENGTH_SHORT).show()
+				return true 					// returning true consumes the click. the event won’t propagate to other parts of the app 
+			}
+			R.id.item2 -> {
+				Toast.makeText(this, “Item 2 selected”, Toast.LENGTH_SHORT).show()
+				return true
+			}
+			R.id.item3 -> {
+				Toast.makeText(this, “Item 3 selected”, Toast.LENGTH_SHORT).show()
+				return true
+			}
+			else {
+				// you can have an options menu for individual fragments
+				// apparently the above options will only capture clicks for the main activity
+				// this call to super will allow fragments to capture options menu clicks
+				return super.onOptionsItemSelected(item) 
+			}
+		}
+
+		
+	}
+
+
+
+there are 3 activity lifecycle methods called during startup, in order: 
+
+	onCreate()
+	onStart()
+	onResume()
+
+
+then there are 3 activity lifecycle methods called during teardown, in order: 
+
+	onPause()				// called when another activity comes into the foreground
+	onStop()					// called when the activity is no longer visible 
+	onDestroy()				// called when the activity is finishing or being destroyed by the system 
+
+these lifecycle methods can, for the most part, be organized into opposing pairs: 
+
+	onCreate() and onDestroy()  
+	onStart() and onStop()	
+	onResume() and onPause()
+
+there are some transitions between lifecycle methods that aren’t the straightforward linear flow: 
+	onPause() -> onResume()
+	onStop() -> onRestart() -> onStart()
+	onStop() or onPause() -> Higher Priority app needs memory -> App Process is killed -> User Navigates Back to the Activity -> onCreate()				
+
+pressing the home (circle) button will hide the view and call onStop(), but won’t finish the app or trigger onDestroy(). 
+	if you then navigate to the activity again it’ll typically call onRestart() > onStart() 
+		onRestart() is a 7th lifecycle method but it’s pretty much never overridden and you can just ignore it. onStart() is all you need 
+	but if, while the view hidden, apps with higher priority need memory your app will be killed, and when you navigate back to it onCreate() will get called again 
+
+There are 4 common ways to trigger onDestroy(). Aftrerwards if you open the app again you’ll retrigger onCreate(): 
+	1) press the back (triangle) button 
+	2) press the task switcher (square) button and swipe away the app
+	3) call finish() in the activity
+	4) rotating the phone 
+
+onPause() is called when another activity comes is the foreground. 
+onPause() always gets called before onStop() > onDestroy(). 
+	but there is a rare case where onPause() is called but onStop() isn’t called. 
+		this occurs when another app is launched / put on top of the app but doesn’t completely cover our apps view, our app is still visible behind it. 
+		this isn’t very common, because most activities are full screen these days.
+		but a common occurrence of this in the past is when you get a phone call 
+			sometimes you’d get a small square on the screen for the phone app but your activity would still be visible behind it
+	you can trigger onPause() without onCreate() in your app for testing purposes by temporarily adding the following activity:
+
+	// AndroidManifest.xml
+	<activity android:name=“.ANonFullScreenActivity” 
+		android:theme=“@style/Theme.AppCompat.Dialog”/> 		// this will make the activity show a simple dialogue
+
+	// ANonFullScreenActivity.kt 
+	class ANonFullScreenActivity: AppCompatActivity() {
+		override fun onCreate(savedInstanceState: Bundle?) {
+			super.onCreate(savedInstanceState)
+			// no additional implementation needed
+		}
+	}
+
+	// MainActivity.kt 
+	override fun onCreate(savedInstanceState: Bundle?) {
+		super.onCreate(savedInstanceState)
+		setContentView(R.layout.activity_main)
+		
+		// start a test activity that will show a dialog that only covers some of the screen
+		startActivity(Intent(this, ANonFullScreenActivity::class.java)) 
+	}
+	
+
+refreshing data after the user left / return to the app is often done in onResume() since it’s guaranteed to run 
+	usually people don’t use onStart() because onResume() covers all cases 
+
+
+note that you aren’t allowed to update the UI on a background thread 
+	if you setup something like a timer that Android will automatically move to a background thread you must call runOnUiThread() before updating the UI: 
+
+	fixedRateTimer(period = 1000L) {				// fixedRateTimer / runOnUIThread are native methods on Android 
+		runOnUIThread {
+			binding.textView.text = “text updated”
+		}
+	}
+
+
+note that onDestroy() is not always guaranteed to run 
+	if the app is stopped or paused, but the system runs out of memory or an error occurs and it has to kill the app very quickly, onDestroy() might not get called 
+	so you shouldn’t cleanup things in here that need to persist after the app is terminated, like saving data 
+	you could use onDestroy() to free resources that will always go away when the process is killed, like threads associated with an activity 
+		but often people just don’t use onDestroy() since it’s not entirely reliable 
+
+
+here’s the convoluted code for passing a callback in kotlin (similar to java): 
+
+	
+	interface CustomOnClickListener {
+		fun onClick()
+	}
+
+	class CustomButton {
+		private var clickListener: CustomOnClickListener? = null 
+		
+		fun click() {
+			clickListener?.onClick()
+		}
+
+		fun setOnClickListener(listener: CustomOnClickListener) {
+			clickListener = listener
+		}
+	}
+
+	val button = CustomButton()
+	button.setOnClickListener(object : CustomOnClickListener {	 		// note that if it’s a kotlin interface you can’t just use a lamda here 
+		override fun onClick() {										// functional interfaces can only be defined in java. 
+			println(“called custom click listener”) 					// kotlin just works with them for compatibility sake
+		}
+	})
+	button.click()
+
+
+
+there’s another lifecycle method onBackPressed() you can use to override the system back button if you needed to: 
+	
+	override fun onBackPressed() {
+		if shouldGoBack == true {
+			super.onBackPressed() 			// the super call causes the user to exit the app
+		}
+	}
+
+
+you can also use the more modern onBackPressedDispatcher. 
+	note that once you add a callback to onBackPressedDispatcher the lifecycle method onBackPressed() will not be called: 
+
+	// bundle.gradle 
+	dependencies {
+		implementation(“androidx.activity:activity-ktx:1.5.1”)
+	}
+
+	// MainActivity.kt
+	override fun onCreate(savedInstanceState: Bundle?) {
+		super.onCreate(savedInstanceState)
+		setContentView(R.layout.activity_main)
+		
+		onBackPressedDispatcher.addCallback {		// there are multiple addCallback methods, make sure to use the right one
+			Toast.makeText(
+				this@MainActivity,					// since you’re in a callback you must specify that this refers to MainActivity
+				“you pressed back”,
+				Toast.LENGTH_LONG
+			).show()
+		}
+	}
+
+
+Android has this hacky builder pattern for showing an AlertDialog: 
+
+	// MainActivity.kt
+	fun showAlert() {
+		AndroidDialog.Builder(this)
+			.setTitle(“Unable to load payments”)
+			.setMessage(“Sorry! We’re having a technical issue. Exiting the app”)
+			.setPositiveButton(“Confirm”) { _, _ ->				finish()									// exit the app 
+			}
+			.setNegativeButton(“Cancel”) { dialog, _ ->
+				dialog.dismiss()							// dismiss the alert itself 
+			}
+			.show()
+	}
+
+
+
+since onDestroy() / onCreate() can be called at random times you need a way to save data / reconstruct your applications state when this happens 
+
+since activities get destroyed / recreated throughout the usage of the app, such as when the phone rotates, 
+	there’s a lifeCycle method for persisting the instance state called onSaveInstanceState(outState: Bundle)
+	notice this is the same savedInstanceState that is passed to onCreate() 
+	
+	override fun onCreate(savedInstanceState: Bundle?) {
+		super.onCreate(savedInstanceState)
+		setContentView(binding.root)
+
+		binding.cardNumberTextView.text = savedInstanceState?.getString(“cardNumber”)
+	}
+
+	override fun onSaveInstanceState(outState: Bundle) {
+		super.onSaveInstanceState(outState)
+		val savedCardNumber = binding.cardNumberTextView.text.toString()
+		outState.putString(“cardNumber”, savedCardNumber)					// outState works as a key-value store similar to an Intent 
+	}
+
+
+kotlin uses maps for key-value storage (their equivalent of dictionary): 
+
+	val map1: HashMap<String, String> = hashMapOf() 		// HashMap is a mutable dictionary 
+	map1[“key1”] = “value1”
+
+	val map2: Map<String, Int> = mapOf(					// a regular Map is immutable 
+		Pair(“one”, 1),										// Pair is a type that represents a key/value 
+		Pair(“two” 2)
+	)
+
+	val map3: Map<String, Int> = mapOf(
+		“three”: 3,										// the Pair type is inferred here 
+		“four”: 4											// so you don’t have to explicitly call the Pair() constructor 
+	)
+
+	map3.remove(“four”) 
+
+	val map4: Map<String, String> = mapOf(
+		“English” to “B”,									// this is another shorthand syntax for creating a Pair 
+		“Maths” to “A-”, 
+		“Science” to “A+”,
+		“Music” to “A+”
+	)
+
+	val map5: Map<String, Int?> = mapOf(					// for the values to be null you must make the type optional 
+		“EBT cards”: null,
+		“Benefit cards”: 3,
+		“Gift cards”: 1
+	)
+
+
+HashMap is a class, but Map is just an interface
+	so you can call a HashMap constructor, but not a Map constructor
+	but for consistency / simplicity just use hashMapOf() / mapOf() / arrayOf(), etc. 
+	these kotlin convenience methods are provided for many different types 
+
+
+the fragment lifecycle is slightly different than the activity lifecycle. 
+	fragments transition through lifecycle states as they’re added, removed, and enter or exit the screen 
+
+fragments have the same lifecycle methods of an activity, plus a few new ones: 
+
+	onAttach()
+	onCreate()
+	onCreateView()
+	onViewCreated()
+	onViewStateRestored()
+	onStart()
+	onResume()
+
+	onPause()
+	onStop()
+	onSaveInstanceState()
+	onDestroyView()
+	onDestroy()
+	onDetach()
+
+
+onAttach() is called when a fragment is first attached to its context, which happens when it’s added to a FragmentManager. 
+	by the time you reach onCreate() the fragment has already been added to a FragmentManager and onAttach() has already been called 
+	onAttach() would be an appropriate place to restore any saved state associated with the fragment itself through the fragments SavedStateRegistry 
+	note that the fragments view has not been created at this time. Any state associated with the view should be restored only after the view has been created 
+	the transition invokes onCreate(), which received the savedInstanceState. 
+	
+likewise onDetach() is called when the fragment is removed from its context / detached from its host activity , which happens when a FragmentManager removes it.
+	at this point the fragment is no longer active and can no longer be retrieved using findFragmentById()
+	onDetach() is only called after the other lifecycle methods 
+
+the developer says he often doesn’t need to use the typical activity lifecycle methods (onCreate(), onResume()) in fragments, since he handles those at the activity level. 
+	so usually he just uses onCreateView() / onViewCreated() / onAttach() / onDetach() in the fragments. I’m not sure whether this will still be in true in Walmart’s app
+
+	onCreateView() 				// this is where you inflate the view to show on the screen. make sure you only inflate the view here
+	onViewCreated() 				// this is where you have the view and can start working with it 
+	onAttach() / onDetach() 		// this is a place where you can communicate with the host activity, though there’s a more modern way of doing this now
+
+
+here’s an example of implementing these methods: 
+
+	// main_layout.xml
+	<androidx.constraintlayout.widget.ConstraintLayout
+		… >
+
+		<androidx.fragment.app.FragmentContainerView
+			… 
+			android:layout_width=“300dp”
+			android:layout_width=“400dp”
+			android:id=“@+id/fragment_container”
+			tools:layout=“@layout/fragment_layout”> 		// this will tell the design preview what fragment layout to use just for now 
+														// if you don’t give a layout to render here the design preview won’t work 
+		</androidx.fragment.app.FragmentContainerView>
+		
+		<Button 
+			… 
+			android:id=“@+id/button_show_fragment”
+			android:layout_width=“wrap_content”
+			android:layout_width=“wrap_content”
+			android:text=“Show Fragment”
+			/>
+
+		<Button 
+			… 
+			android:id=“@+id/button_remove_fragment”
+			android:layout_width=“wrap_content”
+			android:layout_width=“wrap_content”
+			android:text=“Remove Fragment”
+			/>
+
+	</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+	// fragment_layout.xml 
+	<androidx.constraintlayout.widget.ConstraintLayout 
+		android:layout_width=“match_parent”
+		android:layout_height=“match_parent”>
+
+		<TextView	
+			android:id=“@+id/fragment_textview”
+			android:gravity=“center”
+			android:layout_width=“match_parent”
+			android:layout_height=“match_parent” />
+
+		<Button 
+			… 
+			android:id=“@+id/button_send_message”
+			android:layout_width=“wrap_content”
+			android:layout_width=“wrap_content”
+			android:text=“”
+			/>
+
+	</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+	// MainActivity.kt 
+
+	class MainActivity : AppCompatActivity(), CustomFragmentListener {
+		private lateinit var inding: ActivityMainBinding
+		private val customFragment = CustomFragment()
+
+		override fun onCreate(savedInstanceState: Bundle?) {
+			super.onCreate(savedInstanceState)
+			setContentView(binding.root)
+
+			binding.buttonShowFragment.setOnClickListener {
+				showFragment()
+			}
+			binding.buttonRemoveFragment.setOnClickListener {
+				removeFragment()
+			}
+		}
+
+		private fun showFragment() {
+			supportFragmentManager.commit {
+				add(R.id.fragment_container, customFragment)
+			}
+		}
+	
+		private fun removeFragment() {
+			supportFragmentManager.commit {
+				remove(customFragment)
+			}
+		}
+
+		// CustomFragmentListener conformance 
+		fun receiveMessage(message: String) {
+			binding.textField.text = message
+		}
+	}
+
+	// CustomFragment.kt 
+
+	// we need a reference to the activity to communicate with it, but we don’t want a reference to the entire activity because that exposes too much. 
+	// so instead the main activity will conform to this interface and we’ll store a reference to this type 
+	interface CustomFragmentListener {
+		fun receiveMessage(message: String) {
+	}
+
+	class CustomFragment : Fragment() {
+
+		private lateinit var binding: FragmentCustomBinding
+		private var customFragmentListener: CustomFragmentListener? = nil
+
+		// this method, along with onDetach(), provides one older (but still valid) way of communicating with an activity 
+		override fun onAttach(context: Context) {
+			super.onAttach(context)
+
+			customFragmentListener = context as? CustomFragmentListener			// here context is the main activity 
+		}
+
+		// note that you don’t do view inflation in onCreate() within fragments, you do it here
+		override fun onCreateView(
+			inflater: LayoutInflater,
+			container: ViewGroup?,
+			savedInstanceState: Bundle?
+		): View? {
+			binding = FragmentCustomBinding.inflate(inflater, container, false)
+			return binding.root
+		}
+
+		// and in fragments you work with savedInstanceState in here instead of onCreate() 
+		override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+			super.onViewCreated(view, savedInstanceState)
+
+			binding.fragmentTextview.text = “hello!”
+
+			binding.buttonSendMessage.setOnClickListener {
+				customFragmentListener?.sendMessage(binding.buttonSendMessage.text)
+			}
+		}
+
+		// here you may clean some things up related to the view - like reset some variables related to the view. but usually you don’t need this 
+		override fun onDestroyView() {
+			super.onDestroyView()
+		}
+
+		override fun onDetach() {
+			super.onDetach()
+
+			customFragmentListener = null 				// this ensures you don’t ever try to use a detached activity, that can be dangerous 
+		}
+	}
+
+	// build.gradle 
+	dependencies {
+		implementation “androidx.fragment:fragment-ktx:1.5.5”			// required for using supportFragmentManager.commit() 
+	}

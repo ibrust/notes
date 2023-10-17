@@ -606,7 +606,7 @@ To limit the amount of data a repository exposes sometimes it needs its own mode
 
 
 --------------------------------------------
-LIFECYCLE INFORMATION
+LIFECYCLE CLASSES
 --------------------------------------------
 
 Lifecycle-aware components perform actions in response to an activity or fragment
@@ -908,7 +908,7 @@ viewModelScope is a coroutine scope that respects the lifetime of the ViewModel.
 		)
 	) : ViewModel() {
 
-		… 
+		...
 
 		override fun onCleared() {
 			coroutineScope.cancel()				// if using a custom coroutine scope you must cancel it in onCleared()
