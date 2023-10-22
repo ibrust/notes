@@ -918,67 +918,6 @@ To limit the amount of data a repository exposes sometimes it needs its own mode
 
 
 --------------------------------------------
-KOTLIN EXTENSIONS
---------------------------------------------
-
-Android KTX are a set of kotlin extensions included with various Android libraries, making those libraries APIs more concise. 
-	Features of kotlin leveraged by Android KTX include extension functions / properties, lambdas, named / default parameters, and coroutines 
-
-	for a complete list of Android KTX extensions read: https://developer.android.com/kotlin/ktx/extensions-list
-	here are some common Android KTX extensions: 
-
-		// for simplifying fragment transactions
-		fragmentManager().commit {							// add these build.gradle dependencies: 
-			addToBackStack("...") 							// implementation "androidx.fragment:fragment-ktx:1.6.1”
-			setCustomAnimations(R.anim.enter_anim, 	
-							   R.anim.exit_anim)
-			add(fragment, "...")
-		}
-
-
-		// for getting viewModel references in the fragment 
-		val viewModel by viewModels<WalletViewModel>()
-		val activityViewModel by activityViewModels<MainActivityViewModel>()
-
-		
-		// for executing asynchronous work safely in a LifeCycle’s scope 
-		class CustomFragment: Fragment() {								
-			override fun onViewCreated(view: View, savedInstanceState: Bundle?) {	// add these build.gradle dependencies: 
-				super.onViewCreated(view, savedInstanceState)						// implementation "androidx.lifecycle:lifecycle-runtime-ktx:1.6.1”
-
-				viewLifecycleOwner.lifecycleScope.launch {
-					… 
-				}
-			}
-		}
-
-
-		// for simplifying navigation 
-		class CustomFragment: Fragment() {	
-			// extension to obtain type safe arguments from the bundle 
-			val args by navArgs<CustomDestinationArgs>()
-
-			override fun onViewCreated(view: View, savedInstanceState: Bundle?) {	// add these build.gradle dependencies: 
-				view.findViewById<Button>(R.id.continue).setOnClickListener {		// implementation "androidx.navigation.navigation-runtime-ktx:2.7.4” 
-					// extension to retrieve a nav controller 						// implementation "androidx.navigation.navigation-ui-ktx:2.7.4”
-					findNavController().navigate(R.id.next_destination)				// implementation "androidx.navigation.navigation-fragment-ktx:2.7.4”
-				}
-			}
-		}
-
-		
-		// viewModel ktx extensions 												// add these build.gradle dependencies: 
-		class CustomViewModel: ViewModel() {										// implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2”
-			private fun save(change: TenderPlanChange) {
-				// extension to run code on a background thread respecting the viewModel’s lifecycle
-				viewModelScope.launch {
-					tenderPlanDataSource.save(change)
-				}
-			}
-		}
-
-
---------------------------------------------
 COROUTINE INFO 
 --------------------------------------------
 
@@ -1007,7 +946,6 @@ viewModelScope is a coroutine scope that respects the lifetime of the ViewModel.
 			SupervisorJob() + Dispatchers.Main.immediate
 		)
 	) : ViewModel() {
-
 		...
 
 		override fun onCleared() {
@@ -1016,3 +954,64 @@ viewModelScope is a coroutine scope that respects the lifetime of the ViewModel.
 	}
 
 
+--------------------------------------------
+KOTLIN EXTENSIONS
+--------------------------------------------
+
+Android KTX are a set of kotlin extensions included with various Android libraries, making those libraries APIs more concise. 
+	Features of kotlin leveraged by Android KTX include extension functions / properties, lambdas, named / default parameters, and coroutines 
+
+	for a complete list of Android KTX extensions read: https://developer.android.com/kotlin/ktx/extensions-list
+	here are some common Android KTX extensions: 
+
+		// for simplifying fragment transactions
+		fragmentManager().commit {							// add to build.gradle dependencies: 
+			addToBackStack("...") 							// implementation "androidx.fragment:fragment-ktx:1.6.1”
+			setCustomAnimations(
+				R.anim.enter_anim, 
+				R.anim.exit_anim
+			)
+			add(fragment, "...")
+		}
+
+
+		// for getting viewModel references in the fragment 
+		val viewModel by viewModels<WalletViewModel>()
+		val activityViewModel by activityViewModels<MainActivityViewModel>()
+
+		
+		// for executing asynchronous work safely in a LifeCycle’s scope 
+		class CustomFragment: Fragment() {								
+			override fun onViewCreated(view: View, savedInstanceState: Bundle?) {	// add to build.gradle dependencies: 
+				super.onViewCreated(view, savedInstanceState)						// implementation "androidx.lifecycle:lifecycle-runtime-ktx:1.6.1”
+
+				viewLifecycleOwner.lifecycleScope.launch {
+					...
+				}
+			}
+		}
+
+
+		// for simplifying navigation 
+		class CustomFragment: Fragment() {	
+			// extension to obtain type safe arguments from the bundle 
+			val args by navArgs<CustomDestinationArgs>()
+
+			override fun onViewCreated(view: View, savedInstanceState: Bundle?) {	// add to build.gradle dependencies: 
+				view.findViewById<Button>(R.id.continue).setOnClickListener {		// implementation "androidx.navigation.navigation-runtime-ktx:2.7.4” 
+					// extension to retrieve a nav controller 						// implementation "androidx.navigation.navigation-ui-ktx:2.7.4”
+					findNavController().navigate(R.id.next_destination)				// implementation "androidx.navigation.navigation-fragment-ktx:2.7.4”
+				}
+			}
+		}
+
+		
+		// viewModel ktx extensions 												// add to build.gradle dependencies: 
+		class CustomViewModel: ViewModel() {										// implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2”
+			private fun save(change: TenderPlanChange) {
+				// extension to run code on a background thread respecting the viewModel’s lifecycle
+				viewModelScope.launch {
+					tenderPlanDataSource.save(change)
+				}
+			}
+		}
