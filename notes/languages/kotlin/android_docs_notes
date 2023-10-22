@@ -1,0 +1,1018 @@
+--------------------------------------------
+DEVICE COMPATIBILITY 
+--------------------------------------------
+
+many different kinds of devices run android, with a wide range of device configurations
+    some devices might not have a compass sensor, for example
+    dimensions also vary greatly between devices 
+
+to support different devices you can provide various configuration-specific app resources in static files 
+    android will then select the correct resource for the current device 
+    for example, different XML files for different layouts on different devices 
+
+    using the manifest you can also restrict the types of devices that can install your app.
+    devices in the google app store can be restricted based on screen sizes, device features, and version:
+
+        <manifest ... >
+            <uses-feature 
+				android:name="android.hardware.sensor.compass"
+                android:required="true" />                        // indicates it's required for installation
+            ... 
+        </manifest>
+
+
+    you can also disable certain optional features at runtime based on what the device supports:
+
+        <manifest ... >
+            <uses-feature android:name="android.hardware.sensor.compass"
+                          android:required="false" />                       // indicates it can still be installed.
+            ... 
+        </manifest>
+
+	now you'll have to check for device support in the code and enable / disable the feature accordingly:
+
+        if (!packageManager.hasSystemFeature(PackageManager.FEATURE_SENSOR_COMPASS)) {
+            disableCompassFeature()
+        }
+
+
+you can specify the minSdkVersion and targetSdkVersion version in the manifest and build.gradle files 
+    the version info in the build.gradle file will take precedence over the manifest, but the two should match 
+    targetSdkVersion is the highest version for which you've optimized the app 
+
+    // build.gradle 
+    android {
+        defaultConfig {
+            applicationId 'com.example.myapp' 
+            minSdkVersion 21 
+            targetSdkVersion 33 
+            ...
+        }
+    }
+
+    // AndroidManifest.xml 
+    <manifest ... > 
+        <uses-sdk android:minSdkVersion="21"
+                  android:targetSdkVersion="33"
+                  android:maxSdkVersion="33" />
+    </manifest>
+
+
+you can also check the version in code: 
+
+    // SDK_INT is the current version - compare it to VERSION_CODES
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) { 
+        disableYourFeature()
+    }
+
+
+Android categorizes screens by size and density. 
+    to support these different screens you should provide images at different densities (or use vector graphics), 
+        and use flexible layouts as much as possible
+
+    there are 4 screen sizes: 
+        small
+        normal
+        large
+        xlarge
+    
+    there are 6 primary densities. to provide images for different densities use a 3:4:6:8:12:16 ratio.
+        place the images in the appropriate subdirecotry in the res folder:
+
+        ldpi (low)                                          ~120 dpi, 0.75x     36x36 image
+        mdpi (medium)                                       ~160 dpi, 1x        48x48
+        hdpi (high)                                         ~240 dpi, 1.5x      72x72
+        xhdpi (extra high)                                  ~320 dpi, 2x        96x96
+        xxhdpi (extra-extra high)                           ~480 dpi, 3x        144x144
+        xxxhdpi (extra-extra-extra high)                    ~640 dpi, 4x        192x192
+
+        nodpi (resources for all densities)
+        tvdpi (intended for TVs, apps don't need it)        somewhere between mdpi and hdpi
+
+    if you only provide low-resolution images Android will scale them up for larger screens. 
+        this scaling degrades the image and can look bad, so remember to provide high density photos. 
+        and remember not to add a high res photo as a low-resolution image, 
+            because when it gets scaled up you may run out of memory and crash the app 
+
+
+    Vector graphics are often provided as SVGs, but Android doesn't support this format 
+        so you must convert SVG files to Android's vector drawable format: 
+
+        1) right-click the res directory and select New > Vector Asset
+        2) Select Local file (SVG, PSD) 
+        3) Locate the file you want to import and make any adjustments > click Next
+        4) confirm the source set where you want the file (probably the main one) > click Finish 
+
+        the vector image will appear as an xml file in res/drawable 
+
+
+--------------------------------------------
+LIFECYCLE CLASSES
+--------------------------------------------
+
+Lifecycle-aware components perform actions in response to an activity or fragment
+	this can help you to move code out of the activity / fragment 
+	The androidx.lifecycle package is a library that lets you build lifecycle-aware components
+
+	most Android Framework components have lifecycles attached to them
+
+Lifecycle is a class/interface in androidx.lifecycle which maintains / publishes information about the state of an activity/fragment
+	every activity / fragment implements the LifeCycleOwner interface, and has an associated LifeCycle
+	other classes (like a ViewModel?) can also implement the LifecycleObserver or DefaultLifecycleObserver interfaces to listen for LifeCycle changes:
+
+		class CustomClass : LifecycleObserver { 
+
+			@OnLifecycleEvent(Lifecycle.event.ON_RESUME) 			// this is the old way 
+			private void func customOnResumeHandler() {
+				...
+			}
+		}
+
+		class CustomClass2 : DefaultLifecycleObserver { 			// this is the new way 
+
+			@Override
+			public void onCreate(LifecycleOwner owner) {
+				...
+			}
+		}
+
+
+A LifecycleScope is defined for every Lifecycle object. 
+	Any coroutine launched in this scope is canceled when the Lifecycle is destroyed.
+	This allows developers to easily tie coroutines to the lifecycle of a component, ensuring tasks are cancelled on teardown / avoiding memory leaks:
+
+	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+		super.onViewCreated(view, savedInstanceState)
+
+		viewLifecycleOwner.lifecycleScope.launch {			// safely launch a coroutine in the activity’s lifecycle scope 
+			...
+ 		}
+	}
+
+
+LifecycleOwner is an interface that indicates the class has a Lifecycle. It has one method, getLifecycle(). 
+	LifecycleOwner emits events for changes in its state. This state can be queried by custom components to handle lifecycle changes.
+	Components that implement DefaultLifecycleObserver work seamlessly with components that implement LifecycleOwner:
+
+	// just initialize this class in an activity or fragment
+	internal class CustomDelegateClass(
+		private val context: Context,
+		private val lifecycle: Lifecycle
+	) : DefaultLifecycleObserver {
+
+		private var enabled = false
+
+		override fun onStart(owner: LifecycleOwner) {							// will be called when the LifecycleOwners lifecycle changes 
+			if (enabled) {
+				...
+			}
+		}
+
+		fun enable() {
+			enabled = true
+			if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {		// you can query the lifecycle object for current state 
+				...
+			}
+		}
+	}
+
+
+LifeCycle has 2 enums - LifeCycle.State and LifeCycle.Event. 
+	The docs say to think of LifeCycle.State cases the nodes in a graph, and LifeCycle.Event as the lines connecting the nodes.
+
+There are 5 LifeCycle.State cases. This is what will be returned by the LifeCycleOwner if you query its state. 
+	Note that they dont correspond perfectly with the actual activity lifecycle events, and there is some weirdness happening behind the scenes: 
+
+	CREATED 							set after onCreate() and right before onStop() 
+	DESTROYED 							set right before onDestroy()
+	INITIALIZED 						set after initialization but before onCreate() ever gets called 
+	RESUMED 							set after onResume() is called 
+	STARTED 							set after onStart() and right before onPause()
+
+
+There are 7 Lifecycle.Event cases: 
+
+	ON_ANY 
+	ON_CREATE 
+	ON_DESTROY 
+	ON_PAUSE 
+	ON_RESUME 
+	ON_START 
+	ON_STOP							emitted when the activity or fragment calls onSaveInstanceState()
+
+
+When a Fragments / Activities state is saved via onSaveInstanceState() (and LifeCycleOwner.Event.ON_STOP is emitted) its UI is considered immutable.
+	This remains true until LifeCycleOwner.Event.ON_START is emitted again. 
+
+	This is because the state saved by onSaveInstanceState() is whats used to recreate the UI 
+		so modifying the UI state before starting would introduce inconsistencies with the saved state.
+	For this reason FragmentManager throws an exception if a FragmentTransaction occurs while the UI is considered immutable.
+
+ 	LiveData prevents this from happening.
+		it wont publish events to an observer if the observers associated Lifecycle isnt Lifecycle.State.STARTED or Lifecycle.State.RESUMED 
+		if there are multiple observers LiveData will notify the active ones, but not the inactive ones 
+	
+	Unfortunately Activities do not call their onStop() method until after onSaveInstanceState() is called (which emits ON_STOP). 
+		So theres a gap where ON_STOP has been emitted, and the UI is considered immutable, 
+		but onStop() has not been called and LifeCycle.State is not set to CREATED yet. 
+
+		to fix this problem newer versions of Android (after SDK API level 26) set LifeCycle.State to CREATED when onSaveInstanceState() is called, 
+			slightly before onStop() is called. 
+			but older versions did something weird with setting the CREATED state.
+			this problem shouldnt impact the code, just be aware that these events / states call order 
+				dont exactly match the call order in the Activity class
+			our app supports min SDK version 25, so this is still relevant for us
+
+
+--------------------------------------------
+NAVIGATION / BACK-STACK
+--------------------------------------------
+
+Activities can be grouped together by assigning them to the same affinity group in the XML. 
+	This can allow you to dismiss them all at once: 
+
+	<activity 
+		android:name=“.activities.WalletActivity”
+		android:taskAffinity=“com.walmart.affinityGroupName”
+		android:autoRemoveFromRecents=“true”		// autoRemoveFromRecents prevents this affinity group from showing up in the “most recents” screen 
+		>
+
+	ActivityCompat.finishAffinity(this);			// finish the entire affinity group 
+
+
+By default the back stack is a LIFO structure, but you can modify how an activity is added to the stack by setting launchMode. 
+	You might do this if you want to bring an existing activity to the top, launch an entirely new task, or clear the back stack. 
+	
+	<activity 
+		android:name=“.activities.WalletActivity”
+		android:launchMode=“singleTask”							// reuses an activity if it exists, otherwise launches a new activity in an entirely new task stack
+		>
+
+
+Another way to modify task stack behavior is through the Intent flags: 
+
+	Intent loginSuccessIntent = new intent(this, WalletActivity.this);
+	loginSuccessIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+	startActivity(loginSuccessIntent);
+
+
+the ViewModel class integrates with the Navigation class
+	Navigation caches the viewmodel when the your component is pushed on the back stack 
+		this means your viewmodel data will be available when you return 
+		note that you couldn’t do this with a lifecycle dependent stateholder
+	Navigation also clears this viewmodel cache when your component exits the screen, ensuring your application state is cleaned up automatically 
+		this is better than listening to a view lifecycle event, which can occur for many different reasons
+
+
+--------------------------------------------
+LIVEDATA / FLOWS 
+--------------------------------------------
+
+Flows are optimized for streaming fragmented data, whereas LiveData publishes discrete events 
+Flows have more operators than LiveData 
+	for example, you can move operations to a different thread using the Flow operator flowOn(Dispatcher:)
+
+	flowOf("A","B","C")
+		.map { 
+			… 
+		}
+		.flowOn(Dispatchers.IO)
+		.collect {
+			… 
+		}
+
+
+LiveData / Flows need to respect the UI lifecycle. It would waste resources to observe these publishers when the view isn’t on screen. 
+	when using LiveData, the LifeCycleOwner implicitly takes care of lifecycle concerns
+	with Flows this is not the case, though you can use StateFlow and Lifecycle.repeatOnLifecycle to make a lifecycle aware flow:
+
+		override fun onCreate(savedInstanceState: Bundle?) {
+			super.onCreate(savedInstanceState)
+			… 
+
+			lifecycleScope.launch {
+				repeatOnLifecycle(Lifecycle.State.STARTED) {
+					viewModel.uiState.collect {						// listen for viewModel changes and update the UI 
+						spinnerView.isVisible = it.isLoading		// I’m not sure why this is in a coroutine. just to avoid blocking the UI?
+					}													// and why does it only repeat on Lifecycle.State.STARTED? No idea.
+				}
+			}
+		}
+
+	Its easiest to just keep the Flow in the domain layer, and only use LiveData to update the UI layer
+
+
+to consume the stream of LiveData / Flow publishers you use their terminal operator
+	for LiveData this is observe()
+	for a Flow it is collect() or one of its derivatives 
+
+Note that when LiveData is initialized it’s not set with an initial value 
+
+Note that all LiveData objects are observed on the main thread. 
+Operators doing transformations on the LiveData also run on the main thread. 
+
+LiveData has very limited ability to combine streams, even when you use MediatorLiveData. 
+
+To avoid UI stutter limit use of LiveData to ViewModels where you publish UI updates, and then subscribe to them in activity / fragments.
+repositories should not use LiveData, but should instead use Flows. 
+	in the ViewModel, when publishing UI updates, you typically you convert the Flows to LiveData using the asLiveData() method 
+	
+
+	// MainActivity.kt 
+	class MainActivity : AppCompatActivity() {
+
+		private val viewModel: MainViewModel by viewModels()
+		
+		override fun onCreate(savedInstanceState: Bundle?) {
+			super.onCreate(savedInstanceState)
+			
+			val nameObserver = Observer<String> { newName ->		// consume LiveData in a fragment/activity by first creating an Observer 
+				nameTextView.text = newName
+			}
+			viewModel.namePublisher.observe(this, nameObserver)		// then calling the observe() method 
+		}
+
+		button.setOnClickListener {
+			val anotherName = "John Doe"
+			viewModel.setName(anotherName)							// you can set the data with setValue(). 
+		}															// the docs actually mutated the data from the fragment here but this is bad design 
+
+	}
+
+	// MainViewModel.kt 
+	class MainViewModel : ViewModel() {
+
+		private val _namePublisher = MutableLiveData<String>()
+		val namePublisher: LiveData<String> = _namePublisher	// the MutableLiveData is typically private in the ViewModel, and accessed 
+																// via an immutable getter method or property
+		fun setName(name: String) {
+			_namePublisher.setValue(name)						// setValue() and postValue() are two methods you can call to update LiveData
+		}														// you must call setValue() if on the main thread. 
+	}															// If not on the main thread you can use postValue()
+
+
+LiveData also supports a Transformations class. These are operators to change the data in the pipeline (much like Combine operators). 
+	note that Transformations are lazy in a sense - they won't trigger if there's no observer attached. 
+	this lazy behavior keeps the subscription lifecycle aware and maintains compatibility with LiveData:
+
+		val tenderPlanLiveData: LiveData<TenderPlan> = TenderPlanLiveData()
+
+		// typical map() operator
+		val creditCardLiveData: LiveData<CreditCardGroup> = tenderPlanLiveData.map {			
+			tenderPlan.creditCardGroup 
+		}
+		val giftCardLiveData: LiveData<GiftCardGroup> = Transformations.map(tenderPlanLiveData) {		// alternative syntax 
+			tenderPlan.giftCardGroup	
+		}
+
+		// switchMap() is similar to map(), but designed to work with certain kinds of asynchronous updates. 
+		// with switchMap() the responses from old events are immediately unsubscribed to when a new update is triggered
+		val ebtCardLiveData: LiveData<EBTCardGroup> = tenderPlanLiveData.map {			
+			MuableLiveData(tenderPlan.ebtCardGroup)
+		}
+
+
+	notice that map() returns a LiveData object wrapping the new type, while switchMap() does not (so you need to wrap it yourself)
+
+
+Since Transformations behave in a lifecycle aware manner they can optionally be used within the ViewModel to publish UI updates, 
+	in combination with LiveData publishers in the domain layer. Note that you’d perform the work in the domain layer on a background thread, 
+	and just publish the result via LiveData, since LiveData runs on the main thread.
+	You would never publish the domain layers LiveData to the UI directly, you’d always pass through a Transformation in the ViewModel.
+
+Switchmap is designed for dealing with asynchronous events. Lets say you're querying a database - an asynchronous operation - and publishing 
+	the results via LiveData. Lets say your application makes 2 queries in quick succession - query 1 returning response 1 (used to update the UI), 
+	and query 2 returning response 2. And let's say that although you sent query 1 first, it completes and arrives after query 2. 
+	With the regular Transformations.map() operator response 1 will be published last, and will determine the final application state.
+	With Transformations.switchMap() the moment you send query 2 the first response will be effectively unsubscribed to, and you will only 
+	receive the second response. The way this works is the LiveData returned by Transformations.switchMap() delegates to another, 
+	internal LiveData publisher within the switchMap implementation. This internal LiveData publisher is recreated / resubscribed to on every update. 
+	But note that this wouldn't guarantee synchronization with the database in this example. 
+
+	So this would only really be useful in cases where the request you're sending is non-mutating, the UI is intended to drive the application state, 
+	and the service you're interacting with can't guarantee the order in which updates are processed OR you’re sending the request on a background thread. 
+
+
+To implement your own custom transformations use the MediatorLiveData class, a subclass of LiveData. 
+	MediatorLiveData also allows you to observe multiple LiveData publishers & merge their updates (much like Publishers.Combine). 	
+
+
+--------------------------------------------
+UI LAYER ARCHITECTURE OVERVIEW
+--------------------------------------------
+
+there are 2 types of UI state: 
+	application state (they call this screen state for some reason) 		state that comes from your application 
+	UI element state 														state managed inside of the framework UI classes
+
+they acknowledge that only a very minimal amount of logic belongs in the UI layer 
+	just enough to set the UI element state (i.e. applyModel(), isHidden, etc.)
+	there’s also sometimes event-based UI logic like toggle logic or scrolling logic 
+	and there’s some UI logic associated with integrating with some native APIs, like lifecycle operations or Resources (i.e. strings)
+
+	but they seem convinced of the bad idea that navigation logic belongs in the UI layer as well.
+
+application logic / application state must be kept lifecycle independent
+UI logic will be lifecycle dependent since it only occurs when the view exists
+
+UI element state is a little trickier, it can be:
+	1) driven by application data
+	2) driven by a transient event (i.e. toggle or scrolling logic)
+		they claim this sort of thing is handled just in the UI layer. 
+		which makes me think there may be problems setting the UI with application events since the state wont survive config changes 
+	3) managed internally by the element itself (but if that state requires reinitialization it’ll have to be application state driven)
+
+
+they claim there are 2 types of state holders (it really shouldn’t be this complicated): 
+
+	application state holder (lifecycle independent)				the ViewModel - survives configuration changes 
+
+	UI logic / state holder (lifecycle dependent) 					typically implemented in a plain class, doesn’t survive configuration changes 
+																		not sure what this really refers to. the actual views model? 
+
+--------------------------------------------
+FRAGMENTS
+--------------------------------------------
+
+according to the Android docs navigation logic is a concern of the View, not the ViewModel
+	this seems like a horrible idea to blame for their horrible fragments design
+
+
+	// key for the `validationInProgress` data in the Bundle
+	private const val DOB_VALIDATION_KEY = "dobValidationKey"
+
+	class DobValidationFragment : Fragment() {
+
+		private var validationInProgress: Boolean = false
+		private val viewModel: DobValidationViewModel by viewModels()
+
+		override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+			super.onViewCreated(view, savedInstanceState)
+			val binding = ...
+			validationInProgress = savedInstanceState?.getBoolean(DOB_VALIDATION_KEY) ?: false
+
+			binding.continueButton.setOnClickListener {
+				viewModel.validateDob()
+				validationInProgress = true
+			}
+
+			viewLifecycleOwner.lifecycleScope.launch {
+				viewModel.uiState											// listen for UI updates from the viewModel 
+					.flowWithLifecycle(viewLifecycleOwner.lifecycle)
+					.collect { uiState -> 
+						if (uiState.isDobValid && validationInProgress) {
+							validationInProgress = false
+							navController.navigate(...) 					// Navigate to next screen - crappy navigation in the view 
+						}
+					}
+			}
+
+			return binding
+		}
+
+		override fun onSaveInstanceState(outState: Bundle) {
+			super.onSaveInstanceState(outState)
+			outState.putBoolean(DOB_VALIDATION_KEY, validationInProgress)		// save data in onSaveInstanceState
+		}
+	}
+
+
+to update the view you should use StateFlow or LiveData, because theyre both lifecycle aware: 
+
+	data class WalletUiState(
+		val title: String = "",
+		val description: String = "",
+		val isTaskCompleted: Boolean = false,
+		val isLoading: Boolean = false,
+		val userMessage: String? = null,
+		val isTaskSaved: Boolean = false
+	)
+
+	class WalletViewModel(...) : ViewModel() {
+
+		private val _uiState = MutableStateFlow(WalletUiState())
+		val uiState: StateFlow<WalletUiState> = _uiState.asStateFlow()
+
+		// example of a coroutine
+		private fun createNewTask() {
+			viewModelScope.launch {
+				val newTask = Task(uiState.value.title, uiState.value.description)
+				try {
+				tasksRepository.saveTask(newTask)
+					_uiState.update {						// publish data to update the UI 
+						it.copy(isTaskSaved = true)
+					}
+				}
+				catch(cancellationException: CancellationException) {
+					throw cancellationException
+				}
+				catch(exception: Exception) {
+					_uiState.update {
+						it.copy(userMessage = getErrorMessage(exception))
+					}
+				}
+			}
+		}
+    }
+
+
+Its preferable to launch Coroutines on the main dispatcher (not in a withContext block) when updating UI state. 
+	But if you do need to update the UI in a different background context you can use withContext. 
+	apparently if the entire block needs to be in a different context you can also call viewModelScope.launch(defaultDispatcher) directly: 
+
+	viewModelScope.launch() {
+		...
+
+		withContext(defaultDispatcher) {					// update the UI in a different background context 
+			_uiState.update { currentState ->
+				currentState.copy(
+					firstDieValue = SlowRandom.nextInt(from = 1, until = 7),
+					secondDieValue = SlowRandom.nextInt(from = 1, until = 7),
+					numberOfRolls = currentState.numberOfRolls + 1,
+				)
+			}
+		}
+	}
+
+
+If you want a layout file to be ignored while generating the view binding classes add tools:viewBindingIgnore="true" to the root view in the layout file
+
+While generated view bindings are usually of type View, with the tools:viewBindingType attribute you can tell the compiler 
+    what type to use in the generated code
+
+
+--------------------------------------------
+VIEWMODELS 
+--------------------------------------------
+
+work performed in a ViewModel should generally be safe to call on the main thread, since its part of the UI layer.
+	If it needs to be on a background thread it should probably be in the data model instead 
+
+You can either use the ViewModel class provided by Android or implement your own state holder using a plain class
+
+a ViewModel should correspond with a single view hierarchy. it shouldn't be used for different view hierarchies, since the application logic will differ.
+	In contrast, UI state holders (the views actual model and logic ?) are safe to reuse in different application use cases
+
+there shouldn’t be any references in the ViewModel to things with lifecycle scope such as navigationController or Resources
+	this would create a retain cycle
+	instead you do that in the fragment (the architecture promotes this - it's crappy but have to do it)
+
+don’t pass the viewModel instance to a UI state holder, because the UI state holder is supposed to be decoupled from the application layer and reusable 
+	instead just pass the particular data you need 
+	I don't understand why the fragment has a convenience method for accessing the ViewModel, then... but who knows
+
+Note that if you have multiple streaming publishers you can aggregate them using combine(): 
+
+	class WalletViewModel(
+		tenderPlanRepository: TenderPlanRepository,
+		localRepository: LocalRepository
+	) : ViewModel() {
+
+		val uiState = combine(
+			tenderPlanRepository.getDataStream(),
+			localRepository.getDataStream(),
+		) { tpData, localData ->
+			WalletUiState.TenderPlanResponse(
+				… 
+			)
+		}
+		.stateIn(											// use stateIn() to change the type to a lifecycle aware StateFlow
+			scope = viewModelScope,
+			started = SharingStarted.WhileSubscribed(5_000),
+			initialValue = WalletUiState.InitiallyLoading
+		)
+	}
+
+
+You can also use SharingStarted.WhileSubscribed() if the pipeline should only be active when the UI is visible, 
+	or use SharingStarted.Lazily if the pipeline should be active as long as the user may return to the UI, i.e. the UI is on the backstack
+
+And remember that Kotlin flows support a richer set of operators if you need them 
+
+
+If the combined state has sources that are both one-off events and streams you must convert or pipe the one-off event into a stream. 
+	With flows this typically means creating one or more private backing MutableStateFlow instances to propagate state changes:
+
+
+	class WalletViewModel @Inject constructor(
+		private val tasksRepository: TasksRepository,
+		savedStateHandle: SavedStateHandle
+	) : ViewModel() {
+
+		private val _isTaskDeleted = MutableStateFlow(false)
+		private val _task = tasksRepository.getTaskStream(taskId)
+
+		val uiState: StateFlow<WalletUiState> = combine(
+			_isTaskDeleted,
+			_task
+		) { isTaskDeleted, task ->
+			WalletUiState(
+				task = taskAsync.data,
+				isTaskDeleted = isTaskDeleted
+			)
+		}.stateIn(
+			scope = viewModelScope,
+			started = SharingStarted.WhileSubscribed(5_000),
+			initialValue = WalletUiState()
+		)
+
+		fun deleteTask() = viewModelScope.launch {
+			tasksRepository.deleteTask(taskId)
+			_isTaskDeleted.update { true }
+		}
+	}
+
+	
+It is best practice to initialize the publisher lazily if possible to conserve system resources. 
+	Practically this often means waiting until there is a consumer of the output
+	the Flow API allows for this via stateIn(started:) 
+	otherwise you can define an idempotent initialize() method to setup the publisher when ready: 
+
+	
+	class MyViewModel : ViewModel() {
+
+		private var initializeCalled = false
+
+		@MainThread						// this method is idempotent assuming it is only called from the main thread
+		fun initialize() {
+			if(initializeCalled) return
+			initializeCalled = true
+
+			viewModelScope.launch {
+				…
+			}
+		}
+	}
+
+
+Do not launch async operations in a constructor of a ViewModel. 
+	the async operation can read / write to the object before its fully initialized. This is referred to as leaking the object 
+
+
+If you were to use a plain class instead of an Android ViewModel youd have to save / restore all the data using onSaveSInstanceState() in the view.
+	the Android ViewModel does this persisting for you behind the scenes. 
+
+When you initialize a ViewModel you pass it an object that implements the ViewModelStoreOwner interface.
+    This can be an activity / fragment / NavBackStackEntry / etc.
+	The ViewModel is then scoped to the LifeCycle of the ViewModelStoreOwner.
+
+	The ViewModel will remain in memory until the ViewModelStoreOwner's LifeCycle object is cleaned up. This occurs: 
+
+		activity 				when it finishes
+		fragment				when it detaches 
+		navBackStackEntry 		when its removed from the back stack
+
+	which means the ViewModel will persist through configuration changes. 
+
+
+Remember a configuration change refers to something like a rotation or switching into multi-window mode 
+While ViewModels handle configuration changes automatically, they do get destroyed during process death & recreation 
+	process death & recreation typically occurs if the app is closed for a long time / other apps are used / it is reopened later, 
+		though it can occur any time if the phone runs out of memory 
+	SavedStateHandle is used in ViewModels to persist data in the ViewModel across process death & recreation.
+		It is a dictionary with set() / get() methods you can read / write from. 
+		It also has methods for contains(), remove(), keys(), and for subscribing to updates via getLiveData() / getStateFlow()
+
+	SavedStateHandle is tied to the task stack.
+	If the task stack is destroyed by a user-initiated event this saved state will not persist. This can occur when:
+		1) the user swipes the app off the overview (recents) screen
+		2) force stops the app from the settings menu
+		3) reboots the device 
+		4) if the activity finishes
+
+	So usually the data stored in SavedStateHandle is related to the state of the ViewModel,
+		which is not strictly view-related, since that would go in the activity / fragments onSaveInstanceState instead 
+		typically data stored in SavedStateHandle is local and temporary, but required by application logic
+			i.e. something user-input or navigation related, such as screen position or in-progress form data (is it like the local datasource then?)
+
+	data persisted via SavedStateHandle / onSaveInstanceState is stored as a Bundle. This is a json-like dictionary that supports primitive types. 
+		so to persist a custom type you have to make the type Parcelable. 
+			You can do this either via the @Parcelize annotation or by conforming to Parcelable. 
+		if for whatever reason you cant use Parcelable you can also look into saving / restoring your type as a Bundle in setSavedStateProvider(). 
+			You'd conform your type to SavedStateRegistry.SavedStateProvider, an interface with a single method saveState() which returns a Bundle. 
+
+		also note that this API to serialize data can be slow and can consume alot of memory if the object is large.
+			It also happens on the main thread. 
+			so you shouldnt store a giant amount of data in the bundle (i.e. bitmaps, large complex data structures), or it can cause UI stutter. 
+			they recommend to only store in the bundle primitives / simple objects such as Strings, or to store an identifier
+		be sure not to use PersistableBundle to store the data on disk since Fragments and Androidx dont support it - just use the regular Bundle
+
+	note that Intents also contain extras that are stored in the bundle, and these extras get passed to the activity both when its created and recreated. 
+		so an alternative to using SavedStateHandle can be to use these Intent extras.
+
+	another alternative to SavedStateHandle is using persistent local storage. 
+		one issue with this is it can be expensive to write / read from persistent local storage.
+		but if the data shouldnt be in-memory, if it really should persist, it might belong in local storage 
+
+
+	// DiceRollViewModel.kt
+	data class DiceUiState(
+		val firstDieValue: Int? = null,
+		val secondDieValue: Int? = null,
+		val numberOfRolls: Int = 0,
+	)
+
+	class DiceRollViewModel : ViewModel() {
+
+		private val _uiState = MutableStateFlow(DiceUiState())
+		val uiState: StateFlow<DiceUiState> = _uiState.asStateFlow()
+
+		fun rollDice() {
+			_uiState.update { currentState ->
+				currentState.copy(
+					firstDieValue = Random.nextInt(from = 1, until = 7),
+					secondDieValue = Random.nextInt(from = 1, until = 7),
+					numberOfRolls = currentState.numberOfRolls + 1,
+				)
+			}
+		}
+	}
+
+	// DiceRollActivity.kt 
+	import androidx.activity.viewModels
+
+	class DiceRollActivity : AppCompatActivity() {
+
+		override fun onCreate(savedInstanceState: Bundle?) {
+			val viewModel: DiceRollViewModel by viewModels()		// creates a viewModel the first time onCreate() is called
+
+			lifecycleScope.launch {									// recreated activities get the existing viewModel 
+				repeatOnLifecycle(Lifecycle.State.STARTED) {
+					viewModel.uiState.collect {
+						// Update UI elements
+					}
+				}
+			}
+		}
+	}
+
+
+Note that a ViewModel should not reference a view, LifeCycle, Resource, Activity, Fragment, or any class that holds a reference to an Activity context. 
+	this can cause memory leaks since the ViewModel can retain that reference longer than the ViewModelStoreOwner 
+
+
+--------------------------------------------
+VIEWMODEL PROVIDER / STOREOWNER
+--------------------------------------------
+
+ViewModels should only be used with destination-level UI components, not reusable pieces of the UI. 
+	Otherwise you can get the same ViewModel instance in different usages of the reused UI component under the same ViewModelStoreOwner. 
+	For reusable pieces of the UI its better to use a plain class as state holder instead.
+
+ViewModels can be initialized with dependencies. These are mostly types from the data / domain layers. 
+	Since ViewModel is a type managed by the framework you must initialize it using a class that implements the ViewModelProvider.Factory interface.
+		But if the ViewModel doesnt have any init parameters, and only relies on SavedStateHandle, you dont have to use a ViewModelProvider.Factory. 
+
+
+	import androidx.lifecycle.SavedStateHandle
+	import androidx.lifecycle.ViewModel
+	import androidx.lifecycle.ViewModelProvider
+	import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY 
+	import androidx.lifecycle.createSavedStateHandle
+	import androidx.lifecycle.viewmodel.initializer
+	import androidx.lifecycle.viewmodel.viewModelFactory
+
+	class WalletViewModel(
+		private val tenderPlanRepository: TenderPlanRepository,
+		private val savedStateHandle: SavedStateHandle
+	) : ViewModel() {
+
+		...
+
+		// it’s convenient to implement the ViewModelFactory as a companion object
+		companion object { 
+			val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+				@Suppress(“UNCHECKED_CAST”)
+				override fun <T : ViewModel> create(		// override this method to implement the interface. It must return a ViewModel
+					modelClass: Class<T>,
+					extras: CreationExtras					// extras is used to access important objects needed to initialize the ViewModel 
+				): T {
+					val application = checkNotNull(extras[APPLICATION_KEY])		// get the application object
+					val savedStateHandle = extras.createSavedStateHandle()		// get a reference to the SavedStateHandle
+
+					return WalletViewModel(
+						(application as WalmartApplication).tenderPlanRepository,
+						savedStateHandle
+					)
+				}
+			}
+		}
+	}
+
+
+	class WalletActivity : AppCompatActivity() {
+		private val viewModel: WalletViewModel by viewModels { 
+			WalletViewModel.Factory 								// access the companion object here 
+		}
+
+		...
+	}
+
+
+To get a reference to an existing ViewModel via its owner you can call ViewModelStoreOwner.get(). 
+	This is what the Kotlin extensions we typically use call internally. 
+
+	class ChangePaymentsFragment : Fragment() {
+		val viewModel: SharedWalletViewModel by viewModels(
+			ownerProducer = { requireParentFragment() }			// ownerProducer here lets you specify which ViewModelStoreOwner to ask for a ViewModel
+		)
+	}
+
+
+	class CustomFragment : Fragment() {
+		val activitiesViewModel: MainViewModel by activityViewModels()			// a convenience for getting the activities view models from a fragment
+	}
+
+	
+	class CustomFragment : Fragment() {										// nav graphs are also ViewModelStoreOwners and can provide a ViewModel
+		val navGraphsViewModel: GlassNavigationViewModel by navGraphViewModels(R.id.nav_graph)
+	}
+
+
+--------------------------------------------
+DOMAIN / DATA LAYER ARCHITECTURE OVERVIEW
+--------------------------------------------
+
+In the domain / data layer you should use coroutines or flows to keep work off of the main thread.
+	be sure to use the appropriate CoroutineScope. 
+	among other things, the scope provides an API that allows you to cancel the coroutine if needed 
+
+The domain layer is an optional layer that sits between the UI layer and the data layer.
+	The domain layer is responsible for encapsulating complex application logic, or simple application logic that is reused by multiple ViewModels.
+	To keep these classes simple and reusable each UseCase should have only a single responsibility, and shouldnt contain mutable data. 
+		Mutable data should instead be handled in the data layer or in the ViewModel 
+	And stored data should be in the data layer 
+
+UseCases contain reusable logic, and multiple UseCases can be combined together, which is not uncommon.  
+UseCases don't have their own lifecycle, they're just a typical class.
+	To enforce not adding mutable data to them you should create a new instance of one whenever you use it
+
+you can make UseCase classes callable as functions by defining the invoke() function with the operator modifier: 
+
+	class FormatDateUseCase(userRepository: UserRepository) {			// pass data layer classes to the Use Case constructor 
+
+		private val formatter = SimpleDateFormat(
+			userRepository.getPreferredDateFormat(),
+			userRepository.getPreferredLocale()
+		)
+
+		operator fun invoke(date: Date): String {
+			return formatter.format(date)
+		}
+	}
+
+
+	class MyViewModel(formatDateUseCase: FormatDateUseCase) : ViewModel() {
+		init {
+			val today = Calendar.getInstance()
+			val todaysDate = formatDateUseCase(today)
+			…
+		}
+	}
+
+
+Make sure UseCase classes are safe to call from the main thread. 
+If they do work that could block the UI they should move it to a background thread:
+
+	class CustomUseCase(
+		private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
+	) {
+		... 
+
+		suspend operator fun invoke(...) = withContext(defaultDispatcher) {  	// invoke on a background thread 
+			...
+		}
+	}
+
+
+The data layer is made of repositories, each of which can contain multiple data sources
+	repositories are responsible for resolving conflicts between multiple data sources and containing business logic 
+	they provide an abstraction layer for accessing the data 
+
+Data sources should work with only one source of data - i.e. a file, network, or local datasource 
+	the other layers never directly access the data sources, theyre only accessed through the repository
+	the data exposed by the repository should also be immutable to ensure data consistency and avoid threading issues 
+
+But if you only have 1 datasource you can just implement the repository and datasource together in one class
+Also, in rare cases a repository may depend on other repositories
+
+Repositories provide an API for a single consistent source of data, but internally they often do caching or support offline-mode via a local datasource  
+
+	class ExampleRepository(
+		private val exampleRemoteDataSource: ExampleRemoteDataSource, 
+		private val exampleLocalDataSource: ExampleLocalDataSource 
+	) {
+		... 
+	}
+
+
+Make sure that repositories and datasource are safe to update from the main thread. google for more info 
+
+It is important to decide what the lifecycle of a repository should be, and how youll handle dependency injection the app. 
+	some repositories are defined at the application scope so they can be used throughout the whole app.
+
+To limit the amount of data a repository exposes sometimes it needs its own model class thats only a subset of what the datasources contain. 	
+	This can save memory, it also makes you less dependent on the datasources data types which are often external types 
+	If the datasources data isnt in a convenient format the repo can map to an internal data structure and expose that, keeping your code clean
+
+
+--------------------------------------------
+KOTLIN EXTENSIONS
+--------------------------------------------
+
+Android KTX are a set of kotlin extensions included with various Android libraries, making those libraries APIs more concise. 
+	Features of kotlin leveraged by Android KTX include extension functions / properties, lambdas, named / default parameters, and coroutines 
+
+	for a complete list of Android KTX extensions read: https://developer.android.com/kotlin/ktx/extensions-list
+	here are some common Android KTX extensions: 
+
+		// for simplifying fragment transactions
+		fragmentManager().commit {							// add these build.gradle dependencies: 
+			addToBackStack("...") 							// implementation "androidx.fragment:fragment-ktx:1.6.1”
+			setCustomAnimations(R.anim.enter_anim, 	
+							   R.anim.exit_anim)
+			add(fragment, "...")
+		}
+
+
+		// for getting viewModel references in the fragment 
+		val viewModel by viewModels<WalletViewModel>()
+		val activityViewModel by activityViewModels<MainActivityViewModel>()
+
+		
+		// for executing asynchronous work safely in a LifeCycle’s scope 
+		class CustomFragment: Fragment() {								
+			override fun onViewCreated(view: View, savedInstanceState: Bundle?) {	// add these build.gradle dependencies: 
+				super.onViewCreated(view, savedInstanceState)						// implementation "androidx.lifecycle:lifecycle-runtime-ktx:1.6.1”
+
+				viewLifecycleOwner.lifecycleScope.launch {
+					… 
+				}
+			}
+		}
+
+
+		// for simplifying navigation 
+		class CustomFragment: Fragment() {	
+			// extension to obtain type safe arguments from the bundle 
+			val args by navArgs<CustomDestinationArgs>()
+
+			override fun onViewCreated(view: View, savedInstanceState: Bundle?) {	// add these build.gradle dependencies: 
+				view.findViewById<Button>(R.id.continue).setOnClickListener {		// implementation "androidx.navigation.navigation-runtime-ktx:2.7.4” 
+					// extension to retrieve a nav controller 						// implementation "androidx.navigation.navigation-ui-ktx:2.7.4”
+					findNavController().navigate(R.id.next_destination)				// implementation "androidx.navigation.navigation-fragment-ktx:2.7.4”
+				}
+			}
+		}
+
+		
+		// viewModel ktx extensions 												// add these build.gradle dependencies: 
+		class CustomViewModel: ViewModel() {										// implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2”
+			private fun save(change: TenderPlanChange) {
+				// extension to run code on a background thread respecting the viewModel’s lifecycle
+				viewModelScope.launch {
+					tenderPlanDataSource.save(change)
+				}
+			}
+		}
+
+
+--------------------------------------------
+COROUTINE INFO 
+--------------------------------------------
+
+Various Lifecycle-aware components support the use of coroutine scopes. 
+	The scope ensures coroutines respect the lifecycle. 
+	Its also useful for testing and structuring the use of coroutines to avoid race conditions between components.
+Here are the types and dependencies of various coroutine scopes: 
+
+	ViewModelScope 			androidx.lifecycle.lifecycle-viewmodel-ktx:2.4.0 (or higher)
+	LifecycleScope 			androidx.lifecycle.lifecycle-runtime-ktx:2.4.0 (or higher)
+	LiveData 				androidx.lifecycle.lifecycle-livedata-ktx:2.4.0 (or higher)
+
+
+ViewModels also support the use of Kotlin coroutines for asynchronous work
+
+ViewModels call their onCleared() when their ViewModelStoreOwner gets destroyed. 
+	onCleared() signals the end of the ViewModels lifetime, and is where cleanup code is implemented.
+
+viewModelScope is a coroutine scope that respects the lifetime of the ViewModel. 
+	Work carried out in this scope is cancelled when onCleared() is called. 
+	some people use a custom coroutine scope instead of viewModelScope for easier testing. 
+
+
+	class CustomViewModel(
+		private val coroutineScope: CoroutineScope = CoroutineScope(			// pass in custom coroutine scope upon initialization
+			SupervisorJob() + Dispatchers.Main.immediate
+		)
+	) : ViewModel() {
+
+		...
+
+		override fun onCleared() {
+			coroutineScope.cancel()				// if using a custom coroutine scope you must cancel it in onCleared()
+		}
+	}
+
+

@@ -23,7 +23,7 @@ interoperability with Java was a cornerstone of kotlins design
 
 there are followup efforts to make kotlin compile to javascript or to native code 
 there's an intel multi-OS engine that can be used to run kotlin on iOS devices (probably won't work on apple silicon though)
-you can also use kotllin with TornadoFX to build desktop applications
+you can also use kotlin with TornadoFX to build desktop applications
 
 kotlin is statically typed
 
@@ -53,7 +53,6 @@ kotlins key features for supporting functional programming are:
 
 there's a special kotlin compiler-plugin for supporting the Android framework. 
     there's also an Anko library (built by the kotlin team) which adds alot of kotlin adapters for many standard Android APIs
-    not sure if either are still needed.
 
 kotlin's design makes runtime errors less of a problem. 
     for example, its handling of null values makes NullPointerException not a problem 
@@ -62,7 +61,7 @@ alot of boilerplate in Java (like getters / setters) is implicit in kotlin. this
 
 kotlin reuses java libraries as much as possible. it extends javas standard library to make it easy to use with kotlin.
 
-kotlin source files end in .kt extension. the kotlin compiler generates .class files from these:
+kotlin source files end in the .kt extension. the kotlin compiler generates .class files from these:
 
     kotlinc file.kt -include-runtime -d jarName         // compile a kotlin file to a JAR
     java -jar jarName                                   // now execute the JAR file 
@@ -71,7 +70,7 @@ kotlin source files end in .kt extension. the kotlin compiler generates .class f
 if you run kotlinc with no arguments it'll launch the kotlin interactive shell
     they call this shell the REPL 
 
-code compiled using the kotlin compiler kotlinc depends on the kotlin runtime library.
+code compiled using kotlinc (the kotlin compiler) depends on the kotlin runtime library.
     this contains the definitions of kotlin's own standard library classes and the extensions kotlin adds to the standard Java APIs 
     this runtime library needs to be distributed with your application (hence the JAR?)
 
@@ -157,7 +156,7 @@ backslash \ is the escape character:
 
 
 in kotlin there's a more concise syntax for classes.
-    the two classes are identical - understanding this allows you to use a kotlin class from java & vice versa: 
+    the following two classes are identical. understanding this allows you to use a kotlin class from java & vice versa: 
 
     // java version 
     public class Dog {
@@ -181,7 +180,7 @@ in kotlin there's a more concise syntax for classes.
     }
 
     // calling java from kotlin 
-    val dog = Dog("Java", 65)
+    val dog = Dog("Dawg", 65)
 
     println(dog.name)                       // javas basic getters are accessed via the property name directly
     println(dog.pounds)
@@ -194,7 +193,7 @@ in kotlin there's a more concise syntax for classes.
 
 
     // calling kotlin from java 
-    Dog dog = new Dog("Java", 65);
+    Dog dog = new Dog("Dawg", 65);
 
     System.out.println(dog.getName());                  // these getters are automatically synthesized
     System.out.println(dog.getPounds());
@@ -238,26 +237,26 @@ computed properties in kotlin are implemented using custom getters / setters whi
     System.out.println(rect.isSquare());
 
 
-
 like java, kotlin organizes its code into packages. 
-    kotlin files can have a package statement at the beginning, and all classes / functions / properties defined in that file will be put into the package
+    kotlin files can have a package statement at the beginning, 
+        and all classes / functions / properties defined in that file will be put into the package
         kotlin doesn't distinguishes between importing classes and functions - you can import either 
     declarations in the same package can be used without import, otherwise they must be imported
-    import statements are also palced at the beginning of the file 
+    import statements are also placed at the beginning of the file 
 
 
     package geometry.shapes 
 
     import java.util.Random 
 
-    class Rectnagle(val height: Int, val width: Int) {
+    class Rectangle(val height: Int, val width: Int) {
         val isSquare: Boolean 
             get() = height == width
     }
 
     fun createRandomRect(): Rectangle {
         val random = Random()
-        return Rectnagle(random.nextInt(), random.nextInt())
+        return Rectangle(random.nextInt(), random.nextInt())
     }
 
     _______________________
@@ -278,7 +277,8 @@ you can import all declarations in a package using *
 
 
 in java the package structure must match the file/directory structure.
-    for example, if you have a package geometry. shapes that contains multiple classes, each class must be in a separate file with a matching name: 
+    for example, lets say you have a package {geometry.shapes} that contains multiple classes.
+    each class must be in a separate file with a matching name: 
 
     geometry/ 
         example/

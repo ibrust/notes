@@ -7,7 +7,7 @@ a project in Android Studio uses a file structure consisting of one or more modu
     library modules
     Google App Engine modules
 
-there's also a top-level section "Gradle Scripts" that contains all build files
+there's also a top-level section "Gradle Scripts" that contains build files
 
 an app module contains the following 3 folders:
 
@@ -70,7 +70,7 @@ remember there are 3 types of modules:
                 implementation(project(":my-library-module")) 
             }
 
-modules are sometimes referred to as subprojects because gradle referes to them as individual projects. 
+modules are sometimes referred to as subprojects because gradle treats them as separate projects. 
 
 
 the actual file structure of an app module looks more like this: 
@@ -97,7 +97,7 @@ the actual file structure of an app module looks more like this:
 
 
 to compile & build C/C++ code you need to install the NDK (Android Native Development Kit). read docs for more info 
-you add C/C++ code in the cpp directory. when you build this will be compiled into what they call a "native library" (it's not actually native...)
+    you add C/C++ code in the cpp directory. when you build this will be compiled into what they call a "native library" (it's not actually native...)
     Java / Kotlin code can then call the C/C++ functions using the Java Native Interface (JNI) 
 
 
