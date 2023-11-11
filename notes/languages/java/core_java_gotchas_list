@@ -1,0 +1,533 @@
+make sure you do not return references to mutable objects from methods. 
+    the mutable object will get passed around and mutated all over the place. 
+    always clone objects that you're returning
+
+unlike in C++ the name of the program is not stored in the beginning of the args array
+    you pass args to the main method at compile time
+
+    java MainClassName arg1 arg2 arg3
+
+
+you must use isNaN() to test for NaN
+
+    if (Double.isNaN(x)) { 
+        ... 
+    }
+
+
+chars can be expressed as unicode literals from \u0000 to \uFFFF 
+    unicode literals are preprocessed, so you can use them directly within the code without quotes, but I don't recommend it:
+
+        public static void main(String\u005B\u005D args)
+
+    these \u literals can generate a parsing error when used within comments, apparently:
+
+        // c:\users             <-- parsing error - it's interpreted as containing a \u sequence 
+
+originally 1 char mapped to 1 individual character symbol, but now sometimes 2 chars are required to show 1 character symbol
+
+
+var is similar to auto in C++. if the type can be inferred from the literal, you can use var.
+    note that var can only be used for stack-local variables within methods
+
+    var x = 10;            // automatically sets type to int
+
+
+to a declare a constant use the final keyword: 
+      
+    final int x = 12; 
+
+const is a reserved Java keyword that is not currently used for anything
+
+
+integer division by 0 throws an error, 
+    but floating point division by 0 yields Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY
+
+
+the Math class performs calculations in floating point registers on the CPU by default.
+    this is good for performance but this can introduce unpredictability into the results.
+    for total portability but truncation / decreased performance use the StrictMath class instead
+
+ints & longs automatically type-convert to floats & doubles. 
+    note they can lose precision in the process if the ints / longs are too big
+
+traditional switches have been around since Java 1, and worked the same way as they did in C++. they included fallthrough
+
+you can only switch on values of type int, string, or enum
+    the value you're switching on can't be null or a NullPointerException is thrown
+
+Java 14 added a new switches that uses the -> syntax instead. these switch's do not fallthrough. 
+    you can also create switch expressions where the switch itself will actually return a value.
+
+if using old switch's, to detect fallthrough in your code you can compile it with a special flag. 
+    the compiler will warn you of any fallthrough. 
+   
+    javac -Xlint:fallthrough file.java
+
+
+Java strings are immutable, unlike in C/C++ 
+    for efficiency most duplicate strings are shared in memory, but this is not always possible. 
+    String variables are pointers that point to the string, and you can set a String variable to null. 
+
+you must use special comparison methods to compare strings.
+    == will only compare the pointer values. == will work if the string is shared, but unreliably.
+    and generally you must test whether the string is null before calling the comparison method on it:
+
+    String str1 = "blah"; 
+    String str2 = "blah"; 
+    String str3 = "Blah"; 
+    String str4 = null; 
+    
+    if (str1 != null && str1.equals(str2)){ 
+        ... 
+    }
+    if (str1 != null && str1.equalsIgnoreCase(str3)){               // compare but ignores case 
+        ...
+    }
+
+
+to add more madness, the JVM does not have to implement strings as UTF code unit sequences. 
+    If there are only 1 byte chars in the string it can use a byte array. 
+    so the author recommends not using chars at all due to the numerous complications of using it
+
+when you assign one array variable to another both will point to the same object in memory 
+    to get a true copy of the array, use copyOf(). 
+    then later they say "to get a true copy of an object you must use the clone method" - not sure the difference here
+
+LocalDate's methods return a new LocalDate object, 
+    while the old class GregorianCalendar mutates its properties internally (may not be thread safe)
+
+a method called off an object that's null will cause a NullPointerException
+    you should therefor avoid initializing variables to null, even if it's convenient. 
+    but there are two convenience methods for testing whether an object is null before calling a method: 
+
+
+    String input = Objects.requireNonNullElse(input_value, "unknown");     // returns the second argument if object is null 
+
+    String input2 = Objects.requireNonNull(input_value, "object can't be null);     // throws NullPointerException if null
+                                                                                    // it throws immediately 
+
+there are advantages to using getter / setters over public variables. 
+    for example, in them you can ensure that nulls aren't accessed / do error checking 
+
+
+make sure you do not return references to mutable objects from methods. 
+    the mutable object will get passed around and mutated all over the place. 
+    always clone objects that you're returning:
+
+    private Date private_date;                  // keep properties as private as possible, especially object references
+
+    public Date date_getter() {
+        return (Date) private_date.clone();
+    }
+
+
+all arguments are pass by value, but with objects/arrays you're passing the pointer by value. 
+    so the object can be modified. however, you couldn't change the pointer.
+    so a method can't make the pointer refer to a new object/array, but it can change the object/array itself
+       so take careful note of whether the methods you're calling on a reference variable are mutating or non-mutating
+
+a methods signature is considered to be just the names & parameter types, but doesn't include the return type.
+    so you can't have 2 methods that only differ by their return types.
+
+to avoid accidental null Strings (incase a constructor forgot to set the string) 
+    always first set Strings to "" when they're declared 
+
+there are also initialization blocks which always run before any constructor 
+    be sure to always put your initialization blocks right after the declarations of all private variables. 
+        this is for compilation reasons.
+    all initialization blocks in the class are run prior to constructors, but using only one block is simpler
+    initialization blocks remind me of required inits:
+
+    class obj3 {
+        private int id; 
+        private static int count = 0;           // a field initializer is the term for setting the property at the declaration site 
+        private String name; 
+        
+        {                   // initialization block 
+            count++;        // here you put code that you want to run every time this class gets initialized, 
+                            // regardless of the init that's used
+            id = count; 
+        }
+
+        obj3(String name){
+            this.name = name;       // this.name here avoids having to come up with different names 
+        }
+    }
+
+Java does not have destructors, and has automatic garbage collection. 
+
+Sometimes you do need to close things before the object is cleaned up (i.e. database connections). 
+    There are 4 ways of doing this: 
+
+    1) define a close method to call when you are done with the object (CH7)
+    2) use Runtime.addShutdownHook to perform the cleanup once the JVM exits 
+    3) use the Cleaner class (java 9) to register an action that's performed prior to garbage collection 
+    4) there's a deprecated method called finalize that's unreliable and should never be used 
+
+records can have methods, static variables / static methods, but you can't add instance variables to them. 
+    the only instance variables they can have are those passed in & synthesized at declaration.
+
+records are intended to be more efficient and safer in concurrent programs
+    though it is possible, avoid passing object references as parameters to a record 
+        since this undermines its immutability, which is its purpose 
+
+you can have nested packages, but the compiler will assume there's no relationship or connection between them.
+    so java.util and java.util.jar each act as an entirely separate collection of classes, and are compiled separately.
+
+the * import syntax can only import a single non-nested package
+
+
+importing a static method or field requires a special syntax:
+
+    import static java.lang.System.*;
+
+
+to put the classes in a file within a specific package use the following syntax: 
+
+    package packageName;                // this always goes on the first line
+                                            // the folder path is relative to where the program is run, 
+                                            // and includes everything besides the filenames 
+    class obj1{
+        ...
+    }
+
+the path to the file must match the package name. 
+    i.e. all files in the plugins.paymentsTx.coordinators package must be within the plugins/paymentsTx/coordinators folder
+    note that the compiler does not check the directory structure when it compiles.
+        if a file is in the wrong directory compilation will succeed,
+        but the virtual machine won't be able to find the file when you run it.
+
+a file can contain only 1 public class (but can contain many private ones).
+    the public class name must match the file name.
+
+if you don't specify private or public for a class, method, or variable, any other class within the package can access it. 
+    so anyone working in your code can just add their file to your package and have access to all your private data.
+        this is why you can't add classes to the built-in java packages - it'd allow you to modify the source behavior.
+    therefor you should always set your variables / methods private unless there's reason not to.
+
+when searching for a class used in a file the compiler will check everything the file imports at every path 
+    in the class path. it will throw a compile error if multiple classes of the same name are found.
+    java.lang is imported by default, so this will always get checked.
+
+the JDK includes a jar tool to create JAR files: 
+    jar cvf jar_file_name.jar file1 file2 file3 ...                 // jar options (cvf) are similar to tar options
+
+each JAR contains a file MANIFEST.MF in the META-INF directory. 
+    this file contains information about the JAR archive. you can edit it - read the docs for more info
+    note that the last line in the manifest must end w/ a newline character or the parser will screw up 
+
+some principles of class design to remember: 
+    1) initialize all data in some manner 
+    2) only provide getters / setters to fields that need it
+    3) make instances immutable, and instead of mutating them, return new objects. this makes them thread-safe 
+
+
+a super constructor must always be called. 
+    if you do not manually call a super constructor the parents default constructor is called automatically. 
+    but if the parent has no default constructor an error is thrown
+
+
+super uses a special syntax to invoke the parents constructors 
+    any call to a super constructor must be on the very first line of the constructor
+
+enumerations and records are always final
+
+try to use polymorphism instead of typecasting objects if possible. the typecasting may be a sign of design problems.
+    an incorrect typecast will throw a runtime error. 
+    for safety use instanceof to check if a cast succeeds first, because instanceof does not throw a runtime error:
+
+
+    Animal animal = (Animal) dog;
+
+    // instanceof checks that this is a valid type conversion, avoiding an runtime error
+    if (animal instanceof Dog) {             
+        myDog = (Dog) animal; 
+        myDog.bark();
+    }
+
+
+testing for class membership before assignment is common enough that Java16 added pattern-matching support for it: 
+
+    if (animal instanceof Dog myDog) {                  // check for membership and assign to the myDog variable
+        myDog.bark();
+    }
+
+    // you can use the new variable in the same boolean expression via && 
+    if (animal instanceof Dog myDog && myDog.hoursSinceWalked > 5) {    
+        myDog.walk();                                                   // but note that || would cause a run-time error
+                                                                        // since it doesn't short-circuit
+    }
+
+    // the ternary operator also short-circuits
+    int hoursSinceWalked = animal instanceof Dog mydog ? myDog.hoursSinceWalked() : 0;      
+
+
+Object defines important methods that the other classes inherit 
+Object's equals() method tests if two variables refer to the same object. 
+    to test whether two objects have the same state you must override equals() in the class
+    be sure to implement equals() at all levels of your class hierarchies: 
+    
+
+    import java.util.Objects
+    
+    // @Override is a decorator. 
+    // the parameter must be of type Object to successfully override the Object.equals() method
+    // If you use @Override but mess up the method signature and don't override anything an error will be thrown
+
+    @Override public boolean equals(Object rvalue){                                                             
+        if (this == rvalue){                            // if the two are the same object, return true
+            return true; 
+        }
+        if (rvalue == null){                            // rvalue is null, return false. 
+            return false;                               // equals() should return true if both are null, false if only 1 is
+        }
+        if (this.getClass() != rvalue.getClass()){      // classes don't match, return false
+            return false; 
+        }
+
+        // now test the state of the two objects
+        // here calling dog.equals() ensures correct handling if dog is null (since dog is an object)
+        // no need to use equals() for an integer field since it can't be null
+        if (this.dog.equals(rvalue.dog) && this.libraryTimeRemaining == rvalue.libraryTimeRemaining) {      
+            return true; 
+        }
+        return false;
+    }
+
+getClass() is used for same-class comparisons 
+for comparisons between sibling classes use instanceOf() instead of getClass(),
+    but implement the instanceOf() in their parent class in a final equals() method.
+
+there are a few methods for calculating unique hashcodes for objects using their memory addresses:
+
+    // defined in java.lang.Object
+    int hashCode()                      // called off the object, and returns a hash for it. 
+
+    // defined in java.util.Objects
+    static int hashCode(Object a)       // returns 0 if a is null, otherwise returns a valid hash
+    static int hash(Object... objects)  // returns a hash code for a variadic list of objects. 
+                                        // it does this by calling Objects.hashCode() for each object
+                                        // so it is null safe
+
+if you override equals() you must also override the hashCode() method in java.lang.Object 
+    this will ensure your object works with Java's hash tables
+    to do this, calculate the new hashcode using all those fields that were used in the equals() comparison: 
+
+    import java.lang.Object;
+    import java.util.Objects;
+
+    public int hashCode() {
+        return Objects.hash(string_field, double_field, date_field); 
+    }
+
+to compare arrays you should use Arrays.equals() instead of the default Object.equals()
+    there's also Arrays.deepEquals() for comparing  multi-dimensional arrays
+    and Arrays.hashCode() to create a hashcode from an array.
+
+
+ArrayList is Java's equivalent of Vector. there are multiple ways of declaring an ArrayList:
+
+    import java.util.ArrayList;
+
+    ArrayList<Fish> fishlist1 = new ArrayList<Fish>(200);   // the vector starts with a size of 200. the ArrayList
+                                                            // doesn't have elements yet, it just has space available.
+
+    var fishlist4 = new ArrayList(200);                     // ArrayList without <> creates an ArrayList of raw Object types 
+
+
+ArrayList was created before Java added generic type constraints.
+    so an ArrayList<> or ArrayList just uses the Object type. ArrayList<Dog> is the type constrained version.
+    at runtime, all ArrayLists are all compiled down to the unconstrained version
+
+    this means typecasts to either ArrayList or ArrayList<Dog> are indistinct after the code has been compiled down.
+        mistakes like adding the wrong type to an ArrayList<Dog> are possible, and don't get caught by the compiler. 
+        and you can pass a constrained ArrayList<Dog> to a method that takes an unconstrained ArrayList
+            this can cause bugs - within that method the wrong type could get added to your list
+
+        and ArrayList's add() / set() are dangerous because they don't do type checking. 
+            if you add the wrong type of element it will cause a runtime error when you get() it & cast it later. 
+
+    for safety the compiler will show warnings in these situations.
+        if you're satisfied with the behavior you can suppress these warnings: 
+
+        @SuppressWarnings("unchecked") ArrayList<Dog> dogs = (ArrayList<Dog>) untypedList.find(myDogs);
+    
+
+here are some common ArrayList operations:
+
+    int current_length = fishlist1.size();          // size() returns the actual number of elements in the vector, 
+                                                    // not the max capacity. size() for arrayLists is like length for arrays
+    // CRUD methods
+    fishlist1.set(3, new Fish("fishfood"));         // you can't use [] w/ an ArrayList
+    obj1 temp = fishlist1.get(3); 
+
+    for (int x = 0; x < 30; x++) {                  // add() will expand the capacity of the array if needed. set() will not.
+        fishlist1.add(new Fish());                  // so only use set() to replace existing elements, not to add new ones.
+    }
+
+
+all the primitives have associated wrapper classes. 
+    this gives them behave like objects where it's required (much like in javascript):
+
+    Integer
+    Long
+    Float
+    Double
+    Short
+    Byte                    // the first 6 here are all subclasses of Number
+    Character
+    Boolean
+
+if you want an ArrayList of integers you're forced to use the wrapper class, 
+    because ArrayList can't support primitives directly: 
+
+    var int_list = new ArrayList<Integer>();
+
+primitives will get wrapped / unwrapped automatically in certain circumstances (much like in javascript).
+    note that this wrapping / unwrapping occurs at compile time, not runtime.
+
+
+    int_list.add(3);                        // 3 is automatically wrapped by Integer 
+    int_list.add(Integer.valueOf(3));       // the code compiles to this
+
+    int n = int_list.get(1);                // the return value is automatically unwrapped
+    int n2 = int_list.get(1).intValue();    // the code compiles to this
+
+
+the wrapping / unwrapping is mostly invisible, but not always.
+    the == operator, when applied to objects, only checks for identical memory locations. 
+    so if you use == with Integer objects the behavior is unreliable, and will usually fail.
+        it won't always fail because sometimes the compiler optimizes the code to reuse the primitive wrappers.
+            this wrapper reuse is actually required by the java specification for 1 byte literals;
+                i.e. ints from -127 and 128, but don't rely on it 
+        they couldn't override the comprision operator because Java doesn't allow overriding of operators.
+
+    so instead when comparing wrapped numbers you must use equals():
+
+    if (x.equals(y)) {              // here if x or y are primitives they'll just get autoboxed, so this call is safe
+        ...
+    }
+
+
+never assign null to a wrapper type. operations that automatically unwrap them will throw a NullPointerException.
+    best practice is to just never construct a wrapper type, and let the runtype handle wrapping / unwrapping.
+    the wrapper constructors are actually scheduled to be deprecated:
+
+    Integer n = null;
+    System.out.print(2 * n);                 // throws NullPointerException - unwraps the null object
+
+
+remember that primitives are pass by value, but objects are pass by reference. 
+    so you'd assume a method could produce side effects if you pass it a wrapper type, since it's passed by reference.
+    but to prevent this, the primitive value in the wrapper object is immutable.
+        in mutating operations the compiler will add code to automatically create / return a new wrapper object (with a different primitive)
+        so the wrappers behave as if they were pass-by-value, but they're really references.
+
+    public static void triple(int x) {              // does nothing - the calling code isn't modified
+        x = 3 * x;
+    }
+
+    public static void triple(Integer x) {          // also does nothing
+        x = 3 * x;
+    }
+
+enums are actually implemented internally using classes. each case has 1 instance associated with it. 
+    for this reason == does accurately compare enum cases with one another 
+
+
+Class is actually a generic. Dog.class actually returns an object of type Class<Dog>
+    the virtual machine manages a unique class object for each type.
+    therefor you can use the == operator to compare class objects.
+    unlike instanceof comparisons, class comparisons don't evaluate true for comparisons between parents / subclasses:
+
+    if (obj1.getClass() == Dog.class) {
+        ...
+    }
+
+
+it's legal to pass an array as the last argument to a variadic parameter. 
+
+
+the subclass of a sealed class must declare themselves as final, sealed, or non-sealed (open to subclassing):
+
+    public abstract sealed class LargeMammal permits Dog, Moose, Bear, Human, Whale {
+
+        public String makeNoise() {                     // switches work with sealed classe 
+            return switch (this) {                      // the compiler checks every case is covered - no default is required
+                case Dog dog -> "ruff!";
+                case Moose moose -> "rrruuuaahhh";
+                case Bear -> "grunt";
+                case Whale -> "click";
+                case Human -> "hello!";
+            }
+        }
+    }
+
+    public final class Dog extends LargeMammal {        // subclass declares itself final 
+        ...
+    }
+
+
+the subclasses of a sealed class must be accessible from the sealed class. 
+    if these subclasses are public the rules are more stringent - they must be in the same package as the sealed class.
+
+
+note that int is a primitive type, not a class, but nonetheless has an associated Class object (is the smae true for other primitives?):
+
+    Class class_obj4 = int.class;
+
+
+a Class object can get its classes zero-argument constructor via getConstructor(). 
+    you can then construct instances of that class. but if the class doesn't have a zero-argument constructor this call will throw: 
+
+    Object dog = class_obj5.getConstructor().newInstance();
+
+
+after conforming to Comparable you can use built-in methods like Arrays.sort(). 
+    but note that Arrays.sort() will throw a runtime error if you call it and your type doesn't conform to Comparable. 
+        the compiler won't type-check this for you due to the buggy way Arrays.sort() is coded to accept an Object[] and not a Comparable[] 
+
+    
+compareTo() is complicated by inheritance. 
+    it is the caller's comparator method that will be invoked. but compareTo() should compare the objects consistently regardless of who calls it.
+        this won't be the case if the caller is the subtype and other is the parent type, or vice versa. 
+    there are 2 ways to fix this: 
+    
+    a) if you need to override compareTo() in a subclass, type check that other is also a subclass instance: 
+
+        public int compareTo(Dog other) {
+            if (getClass() != other.getClass()) throw new ClassCastException();
+            ... 
+        }
+
+    b) use a single, final compareTo() method defined in the parent class
+
+
+there are also sealed interfaces that work the same way as sealed classes:
+
+    public sealed interface LargeMammal permits Dog, Moose, Bear, Human, Whale {
+        ...
+    }
+
+
+default interface methods can be useful in extending an already public interface. classes using the interface won't have to recompile. 
+    this is important because JARs may not be recompiled before executing, causing runtime errors when the new interface method gets called
+
+
+classes can conform to Clonable to implement a deep-clone method. 
+    the default cloning operation inherited from Object is a shallow copy. 
+        note that a shallow copy is fine if the shared state (the references that aren't deep-copied) is immutable or never mutated. 
+
+if you try to clone an object that doesn't implement Clonable you'll throw an exception
+
+be careful of parent classes implementing a public clone() method. if subclasses inherit this it could lead to incorrect cloning of your objects. 
+    some people recommend avoiding the use of clone() because of this, it's only used in about 5% of the java standard library
+
+
+
+
+
+
+
+

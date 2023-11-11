@@ -1,0 +1,555 @@
+
+hello world in react:
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<h1>hello world</h1>)
+
+================================
+INTRODUCING JSX
+================================
+
+
+JSX extends the syntax of javascript, allowing you to use HTML elements in code: 
+
+    const element = <h1>hello world</h1>
+
+    const name = "Ian"
+    const element2 = <h1>my name is {name}</h1> 
+
+    const element3 = <a href="https://www.reactjs.org"> link </a>;
+
+    let imageURL = "https://www.anIcon.com"
+    const element4 = <img src={imageURL}></img>;
+
+    const element5 = (
+        <div>
+            <h1>Hello!</h1>
+            <h2>Good to see you here.</h2>
+        </div>
+    );
+
+
+any valid javascript expression can go inside the curly braces. 
+
+if a tag is empty you can close it immediately like in XML. 
+in JSX all tags must be closed.
+
+    const element4 = <img src={imageURL}/>;             // curly braces can be used in property assignment
+    const element5 = <h1>{text}</h1>;                   // or in plain text
+
+
+you can pass objects in JSX, within curly braces {}. You may end up with double curly braces this way: 
+
+    export default function TodoList() {
+        return (
+            <ul style={{
+                backgroundColor: 'black',
+                color: 'pink'
+            }}>
+                <li>...</li>
+                <li>...</li>
+                <li>...</li>
+            </ul>
+        );
+    }
+
+
+the React DOM escapes values embedded in JSX before rendering them. 
+    it prevents injection attacks by ensuring you only inject code from within the application 
+everything is also converted to a string before being rendered, which helps prevent cross-site scripting attacks 
+
+
+JSX expressions are compiled to React.createElement() function calls, which return ReactDOM elements 
+    Babel is used to perform the compilation 
+
+
+    const element = (                                       // JSX version 
+        <h1 className="greeting">Hello, world!</h1>         // property names are typically their camelcase equivalents 
+    );                                                      // but class is an exception - since class is a reserved word JSX uses className instead 
+
+    const element = React.createElement(                    // compiled version 
+        'h1', {className: 'greeting'}, 'Hello, world!'
+    );
+
+
+a ReactDOM element is a javascript object with the following format: 
+
+    const element = {
+        type: 'h1',
+        props: {
+            className: 'greeting',
+            children: 'hello world!'
+        }
+    };
+
+React reads these objects and uses them to construct / update the DOM
+
+
+the idea of using JSX was to allow you to use logic & HTML in the same place
+
+
+empty tags <></> are called fragments. 
+    fragments let you group things without leaving any trace in the browsers DOM
+    otherwise you might end up with too many extra divs in the code:
+
+
+    const element1 = (
+        <div>
+            <h1>Hello!</h1>
+            <h2>Good to see you here.</h2>
+        </div>
+    );
+
+    const element2 = (
+        <>
+            <h1>Hello!</h1>
+            <h2>Good to see you here.</h2>
+        </>
+    );
+
+
+================================
+RENDERING ELEMENTS
+================================
+
+
+applications built with just React usually have a single root DOM node. ReactDOM will build & manage the rest of the DOM:
+
+    <div id="root"></div>
+
+
+to render DOM elements in React, create a root element using ReactDOM.createRoot() then call root.render():
+
+
+    const root = ReactDOM.createRoot(
+        document.getElementById('root')
+    );
+    const element = <h1>Hello, world</h1>;
+    root.render(element);
+
+
+React elements are immutable. Once created, their children & attributes can't be changed.
+    to update the UI using root.render() we'd have to create a new element & pass it again:
+
+
+    const root = ReactDOM.createRoot(
+        document.getElementById('root')
+    );
+
+    function tick() {
+        const element = (
+            <div>
+                <h1>Hello, world!</h1>
+                <h2>It is {new Date().toLocaleTimeString()}.</h2>
+            </div>
+        );
+        root.render(element);
+    }
+
+    setInterval(tick, 1000);
+
+
+but most React apps actually only call root.render() once.
+    instead they use stateful components to update the UI, which will be covered later
+
+when updating the UI React will go back & compare the updated state with the prior state, 
+    & the screen only rerenders the DOM elements that have changed. 
+
+
+================================
+COMPONENTS AND PROPS
+================================
+
+the HTML is constructed from components, which are independent reusable pieces 
+components accept a single props object as input and return ReactDOM elements:
+
+    // you can use functional components
+    function WelcomeBanner(props) {
+        return <h1>Hello, {props.name}</h1>;
+    }
+
+    // or class components
+    class WelcomeBanner extends React.Component {
+        render() {
+            return <h1>Hello, {this.props.name}</h1>;
+        }
+    }
+
+
+ReactDOM elements can define HTML using these components: 
+
+    const element = <WelcomeBanner name="Joseph Watson" />;
+
+
+the elements attributes are all bundled into a props object and passed to the component 
+
+note: you must always start component names with a capital letter. 
+    React treats components starting with lowercase letters as DOM tags.
+
+
+here's a full example:
+
+    function WelcomeBanner(props) {
+        return <h1>Hello, {props.name}</h1>;
+    }
+    
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    const element = <welcomeBanner name="Joseph Watson" />;
+    root.render(element);
+
+
+components can refer to other components in their output.
+the top level component in a React application is typically named App:
+
+
+    function App(props) {
+        return (<>
+            <WelcomeBanner name="Joseph Watson" />
+            <h1>An Essay on the Western Ethos</h1>
+            <PageComponent />
+            <FooterComponent />
+        </>);
+    }
+
+
+people typically try to break up functional components into smaller, more orthogonal components 
+
+
+props in a component are read-only. a component must never modify its props. 
+    State allows React components to change their output over time in response to various events without violating this rule
+
+
+note that you can also use CSS within components 
+you can jumpstart a project via reusing thousands of components shared by the React open source community
+    some examples are Chakra UI and Material UI
+
+
+for readability you can use object destructuring in place of the props parameter: 
+
+    function WelcomeBanner({ firstName, lastName, size=16 }) {          // note that you can provide default parameters this way too
+        ...                                                             // the default value is used if size == undefined. if size == null, it's skipped
+    }
+
+
+there's a special case when you nest your own custom components.
+the parent component will always receive any child elements in a prop called children: 
+
+    <WelcomeBanner name="Joseph Watson">
+        <GreetingCard />
+    </WelcomeBanner>
+
+
+    function WelcomeBanner({name, children}}) {
+        return (<>
+            <h1>Hello, {name}</h1>
+            <p>{children}</p>                       // insert any child elements here, after the heading 
+        </>)
+    }
+
+    function GreetingCard(props) {
+        ...
+    }
+
+
+================================
+STATE AND LIFECYCLE
+================================
+
+here's an example of how to make a class component rerender on an interval:
+
+    class Clock extends React.Component {
+        render() {
+            return (
+                <div>
+                    <h1>Hello, world!</h1>
+                    <h2>It is {this.props.date.toLocaleTimeString()}.</h2>
+                </div>
+            );
+        }
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    
+    function tick() {
+        root.render(<Clock date={new Date()} />);
+    }
+
+    setInterval(tick, 1000);
+
+
+render() will be called each time an interval event is triggered
+    as long as <Clock /> is rendered into the same DOM node, the instance won't change.
+    this instance will have its own lifecycle and local state
+
+
+instead of calling setInterval() outside the class, let's add it as persistent state to our class component
+remember it's important to initialize / free up resources in components when they're destroyed. 
+    React defines some component lifecycle methods for this purpose:
+
+    componentDidMount()             // this runs right after the component output has first been rendered to the DOM.
+    componentWillUnmount()          // runs right before the component leaves the DOM 
+
+
+    class Clock extends React.Component {                   // props is just passed to the base constructor
+        constructor(props) {
+            super(props);                                   // class components should always call super(props)
+            this.state = {date: new Date()};
+        }
+
+        componentDidMount() {                                       // setup a timer for triggering state updates for the clock every 1 second 
+            this.timerID = setInterval(() => this.tick(), 1000);
+        }
+      
+        componentWillUnmount() {                                    // tear down the timer at the end 
+            clearInterval(this.timerID);
+        }
+
+        tick() {
+            this.setState({                                         // setState() seeks kind of like applyModel() 
+                date: new Date()
+            });
+        }
+
+        render() {
+            return (
+                <div>
+                <h1>Hello, world!</h1>
+                <h2>It is {this.state.date.toLocaleTimeString()}.</h2>
+                </div>
+            );
+        }
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<Clock />);
+
+
+setState() is a builtin React method. It enqueues changes to the component state, and tells React that the component and its children 
+    need to be re-rendered when the state updates. note that this does not always immediately update the component, react batches these as an optimization.
+    this makes reading this.state right after calling setState() a potential pitfall, since it won't yet be updated.
+note that modifying the state directly would bypass setState(), and would not re-render the component. 
+    the only place you'll directly assign to this.state is in the constructor 
+
+also, since this.state and this.props are updated asynchronously, referencing either to calculate the next state would be a bug:
+
+    this.setState({                                                         // bug 
+        counter: this.state.counter + this.props.increment, 
+    });
+
+to fix this bug there's a special form of setState() that takes state & props as parameters: 
+
+    this.setState((state, props) => ({                                      // correct
+        counter: state.counter + props.increment
+    }));
+
+
+when you call setState(), behind the scenes React merges the object you provide into the current state object.
+
+this state is local & encapsulated.
+    neither parent nor child will know whether the class or functional components they use contain state information. that's an internal implementation detail.
+    however, a component can pass its state down to a child component via the props object, the child just won't know that's where it came from. 
+        this aspect of the data flow is thus top-down and unidirectional 
+        any data or UI derived from state can only effect the component or its child components
+
+
+you can also use functional components. the new documentation discusses this.
+
+note that with functional components, local state isn't persistent between rerenders of the component
+    the useState hook (or another hook) is used to address this problem. the useState hook provides 2 things: 
+        1) a state variable to persist data between rerenders
+        2) a setState method to trigger rerenders with
+
+
+    import { useState } from 'react';
+
+    function RunningTotal(props) {
+        const [total, setTotal] = useState(0);          // array destructuring syntax
+
+        function handleButtonTap() {
+            setTotal(total + 1)                         // note that with functional components we don't seem to have the same problem with stale local state 
+        }
+
+        return (<>
+            <h1><i>Welcome to the game {props.gameName}</i></h1>
+            <button onClick={handleClick}>Press Button</button>
+        </>)
+    }
+
+the argument to useState is the initial value of your state variable. in this case total's initial value is 0, so we call useState(0)
+    on the initial render total's value will start at 0 
+
+hooks are all functions that start with the word 'use'
+hooks can only be called at the top level of a component or from within custom hooks.
+
+in a component you can call useState() as many times as you like, and have as many state variables as you like 
+
+note that the state is local to the particular DOM instance. so if you use the same component twice the two DOM instances have different state. 
+    if you ever wanted two DOM instances to share state you'd actually have to create a common parent for them & share the state between them
+        this might be quite a pain to do
+
+
+there's something called an 'effect', apparently. this is a mechanism for allowing components to respond to events that come from third party / external systems.
+    it sounds like an event is a specific trigger, whereas an effect describes the resulting change
+    effects are really only used with external systems (browser APIs, third-party widgets, network, etc.) whose updates are not entirely under React's management
+        and might require imperative code to synchronize with
+effects run at the end of the rendering process (after the screen updates).
+    apparently this is a good time to synchronize with an external system 
+    technically effects are considered a 'side effect' of rendering
+
+when you declare an effect you specify its dependencies (the conditions that will trigger it). 
+    effects don't typically run after every rerender, only under the specified conditions. 
+    for example, a fade-in animation should only occur once, after receiving the first response from the server. 
+        connecting / disconnecting from a chat server should only occur at the start and end of the page view, or when a connection is lost
+
+the useEffect() method allows you to create an effect. 
+useEffect effectively delays a piece of code from running until the components render is reflected on the screen. 
+
+
+as an example, let's say you wanted to control an on-screen video's play / pause button using React props. 
+    the browser's <video> element does not have an isPlaying prop. 
+    to control the video you must call play() and pause() on the DOM element, which is imperative code. 
+    you need to synchronize the value of isPlaying with calls to play() or pause(). 
+    if you were to call play() or pause() directly it'd throw an error, because you're trying to manipulate the DOM during rendering. 
+        you're not synchronized with React. 
+        infact, if you called play() or pause() during the first render the DOM wouldn't even exist yet, 
+            since react is still waiting on your functional components returned object to construct the DOM
+        but if we wait until rendering finishes the DOM does now exist, and we can synchronize with React. there's no more race condition.
+            React updates the screen first, ensuring the <video> tag is in the DOM with the right props.
+
+
+    import { useRef, useEffect } from 'react';
+
+    function VideoPlayer({ src, isPlaying }) {
+        const ref = useRef(null);
+      
+        useEffect(() => {
+            if (isPlaying) {
+                ref.current.play();
+            } else {
+                ref.current.pause();
+            }
+        })[isPlaying];
+      
+        return <video ref={ref} src={src} loop playsInline />;
+    }
+
+
+be mindful that, by default, useEffect() runs after every render, so you can create infinite loops if you set state from within useEffect(). 
+    that would trigger another rerender, which would trigger another useEffect(), and so on. 
+you tell React to skip unnecessarily re-running the effect by specifying an array of dependencies as the second argument to useEffect()
+    in the above code, useEffect() will only rerun when isPlaying has changed from the previous render. 
+
+an empty dependency array [] tells React to only run useEffect() once, when the component mounts. 
+
+
+during development React will actually mount / unmount / mount your components very quickly during initial load 
+    it does this to help you find bugs related to not properly cleaning up your components. 
+useEffect() can return a function. this returned function is used for cleanup of things setup within useEffect().
+
+    useEffect(() => {
+        const connection = createConnection();
+        connection.connect();
+        return () => {
+            connection.disconnect();
+        };
+    }, []);
+
+apparently this double-mount behave is used to weed out alot of bugs, and if your code can't accommodate it it's probably buggy in some way.
+
+
+================================
+HANDLING OF EVENTS
+================================
+
+handling events on ReactDOM elements is similar traditional DOM elements, but there are some important differences:
+    1) react events are named using camelCase instead of all lowercase 
+    2) with JSX you pass a function as the event handler instead of a string 
+
+    // HTML version 
+    <button onclick="walkDog()">Walk Dog</button>
+
+    // React version 
+    <button onClick={walkDog}>Walk Dog</button>
+
+
+    3) you cannot return false to prevent default behavior in React, you must call preventDefault explicitly
+
+    // HTML version 
+    <form onsubmit="console.log('submit button pressed'); return false">
+        <button type="submit">Submit</button>
+    </form>
+
+    // React version 
+    function Form() {
+        function handleSubmit(e) {                        // this is actually a SyntheticEvent, a custom event type synthesized by react.
+            e.preventDefault();                           // it's a cross-browser compatible wrapper around a regular event
+            console.log('submit button pressed');         // read for more info: https://legacy.reactjs.org/docs/events.html
+        } 
+        
+        return (
+            <form onSubmit={handleSubmit}>
+                <button type="submit">Submit</button>
+            </form>
+        );
+    }
+
+
+instead of calling addEventListener() you usually add listeners in the render() method of the component.
+    often the event handler will be a method of the class component, too:
+
+    class Toggle extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {isToggleOn: true};
+        
+            // calling bind() here is necessary to make `this` work in the handleClick() callback
+            this.handleClick = this.handleClick.bind(this);
+        }
+    
+        handleClick() {                                         // event handler 
+            this.setState(prevState => ({
+                isToggleOn: !prevState.isToggleOn
+            }));
+        }
+    
+        render() {
+            return (
+                <button onClick={this.handleClick}>             // set onClick listener 
+                    {this.state.isToggleOn ? 'ON' : 'OFF'}
+                </button>
+            );
+        }
+    }
+
+
+you must be careful about the meaning of `this` in JSX callbacks. 
+    if you forget to bind() the callback to `this`, `this` will be undefined when the callback is invoked
+remember when writing closures that the `this` pointer is actually a javascript keyword, not a variable 
+    thus you can't capture through closure the `this` pointer 
+    so if you need to access `this` within a closure you must use either an arrow function (its `this` pointer is the surrounding function scope), 
+    call bind(), or assign `this` to a variable in the surrounding scope and capture that variable 
+
+        but here in react you don't want to use an arrow function, since this will recreate the callback on each render(). 
+            this is inefficient, and if the callback is passed as a prop to lower components this will cause unnecessary rerenders of those components. 
+
+    so in react if you refer to a method without () after it (passing it as a callback), i.e. onClick={this.handleClick}, you should bind that method
+
+
+in a loop you may need to pass arguments to a JSX callback. here's two ways to do that: 
+
+    <button onClick={(e) => this.walkDog(leash, e)}>Walk Dog</button>           // using an arrow function isn't ideal 
+
+    <button onClick={this.walkDog.bind(this, leash)}>Walk Dog</button>          // using bind() is preferred. walkDog() will still receive e here, 
+                                                                                // because with bind() any further arguments are automatically forwarded 
+
+================================
+CONDITIONAL RERENDERING
+================================
+
+
+
+
+
+
+
+
