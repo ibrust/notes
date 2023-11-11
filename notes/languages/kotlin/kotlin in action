@@ -17,7 +17,6 @@ the kotlin plugin for IntelliJ IDEA / Android Studio was developed alongside the
 interoperability with Java was a cornerstone of kotlins design 
     kotlin can be used anywhere Java is used, and works with all existing Java libraries / frameworks 
         so like Java, kotlin is mainly used in server-side programming and Android development
-            server-side programming is a broad category, but roughly includes web servers, mobile app servers, and microservices
     you can use kotlin in an existing Java codebase as well
         you can even extend existing java classes with kotlin or annotate java methods & fields in certain ways
 
@@ -102,7 +101,7 @@ use a colon to denote a functions return value:
     } 
 
 
-in the above code the if/else has a return value, and works similar to the ternary operator.
+if/else has a return value and works similar to the ternary operator.
     in kotlin most control structures (except for the various loops) are expressions that return a value. 
     but assignment statements are not expressions and don't return a value (unlike in Java)
 
@@ -116,16 +115,16 @@ infact, for these single expression functions you can even omit the return type,
     fun max(a: Int, b: Int) = if (a > b) a else b
 
 
-variation declaration is almost the same as Swift. only difference is val is the immutable reference instead of let. var is again mutable: 
+variable declaration is almost the same as Swift. only difference is val is the immutable reference instead of let. var is again mutable:
 
     val num1 = 1                            // if the type can be inferred it can be omitted
     val num2: Int = 2
 
     val num3: Int                           // an immutable val must be initialized within the block inwhich its defined 
     if (num1 > 0) {                         // but you can use branching logic to initialize it 
-        num2 = 3
+        num3 = 3
     } else {
-        num2 = 4
+        num3 = 4
     }
 
 
@@ -153,7 +152,6 @@ backslash \ is the escape character:
 
     println("your total is \$0.00")                         // you must escape the $ character to use it in a string
     
-
 
 in kotlin there's a more concise syntax for classes.
     the following two classes are identical. understanding this allows you to use a kotlin class from java & vice versa: 
@@ -299,13 +297,178 @@ for consistency and organization it's still generally good to follow Javas direc
     the ability to put multiple classes into one kotlin file can help keep the directory structure simpler, though.
     
 
+the enum keyword in kotlin is context aware.
+    if it precedes the class keyword it indicates an enum class declaration.
+    otherwise enum is not reserved and can be used like any other word.
 
-pg 28, 2.3
+    enum class Color {
+        RED, ORANGE, YELLOW, GREEN, BLUE, INDIGO, VIOLET
+    }
 
 
+enums can be have properties and methods:
+
+    enum class Color(val r: Int, val g: Int, val b: Int) {
+        RED(255, 0, 0),
+        ORANGE(255, 165, 0),                        // these are the values passed into the constructor for this case
+        YELLOW(255, 255, 0),
+        GREEN(0, 255, 0),
+        BLUE(0, 0, 255),
+        INDIGO(75, 0, 130),
+        VIOLET(238, 130, 238);                      // you must include this semi-colon at the end of the case declarations
+                                                    // if your enum will contain methods
+        fun rgb() = (r * 256 + g) * 256 + b
+    }
+
+    println(Color.BLUE.rgb())
 
 
+when is kotlins version of a switch statement, but it returns a value and is more powerful:
 
+    fun getColorName(color: Color) =
+        when(color) {
+            Color.RED -> "Red"
+            Color.ORANGE -> "Orange"                    // you don't need break statements in a when expression, unlike in Javas old switch
+            Color.YELLOW -> "Yellow"
+            Color.GREEN -> "Green"
+            Color.BLUE -> "Blue"
+            Color.INDIGO -> "Indigo"
+            Color.VIOLET -> "Violet"
+        }
+
+
+if you import the enum you don't have to precede the cases with the enum name:
+
+    import dataModels.Color                 // imports the Color class declared in another package
+    import dataModels.Color.*               // explicitly imports enum constants to use them by name
+
+    fun getColorWarmth(color: Color) =
+        when(color) {
+            RED, ORANGE, YELLOW -> "warm"                   // notice you can combine multiple cases in one branch, like in swift
+            GREEN -> "neutral"
+            BLUE, INDIGO, VIOLET -> "cold"
+        }
+
+
+kotlin's when can switch off any object, unlike Java's switch:
+
+    fun mix(color1: Color, color2: Color) =
+        when (setOf(color1, color2)) {
+            setOf(RED, YELLOW) -> ORANGE                    // setOf() is the kotlin library function for creating a Set
+            setOf(YELLOW, BLUE) -> GREEN                    // Sets are nice for comparison here because ordering doesn't matter
+            setOf(BLUE, VIOLET) -> INDIGO
+            else -> throw Exception("dirty color")
+        }
+
+
+you can also use when without an argument and just do direct reference comparisons in it:
+
+    // avoids creatinga a bunch of sets that will require garbage collection later
+    fun mixOptimized(color1: Color, color2: Color) =
+        when {
+            (color1 == RED && color2 == YELLOW) || (color2 == RED && color1 == YELLOW) -> ORANGE
+            (color1 == BLUE && color2 == YELLOW) || (color2 == BLUE && color1 == YELLOW) -> GREEN
+            (color1 == BLUE && color2 == VIOLET) || (color2 == BLUE && color1 == VIOLET) -> INDIGO
+            else -> throw Exception("dirty color")
+        }
+
+typecasting in Java is a 2 step process:
+    1) do type-checking via instanceOf()
+    2) followup with explicit type-casting and assign the result to a new variable
+
+kotlins 'is' operator can do smart casting, which combines both the type-checking and type-casting in one operation.
+
+    interface Expression
+    class Num(val value: Int) : Expression
+    class Sum(val left: Expression, val right: Expression) : Expression
+
+    func doAlgebraicAddition(e: Expression): Int =
+        if (e is Num) {                                             // here e is both type-checked and type-cast in one operation
+            e.value                                                 // so you can access properties of Num on the next line
+        } else if (e is Sum) {                                      // the compiler achieves this by ensuring e hasn't changed since the operation
+            doAlgebraicAddition(e.right) + doAlgebraicAddition(e.left)
+        } else {
+            throw IllegalArgumentException("unknown expression")
+        }
+
+
+    println(doAlgebraicAddition(Sum(Num(1), Num(2))))
+
+
+the return value of a block is the last statement in it.
+    this is true anywhere a block is used and a result is expected, except for in regular functions (so... if, when, try/catch, lambdas)
+also, you can omit the curly braces for a block if it only takes up one line
+
+you can combine 'when' and 'is' for even more concise type-checking / casting:
+
+    func doAlgebraicAddition(e: Expression): Int =
+        when (e) {
+            is Num -> {                                 // when cases can have blocks in curly braces. you still precede them with an arrow
+                println("found an actual number")
+                e.value
+            }
+            is Sum ->
+                doAlgebraicAddition(e.right) + doAlgebraicAddition(e.left)
+            else ->
+                throw IllegalArgumentException("unknown expression")
+        }
+
+
+looping is generally very similar to other languages:
+
+    while(true) {
+        ...
+    }
+
+    do {
+        ...
+    } while(true)
+
+
+kotlin can use ranges to loop over things, similar to python:
+
+    val oneToTen = 1..10                // ranges can be created with the .. operator
+                                        // ranges are inclusive - 10 is part of this range
+    for (x in oneToTen) {
+        ...
+    }
+
+    for (x in 100 downTo 1 step 2) {    // another syntax for creating a range. this time we count down by 2s though
+        ...
+    }
+
+    for (x in 1 until 10) {             // the until keyword can be used to create a non-inclusive range. this range will not include 10
+        ...
+    }
+
+    for (letter in 'a'..'z') {          // ranges can be between characters
+        println(letter)
+    }
+
+
+you can loop over more complex collections like trees:
+
+    val letterToNumber = TreeMap<Char, Int>()
+
+    for (letter in 'a'..'z') {
+        val num = letter.toInt()
+        letterToNumber[letter] = num
+    }
+
+    for ((letter, num) in letterToNumber) {
+        println("$letter = $num")
+    }
+
+
+collections also have a convenient withIndex() method you can use to get the elements index along with the element:
+
+    val listOfNames = arrayListOf("john", "paul", "george", "ringo")
+    for ((index, name) in listOfNames.withIndex()) {
+        println("beatle number $index: $name")
+    }
+
+
+pg 38, 2.4.4 
 
 
 

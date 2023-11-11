@@ -1545,9 +1545,10 @@ these wrapper classes also contain important static methods related to their typ
 
 
 remember that primitives are pass by value, but objects are pass by reference. 
-    so you'd assume a method could produce side effects if you pass it the wrapper type.
-    but to prevent this, the primitive value in the wrapper object is immutable. 
-        in operations the compiler will automatically create / return a new wrapper object
+    so you'd assume a method could produce side effects if you pass it a wrapper type, since it's passed by reference.
+    but to prevent this, the primitive value in the wrapper object is immutable.
+        in mutating operations the compiler will add code to automatically create / return a new wrapper object (with a different primitive)
+        so the wrappers behave as if they were pass-by-value, but they're really references.
 
     public static void triple(int x) {              // does nothing - the calling code isn't modified
         x = 3 * x;
@@ -1556,6 +1557,7 @@ remember that primitives are pass by value, but objects are pass by reference.
     public static void triple(Integer x) {          // also does nothing
         x = 3 * x;
     }
+
 
 if you want this side-effect behavior you can use the org.omg.CORBA package, 
     which defines IntHolder, BooleanHolder, & others:
@@ -1566,7 +1568,7 @@ if you want this side-effect behavior you can use the org.omg.CORBA package,
 
 
 methods can have variadic parameters. the variadic parameter is handled just like an array. 
-    here is how printf / max are defined: 
+    here is how printf() / max() are defined: 
 
     public class PrintStream {
         public PrintStream printf(String ftm, Object... args) {         // the elipsis ... is for variadic parameters
@@ -1585,7 +1587,7 @@ methods can have variadic parameters. the variadic parameter is handled just lik
     }
 
 
-it's also legal to pass an array as the last argument to a variadic parameter. 
+it's legal to pass an array as the last argument to a variadic parameter. 
 
 enums are actually implemented internally using classes. each case has 1 instance associated with it. 
     for this reason == does accurately compare enum cases with one another 
@@ -1629,8 +1631,8 @@ sealed classes (added in Java 17) allow you to restrict subclassing to just a ce
     one of the advantages of sealed classes is improved compile-time checking.
     they also can ensure that polymorphic code doesn't get misused by random subclasses.
 
-the subclass of a sealed class must declare themselves as final, sealed, or non-sealed (open to subclassing):
 
+the subclass of a sealed class must declare themselves as final, sealed, or non-sealed (open to subclassing):
 
     public abstract sealed class LargeMammal permits Dog, Moose, Bear, Human, Whale {
 
@@ -1672,7 +1674,7 @@ Java maintains a type identifier for all objects during runtime.
     String className = "java.util.Random";
     Class class_obj2 = Class.forName(className);            // obtain a Class object using the class name (seems fragile)
                           
-    Class class_obj3 = Double[].class;                      // or just get a Class objects using the actual class
+    Class class_obj3 = Double[].class;                      // or just get a Class object using the actual class
     Class class_obj4 = int.class;                           // note that int is a primitive type, not a class, 
                                                             // but nonetheless has an associated Class object
     Class class_obj5 = Dog.class;                           // Class objects really describe types, not classes.
@@ -1746,7 +1748,7 @@ to conform to an interface use the implements keyword:
 
     class Dog implements Comparable {
         public int compareTo(Object otherObject) {                  // note the implementor must declare the conforming method public
-            Dog other = (Dog) otherObject;                          // compareTo should return -1 if self < other, +1 if self > other, & 0 if the two are equal
+            Dog other = (Dog) otherObject;                          // compareTo should return -1 if self < other, +1 if self > other, 0 if equal
             return Integer.compare(self.height, other.height);      // Integer.compare() already has the correct behavior
         }
     }
@@ -1777,7 +1779,7 @@ after conforming to Comparable you can use built-in methods like Arrays.sort().
 
 compareTo() is complicated by inheritance. 
     it is the caller's comparator method that will be invoked. but compareTo() should compare the objects consistently regardless of who calls it.
-    but this won't be the case if the caller is the subtype and other is the parent type, or vice versa. 
+        this won't be the case if the caller is the subtype and other is the parent type, or vice versa. 
     there are 2 ways to fix this: 
     
     a) if you need to override compareTo() in a subclass, type check that other is also a subclass instance: 
@@ -1830,11 +1832,9 @@ you can have default implementations for interface methods, but they must be tag
         }
     }
 
-    public interface Comparable<T> {            // default methods can be useful in modifying an already public interface, 
-        default int compareTo(T other) {        // classes using the interface won't have to recompile
-            return 0;                           // this is important because JARs may not be recompiled before executing, 
-        }                                       // causing runtime errors when the new interface method gets called
-    }
+
+default interface methods can be useful in extending an already public interface. classes using the interface won't have to recompile. 
+    this is important because JARs may not be recompiled before executing, causing runtime errors when the new interface method gets called
 
 
 if a class or superclass provides a method, any interface's default method with the same signature will be ignored 
@@ -1869,7 +1869,7 @@ here's an example of how you'd change the default behavior of Comparator for a b
     // LengthComparator.java
 
     class LengthComparator implements Comparator<String> {
-        public int comprae(String first, String second) {
+        public int compare(String first, String second) {
             return first.length() - second.length();
         }
     }
@@ -1894,7 +1894,6 @@ by default instances can't be copied via calling clone(), because the default Ob
         to do deep copying the class must also change the implementation of clone() 
 
 if you try to clone an object that doesn't implement Clonable you'll throw an exception 
-
 
     class Dog implements Clonable {
         ... 
@@ -1925,7 +1924,6 @@ be careful of parent classes implementing a public clone() method. if subclasses
 
 lambda functions were added in Java 8. here's what the syntax looks like: 
 
-
     (String first, String second) -> {  
         return first.length() - second.length();
     }
@@ -1940,7 +1938,7 @@ lambda functions were added in Java 8. here's what the syntax looks like:
 here's the String comparable we wrote earlier: 
 
     Comparator<String> comp = (first, second) -> { 
-        first.length() - second.length();               // you never specify the result type of a lambad. it is always inferred from the context
+        first.length() - second.length();               // you never specify the result type of a lambda. it is always inferred from the context
     }
 
 

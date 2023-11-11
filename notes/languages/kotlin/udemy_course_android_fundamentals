@@ -21,7 +21,6 @@ to add an image to the project
 
 padding applies space within the element, margins apply space around the element 
 
-
 RadioGroup is a type of LinearLayout that groups RadioButton elements together, and ensures only one is selected at a time 
 
     <RadioGroup 
@@ -50,7 +49,7 @@ an EditText element is like a textfield
         android:layout_height="wrap_content" />
 
 
-in MainActivity, in its onCreate() method there’s a call setContentView(R.layout.activity_main) which sets the main view 
+in MainActivity, in its onCreate() method there's a call setContentView(R.layout.activity_main) which sets the main view
     here R.layout.activity_main means resource file > layout file > activity_main 
         (activity_main.xml is the name of the XML file in this demo app)
 
@@ -78,26 +77,26 @@ to get a reference to a view element from within the java call findViewById()
 	Button button1 = findViewById(R.id.unique_id);
 
 	button1.setOnClickListener(new View.OnClickListener() {
-            @Override 
+		@Override
+		public void onClick(View v) {
+			// in a lambda you must specify what this refers to - in this case MainActivity.this
+			Toast.makeText(MainActivity.this, "Show a toast", Toast.LENGTH_LONG).show()
+		}
+	})
 
-            public void onClick(View v) {
 
-                // in a lambda you must specify what this refers to - in this case MainActivity.this
-
-                Toast.makeText(MainActivity.this, "Show a toast", Toast.LENGTH_LONG).show()
-            }
-        })
-
-An activity provides the window in which the app draws its UI. This window typically fills the screen, but may be smaller than the screen and float on top of other windows. Generally, one activity implements one screen in an app.
+An activity provides the window in which the app draws its UI.
+	This window typically fills the screen, but may be smaller than the screen and float on top of other windows.
+	Generally, one activity implements one screen in an app.
 
 the main activity is the first screen to appear when the app is launched 
 
 activities are loosely coupled. activities can start / navigate to activities belonging to other apps. 
 
-To use activities you must register information about them in the app’s manifest, and you must manage activity lifecycles
+To use activities you must register information about them in the apps manifest, and you must manage activity lifecycles
 
 LinearLayout is kind of like a stack view
-	RelativeLayout is kind of like a regular auto layout view - all the views within are relative, and need additional constraints.
+RelativeLayout is kind of like a regular auto layout view - all the views within are relative, and need additional constraints.
 	to layout views relative to one another within RelativeLayout you must give them IDs. 
 
 	<RelativeLayout 
@@ -124,8 +123,7 @@ LinearLayout is kind of like a stack view
 	</RelativeLayout>
 
 
-
-here’s an example of how to add a MaterialUI CardView (a popular google component) to your project
+here is an example of how to add a MaterialUI CardView (a popular google component) to your project
 	you can also just import the enitre MaterialUI library if you want: 
 
 	// build.gradle (groovy)
@@ -152,17 +150,17 @@ here’s an example of how to add a MaterialUI CardView (a popular google compon
 
 
 note that in a RelativeLayout, to constrain elements to one another, they should be direct siblings of one another.
-	so you wouldn’t constrain one element to another siblings child, for example 
+	so you wouldnt constrain one element to another siblings child, for example
 
-when you’re adding images to your resources… if they’re high density make sure you specify the density as high density. 
-	if you don’t specify this, and Android puts the high res photo in a standard drawable folder… 
+when you're adding images to your resources… if theyre high density make sure you specify the density as high density.
+	if you don't specify this, and Android puts the high res photo in a standard drawable folder…
     then it tries to draw this on a high-res phone. it will upscale the image, making it even more dense. 
     this will cause the app run out of memory to crash because the image is too large. 
 
 android:gravity positions an elements children 
 android:layout_gravity positions an element within its layout 
 
-there’s a ScrollView element. it can also only have 1 child - so use a RelativeLayout or LinearLayout
+there is a ScrollView element. it can also only have 1 child - so use a RelativeLayout or LinearLayout
 
 	<ScrollView
 		android:layout_height=“match_parent”
@@ -179,7 +177,7 @@ there’s a ScrollView element. it can also only have 1 child - so use a Relativ
 the build.gradle file is used by gradle for fetching dependencies and compiling.
 	the AndroidManifest.xml contains metadata used by Android (the OS, build tools, and Google Play store)
 	it must list all components used in the app: activities, services, broadcast receivers, and content providers 
-		for example, it’s used to declare device capabilities of these various components, and specifies the hardware / software requirements  
+		for example, it is used to declare device capabilities of these various components, and specifies the hardware / software requirements
 	it also specifies permissions for the app to access protected parts of the OS or other apps, or to allow other apps access 
 
 	<activity
@@ -202,7 +200,7 @@ an Intent allows you to move between one Activity (screen) and the next.
 		/>
 
 
-	//  MainActivity.java
+	// MainActivity.java
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
