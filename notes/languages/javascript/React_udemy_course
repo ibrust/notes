@@ -109,15 +109,142 @@ for large projects usually people use a react framework, since react by itself i
                     react framework for creating cross-platform Android, iOS, and web apps
 
 
-you'll need to install ESLint with the right configs for React.
-    you should also install Prettier for code formatting. 
-    read for more details: https://react.dev/learn/editor-setup
-
-you can also install typescript. this may require some specific config based on the react framework you use
-    read for more details: https://react.dev/learn/typescript
+you should use ESLint / Prettier for code formatting / typescript
+    read for more details:  https://react.dev/learn/editor-setup  and  https://react.dev/learn/typescript
 
 
+after generating the boilerplate via 'create-react-app' you'll see alot of node_modules / files, and package-lock.json will list some dependencies / scripts:
 
+    // project directory structure
+    app_root/
+        build/
+        node_modules/
+        public/
+            favicon.ico
+            index.html
+            logo192.png
+            manifest.json                   // for progressive web app compliance, where user can download web app to their desktop / open it by clicking an icon
+            robots.txt                      // instructions for web scrapers
+        src/
+            App.css
+            App.js                          // App.js is the actual react application
+            App.test.js
+            index.css
+            index.js                        // index.js is the javascript entry point of every react project
+            logo.svg
+            reportWebVitals.js
+            setupTests.js
+    .gitignore
+    package-lock.json
+    package.json
+    README.md
+
+    ----------------------------------------------
+    // index.js
+    import React from 'react';                      // React is the underlying engine
+    import ReactDOM from 'react-dom/client';        // ReactDOM is the object graph the engine generates. this one is for web apps, there are others (react native)
+    import './index.css';
+    import App from './App';
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(                            // render the application into the 'root' div element defined in index.html (could be changed to another element)
+        <React.StrictMode>                  // React has its own strict mode for deprecating old React code. everything in these tags runs in strict
+            <App />                         // For this App tag the ReactDOM will call the App function in App.js to return HTML here (via JSX)
+        </React.StrictMode>
+    );
+
+
+    ----------------------------------------------
+    // package.json
+    ...
+    "dependencies": {
+        "@testing-library/jest-dom": "^5.17.0",
+        "@testing-library/react": "^13.4.0",
+        "@testing-library/user-event": "^13.5.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-scripts": "5.0.1",           // contains scripts used to start / build / test / eject the app
+        "web-vitals": "^2.1.4"
+    },
+    "scripts": {
+        "start": "react-scripts start",     // `npm start` will run the app on a local dev server (accessible via the browser)
+        "build": "react-scripts build",     // `npm build` bundles the code using babel / webpack, optimizing it for distribution over the web. output is in build/
+        "test": "react-scripts test",       // `npm test` runs the tests
+        "eject": "react-scripts eject"      // `npm eject` will output the babel / webpack config files so you can modify them.
+    },                                      // you should most likely not need to eject, instead you should just rely on the react team to maintain the config
+
+
+    ----------------------------------------------
+    // App.js
+    import logo from './logo.svg';
+    import './App.css';
+
+    function App() {                                                            // think of this function as a UI component
+        return (                                                                // this is a functional component that returns HTML (via JSX)
+            <div className="App">
+                <header className="App-header">
+                    <img src={logo} className="App-logo" alt="logo" />
+                    <p>
+                        Edit <code>src/App.js</code> and save to reload.
+                    </p>
+                    <a
+                        className="App-link"
+                        href="https://reactjs.org"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Learn React
+                    </a>
+                </header>
+            </div>
+        );
+    }
+
+    export default App;
+    ----------------------------------------------
+
+
+
+React essentially lets you write components that return HTML.
+
+components can be written using either classes or functional hooks.
+    apparently the industry is shying away from hooks in favor of classes because hooks add complexity
+
+this is App.js converted into a class component:
+
+
+    // App.js
+    import { Component } from 'react';                  // class components inherit from Component
+    import logo from './logo.svg';
+    import './App.css';
+
+    class App extends Component {
+        render() {                                  // the render() method returns what the component renders - so here we must return the JSX
+            return (
+                <div className="App">
+                    <header className="App-header">
+                        <img src={logo} className="App-logo" alt="logo" />
+                        <p>
+                            Edit <code>src/App.js</code> and save to reload.
+                        </p>
+                        <a
+                            className="App-link"
+                            href="https://reactjs.org"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Learn React
+                        </a>
+                    </header>
+                </div>
+            );
+        }
+    }
+
+    export default App;
+
+
+understanding of when react renders / rerenders is essential.
 
 
 
