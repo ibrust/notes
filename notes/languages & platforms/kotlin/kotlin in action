@@ -1019,8 +1019,165 @@ the following two classes are equivalent:
         }
     }
 
+
+the object keyword defines a singleton class and immediately returns the instance of it. it's used in 3 cases: 
+
+    top-level singletons
+    companion objects               // objects nested inside a class, often contain factory methods / other static properties
+    object expressions              // often useful when working with framework classes 
+
+
+note that constructors cannot be included in an object declaration
+you call methods / properties using the class name used in the object declaration: 
+
+
+    object WhiteFish {                  // creates a WhiteFish singleton & returns the instance 
+        val numberOfFins = 2
+
+        fun swim() {
+            ... 
+        }
+    }
+
+    println(WhiteFish.numberOfFins)     // just use the class name to access it 
+
+
+one downside of object declarations is you can't use dependency injection to inject them, which makes unit testing harder 
+
+the object declaration is always compiled into a singleton class with a static property named INSTANCE holding its single instance. 
+    so if you need to access an object declaration from java you'd use YourClassName.INSTANCE 
+
+
+kotlin classes can't have static members. 
+    instead kotlin relies on top-level functions or object declarations 
+
+    usually it's most straightforward to use top-level functions to implement static methods. 
+        but top-level functions can't access private methods / properties of a class. 
+        this is what companion objects are used for. 
+            although they're static, they can still access their parent instances private methods / properties. 
+
     
-    pg 93, 4.4
+    class Dog {
+        var food: DogFood?
+
+        companion object {
+            fun feed() {
+                food = DogFood()
+            }
+        }
+    }
+
+
+it's common to use companion objects to implement a factory pattern (an alternative to secondary constructors): 
+
+    class Dog(name: String, color: Color) {
+        companion object {
+            fun createGolden(name: String) = Dog(name, Color.GOLDEN)        // can be named for to their purpose, unlike secondary constructors
+            fun createBlackLab(name: String) = Dog(name, Color.BLACK) 
+            fun createSmallDog(
+                name: String, 
+                color: Color
+            ) = SmallDog(name, color)                                       // these factory methods can also return subclasses if needed            
+        }
+    }
+
+
+companion object factoreis can also be useful in cases where you need to maintain a cache of objects, and check the cache before creating new ones. 
+
+the main advantage of secondary constructors is if you need subclasses to inherit the constructors. 
+    companion objects can't be overridden in subclasses.  
+
+
+
+
+pg 98, top
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[QUOTE=Adam Strange;1585798]I am totally not a good person.
+
+If I had a button which, when pushed, would kill every Authoritarian, I'd be very, very tempted to push it. However, as I said, I'm not a very good person. I have a history of violence, and I've seen what it did to me and how ready I am to pass that on to others, even though I know that it only perpetuates the problem.[/QUOTE]
+
+[QUOTE=Adam Strange;1585798]Seeking a peaceful solution is a lot like not hitting your kid. It's harder to get kids to obey you immediately if you have to persuade them, rather than just beating them up. But persuading them results in better kids, and therefore a better society. But you have to rise above the animal instinct of wanting to hit someone, and instead use reason to persuade them. This is not easy. This takes reason, forbearance, and forethought.
+
+I'm not saying that violence is never justified. Violence, despite what we've been told, has very often solved problems, and social studies have shown that socializing children with only positive rewards doesn't work; there needs to be a downside to bad behavior. This seems to be baked into our genes, unfortunately. 
+
+Heinlein justified a fascist, violent government in his book "Starship Troopers" by saying that humans will either crush other species or be crushed by them. He evidently didn't consider that intelligence allows us other options, like mutually beneficial relations.[/QUOTE]
+
+
+The conflict between the Muslims / Jews is a religious conflict tracing back thousands of years... it's not going away soon. 
+Hamas is not interested in making concessions, they're interesting in killing Israelis and martyring themselves. It's what the Qu'ran calls for, and it's what they're doing. 
+The only peace Hamas is willing to accept is a temporary one that allows them to further establish themselves, acquire more weapons, and rekindle the conflict. 
+I see no sign of the Palestinians changing their minds, they've been declaring war on Israel for 75 years, they democratically elected Hamas. 
+
+Iran is pursuing nuclear weapons, which they will inevitably obtain... and they are also funding Hamas, and intent on destroying Israel. 
+Palestine has committed acts of war... Isreals response is legally justified by international law.  
+Israel is under no obligation to gamble their future existence and go light handed on Palestine. 
+
+The issue with you is you fundamentally do not understand religion, and the way it motivates behavior. 
+You seem to believe this is just a typical tribal conflict, or a problem with colonialism, or something. People not being kind enough to their neighbors, etc.. 
+Go read the charter of hamas, they tell you outright that this is a religious conflict. Israel is the holy land, that's what this is about. 
+There is no conquered nation in history that has ever gone to such lengths to reclaim a piece of land.
+
+There is nothing the Jews will be able to do from outside Palestine to deter Hamas, or the Palestinian people, from practicing Islamic fundamentalism. 
+Religious people do not just give up their religious convictions, they remain convinced of them until they die, usually. 
+Isreal being nice for a while will not cause the Palestinians or Hamas to abandon their convictions.
+
+Mutually beneficial relations will remain impossible until there's no longer an Islamic fundamentalist government or population in Palestine. 
+
+And there is a cost to hesitancy, because if this vain attempt at peace fails (and it almost certainly will) 
+you simply have allowed Iran and Palestine to build up their militaries and acquire more powerful weapons, and the next attack or war will be deadlier. 
+
+So you can make this argument... respond proportionally with confidence, like a real Se user, not like an authoritarian with 1D Se...
+This is meaningless babble which says nothing about the problem itself, but hovers above it completely disconnected from it. 
+
+[QUOTE=Adam Strange;1585798]I had an IEI friend who reacted to Se threats by going from normal to nuclear in one second. His response shocked and dismayed me, because it showed such weakness on his part. I much prefer the SLE response to Se threats. They level up. They are so good at Se that when confronted by an Se threat, they push back with just enough force to defensively meet and slightly exceed the threat, never escalating out of proportion. That is a better response than just pushing a button and killing everyone whom you identify as being similar to the person who wronged you.[/QUOTE]
+_______  
+
+it's interesting because you've now revealed yourself as someone prone to violence and essentially authoritarianism. Which is what I've always said about you. 
+authoritarians tend to actually be very moralistic people.
+authoritarianism is by definition an excessive use of force. What's excessive must be determined through a rational process, a process you still have not engaged in. Your immediate impulse here was violence, and that's because you are an authoritarian. 
+authoritarians have a unique need to portray their targets as perpetrators, in order to justify attacking them, and there's no better way to do that than to first accuse the target of authoritarianism. 
+
+Go watch some of the videos with Hamas training young boys to hate Israel and fire assault rifles. Hamas dominate the Palestinian population.  
+
+
+Hamas are not kids, they are armed militants. 
+_______________________
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

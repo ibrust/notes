@@ -6,64 +6,46 @@ aka virtual constructor
 
 factory method | factory method
 	"MULTIPLE FACTORIES"
-		how is this distinct from an abstract factory? maybe in that the factories vary independently. 
-		so does the use of one factory lead to the use of multiple as part of a broader programming style? 
+		often you need to use factories in combination with one another as part of a coherent design
+		serves the same purpose as an abstract factory but without the overhead
 
 factory method | factory method | adapter 
 	"VIRTUAL ADAPTER"
-		mappings between 2 sets of objects. 
-		this is an interesting way to organize things, it prevents the propagation of many different adapters 
-		perhaps it suggests the use of multiple adapters as part of a broader design
+		if you're producing 2 separate sets of objects from factories you may need some dynamic way of mapping between them
+
 
 adapter | adapter | factory method 
-	"COLLABORATING TYPES"
-		create adapters between all the different types produced by the factory. 
-			now you can easily change an object from one of these types to another
-		it may support reuse throughout the application
-			for example, if I have a set of related objects - maybe a credit card that's used in many different contexts 
-			then a factory could produce these different credit card objects, and the adapters will make subsystems 
-				that used these types easier to work with. their APIs will be easy to navigate, it'll be easy to reuse logic between them 
-		it may also support a programming style that makes broader use of polymorphism (via an abstract parent class of the factory objects) 
-		you're ultimately persisting state between different subsystems & different objects 
-		this also adds definition to the types you adapt between - they are related via their common factory
+	"FACTORY PRODUCT COMPATIBILITY"
+		create adapters between all the different types produced by the factory
 
 mediator | factory method
-	"OBJECT SET CONTROLLER"
-		the mediator passes messages between the different objects, and provides them all with fresh information. 
-		it also handles initialization / deallocation of objects.
-		A common example is a set of views that can be clicked on / backed out of. 
-			The view is a factory construct. Clicking allocates / deallocates the view. the views data also has to be kept fresh
+	"FIELD OF OBJECTS"
+		the mediator here is the thing the factory objects are instantiated into,
+		and the medium through which they communicate & coordinate their behavior.
+
 
 observer | factory method | facade
-	"FACTORY OBJECT API"
-		the factory objects define an API that includes some kind of publisher
-		this allows consumers to observe the objects & respond to events while not having to interact with them on a case by case basis 
-		the factory objects themselves can then decide which events they want to emit, what functionality they support, etc.
-		this seems like a strong way to support the addition of new objects, and reuse of logic for interacting with these objects 
-		you will need some abstract base class for the objects 
+	"ASYNCHRONOUS CONSTRUCTOR"
+		factories can provide a simple, observable interface, and handle the asynchronous operation for constructing an object internally.
+		i.e. if constructing an object requires fetching data from a database
 
 ---------------------------------------------------------
 -----------------ABSTRACT FACTORY------------------------
 ---------------------------------------------------------
 prototype | abstract factory 
-	"PERSISTING STATE BETWEEN TRANSFORMATIONS"
-		something about abstract factories & prototypes is written in Go4. 
-		when you change from one set of factory objects to another you may lose all the state associated with the current objects 
-		but using prototype constructors you can pass in the existing object to the new object
-		and initialize it using the state that needs to be shared. 
-		the object used for initialization would need to conform to a common interface so that multiple transitions don't lose data. 
-		In real terms I think you'd just put all this configuration data in a data model & pass that in, but the idea is important. 
+	""
 
 strategy | command | abstract factory 
-	"BUTTONS THAT CHANGE BUTTONS"
-		a strategy / command can trigger the changing of UI buttons, and the new buttons turn have different behavior (strategies / commands)
-		example is in WoW where clicking a button causes the set of buttons to change, and the new buttons do new things. 
+	"SETS OF BUTTONS CHANGING BASED ON CONTEXT OR EVENTS"
+	so you have buttons, and a factory that produces them.
+	but the buttons on screen, and what they do, may change based on context.
 
 *abstract factory | observer | observer
-	"REACTING TO UI CHANGES"
-		the abstract factory can listen for events & change its object set based on that 
-		it can also emit events to notify subscribers when it changes its object set 
-		this just seems to be a recognition that it's important to maintain an update cycle in relation to all these UI changes
+	"DEPENDENCY MANAGER"
+		imagine a factory that produces observers.
+		an abstract factory would allow you to change the set of observers you produce.
+		really this sounds alot like mocking / dependency injection
+		where you can turn on either a set of mock dependencies, or the real dependencies
 
 ---------------------------------------------------------
 ---------------------BUILDER-----------------------------
@@ -71,14 +53,12 @@ strategy | command | abstract factory
 aka streaming constructor
 
 composite | builder
-	"STREAMING PARSER"
-		common pattern. a tree is ofter the output of a builder - i.e. the parse tree is the output of the parser
-		this is nice because the entire composite structure doesn't have to be in memory at once.
-		it would be useful to know how to build a streaming parser in C 
+	"TREE DECORATOR"
+		a parser is a common utility that's implemented this way. it reads in some language, parses it, and outputs an algebraic tree
 
 builder | state
 	""
-		you can use a streaming constructor to create a state object. this may be useful because state objects can take up large amounts of memory. 
+
 
 
 state | builder | composite 
@@ -112,10 +92,6 @@ prototype | observer
 
 bridge | template method | prototype 
 	""
-		close to the bridge | template method | interpreter pattern. 
-		this sounds like an actual bridge between general methods of a class and some other component that gets inserted at runtime, right? 
-		I can see the value of combining template methods and prototypes, but what would be the value of the bridge? 
-		what is gained by bridging a prototype? I probably need to think more carefully about prototypes before I answer this. 
 
 command | prototype | facade 
 	""
@@ -131,29 +107,28 @@ singleton | singleton
 
 observer | singleton | observer 
 	"NOTIFICATION CENTER"
-		you can subscribe to a variety of events from anywhere with this pattern 
-		or is it the fact you can subscribe globally to a singleton? so you can observe it from here, from there, from everywhere... etc. 
-			so not a variety of events per se, just different observers...? It could be either one...
+		you can subscribe to a variety of events from anywhere with this pattern
 
 adapter | singleton | facade 
-	"GLOBAL INTERFACE"?
-		the singleton is a facade to a subsystem, allowing multiple systems to access it. but they're going to need adapters to interact with its interface.
+	"ADAPTER FOR A GLOBAL API"
+		a simple, global API for interacting with a complex subsystem.
+		many different systems to access it, but they'll need adapters to interact with the API.
 
 observer | memento | singleton 
-	"EVENT EMITTING DATABASE INTERFACE"
-		So the memento extracts information & stores it in the singleton. Whenever this happens the singleton emits an event, & this event can be subscribed to. 
-		we do data binding but it's often on instances. data binding on a singleton... does this introduce anything interesting? 
-			no, I think this is just a choice to use instances where we could have easily used a singleton, it's the same thing though. 
+	"ASYNC STORAGE API"
+		access some global storage mechanism.
+		a storage operation may take some time, especially if there's alot of data,
+		so callers can listen for when the storage operation completes.
 
 singleton | iterator | singleton 
 	"DATA AGGREGATOR"?
 		could this be something like our aggregator, that first checks the local and then the remote, and then some other datasources? 
 
 template method | adapter | singleton
-	"SINGLETON METHOD IMPLEMENTATIION"
-		outside to inside: template method > adapter > singleton 
-		you're just calling a method that belongs to the singleton, and since this method is global it needs to be a template method. 
-		but then you need an adapter to receive the input from that method, and possibly the output as well. Convert the data to a format compatible with the singleton. 
+	"GENERIC SINGLETON METHOD"
+		since singletons can be accessed from anywhere their public methods may need to be more generic.
+		the method signatures for a singleton can be a generic or template method.
+		the return types may be concrete, and call sites may need their own adapters for receiving them.
 
 ---------------------------------------------------------
 -----------------------STATE-----------------------------
@@ -161,9 +136,7 @@ template method | adapter | singleton
 
 state | iterator
 	"ADVANCED SEARCH"
-		you're just iterating in some fashion to find a particular state. 
-		though this is common, it increases the languages power to use a state & iterator design pattern. 
-		for example, you can iterate over many different structures in different patterns; and a state object lets you define complex search parameters polymorphically.
+		the iterators search behavior is configurable (i.e. it has its own state)
 
 state | command
 	"CONTEXT-SENSITIVE BUTTON"
@@ -171,60 +144,38 @@ state | command
 		They have a state associated with them
 
 state | composite
-	"STATUS HIERARCHY"
-		You can represent state with a hierarchy. For example, when the element at the top of the heap is the first in alphanumeric order.
-		Or lets say a virus scanning application defines different threat levels. The state is being ranked according to some set of values. 
+	""
 
 state | iterator | memento 
-	"ADVANCED SEARCH & EXTRACTION"
-		like advanced search, but now you're saving what you find so that you can reproduce it elsewhere
-		the ability to represent in a compact form then reconstruct what you found is a key part of the memento pattern. 
+	"INTELLIGENT SEARCH"
+		like advanced search, but it adapts to past search patterns to give better results
 
 state | command | facade 
-	"CONTEXT-SENSITIVE INTERFACE" or "REPRESENTATIONAL INTERFACE"
-		it's similar to the context-sensitive button, but there's this complex subsystem you're interfacing with. 
-		the interface's state is a simple representation of the complexity contained within the subsystem.  
-		The internal function performed changes based on this state. 
-		from outside to inside: state > facade > command. It reminds me of a REST API because the state is representational and outside the subsystem. 
+	"SMART BUTTON"
+		from outside to inside: state > facade > command.
+		like context-sensitive buttons, but the underlying system is more complex, and takes into account more context for more sophisticated behavior
 
 state | interpreter
-	"CONTEXT-SENSITIVE LANGUAGE"
-		this is supposed to be an innovative pattern. I think this is kind of like a context-sensitive language. Look at the example:
-		"amazon photos. Users can store thousands of photos. They can also construct these photos into storylines that represent series of events in their lives. 
-		A picture is worth a thousand words. Pictures are a language. When you form these pictures into a storyboard, you are saying something about your life. 
-		A picture can be interpreted. But a series of pictures can also be interpreted… correct? Like words in a language - a series of statements." 
-		It almost reminds me of the command line, where you input something... and then you can input a new set of commands, because your first input 
-		effected the state.
-		So the interpretation is changing based on state; changing from one interpretation to the next.
+	"DATA ANALYZER"
+		so if you have a ton of data you can analyze it and look for trends in it
 
 state | mediator 
-	"KEEPING STATE UPDATED" or "DISTRIBUTED STATE MANAGEMENT"
-		application architectures like MVC or MVVM are adept at keeping distributed state updated in response to events.
-		The mediation layer sends messages between different components to maintain consistency. 
-		asynchronous events & distributed systems make things complicated - network requests, database requests, user input. 
-		but even at the hardware level you have this pop up with cache consistency between processors. It also pops up in multithreaded programming.
-		this is probably one of the most fundamental patterns
+	"DISTRIBUTED STATE MANAGEMENT"
+		any class whose responsibility is to keep state distributed consistent is serving this purpose.
+		fortunately with functional reactive it's alot easier to manage this nowdays
 
 ---------------------------------------------------------
 -----------------------BRIDGE----------------------------
 ---------------------------------------------------------
 
 bridge | chain of responsibility 
-	"DELEGATION CHAIN"
-		So you split up a large class into smaller related classes, then you add a delegation chain between them to defer functionality. That's all this appears to be 
+	""
 
 bridge | strategy | proxy
-	"ABSTRACT PROXY"
-		is this like a proxy that evolves alongside the object it's proxying for? And since both are abstract a strategy determines how the proxy behaves? That actually makes some sense. 
-		so this is almost like... an abstract proxy object? 
-		this is interesting because the proxy can be for different objects depending on what's needed (as determined by the strategy)
+	""
 
 bridge | template method | interpreter 
-	"MODIFIABLE INTERPRETER"
-		So lets say you're bridging between a class of template methods and a class for an interpreter. 
-		this should allow the actual opertions to vary independently of the parsing and interpretation, right? 
-		so your language can evolve in one respect, and the actual operations carried out by the language evolve separately. 
-		that seems like it would make the language modifiable, backwards compatible and so on. 
+	""
 
 ---------------------------------------------------------
 -----------------------FACADE----------------------------
@@ -280,9 +231,7 @@ proxy  | command
 	""
 
 memento  | proxy  | memento 
-	"DATABASE PROXY"?
-		some kind of object that acts like it contains all sorts of data, but infact internally it's making requests to fetch that data... or something along these lines?
-		it sounds like a form of lazy initialization?
+	""
 
 ---------------------------------------------------------
 ---------------------INTERPRETER-------------------------
@@ -294,7 +243,7 @@ command  | interpreter
 interpreter  | strategy
 	""
 
-interpreter  | visitor  | interpreter		<- the change of a visitor can change the interpretation of a language, bear that in mind
+interpreter  | visitor  | interpreter
 	""
 
 ---------------------------------------------------------
@@ -323,10 +272,6 @@ builder  | factory method  | decorator  | state  |
 
 		
 command  | interpreter  | decorator  | chain of responsibility  | command 
-	// different commands... an interpreter layer that delegates the command to do different things based on decorators? 
-	// so some kind of multi-mode command with a layer of changing logic beneath it, or something... 
-	// it's more than that, potentially.. the decorator adds a composability to this. 
-	// and is able to modify the command, and add something to it 
 
 
 visitor  | adapter  | decorator  | factory method  | flyweight

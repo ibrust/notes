@@ -1,3 +1,13 @@
+===============================================================
+===================== USEFUL PACKAGES =========================
+===============================================================
+
+htop    <- a better, more readable version of top
+
+
+===================================================================
+===================== COMMAND LINE TRICKS =========================
+===================================================================
 
 cd -                        // takes you back to the directory you were in previously 
 
@@ -11,4 +21,9 @@ ctrl+z                      // send a running command line program (like vim) to
 fg                          // bring your background program back to the foreground
 
 sudo !!                     // the two !! refer to the previous command. so if you forget sudo, run this and it'll rerun the command 
+
+
+==============================================================
+===================== USEFUL ALIASES =========================
+==============================================================
 
