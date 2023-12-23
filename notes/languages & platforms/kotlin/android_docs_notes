@@ -432,7 +432,7 @@ they claim there are 2 types of state holders (it really shouldn’t be this com
 																		not sure what this really refers to. the actual views model? 
 
 --------------------------------------------
-FRAGMENTS
+FRAGMENTS - BASIC INFO
 --------------------------------------------
 
 according to the Android docs navigation logic is a concern of the View, not the ViewModel
@@ -540,6 +540,432 @@ If you want a layout file to be ignored while generating the view binding classe
 
 While generated view bindings are usually of type View, with the tools:viewBindingType attribute you can tell the compiler 
     what type to use in the generated code
+
+
+=======================================
+CUSTOM VIEWS INFO
+=======================================
+
+
+there are two types of views in Android - Views, and ViewGroups.
+	ViewGroups are layout related, and group views together - FrameLayout, ConstraintLayout, RelativeLayout, LinearLayout, etc.
+	Views are the individual views - Button, TextView, EditText, ListView, CheckBox, RadioButton, Spinner, etc.
+
+There are 3 general steps to creating a custom View class:
+	1) extend View or a subclass of View (such as a Button, TextView, etc.)
+	2) override some methods (common ones are onDraw(), onMeasure(), onKeyDown(), etc.)
+	3) use the class the same way you would any other view
+
+for a custom ViewGroup you create a class that extends a ViewGroup.
+	you can then create an XML file for this class to specify the positions of its subviews (it’s also possible to create subviews programmatically)
+	a nice advantage of using a custom ViewGroup instead of a custom View is onDraw() / onMeasure() usually have suitable default behavior
+
+
+to allow Android Studio to interact with the custom View / ViewGroup, at minumum it must define a constructor w/ parameters for Context / AttributeSet.
+	this allows Androids layout editor (the storyboard-like design tool) to create / edit the view:
+
+	class ChangePaymentsGroupView<T : TenderPlanAllocation>(context: Context, attributeSet: AttributeSet? = null) : ConstraintLayout(context, attributeSet)
+
+
+you can set custom properties (not the view itself, its properties) in a res/values/attrs.xml file, then use them throughout your other XML files:
+
+	// res/values/attrs.xml
+	<resources>
+		<declare-styleable name="PieChart"> 					// PieChart is the view name you’re defining the custom properties for
+			<attr name="showText" format="boolean" />
+			<attr name="labelPosition" format="enum">
+				<enum name="left" value="0"/>
+				<enum name="right" value="1"/>
+			</attr>
+		</declare-styleable>
+	</resources>
+
+	// CustomView.xml
+	<?xml version="1.0" encoding="utf-8"?>
+	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+				  xmlns:custom="http://schemas.android.com/apk/res-auto"				// the custom attributes belong to your packages namespace, not the android namespace
+				  >
+		<com.example.customviews.charting.PieChart
+			custom:showText="true" 						// now you can set custom attributes
+			custom:labelPosition="left"
+			/>
+	</LinearLayout>
+
+
+when a view is created from an XML layout, all the properties defined in the XML are passed into the view’s constructor as an AttributeSet.
+	though it’s possible to read values from the AttributeSet directly, doing so has some disadvantages:
+
+	1) resource references are not yet resolved
+	2) styles are not applied
+
+	So instead you must pass the AttributeSet to context.theme.obtainStyledAttributes().
+		this returns an array with all the attributes, with all references resolved and styles applied.
+
+
+	here’s how you’d read your custom PieChart’s properties using obtainStyledAttributes():
+
+		init {
+			context.theme.obtainStyledAttributes(
+				attrs,
+				R.styleable.PieChart,
+				0, 0
+			).apply {
+				try {
+					mShowText = getBoolean(R.styleable.PieChart_showText, false)
+					textPos = getInteger(R.styleable.PieChart_labelPosition, 0)
+				} finally {
+					recycle()													// the TypedArray returned by obtainStyledAttributes is a shared resource,
+				} 															// so it must be recycled after use, apparently
+			}
+		}
+
+
+		fun getShowText(): Boolean {
+			return mShowText
+		}
+
+		fun setShowText(showText: Boolean) {
+			mShowText = showText
+			invalidate()								// View method, invalidates the view - guarantees it will be redrawn
+			requestLayout()							// called when the view layout has changed - schedules a new layout pass of the view hierarchy
+		}								// it’s necessary to call these methods after any change to the views properties that might change its appearance / size
+
+
+
+=======================================
+THE NEWINSTANCE() FRAGMENT INIT PATTERN
+=======================================
+
+
+Initializing a fragment yourself can be tricky.
+
+The android system requires a fragment to have a default constructor with no parameter.
+	If the fragments constructor has some parameters the Android system has no way on determining which values to pass to it during recreation, and the app will crash
+
+
+You also can’t just provide default values in the fragment, because they’ll get reset during recreation too:
+
+	class BadFragment2: Fragment() {
+		var textToShow: String = ""			// will get reset to “” every time the fragment is recreated
+	}
+
+
+You have to use Fragment arguments to initialize a fragments properties.
+	The fragment arguments are a dictionary of simple primitives, or Parcelable / Serializable classes
+	For more complex data you can retrieve the data from a local database instead, maybe passing an identifier to retrieve the data if necessary
+
+
+This is how you’d use Fragment arguments:
+
+	class GoodFragment: Fragment() {
+		private val textToShow: String												// retrieve value from arguments in custom getter (strange way to do it)
+			get() = requireArguments().getString(ARG_TEXT_TO_SHOW)
+				?: throw IllegalArgumentException("Argument $ARG_TEXT_TO_SHOW required")
+
+		companion object {
+			private const val ARG_TEXT_TO_SHOW = "argTextToShow"				// the name of the argument
+
+			fun newInstance(textToShow: String) = GoodFragment().apply {
+				arguments = bundleOf(ARG_TEXT_TO_SHOW to textToShow)			// newInstance can be called in code to create instances of the fragment / set its properties
+			}
+		}
+	}
+
+
+This “newInstance” companion object pattern is a conventional pattern in Android. This function will return a new instance of our fragment… it can be called in code.
+	here it only has one parameter for the data the fragment requires, but it can have more.
+	Notice we’re setting the passed parameter as a fragment argument, and the getter is retrieving directly from the arguments.
+
+
+=======================================
+FRAGMENT DOCS
+=======================================
+
+You add a fragment to the activity’s view hierarchy by either:
+	1) defining a fragment in the activity’s XML file
+	2) defining a fragment container in the activity’s XML file, then programmatically adding the fragment to the container within the activity
+
+	but either way you’ll need a FragmentContainerView to hold the fragment
+
+
+	// example of defining a fragment in the XML directly
+	<androidx.fragment.app.FragmentContainerView					// notice you still use a container view
+		xmlns:android="http://schemas.android.com/apk/res/android"
+		android:id="@+id/fragment_container_view"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:name="com.example.ExampleFragment"					// but android:name specifies the fragment class to instantiate.
+		/>														// a FragmentTransaction will automatically add() the fragment and be committed
+
+	—————————————————————————————————————
+
+	// example of adding the fragment programmatically
+	<androidx.fragment.app.FragmentContainerView
+		xmlns:android="http://schemas.android.com/apk/res/android"
+		android:id="@+id/fragment_container_view"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"						// there is no android:name attribute specified
+		/>
+
+	// MainActivity.kt
+	class ExampleActivity : AppCompatActivity(R.layout.example_activity) {		// you can specify a layout file in an Activity’s constructor apparently
+		override fun onCreate(savedInstanceState: Bundle?) {
+			super.onCreate(savedInstanceState)
+														// this check ensures this is the first onCreate() call. fragments need not be added more than once,
+			if (savedInstanceState == null) {				// they’re restored automatically from the savedInstanceState
+
+				val argsBundle = bundleOf(“totalCardsOnFile” to 0)
+				suppertFragmentManager.commit {
+					setReorderingAllowed(true)
+					add<ExampleFragment>(R.id.fragment_container_view, args = argsBundle)		// to pass args to the fragment provide it a bundle
+				}
+			}
+		}
+	}
+
+	// ExampleFragment.kt
+	class ExampleFragment : Fragment(R.layout.example_fragment) {
+
+		override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+			…
+			val totalCardsOnFile = requireArguments().getInt("totalCardsOnFile")		// call requireArguments() within the fragment to get the bundled args passed in
+		}
+	}
+
+
+But typically you don’t just initialize and add a fragment within a transaction yourself.
+	Remember during configuration changes the FragmentManager will handle reinitializing the fragment behind the scenes.
+	It does this reinitialization using a FragmentFactory.
+	This means you can’t just pass parameters to the fragment since they won’t be passed again when the fragment is recreated.
+
+	So if you want to initialize a fragment manually you must subclass FragmentFactory and override its instantiate() method.
+		In that method you can initialize your fragment and pass it the necessary parameters.
+		Then, within the Activity’s onCreate(), you must set the FragmentManager’s factory to an instance of your custom FragmentFactory.
+			But note that you must set it prior to the Activity’s super.onCreate() being called (they don’t mention which call in Fragments, but I assume whatever equivalent).
+			The FragmentManager set in an Activity will be used through its entire child fragment hierarchy
+				until the FragmentManager gets set again in a fragment at a lower level:
+
+
+	class CustomFragmentFactory(val tenderPlanRepository: TenderPlanRepository) : FragmentFactory() {
+		override fun instantiate(classLoader: ClassLoader, className: String): Fragment =
+			when (loadFragmentClass(classLoader, className)) {
+				ExampleFragment::class.java -> ExampleFragment(tenderPlanRepository)			// pass in parameters if the fragment is our custom type.
+				else -> super.instantiate(classLoader, className)							// all other fragments are handled in the typical way
+			}
+	}
+
+	class MainActivity : AppCompatActivity() {
+		override fun onCreate(savedInstanceState: Bundle?) {
+			supportFragmentManager.fragmentFactory = CustomFragmentFactory(Dependencies.getTenderPlanRepository()))		// must set fragment manager before super() call
+			super.onCreate(savedInstanceState)
+
+			if (savedInstanceState == null) {
+				suppertFragmentManager.commit {
+					add(R.id.fragment_container_view)
+					setReorderingAllowed(true)
+				}
+			}
+		}
+
+        ...
+	}
+
+
+The FragmentManager can add, remove, and replace multiple fragments in a single transaction.
+	It also can add this transaction to the fragment back stack
+
+You access the FragmentManager from within the activity or fragment using these methods:
+
+	getSupportFragmentManager()				call from within an activity, gets the activity’s FragmentManager (which manages its child fragment(s))
+	getChildFragmentManager()				call from within a fragment, gets its own FragmentManager (which manages its child fragment(s))
+	getParentFragmentManager() 				call from within a fragment, gets the FragmentManager of the parent fragment or activity
+
+
+The FragmentManager commits fragment transactions and can manage the fragment back-stack
+	a FragmentTransaction is a set of operations (such as adding or removing fragments) committed at once
+	if you call addToBackStack() for the transaction it will also be added to the fragment back-stack (an array of FragmentTransactions)
+		The transaction will be remembered, and can be reversed later.
+
+	the FragmentManager can commit transactions / manipulate the fragment back-stack in response to events (i.e. user input)
+
+	when the user presses the device’s back button, or when you call FragmentManager.popBackStack(),
+		the top-most transaction is popped off the back-stack. All operations in that transaction are undone at once.
+
+		if there are no more transactions on the stack, and if you aren’t using child fragments, the back button event bubbles up to the Activity
+
+	Note that if you don’t call addToBackStack() for a transaction it won’t ever be reversed by the back button / popBackStack()
+		so it must safe to interleave it with any other transactions if you do this
+		generally it’s best to call addToBackStack() unless you have a good reason not to
+
+		note that if you remove a fragment in the transaction, but call addToBackStack(), the fragment won’t be destroyed - it’ll just be stopped / later could be resumed.
+
+
+To show a fragment in its container commit a transaction from within its parent.
+To get a reference to a fragment you can call findFragmentById(). This ID was either specified in the XML, or it’s the container ID used in a transaction:
+
+	// MainActivity.kt
+	supportFragmentManager.commit {
+		replace<ExampleFragment>(R.id.fragment_container)		// replace() is more common than add() since it removes any existing fragment first - more robust
+														// you specify the fragments class <ExampleFragment>, and the FragmentManager
+														// handles fragment initialization using the classes FragmentFactory
+		setReorderingAllowed(true)
+		addToBackStack("name")								// “name” can be null. The optional name lets you pop back to this specific transaction later if you want
+	}
+
+	…
+
+	val fragment: ExampleFragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as ExampleFragment
+
+
+You should always call setReorderingAllowed(true) in the transaction. This is especially necessary for animation changes that affect the back-stack.
+		It ensures that if multiple transactions are executed together, any intermediate fragments (those added and immediately replaced) don’t go through lifecycle changes
+
+You can also get a reference to a fragment by calling findFragmentByTag().
+	Fragments can be given a unique tag either in the XML via the android:tag attribute, or during a transaction:
+
+	// MainActivity.kt
+	supportFragmentManager.commit {
+		replace<ExampleFragment>(R.id.fragment_container, “TAG_NAME”)
+		setReorderingAllowed(true)
+		addToBackStack(null)
+	}
+
+	…
+
+	val fragment: ExampleFragment = supportFragmentManager.findFragmentByTag(“TAG_NAME”) as ExampleFragment
+
+
+common FragmentTransaction operations:
+
+	add() 							// add a fragment to a target FragmentContainer. the added fragment is moved to the RESUMED state.
+	remove()
+
+	replace()							// calls remove() then add()
+	addToBackStack()
+
+	commit()							// doesn’t perform the transaction immediately, schedules it to run on the main thread. Usually this is all you need
+	commitNow()						// will run the transaction on the main thread immediately. commitNow() is incompatible with addToBackStack()
+	executePendingTransactions()		// immediately execute all pending commit() calls on the main thread. This approach is compatible with addToBackStack()
+
+	show() 							// these 2 methods show / hide the fragment in the container. Note that it toggles visibility without effecting
+	hide() 							// the lifecycle of the fragment. While you don’t require a transaction to show / hide a view,
+									// it’s often useful to associate a transaction that changes the back-stack with a visibility change, since it can be retriggered later
+
+	detach() 							// detach the fragment from the UI, destroying its view hierarchy.
+									// Fragment is moved to STOPPED (removed from UI but still on the back-stack / managed by FragmentManager)
+
+	attach() 							// reattaches a fragment to where it was previously attached (so called after detach())
+									// note that apparently detach() / attach() are not related to the Fragment’s Lifecycle methods onAttach() / onDetach()
+
+
+If you have multiple fragments on screen at the same time (either siblings or as child fragments) only one of the fragments should manage the fragment back-stack.
+	to make a fragment responsible for the back-stack call setPrimaryNavigationFragment() within the transaction after you add it
+
+The order of operations in a transaction might matter, especially when doing animations.
+
+
+Fragment animations can be performed using the Animation framework or using Transitions. You should only use one way at a time.
+	It’s generally recommended to use Transitions, especially for multiple or complex animations.
+
+Android has certain terms for the different animations that run during presentation / dismissal:
+
+	exit						for the old fragment during presentation
+	enter 					for the new fragment during presentation
+	popExit					for the old fragment during dismissal
+	popEnter					for the new fragment during dismissal
+
+
+You can define an animation with a Tween animation resource file, which is XML file located in res/anim
+This code animates presentation / dismissal using the Animation Framework:
+
+
+	// res/anim/fade_out.xml
+	<?xml version="1.0" encoding="utf-8"?>
+	<alpha xmlns:android="http://schemas.android.com/apk/res/android"
+		android:duration="@android:integer/config_shortAnimTime"
+		android:interpolator="@android:anim/decelerate_interpolator"
+		android:fromAlpha="1"
+		android:toAlpha="0" />
+
+	// res/anim/fade_in.xml
+	<?xml version="1.0" encoding="utf-8"?>
+	<translate xmlns:android="http://schemas.android.com/apk/res/android"
+		android:duration="@android:integer/config_shortAnimTime"
+		android:interpolator="@android:anim/decelerate_interpolator"
+		android:fromAlpha=“0”
+		android:toAlpha=“1” />
+
+	// res/anim/slide_in.xml
+	<?xml version="1.0" encoding="utf-8"?>
+	<translate xmlns:android="http://schemas.android.com/apk/res/android"
+		android:duration="@android:integer/config_shortAnimTime"
+		android:interpolator="@android:anim/decelerate_interpolator"
+		android:fromXDelta="100%"
+		android:toXDelta="0%" />
+
+	// res/anim/slide_out.xml
+	<?xml version="1.0" encoding="utf-8"?>
+	<translate xmlns:android="http://schemas.android.com/apk/res/android"
+		android:duration="@android:integer/config_shortAnimTime"
+		android:interpolator="@android:anim/decelerate_interpolator"
+		android:fromXDelta=“0%”
+		android:toXDelta=“100%" />
+
+
+
+	// example of using our Tween animations in a Transaction
+	supportFragmentManager.commit {
+		setCustomAnimations(
+			enter = R.anim.slide_in,
+			exit = R.anim.fade_out,
+			popEnter = R.anim.fade_in,
+			popExit = R.anim.slide_out
+		)
+		replace(R.id.fragment_container, fragment)
+		addToBackStack(null)
+	}
+
+
+You can define Transitions in res/transition
+This code creates Transitions for presentation / dismissal.
+	Note that you’d actually have to apply the transition by calling setEnterTransition() / setExitTransition(), which this code doesn’t do.
+	Be sure you’re using the updated AndroidX transitions instead of the old transitions
+
+
+	// res/transition/fade.xml
+	<fade xmlns:android="http://schemas.android.com/apk/res/android"
+		android:duration="@android:integer/config_shortAnimTime"/>
+
+
+	// res/transition/slide_right.xml
+	<slide xmlns:android="http://schemas.android.com/apk/res/android"
+		android:duration="@android:integer/config_shortAnimTime"
+		android:slideEdge="right" />
+
+
+	// WalletTxFragment.kt
+	class FragmentA : Fragment() {
+
+		override fun onCreate(savedInstanceState: Bundle?) {
+			super.onCreate(savedInstanceState)
+
+			val inflater = TransitionInflater.from(requireContext())
+			exitTransition = inflater.inflateTransition(R.transition.fade)
+		}
+	}
+
+	// AddPaymentsTxFragment.kt
+	class FragmentB : Fragment() {
+		override fun onCreate(savedInstanceState: Bundle?) {
+			super.onCreate(savedInstanceState)
+
+			val inflater = TransitionInflater.from(requireContext())
+			enterTransition = inflater.inflateTransition(R.transition.slide_right)
+		}
+	}
+
+
+read more about animations & transitions here: https://developer.android.com/guide/fragments/animate
 
 
 --------------------------------------------
@@ -1015,3 +1441,16 @@ Android KTX are a set of kotlin extensions included with various Android librari
 				}
 			}
 		}
+
+
+=======================================
+STYLE AND THEME MISC INFO
+=======================================
+
+a Style is a dictionary with properties that specify the UI design of a single view.
+	a Theme does the same, but for the whole app, activity, or view hierarchy - not just one view
+
+	Styles / Themes are declared in the style res file
+
+	note that Styles and Themes can work together
+

@@ -38,7 +38,8 @@ This is where subclasses should create their custom view hierarchy if they aren'
 Loads the view controller's view if it has not already been set.
 
 # 3. viewDidLoad()
-Called after the view has been loaded. For view controllers created in code, this is after -loadView. For view controllers unarchived from a nib, this is after the view is set.
+Called after the view has been loaded. For view controllers created in code this is after loadView().
+    For view controllers unarchived from a nib this is after the view is set.
 
 # 4. viewWillAppear(_ animated: Bool)
 Called when the view is about to made visible. Default does nothing
@@ -63,8 +64,10 @@ Called when the view is Transitioning.
 
 # 11. willMove(toParentViewController parent: UIViewController?)
 # 12. didMove(toParentViewController parent: UIViewController?)
-These two methods are public for container subclasses to call when transitioning between child controllers. If they are overridden, the overrides should ensure to call the super.
-The parent argument in both of these methods is nil when a child is being removed from its parent; otherwise it is equal to the new parent view controller.
+These two methods are public for container subclasses to call when transitioning between child controllers.
+    If they are overridden, the overrides should ensure to call the super.
+    The parent argument in both of these methods is nil when a child is being removed from its parent;
+    otherwise it is equal to the new parent view controller.
 
 # 13. didReceiveMemoryWarning()
 Called when the parent application receives a memory warning. On iOS 6.0 it will no longer clear the view by default.

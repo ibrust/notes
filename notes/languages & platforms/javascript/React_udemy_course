@@ -6,7 +6,7 @@ REACT KEY CONCEPTS
 React was released in 2013 
 
 web development has a long history 
-    there have been cross-browser compatibility issues from t he beginning (browser wars)
+    there have been cross-browser compatibility issues from the beginning (browser wars)
 
     jQuery is an old framework that allowed easy cross-browser interaction with the DOM 
 
@@ -41,7 +41,7 @@ web development has a long history
                 these functions receive view attributes (which it calls props) and return JSX
         3) react uses a unidirectional data flow 
             so the State drives changes. it feeds feeds into the JSX functional components 
-            react manages its virtual DOM (a javaascript version of the DOM)
+            react manages its virtual DOM (a javascript version of the DOM)
                 and based off that it will maintain / update the real DOM as the state changes
             in turn a user-input event mutates the State and this will trigger new updates 
         4) react was only a UI framework, unlike angularJS which was an entire MVC framework (too heavy handed)
@@ -90,7 +90,7 @@ npx is a newer nodeJS command that executes a package immediately.
 
 the following command generates the boilerplate of a react project in the target directory: 
 
-        npx create-react-app directory_name 
+    npx create-react-app directory_name
 
 
 for large projects usually people use a react framework, since react by itself is just a UI framework. 
@@ -123,14 +123,14 @@ after generating the boilerplate via 'create-react-app' you'll see alot of node_
             favicon.ico
             index.html
             logo192.png
-            manifest.json                   // for progressive web app compliance, where user can download web app to their desktop / open it by clicking an icon
-            robots.txt                      // instructions for web scrapers
+            manifest.json               // for progressive web app compliance, where user can download web app to their desktop / open it by clicking an icon
+            robots.txt                  // instructions for web scrapers
         src/
             App.css
-            App.js                          // App.js is the actual react application
+            App.js                      // App.js is the actual react application
             App.test.js
             index.css
-            index.js                        // index.js is the javascript entry point of every react project
+            index.js                    // index.js is the javascript entry point of every react project
             logo.svg
             reportWebVitals.js
             setupTests.js
@@ -141,12 +141,13 @@ after generating the boilerplate via 'create-react-app' you'll see alot of node_
 
     ----------------------------------------------
     // index.js
-    import React from 'react';                      // React is the underlying engine
-    import ReactDOM from 'react-dom/client';        // ReactDOM is the object graph the engine generates. this one is for web apps, there are others (react native)
+    import React from 'react';                  // React is the underlying engine
+    import ReactDOM from 'react-dom/client';    // ReactDOM is the object graph the engine generates. this one is for web, there are others (react native)
     import './index.css';
     import App from './App';
 
     const root = ReactDOM.createRoot(document.getElementById('root'));
+
     root.render(                            // render the application into the 'root' div element defined in index.html (could be changed to another element)
         <React.StrictMode>                  // React has its own strict mode for deprecating old React code. everything in these tags runs in strict
             <App />                         // For this App tag the ReactDOM will call the App function in App.js to return HTML here (via JSX)
@@ -168,7 +169,7 @@ after generating the boilerplate via 'create-react-app' you'll see alot of node_
     },
     "scripts": {
         "start": "react-scripts start",     // `npm start` will run the app on a local dev server (accessible via the browser)
-        "build": "react-scripts build",     // `npm build` bundles the code using babel / webpack, optimizing it for distribution over the web. output is in build/
+        "build": "react-scripts build",     // `npm build` bundles the code using babel / webpack, optimizing it for distribution. output is in build/
         "test": "react-scripts test",       // `npm test` runs the tests
         "eject": "react-scripts eject"      // `npm eject` will output the babel / webpack config files so you can modify them.
     },                                      // you should most likely not need to eject, instead you should just rely on the react team to maintain the config
@@ -206,7 +207,6 @@ after generating the boilerplate via 'create-react-app' you'll see alot of node_
 
 
 React essentially lets you write components that return HTML.
-
 components can be written using either classes or functional hooks.
     apparently the industry is shying away from hooks in favor of classes because hooks add complexity
 
@@ -245,6 +245,37 @@ this is App.js converted into a class component:
 
 
 understanding of when react renders / rerenders is essential.
+
+components state can be used within JSX.
+    you must treat the state object as immutable after it's been initialized.
+    react will only rerender the state when it's been set to a new object.
+        if you merely change one of its properties this won't trigger a rerender.
+    always use setState() to modify the state, it will create the new object automatically.
+        setState() takes a dictionary as an argument and merges it with the existing state object
+within JSX you can also bind event handlers to any HTMl element:
+
+    class App extends Component {
+        constructor() {
+            super();
+
+            this.state = {                      // for simplicity we're setting the state within the constructor
+                age: 37
+            }
+        }
+
+        render() {
+            return (
+                <div className="App">
+                    I'm {this.state.age} years old
+                </div>
+                <button onClick={() => {
+                    this.setState({age: 38});
+                }}>
+                    Fast Forward 1 year
+                </button>
+            );
+        }
+    }
 
 
 
