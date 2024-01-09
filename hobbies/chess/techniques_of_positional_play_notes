@@ -1,0 +1,16 @@
+from the chessables course 
+
+==============================================
+SECTION 1 - RESTRICTING THE OPPONENTS PIECES 
+==============================================
+
+pawns can often be pushed to kick the opponents pieces, and this can destabilize the position, leading to an attack. 
+    one common example is with a knight on g6 or b6 you can play a4 or h4
+        especially if it's also restricted from moving elsewhere, and has to retreat somewhere cramping
+        but of course in a real game there's always tons of factors to consider before making a move, so really you just want to notice the possibility 
+
+note that being restricted on space starts to matter less as pieces get traded off 
+
+
+sometimes combinations of exchanges can setup positional advantages. 
+    in one example a combination of exchanges allowed a pawn move to be played that locked a knight out of the game 

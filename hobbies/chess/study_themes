@@ -1,0 +1,173 @@
+
+themes of positional play: 
+
+    1) restricting pieces
+    2) blockading pieces
+    3) grabbing space / space advantages 
+    4) piece activation & development 
+    5) outposts
+    6) weak squares
+    7) provoking weaknesses 
+    8) fighting for open files 
+    9) diagonals & color complexes 
+    10) the bishop pair 
+    11) flank pawn attacks 
+    12) pawn majorities 
+    13) passed pawns 
+    14) backward pawns 
+    15) pawn structures (isolated pawn, closed positions, etc.)
+    16) pawn breakthroughs 
+    17) prophylaxis 
+    18) exchange sacrifices 
+    19) piece sacrifices 
+    20) pawn sacrifices 
+    21) counter attacking / active defense 
+    22) clearance sacrifices 
+    23) in-between moves 
+    24) king safety & usage 
+    25) exchanging pieces 
+    26) strategy based on material (opposite colored bishops, queen exchange, etc.)
+    27) playing with material imbalances (piece for 3 pawns, knight vs bishop, bishop vs rook, etc.)
+    28) anticipating the endgame
+
+themes of calculation: 
+
+    1) general calcuation 
+    2) candidate moves 
+    3) combinations 
+    4) endgame calculation 
+    5) defensive calculation 
+    6) deep calculation 
+
+
+
+openings I'd like to play eventually:
+
+    white (in the order I should learn them in): 
+        1 QGD, exchange                   // for another option + ease the learning process + janowski transposes to similar structures
+        2 QGD, modern                     // for transpositions / my main repertoire
+        3 trompowsky                      // eventually learn many different lines in the trompowsky
+        4 richer-veresov                  // for flexibility (broader repertoire, less predictable) & transpositions
+
+        1 slav, russian variation         // and other interesting early queen lines 
+        2 slav, breyer variation
+        3 french, tarrasch                // or maybe the classical french so that we can also play the veresov? maybe learn both?
+        4 dutch, raphael variation
+        5 tarrasch 
+        6 old benoni 
+
+        catalan                           // will require a switch to 3. Nf3, but I just think it's an epic opening worth learning eventually
+        jabova london                     // just to have another option with similar pawn structures
+        colle                             // curiosity / similar pawn structures 
+        regular london                    // general education / similar pawn structures 
+
+
+        from an exhaustive list here's my ideal pairings with the trompowsky: 
+            1 modern
+            2 veresov
+            3 jabova london 
+            4 colle 
+            5 regular london 
+            6 catalan 
+
+    black: 
+        1 nimzowitsch sicilian
+        2 richter-rauzer sicilian         // for more serious play at higher levels (combines w/ nimzo)
+        3 four knights sicilian           // for an alternative + I believe you can transpose to it from the nimzo sicilian
+
+        4 slav
+        5 semi-slav                       // maybe just the meran variation. moscow I don't know yet - might combine w/ the slav to avoid those lines
+        6 english defense 
+        7 french defense
+
+        1 modern                          // for learning 
+        3 queens gambit accepted          // for transpositions / learning
+        4 pirc                            // for learning
+
+        sveshnikov sicilian               // for serious play at higher levels + more robust repertoire (combines w/ 4 knights)
+
+    optional:
+        1 dutch                           // fun / insight into structures 
+        2 accelerated dragon              // fun / insight
+        3 grunfeld                        // fun / insight 
+        4 ruy lopez                       // general education 
+        5 italian                         // general education
+        6 nimzo indian                    // insight into structures 
+        7 queens indian                   // insight into structures 
+        8 blackmar-diemer gambit          // fun / insight 
+        9 kings indian defense            // fun / insight 
+
+        misc other sicilians
+
+
+    notable variations avoided by transposing into 4 knights from the nimzo sicilian instead of via the french variation: 
+
+        - e6 alapin / delayed e6 alapin (significant - some players use this line against the french, but don't play the alapin against other sicilians)
+        - 5. Bd3 / other 5th moves (not too significant, players wouldn't choose to play these, they're not that good)
+        - pin variation, which includes a rossolimo line (though I think this rossolimo line was fine for black)
+        - kramnik variation (significant, again some players use this against e6 sicilian and they probably aren't prepared for the 4 knights)
+
+    in exchange we must learn a few misc lines after 3... e6
+        but these also look better for black since d5 is now supported by Nf6, and players almost certainly won't know the lines 
+
+
+    the black repertoire vs d4 really has come down to 2 systems: 
+
+        english + queens indian + french (individualism)
+            biggest downsides: players do play against the QID frequently enough. also you must learn 3 different openings. but the french is good to know.
+            biggest upsides: the b6 lines are not common, and the french lines will probably throw the player off. there's not a slav exchange line. 
+
+
+        slav + semi-slav (knight of swords)
+            biggest downsides: must play slav exchange. also the lines against Nf3 are not that rare, though they are aggressive. but they don't grow old either. 
+            biggest upsides: the Nc3 lines are very strong and will be unexpected. winrates are good against Nf3 too. 
+            
+            really the biggest problem is the slav exchange. can that be avoided somehow...? 
+            triangle system could avoid it, but then you're playing a semi-slav instead, can't play the Nc3 exchange line. 
+            but you do get to play the noteboom ... 
+
+
+        for the triangle system: Eight of Wands (Swiftness): Definite movement. Progress. A worthy goal. Finding a direction in life. Development of a new love affair.
+
+        I think I'm going with the QID system. Its winrates look good... and it'll throw the opponent off. it's a very interesting system. 
+        I can always add in the e6 c5 lines later if I want. 
+
+        but actually the triangle system looks really great. it bypasses the exchange variation. 
+        I get the noteboom instead of the dxc5 line against Nc3. 
+        and I don't get the slav gambit line, but the noteboom does work against Nf3 + Nc3. 
+        seems like a worth trade for avoiding the slav exchange. 
+
+        so biggest downside then is just having to know all the semi-slav lines. which is true for the regular semi-slav as well. 
+        so probably if / when I do play the semi-slav it'll be the triangle variation. 
+
+        I still think the english will throw opponents off more than the semi-slav lines though, so for now I'm going with the english. 
+        even though the semi-slav is solid regardless probably. 
+        and if I can manage to avoid the moscow with the triangle that'll be a big plus for the system. 
+
+
+    comparing triangle system vs english + QID system: 
+        triangle: 17/100. The Sun, when reversed: Loneliness and uncertainty. Nostalgic memories. The warm passing glow of dusk. Peace without vigilance.
+        english + QID: 57/100. Wheel of Fortune, when reversed: An unexpected turn of bad luck. A broken sequence of events.
+
+        and triangle + QGD: 86/100 - Deluge (The Tower), when reversed: Unexpected upheaval leading to a positive change in life. Catastrophe survived or narrowly avoided. A new lifestyle and enlightenment. May indicate a broken relationship, divorce, or failure in business or career.
+
+    triangle + QGD move order vs Nf3 & skipping the noteboom: La Papesse (The Popess), when reversed: Being confused and led astray from the true path. Spiritual deception. Overzealous and shallow-minded pursuit of the esoteric. Insecurity, conceit and self-destructiveness. The forces of nature unleashed.
+
+    contrasting 2 triangles vs triangle + QGD move order: 
+
+        2 triangles: Page of Pentacles, when reversed: The dark essence of earth, such as a chasm: Unfavorable news about business, finance, or the physical world. One who delights in all forms of luxury and physical excess, leaving practical matters unattended. Irrationality and failure to recognize obvious facts, coupled with a poor work ethic. Wastefulness, lack of focus, and loss. May portend the loss of a job or promotion.
+
+        triangle + QGD: Nine of Cups (Happiness), when reversed: Vanity, conceit, and smugness in romance, friendship, or other relationships. Achieving what you always thought you wanted. Overindulging in food, drink, or the pleasures of the flesh. A state of joy and abundance that is shallow and fleeting.
+
+    understanding these 2 systems: 
+
+        2 triangles: The Hanged Man, when reversed: Life in suspension. Selfish, materialistic, and untrusting attitudes. Unwillingness to make necessary sacrifices. Going along with the crowd, and refusing to hear the inner voice. Concessions and appeasements that backfire.
+
+        triangle + QGD: The Tower, when reversed: Disaster avoided. Dramatic rescue. False alarm.
+
+
+
+    triangle + QGA rosenthal variation: The High Priestess: A pure, exalted and gracious influence. Education, knowledge, wisdom, and esoteric teachings. The forces of nature. Intuition, foresight, and spiritual revelation of the most mysterious and arcane sort.
+
+
+
