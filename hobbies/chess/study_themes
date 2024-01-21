@@ -111,65 +111,138 @@ openings I'd like to play eventually:
         but these also look better for black since d5 is now supported by Nf6, and players almost certainly won't know the lines 
 
 
-    the black repertoire vs d4 really has come down to 2 systems: 
+    ________________________________________________________
 
-        english + queens indian + french (individualism)
-            biggest downsides: players do play against the QID frequently enough. also you must learn 3 different openings. but the french is good to know.
-            biggest upsides: the b6 lines are not common, and the french lines will probably throw the player off. there's not a slav exchange line. 
+    the black repertoire vs d4 really has come down to these systems: 
 
+    QGA 
+    slav (whether it be via triangle, direct, QGD, etc.)
+    tarrasch 
+    QID + english
 
-        slav + semi-slav (knight of swords)
-            biggest downsides: must play slav exchange. also the lines against Nf3 are not that rare, though they are aggressive. but they don't grow old either. 
-            biggest upsides: the Nc3 lines are very strong and will be unexpected. winrates are good against Nf3 too. 
-            
-            really the biggest problem is the slav exchange. can that be avoided somehow...? 
-            triangle system could avoid it, but then you're playing a semi-slav instead, can't play the Nc3 exchange line. 
-            but you do get to play the noteboom ... 
-
-
-        for the triangle system: Eight of Wands (Swiftness): Definite movement. Progress. A worthy goal. Finding a direction in life. Development of a new love affair.
-
-        I think I'm going with the QID system. Its winrates look good... and it'll throw the opponent off. it's a very interesting system. 
-        I can always add in the e6 c5 lines later if I want. 
-
-        but actually the triangle system looks really great. it bypasses the exchange variation. 
-        I get the noteboom instead of the dxc5 line against Nc3. 
-        and I don't get the slav gambit line, but the noteboom does work against Nf3 + Nc3. 
-        seems like a worth trade for avoiding the slav exchange. 
-
-        so biggest downside then is just having to know all the semi-slav lines. which is true for the regular semi-slav as well. 
-        so probably if / when I do play the semi-slav it'll be the triangle variation. 
-
-        I still think the english will throw opponents off more than the semi-slav lines though, so for now I'm going with the english. 
-        even though the semi-slav is solid regardless probably. 
-        and if I can manage to avoid the moscow with the triangle that'll be a big plus for the system. 
-
-
-    comparing triangle system vs english + QID system: 
-        triangle: 17/100. The Sun, when reversed: Loneliness and uncertainty. Nostalgic memories. The warm passing glow of dusk. Peace without vigilance.
-        english + QID: 57/100. Wheel of Fortune, when reversed: An unexpected turn of bad luck. A broken sequence of events.
-
-        and triangle + QGD: 86/100 - Deluge (The Tower), when reversed: Unexpected upheaval leading to a positive change in life. Catastrophe survived or narrowly avoided. A new lifestyle and enlightenment. May indicate a broken relationship, divorce, or failure in business or career.
-
-    triangle + QGD move order vs Nf3 & skipping the noteboom: La Papesse (The Popess), when reversed: Being confused and led astray from the true path. Spiritual deception. Overzealous and shallow-minded pursuit of the esoteric. Insecurity, conceit and self-destructiveness. The forces of nature unleashed.
-
-    contrasting 2 triangles vs triangle + QGD move order: 
-
-        2 triangles: Page of Pentacles, when reversed: The dark essence of earth, such as a chasm: Unfavorable news about business, finance, or the physical world. One who delights in all forms of luxury and physical excess, leaving practical matters unattended. Irrationality and failure to recognize obvious facts, coupled with a poor work ethic. Wastefulness, lack of focus, and loss. May portend the loss of a job or promotion.
-
-        triangle + QGD: Nine of Cups (Happiness), when reversed: Vanity, conceit, and smugness in romance, friendship, or other relationships. Achieving what you always thought you wanted. Overindulging in food, drink, or the pleasures of the flesh. A state of joy and abundance that is shallow and fleeting.
-
-    understanding these 2 systems: 
-
-        2 triangles: The Hanged Man, when reversed: Life in suspension. Selfish, materialistic, and untrusting attitudes. Unwillingness to make necessary sacrifices. Going along with the crowd, and refusing to hear the inner voice. Concessions and appeasements that backfire.
-
-        triangle + QGD: The Tower, when reversed: Disaster avoided. Dramatic rescue. False alarm.
-
-
-
-    triangle + QGA rosenthal variation: The High Priestess: A pure, exalted and gracious influence. Education, knowledge, wisdom, and esoteric teachings. The forces of nature. Intuition, foresight, and spiritual revelation of the most mysterious and arcane sort.
-
+    QGA - 87/100 - fun factor: 13/100
+        advantages: 
+            not too much theory, will get people out of book in some cases 
+            cool lines 
+            good winrates
+        cons: 
+            won't work against the english or reti
+            positions are a bit simple
     
+    slav - 100/100 - fun factor: 6/100
+        advantages: 
+            very cool gambit lines 
+            positions are complex 
+            can learn the semi-slav meran in combination with it which will hopefully work against english / reti 
+            will work at the highest level of these 4 (according to dice, and it seems to make sense) 
+        cons: 
+            can be hard to avoid theory in certain parts, such as against 3. Nf3 
+            probably will encounter most book resistance here 
 
+    tarrasch - 75/100 - fun factor: 17/100
+        advantages: 
+            not that common, should throw off many players 
+            good attacking opening
+            good winrates 
+        cons: 
+            if player knows how to respond you're left defending an IQP
+            not sure if it's my style exactly
+            don't think it works against reti / english 
+        
+    QID + english - 30/100 - fun factor: 10/100
+        pros: 
+            english will get people out of book 
+            good winrates in both lines 
+            QID works against reti / english 
+        cons: 
+            lots of theory, very large openings, tons of ways white can respond. 
+            QID is a mainline opening and people will be booked up on it 
+
+_____________________________
+
+    there are different ways of getting into the slav though. in order of preference: 
+
+        1: 2 triangles (85/100)
+        2: slav exchange direct (56/100)
+        3: QGA + triangle (mixing in the QGA for the 3. Nf3 case, could work for a chameleon repertoire)
+        4: other (not sure what this may be but I'm sure there are other ways)
+        5: QGD + triangle + catalan (makes sense, you'd rather avoid the catalan)
+
+
+    2 triangles moves into the noteboom, slav exchange moves into the chameleon or possibly the two knights gambits 
+        I think noteboom would be preferred, at least in the short term. it's an interesting opening alot of people won't be ready for 
+
+    then there's the issue of the quiet slav... 
+
+        2 triangles must handle: 
+
+            3. Nc3 -> 4. e3 
+            3. Nf3 -> 4. e3 
+
+            the only reasonable way to handle this here would be to transpose into the semi-slav meran lines. you can't play the schallop. 
+
+        the slav exchange direct lines (2. c6): 
+
+            3. Nc3 dxc4 - can avoid one of the quiet slav lines via this gambit (which looks quite good)
+            3. Nf3 -> 4. e3 - can play the schallop defense here 
+
+        so alot of this comes down to whether I want to play the semi-slav meran lines.
+            I actually do think these lines are considered good for black, so it may be fine... though they are very theoretical. 
+            but if they're good for black that may be okay. 
+
+        what other sidelines are there in the triangle quiet slavs? 
+
+            3. Nc3 
+                4. e4 -> challenging line but this is gambity and will throw people off 
+                4. cxd5 -> you can take back with the pawn here so it's fine 
+                4. Bf4 -> you can play dxc4 and the winrate is good 
+            3. Nf3 
+                4. g3 -> this actually looks good for black, you play dxc4 then c5 immediately 
+                4. Qc3 -> most challenging line, you play dxc4 
+                4. Nbd2 -> you can just play the breyer variation here 
+                + some other rare sidelines 
+
+            so I think overall this looks fine. 
+            not entirely sure why whites winrate is so high after 3. Nf3.
+                often when you drill deeper into the lines you see that if black plays the right moves the winrate equalizes 
+            
+
+
+    overall I think the 2 triangles will throw people off more, especially people looking to play the exchange or the Bg5 lines (moscow, botvinnik, etc.). 
+    and I think the high winrate lines for white are probably misleading, I'm not sure why those winrates exist but I think black can equalize. 
+
+
+    comparing the slav exchange + gambits ideas vs the 2 triangle + noteboom + meran / anti-meran ideas: 
+
+        slav exchange + gambits: Queen of Coins, when reversed: A cornucopia emptied. A heart of stone. Crystalline coldness. A field barren and gone to seed. Preoccupation of wealth and security that stifles enjoyment of both.
+
+        2 triangles: Aeon, when reversed: Rebirth. Resisting change. A new life, possibly not acknowledged.
+
+
+
+    the ideal slav system here: 
+    1. d4 d5 
+        1... e6 17/100
+        1... c6 71/100
+
+        2. cxd5 - slav exchange 
+        2. Nc3 - can play dxc4 here 
+        2. Nf3
+            2... Nf6 74/100 - standard slav setup 
+                3. e3 - quiet slav - meran lines
+                3. Nc3 - Nc3 
+                    3... e6 (semi-slav) - 65/100
+                    3... dxc4 (two knights attack) - 41/100
+                    3... a6 (chameleon slav) - 58/100
+                    3... g6 (schlecter slav) - 100/100
+            2... e6 8/100
+
+
+ultimately the ideal tournament repertoire should consist of: 
+
+    - sticking to the sicilian against e4, but playing like 4 different lines (probably taimanov / richter rauzer)
+    - using 1 of the 4 major systems against d4 (slav), but still having different systems within it, mixing in the QGA, etc. 
+    - playing like 4 different first moves as white such as the nimzo larsen, bird, 1. d4, 1. Nc3
+    - experimenting with the QGD in addition to the veresov. I also like the vienna after 1. Nc3
 
 
