@@ -36,7 +36,7 @@ to support different devices you can provide various configuration-specific app 
         }
 
 
-you can specify the minSdkVersion and targetSdkVersion version in the manifest and build.gradle files 
+you can specify the minSdkVersion and targetSdkVersion in the manifest and build.gradle files 
     the version info in the build.gradle file will take precedence over the manifest, but the two should match 
     targetSdkVersion is the highest version for which you've optimized the app 
 
@@ -150,9 +150,10 @@ A LifecycleScope is defined for every Lifecycle object.
 	}
 
 
-LifecycleOwner is an interface that indicates the class has a Lifecycle. It has one method, getLifecycle(). 
-	LifecycleOwner emits events for changes in its state. This state can be queried by custom components to handle lifecycle changes.
-	Components that implement DefaultLifecycleObserver work seamlessly with components that implement LifecycleOwner:
+Classes with a LifeCycle implement LifecycleOwner, an interface with one method, getLifecycle().
+	the LifeCycle emits events for state changes. 
+	with LifeCycleOwner this state can be queried by custom components to handle lifecycle changes.
+	the custom components should implement DefaultLifecycleObserver and they will work seamlessly with LifecycleOwner:
 
 	// just initialize this class in an activity or fragment
 	internal class CustomDelegateClass(
@@ -178,10 +179,10 @@ LifecycleOwner is an interface that indicates the class has a Lifecycle. It has 
 
 
 LifeCycle has 2 enums - LifeCycle.State and LifeCycle.Event. 
-	The docs say to think of LifeCycle.State cases the nodes in a graph, and LifeCycle.Event as the lines connecting the nodes.
+	LifeCycle.Event is fired when a change in state occurs, while LifeCycle.State is the actual state. 
 
-There are 5 LifeCycle.State cases. This is what will be returned by the LifeCycleOwner if you query its state. 
-	Note that they dont correspond perfectly with the actual activity lifecycle events, and there is some weirdness happening behind the scenes: 
+There are 5 LifeCycle.State cases (this info is returned by the LifeCycle object if you retrieve it via LifeCycleOnwer / query its state) 
+	Note that they dont correspond perfectly with the lifecycle events, and there is some weirdness happening behind the scenes: 
 
 	CREATED 							set after onCreate() and right before onStop() 
 	DESTROYED 							set right before onDestroy()
@@ -194,16 +195,15 @@ There are 7 Lifecycle.Event cases:
 
 	ON_ANY 
 	ON_CREATE 
-	ON_DESTROY 
-	ON_PAUSE 
-	ON_RESUME 
 	ON_START 
+	ON_RESUME 
+	ON_DESTROY 
 	ON_STOP							emitted when the activity or fragment calls onSaveInstanceState()
+	ON_PAUSE 
 
 
 When a Fragments / Activities state is saved via onSaveInstanceState() (and LifeCycleOwner.Event.ON_STOP is emitted) its UI is considered immutable.
 	This remains true until LifeCycleOwner.Event.ON_START is emitted again. 
-
 	This is because the state saved by onSaveInstanceState() is whats used to recreate the UI 
 		so modifying the UI state before starting would introduce inconsistencies with the saved state.
 	For this reason FragmentManager throws an exception if a FragmentTransaction occurs while the UI is considered immutable.
@@ -213,16 +213,12 @@ When a Fragments / Activities state is saved via onSaveInstanceState() (and Life
 		if there are multiple observers LiveData will notify the active ones, but not the inactive ones 
 	
 	Unfortunately Activities do not call their onStop() method until after onSaveInstanceState() is called (which emits ON_STOP). 
-		So theres a gap where ON_STOP has been emitted, and the UI is considered immutable, 
+		So theres a gap where ON_STOP has been emitted, and the UI should be immutable, 
 		but onStop() has not been called and LifeCycle.State is not set to CREATED yet. 
 
 		to fix this problem newer versions of Android (after SDK API level 26) set LifeCycle.State to CREATED when onSaveInstanceState() is called, 
-			slightly before onStop() is called. 
-			but older versions did something weird with setting the CREATED state.
-			this problem shouldnt impact the code, just be aware that these events / states call order 
-				dont exactly match the call order in the Activity class
-			our app supports min SDK version 25, so this is still relevant for us
-
+			slightly before onStop() is called. but older versions did something weird with setting the CREATED state (see docs).
+			this problem shouldnt impact the code, just be aware that there is some weirdness in the call order of states / events in the activity class. 
 
 --------------------------------------------
 NAVIGATION / BACK-STACK
@@ -269,8 +265,8 @@ the ViewModel class integrates with the Navigation class
 LIVEDATA / FLOWS 
 --------------------------------------------
 
-Flows are optimized for streaming fragmented data, whereas LiveData publishes discrete events 
-Flows have more operators than LiveData 
+Flows are for streaming data continuously (irrespective of lifecycle state), whereas LiveData works with discrete events (respecting lifecycle state)
+Flows have more operators than LiveData
 	for example, you can move operations to a different thread using the Flow operator flowOn(Dispatcher:)
 
 	flowOf("A","B","C")
@@ -283,8 +279,8 @@ Flows have more operators than LiveData
 		}
 
 
-LiveData / Flows need to respect the UI lifecycle. It would waste resources to observe these publishers when the view isn’t on screen. 
-	when using LiveData, the LifeCycleOwner implicitly takes care of lifecycle concerns
+LiveData / Flows need to respect the UI lifecycle. Observing these publishers when the view isn’t on screen wastes resources and can cause bugs. 
+	when using LiveData with a LifeCycleOwner these issues are handled automatically
 	with Flows this is not the case, though you can use StateFlow and Lifecycle.repeatOnLifecycle to make a lifecycle aware flow:
 
 		override fun onCreate(savedInstanceState: Bundle?) {
@@ -300,14 +296,14 @@ LiveData / Flows need to respect the UI lifecycle. It would waste resources to o
 			}
 		}
 
-	Its easiest to just keep the Flow in the domain layer, and only use LiveData to update the UI layer
+	It is easiest to just keep the Flow in the domain layer, and only use LiveData to update the UI layer
 
 
 to consume the stream of LiveData / Flow publishers you use their terminal operator
 	for LiveData this is observe()
 	for a Flow it is collect() or one of its derivatives 
 
-Note that when LiveData is initialized it’s not set with an initial value 
+Note that when LiveData is initialized it is not set with an initial value 
 
 Note that all LiveData objects are observed on the main thread. 
 Operators doing transformations on the LiveData also run on the main thread. 
@@ -316,7 +312,7 @@ LiveData has very limited ability to combine streams, even when you use Mediator
 
 To avoid UI stutter limit use of LiveData to ViewModels where you publish UI updates, and then subscribe to them in activity / fragments.
 repositories should not use LiveData, but should instead use Flows. 
-	in the ViewModel, when publishing UI updates, you typically you convert the Flows to LiveData using the asLiveData() method 
+	in the ViewModel, when publishing UI updates, you typically convert the Flows to LiveData using the asLiveData() method 
 	
 
 	// MainActivity.kt 
@@ -411,7 +407,7 @@ they acknowledge that only a very minimal amount of logic belongs in the UI laye
 	there’s also sometimes event-based UI logic like toggle logic or scrolling logic 
 	and there’s some UI logic associated with integrating with some native APIs, like lifecycle operations or Resources (i.e. strings)
 
-	but they seem convinced of the bad idea that navigation logic belongs in the UI layer as well.
+	unfortunately they also seem convinced of the bad idea that navigation logic belongs in the UI layer too
 
 application logic / application state must be kept lifecycle independent
 UI logic will be lifecycle dependent since it only occurs when the view exists
@@ -428,15 +424,14 @@ they claim there are 2 types of state holders (it really shouldn’t be this com
 
 	application state holder (lifecycle independent)				the ViewModel - survives configuration changes 
 
-	UI logic / state holder (lifecycle dependent) 					typically implemented in a plain class, doesn’t survive configuration changes 
-																		not sure what this really refers to. the actual views model? 
+	UI logic / state holder (lifecycle dependent) 					typically implemented in a plain class, doesn’t survive configuration changes
 
 --------------------------------------------
 FRAGMENTS - BASIC INFO
 --------------------------------------------
 
 according to the Android docs navigation logic is a concern of the View, not the ViewModel
-	this seems like a horrible idea to blame for their horrible fragments design
+	this seems like a horrible idea that's contributed to many of their architectural problems including their horrible fragments design
 
 
 	// key for the `validationInProgress` data in the Bundle
@@ -478,7 +473,8 @@ according to the Android docs navigation logic is a concern of the View, not the
 	}
 
 
-to update the view you should use StateFlow or LiveData, because theyre both lifecycle aware: 
+to update the view you can use StateFlow or LiveData, 
+	but note StateFlow is not lifecycle aware so you will have to manually manage the lifecycle of subscribers if you use it: 
 
 	data class WalletUiState(
 		val title: String = "",
@@ -695,7 +691,7 @@ You add a fragment to the activity’s view hierarchy by either:
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:name="com.example.ExampleFragment"					// but android:name specifies the fragment class to instantiate.
-		/>														// a FragmentTransaction will automatically add() the fragment and be committed
+		/>															// a FragmentTransaction will automatically add() the fragment and be committed
 
 	—————————————————————————————————————
 
@@ -1161,7 +1157,7 @@ While ViewModels handle configuration changes automatically, they do get destroy
 	class DiceRollActivity : AppCompatActivity() {
 
 		override fun onCreate(savedInstanceState: Bundle?) {
-			val viewModel: DiceRollViewModel by viewModels()		// creates a viewModel the first time onCreate() is called
+			val viewModel: DiceRollViewModel by viewModels()		// not sure why they did it this way
 
 			lifecycleScope.launch {									// recreated activities get the existing viewModel 
 				repeatOnLifecycle(Lifecycle.State.STARTED) {
