@@ -1,4 +1,4 @@
-package com.project.demo.Model
+package com.project.demo.models
 
 import androidx.room.ColumnInfo
 import androidx.room.Dao

@@ -1,24 +1,29 @@
-package com.project.demo.Model
+package com.project.demo.models
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = arrayOf(JoggingSessionEntity::class), version = 1, exportSchema = false)
-public abstract class JoggingAppRelationalDatabase : RoomDatabase() {
+interface JoggingAppRelationalDatabase {
+    fun joggingSessionDao(): JoggingSessionDao
+}
 
-    abstract fun joggingSessionDao(): JoggingSessionDao
+@Database(entities = arrayOf(JoggingSessionEntity::class), version = 1, exportSchema = false)
+public abstract class JoggingAppRelationalDatabaseImpl : RoomDatabase(),
+    JoggingAppRelationalDatabase {
+
+    override abstract fun joggingSessionDao(): JoggingSessionDao
 
     companion object {
         @Volatile
-        private var dbInstance: JoggingAppRelationalDatabase? = null
+        var dbInstance: JoggingAppRelationalDatabaseImpl? = null
 
-        fun getDatabase(context: Context): JoggingAppRelationalDatabase {
+        fun getDatabase(context: Context): JoggingAppRelationalDatabaseImpl {
             return dbInstance ?: synchronized(this) {
                 val instance = Room.databaseBuilder(        // if singleton instance is null initialize it
                     context.applicationContext,
-                    JoggingAppRelationalDatabase::class.java,
+                    JoggingAppRelationalDatabaseImpl::class.java,
                     "room_database"
                 ).build()
 

@@ -1,4 +1,4 @@
-package com.project.demo.View
+package com.project.demo.views
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
