@@ -431,7 +431,7 @@ surprisingly you must download the recyclerview (and many other google androidx 
                 // you must call findViewById() off of itemView because it has the right context
                 iconView = itemView.findViewById(R.id.cell_icon);
                 titleTextView = itemView.findViewById(R.id.cell_textfield_title”);
-                descriptionTextView = itemView.findViewById(R.id.cell_textfield_description");
+                descriptionTextView = itemView.findViewById(R.id.cell_textfield_description);
             }
 
             // kind of like applyModel() - this is just a method to be called in onBindViewHolder() to update the view
@@ -542,7 +542,7 @@ be careful when integrating kotlin with Java classes.
 		this can be a problem when using Android framework code, for example.
 
 	in Kotlin an integrated Java class’s data types are referred to as platform types, and are handled in a special way. 
-		Platform types are non-denotable, meaning that you can't write them down explicitly in the language
+		Platform types are non-denotable, meaning that you cant write them down explicitly in the language
 		
 		so your Kotlin variables can rely on type-inference (since this happens at runtime and the type will be known then) in these assignments, 
 			or you can declare the type that’s expected explicitly. 
@@ -718,22 +718,22 @@ ConstraintLayout is a newer improved version of RelativeLayout. It appears to ma
 	Both use constraints, but there are some differences in which constraints you can use
 		for example, in ConstraintLayout you can set size as a ratio, and use constraint chains 
 			(a chain is like like a stackview, it’s a horizontal / vertical group of views linked with bi-directional constraints)
-		you also can’t use layout_centerHorizontal in ConstraintLayout 
+		you also cant use layout_centerHorizontal in ConstraintLayout 
 
 	to understand the change in ConstraintLayout we must understand the 3 phases of Android draws views on screen: 
 
-		1) measure - the system does a top-down traversal of the view tree to determine how large each ViewGroup / View should be. 
-					when a ViewGroup is measured it also measures its children
-		2) layout - the system does a second top-down traversal, with each ViewGroup determining the positions of its children 
+		1) measure - the system does a top-down traversal of the view tree to determine how large each ViewGroup / View should be. 
+					when a ViewGroup is measured it also measures its children
+		2) layout - the system does a second top-down traversal, with each ViewGroup determining the positions of its children 
 					using the sizes determined in the measure phase
-		3) draw - the system does a third top-down traversal.  For each object in the view tree, a Canvas object is created to send a list 
-					of drawing commands to the GPU. These commands use the ViewGroup and View sizes and positions
+		3) draw - the system does a third top-down traversal. For each object in the view tree, a Canvas object is created to send a list 
+					of drawing commands to the GPU. These commands use the ViewGroup and View sizes and positions
 
 		since there are multiple top-down traversals of the view tree a deeply nested view tree is taxing to performance 
  			for this reason we try to keep a flat view hierarchy on android if possible 
 
 	using LinearLayout / RelativeLayout often results in views that are nested. 	
-		ConstraintLayout allows you to build complex layouts without having to nest Views / ViewGroups, keeping the view hierarchy flat 
+		ConstraintLayout allows you to build complex layouts without having to nest Views / ViewGroups, keeping the view hierarchy flat 
 
 	(1) Relative Layout:
 	android:layout_centerInParent="true"    
