@@ -8,16 +8,16 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
-import com.project.demo.JoggingAppContainer
-import com.project.demo.JoggingApplication
-import com.project.demo.models.JoggingSessionEntity
+import com.project.demo.DogFactAppContainer
+import com.project.demo.DogFactApplication
+import com.project.demo.models.DogFactEntity
 
-class JoggingAppViewModel(
-    private val container: JoggingAppContainer,
+class DogFactAppViewModel(
+    private val container: DogFactAppContainer,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     val repository = container.joggingAppRepository
-    val joggingSessions: LiveData<List<JoggingSessionEntity>> = repository.allJoggingSessions.asLiveData()
+    val joggingSessions: LiveData<List<DogFactEntity>> = repository.allDogFacts.asLiveData()
 
     companion object {
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
@@ -29,8 +29,8 @@ class JoggingAppViewModel(
                 val application = checkNotNull(extras[APPLICATION_KEY])
                 val savedStateHandle = extras.createSavedStateHandle()
 
-                return JoggingAppViewModel(
-                    (application as JoggingApplication).container,
+                return DogFactAppViewModel(
+                    (application as DogFactApplication).container,
                     savedStateHandle
                 ) as T
             }

@@ -240,8 +240,8 @@ here’s how you create a ListView:
 		// ArrayAdapter converts an array of viewmodels into an array of views
 		ArrayAdapter<String> stringToViewAdapter = new ArrayAdapter<>(
 			this,
-			android.R.layout.simple_list_item_1,				// simple_list_item_1 is a native Android XML layout that only shows a label
-			itemsInList									// so it only needs a string as its viewmodel
+			android.R.layout.simple_list_item_1,			// simple_list_item_1 is a native Android XML layout that only shows a label
+			itemsInList										// so it only needs a string as its viewmodel
 		);
 
 		listView.setAdapter(stringToViewAdapter);			// pass the adapter and an array of views will be constructed for our listView 
