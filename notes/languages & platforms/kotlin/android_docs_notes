@@ -1216,7 +1216,7 @@ ViewModels can be initialized with dependencies. These are mostly types from the
 					return WalletViewModel(
 						(application as WalmartApplication).tenderPlanRepository,
 						savedStateHandle
-					)
+					) as T
 				}
 			}
 		}

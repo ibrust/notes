@@ -15,7 +15,13 @@ class JoggingAppRepositoryImpl(private val db: JoggingAppRelationalDatabase) :
 
     override val allJoggingSessions: Flow<List<JoggingSessionEntity>> = joggingSessionDao.getJoggingSessions()
 
-    @Suppress("RedundantSuspendModifier")   // room already runs queries on a background thread
+    @Suppress("RedundantSuspendModifier")
+    @WorkerThread
+    suspend fun deleteAllJoggingSessions() {
+        joggingSessionDao.deleteAllJoggingSessions()
+    }
+
+    @Suppress("RedundantSuspendModifier")
     @WorkerThread
     suspend fun insert(entity: JoggingSessionEntity) {
         joggingSessionDao.insert(entity)

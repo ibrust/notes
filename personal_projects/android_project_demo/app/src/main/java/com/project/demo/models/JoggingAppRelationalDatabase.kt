@@ -25,7 +25,7 @@ public abstract class JoggingAppRelationalDatabaseImpl : RoomDatabase(),
                     context.applicationContext,
                     JoggingAppRelationalDatabaseImpl::class.java,
                     "room_database"
-                ).build()
+                ).fallbackToDestructiveMigration().build()
 
                 dbInstance = instance
                 instance

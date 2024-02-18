@@ -8,14 +8,15 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.project.demo.JoggingAppContainer
 import com.project.demo.JoggingApplication
-import com.project.demo.models.JoggingAppRepository
 import com.project.demo.models.JoggingSessionEntity
 
 class JoggingAppViewModel(
-    private val repository: JoggingAppRepository,
+    private val container: JoggingAppContainer,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+    val repository = container.joggingAppRepository
     val joggingSessions: LiveData<List<JoggingSessionEntity>> = repository.allJoggingSessions.asLiveData()
 
     companion object {
@@ -29,7 +30,7 @@ class JoggingAppViewModel(
                 val savedStateHandle = extras.createSavedStateHandle()
 
                 return JoggingAppViewModel(
-                    (application as JoggingApplication).joggingAppRepository,
+                    (application as JoggingApplication).container,
                     savedStateHandle
                 ) as T
             }

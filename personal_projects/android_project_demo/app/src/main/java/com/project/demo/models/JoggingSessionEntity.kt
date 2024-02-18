@@ -26,5 +26,5 @@ interface JoggingSessionDao {
     suspend fun insert(joggingSessionEntity: JoggingSessionEntity)
 
     @Query("DELETE FROM jogging_sessions_table")
-    suspend fun deleteAll()
+    suspend fun deleteAllJoggingSessions()
 }
