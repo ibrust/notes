@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.project.demo.databinding.ActivityMainBinding
 import com.project.demo.viewmodels.DogFactViewModel
 
@@ -28,7 +27,7 @@ class MainActivity : ComponentActivity() {
 
     private fun setupRecyclerView() {
         val recyclerView = binding.dogFactRecyclerView
-        cellData = ArrayList<DogFactCellData>()
+        cellData = ArrayList()
         adapter = DogFactRecyclerViewAdapter(cellData)
         recyclerView.adapter = adapter
     }
