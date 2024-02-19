@@ -1,16 +1,17 @@
 package com.project.demo
 
 import android.content.Context
-import com.project.demo.models.DogFactAppRelationalDatabaseImpl
-import com.project.demo.models.DogFactAppRepository
-import com.project.demo.models.DogFactAppRepositoryImpl
+import com.project.demo.models.DogFactRelationalDatabaseImpl
+import com.project.demo.models.DogFactRepository
+import com.project.demo.models.DogFactRepositoryImpl
+import kotlinx.coroutines.CoroutineScope
 
-class DogFactAppContainer(context: Context) {
-    val joggingAppRepository: DogFactAppRepository
+class DogFactAppContainer(context: Context, scope: CoroutineScope) {
+    val joggingAppRepository: DogFactRepository
 
     init {
-        joggingAppRepository = DogFactAppRepositoryImpl(
-            DogFactAppRelationalDatabaseImpl.getDatabase(context = context)
+        joggingAppRepository = DogFactRepositoryImpl(
+            DogFactRelationalDatabaseImpl.getDatabase(context = context, scope = scope)
         )
     }
 }

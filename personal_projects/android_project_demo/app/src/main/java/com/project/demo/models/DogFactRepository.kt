@@ -3,12 +3,12 @@ package com.project.demo.models
 import androidx.annotation.WorkerThread
 import kotlinx.coroutines.flow.Flow
 
-interface DogFactAppRepository {
+interface DogFactRepository {
     val allDogFacts: Flow<List<DogFactEntity>>
 }
 
-class DogFactAppRepositoryImpl(private val db: DogFactAppRelationalDatabase) :
-    DogFactAppRepository {
+class DogFactRepositoryImpl(private val db: DogFactAppRelationalDatabase) :
+    DogFactRepository {
 
     private val dogFactDao: DogFactDao
         get() = db.dogFactDao()
