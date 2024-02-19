@@ -23,9 +23,9 @@ class DogFactRecyclerViewAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val DogFactCellData = dogFactsList[position]
-        holder.titleView.text = DogFactCellData.title
-        holder.subTextView.text = DogFactCellData.subText
+        val dogFactCellData = dogFactsList[position]
+        holder.titleView.text = dogFactCellData.title
+        holder.subTextView.text = dogFactCellData.subText
     }
 
     override fun getItemCount(): Int {

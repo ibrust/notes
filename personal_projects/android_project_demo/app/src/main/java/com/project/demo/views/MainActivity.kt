@@ -15,5 +15,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val recyclerView = binding.dogFactRecyclerView
+        val cellData = ArrayList<DogFactCellData>()
+        cellData.add(DogFactCellData(title = "dog 1", subText = "dogs are mans best friend"))
+        val adapter = DogFactRecyclerViewAdapter(cellData)
+        recyclerView.adapter = adapter
     }
 }
