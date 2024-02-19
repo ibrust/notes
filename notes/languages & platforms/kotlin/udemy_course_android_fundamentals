@@ -1012,10 +1012,12 @@ the new recommended way of getting references to views is to use jetpack view bi
 
 
 	// build.gradle - view binding is updated in the module, not at the app level
-	android {		… 
+	android {
+		... 
 		buildFeatures {
-			viewBinding true
-		}	}
+			viewBinding = true
+		}	
+	}
 	
 	// MainActivity.java 
 	private lateinit var binding: ActivityMainBinding 
