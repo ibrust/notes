@@ -1062,7 +1062,7 @@ It is best practice to initialize the publisher lazily if possible to conserve s
 			initializeCalled = true
 
 			viewModelScope.launch {
-				…
+				...
 			}
 		}
 	}
