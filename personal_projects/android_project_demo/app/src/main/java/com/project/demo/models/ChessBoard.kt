@@ -1,17 +1,8 @@
+package com.project.demo.models
+
 import kotlin.math.abs
 import kotlin.math.floor
 
-fun main() {
-    val board = ChessBoard()
-    println(board)
-
-    // make some moves
-    val piece = board.getPiece(Row.TWO, Column.D)
-    val destination = board.getValidMovesForPiece(piece!!)[1]
-    board.movePiece(piece, destination)
-
-    println(board)
-}
 
 class ChessBoard() {
 
@@ -34,6 +25,7 @@ class ChessBoard() {
         return string
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     fun setupBoard() {
         for (index in 0..<ChessBoard.totalSquares) {
             board[index] = null
@@ -100,6 +92,7 @@ class ChessBoard() {
 
         // get index of the king
         var enemyKingsPosition: Int = 0
+        @OptIn(ExperimentalStdlibApi::class)
         for (index in 0..<ChessBoard.totalSquares) {
             if (copyOfBoard[index] != null && copyOfBoard[index]?.color != piece.color && copyOfBoard[index] is King) {
                 enemyKingsPosition = index
@@ -107,6 +100,7 @@ class ChessBoard() {
         }
 
         // scan the board for checks from any enemy pieces
+        @OptIn(ExperimentalStdlibApi::class)
         for (index in 0..<ChessBoard.totalSquares) {
             if (copyOfBoard[index] != null && copyOfBoard[index]?.color != piece.color) {
                 // found an enemy piece, now see if it can take the king
@@ -132,6 +126,7 @@ class ChessBoard() {
                 continue
             }
             if (move.isRange()) {
+                @OptIn(ExperimentalStdlibApi::class)
                 for (distance in 1..<ChessBoard.width) {
                     val destinationIndex: Int = calculateMovesDestinationIndex(piecesCurrentIndex, move, distance) ?: continue
                     if (!isMovementPathValid(move, piece, destinationIndex)) {
@@ -237,6 +232,7 @@ class ChessBoard() {
     }
 
     fun getPiecesIndex(piece: ChessPiece): Int? {
+        @OptIn(ExperimentalStdlibApi::class)
         for (index in 0..<ChessBoard.totalSquares) {
             if (board[index] == piece) {
                 return index
@@ -293,6 +289,7 @@ enum class Column(val number: Int) {
     fun indices(): Array<Int> {
         var indices: Array<Int> = Array(ChessBoard.height) { 0 }
 
+        @OptIn(ExperimentalStdlibApi::class)
         for (index in 0..<ChessBoard.height) {
             indices[index] = (ChessBoard.width * index) + (this.number - 1)
         }
