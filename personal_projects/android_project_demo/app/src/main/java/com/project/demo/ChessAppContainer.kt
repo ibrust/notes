@@ -2,15 +2,15 @@ package com.project.demo
 
 import android.content.Context
 import com.project.demo.models.ChessMovesRelationalDatabaseImpl
-import com.project.demo.models.ChessMovesRepository
-import com.project.demo.models.ChessMovesRepositoryImpl
+import com.project.demo.models.ChessRepository
+import com.project.demo.models.ChessRepositoryImpl
 import kotlinx.coroutines.CoroutineScope
 
 class ChessAppContainer(context: Context, scope: CoroutineScope) {
-    val joggingAppRepository: ChessMovesRepository
+    val joggingAppRepository: ChessRepository
 
     init {
-        joggingAppRepository = ChessMovesRepositoryImpl(
+        joggingAppRepository = ChessRepositoryImpl(
             ChessMovesRelationalDatabaseImpl.getDatabase(context = context, scope = scope)
         )
     }

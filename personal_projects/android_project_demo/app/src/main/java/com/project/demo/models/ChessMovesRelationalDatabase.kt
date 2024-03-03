@@ -48,9 +48,9 @@ public abstract class ChessMovesRelationalDatabaseImpl : RoomDatabase(),
             super.onCreate(db)
             dbInstance?.let { database ->
                 scope.launch {
-                    val dogFactDao = database.dogFactDao()
-                    dogFactDao.deleteAllDogFacts()
-                    dogFactDao.insert(DogFactEntity(dogFact = "dogs are hungry"))
+                    val chessMovesDao = database.chessMovesDao()
+                    chessMovesDao.deleteAllChessMoves()
+                    chessMovesDao.insert(ChessMoveEntity(positionIndex = 12))
                 }
             }
         }
