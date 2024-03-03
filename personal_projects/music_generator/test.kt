@@ -2,9 +2,14 @@ import kotlin.math.abs
 import kotlin.math.floor
 
 fun main() {
-    // TODO: initialize board and make some moves
-    // print out the board
     val board = ChessBoard()
+    println(board)
+
+    // make some moves
+    val piece = board.getPiece(Row.TWO, Column.D)
+    val destination = board.getValidMovesForPiece(piece!!)[1]
+    board.movePiece(piece, destination)
+
     println(board)
 }
 
@@ -18,7 +23,7 @@ class ChessBoard() {
 
     override fun toString(): String {
         var string = ""
-        for (row in Row.values()) {
+        for (row in Row.values().reversed()) {
             string += "\n"
             for (column in Column.values()) {
                 val index = getSquaresIndex(row, column)
@@ -60,6 +65,17 @@ class ChessBoard() {
         board[getSquaresIndex(Row.ONE, Column.E)] = King(color = ChessColor.WHITE)
         board[getSquaresIndex(Row.EIGHT, Column.D)] = Queen(color = ChessColor.BLACK)
         board[getSquaresIndex(Row.EIGHT, Column.E)] = King(color = ChessColor.BLACK)
+    }
+
+    fun getPiece(row: Row, column: Column): ChessPiece? {
+        return board[getSquaresIndex(row, column)]
+    }
+
+    fun movePiece(piece: ChessPiece?, destinationIndex: Int) {
+        val unwrappedPiece: ChessPiece = piece ?: return
+        val currentIndex: Int = getPiecesIndex(unwrappedPiece) ?: return
+        board[currentIndex] = null
+        board[destinationIndex] = unwrappedPiece
     }
 
     fun getValidMovesForPiece(piece: ChessPiece): Array<Int> {
@@ -107,7 +123,14 @@ class ChessBoard() {
     fun getCandidateMoveIndicesForPiece(piece: ChessPiece): MutableList<Int> {
         val piecesCurrentIndex = getPiecesIndex(piece) ?: return mutableListOf()
         var validMoveIndices: MutableList<Int> = arrayListOf()
+        val piecesRow = getRow(piecesCurrentIndex)
         for (move in piece.moveSet) {
+            if (piece is WhitePawn && piecesRow != Row.TWO && move == Move.NORTHTWICE) {
+                continue
+            }
+            if (piece is BlackPawn && piecesRow != Row.SEVEN && move == Move.SOUTHTWICE) {
+                continue
+            }
             if (move.isRange()) {
                 for (distance in 1..<ChessBoard.width) {
                     val destinationIndex: Int = calculateMovesDestinationIndex(piecesCurrentIndex, move, distance) ?: continue
@@ -140,7 +163,35 @@ class ChessBoard() {
             return false
         }
 
-        return true
+        return !(isForwardPawnMoveAndRunsIntoPieces(move, piece)
+                || isDiagonalPawnMoveIntoEmptySquare(move, piece, destinationIndex))
+    }
+
+    fun isDiagonalPawnMoveIntoEmptySquare(move: Move, piece: ChessPiece, destinationIndex: Int): Boolean {
+        val piecesCurrentIndex = getPiecesIndex(piece) ?: return true
+        if (move.isDiagonalPawnMove(piece)) {
+            return board[destinationIndex] == null
+        }
+        return false
+    }
+
+    fun isForwardPawnMoveAndRunsIntoPieces(move: Move, piece: ChessPiece): Boolean {
+        val piecesCurrentIndex = getPiecesIndex(piece) ?: return true
+        if (move.isForwardPawnMove(piece)) {
+            val oneSquareAhead: Int
+            val twoSquaresAhead: Int
+            if (piece is WhitePawn) {
+                oneSquareAhead = piecesCurrentIndex + ChessBoard.width
+                twoSquaresAhead = piecesCurrentIndex + (ChessBoard.width * 2)
+            } else {
+                oneSquareAhead = piecesCurrentIndex - ChessBoard.width
+                twoSquaresAhead = piecesCurrentIndex - (ChessBoard.width * 2)
+            }
+            val oneSquareAheadBlocksMove = board[oneSquareAhead] != null
+            val twoSquaresAheadBlocksMove = move == Move.NORTHTWICE && board[twoSquaresAhead] != null
+            return (oneSquareAheadBlocksMove || twoSquaresAheadBlocksMove)
+        }
+        return false
     }
 
     fun calculateMovesDestinationIndex(piecesCurrentIndex: Int, move: Move, distance: Int?): Int? {
@@ -160,7 +211,9 @@ class ChessBoard() {
         val rowChange = startingRow.number - destinationRow.number
 
         return when (move) {
-            Move.NORTH, Move.SOUTH, Move.RANGENORTH, Move.RANGESOUTH -> startingColumn == destinationColumn
+            Move.NORTH, Move.SOUTH, Move.RANGENORTH, Move.RANGESOUTH, Move.SOUTHTWICE, Move.NORTHTWICE -> {
+                startingColumn == destinationColumn
+            }
             Move.EAST, Move.WEST, Move.RANGEEAST, Move.RANGEWEST -> startingRow == destinationRow
             Move.NORTHWEST, Move.NORTHEAST, Move.SOUTHWEST, Move.SOUTHEAST -> {
                 abs(startingColumn.number - destinationColumn.number) == 1 && abs(startingRow.number - destinationRow.number) == 1
@@ -193,7 +246,7 @@ class ChessBoard() {
     }
 
     fun getRow(index: Int): Row? {
-        return Row.values().find { it.number == (floor(index.toDouble() / ChessBoard.width)).toInt() }
+        return Row.values().find { it.number == (floor(index.toDouble() / ChessBoard.width) + 1).toInt() }
     }
 
     fun getColumn(index: Int): Column? {
@@ -252,12 +305,15 @@ enum class Move {
     NORTHWEST, NORTHEAST, SOUTHWEST, SOUTHEAST,
     RANGENORTH, RANGESOUTH, RANGEEAST, RANGEWEST,
     RANGENORTHEAST, RANGENORTHWEST, RANGESOUTHEAST, RANGESOUTHWEST,
-    JUMPNNE, JUMPNNW, JUMPENE, JUMPESE, JUMPSSE, JUMPSSW, JUMPWNW, JUMPWSW;
+    JUMPNNE, JUMPNNW, JUMPENE, JUMPESE, JUMPSSE, JUMPSSW, JUMPWNW, JUMPWSW,
+    NORTHTWICE, SOUTHTWICE;
 
     fun changeOfPositionOnBoard(distance: Int?): Int {
         return when (this) {
             NORTH -> ChessBoard.width
             SOUTH -> -ChessBoard.width
+            NORTHTWICE -> ChessBoard.width * 2
+            SOUTHTWICE -> -ChessBoard.width * 2
             EAST -> 1
             WEST -> -1
             NORTHWEST -> ChessBoard.width - 1
@@ -289,6 +345,14 @@ enum class Move {
             RANGENORTHEAST, RANGENORTHWEST, RANGESOUTHEAST, RANGESOUTHWEST -> true
             else -> false
         }
+    }
+
+    fun isForwardPawnMove(piece: ChessPiece): Boolean {
+        return (piece is Pawn && (this == SOUTHTWICE || this == NORTHTWICE || this == SOUTH || this == NORTH))
+    }
+
+    fun isDiagonalPawnMove(piece: ChessPiece): Boolean {
+        return (piece is Pawn && (this == SOUTHEAST || this == SOUTHWEST || this == NORTHEAST || this == NORTHWEST))
     }
 }
 
@@ -354,19 +418,19 @@ sealed class Pawn(override var color: ChessColor): ChessPiece()
 
 class BlackPawn(): Pawn(ChessColor.BLACK) {
     override var moveSet: Array<Move> = arrayOf(
-        Move.SOUTH, Move.SOUTHEAST, Move.SOUTHWEST
+        Move.SOUTH, Move.SOUTHEAST, Move.SOUTHWEST, Move.SOUTHTWICE
     )
     override fun toString(): String {
-        return "P "
+        return "X "
     }
 }
 
 class WhitePawn(): Pawn(ChessColor.WHITE) {
     override var moveSet: Array<Move> = arrayOf(
-        Move.NORTH, Move.NORTHEAST, Move.NORTHWEST
+        Move.NORTH, Move.NORTHEAST, Move.NORTHWEST, Move.NORTHTWICE
     )
     override fun toString(): String {
-        return "P "
+        return "O "
     }
 }
 
