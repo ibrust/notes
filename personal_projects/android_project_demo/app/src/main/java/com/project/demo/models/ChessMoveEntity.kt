@@ -10,21 +10,21 @@ import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 import kotlin.collections.List
 
-@Entity(tableName = "dog_facts_table")
-class DogFactEntity(
+@Entity(tableName = "chess_moves_table")
+class ChessMoveEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    @ColumnInfo(name = "dog_fact") val dogFact: String
+    @ColumnInfo(name = "position") val positionIndex: Int
 )
 
 @Dao
-interface DogFactDao {
+interface ChessMovesDao {
 
-    @Query("SELECT * FROM dog_facts_table ORDER BY id DESC")
-    fun getAllDogFacts(): Flow<List<DogFactEntity>>
+    @Query("SELECT * FROM chess_moves_table ORDER BY id DESC")
+    fun getAllChessMoves(): Flow<List<ChessMoveEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(dogFactEntity: DogFactEntity)
+    suspend fun insert(chessMove: ChessMoveEntity)
 
-    @Query("DELETE FROM dog_facts_table")
-    suspend fun deleteAllDogFacts()
+    @Query("DELETE FROM chess_moves_table")
+    suspend fun deleteAllChessMoves()
 }

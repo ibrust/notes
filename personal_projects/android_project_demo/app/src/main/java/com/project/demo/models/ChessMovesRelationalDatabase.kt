@@ -8,26 +8,26 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-interface DogFactAppRelationalDatabase {
-    fun dogFactDao(): DogFactDao
+interface ChessMovesRelationalDatabase {
+    fun chessMovesDao(): ChessMovesDao
 }
 
-@Database(entities = arrayOf(DogFactEntity::class), version = 1, exportSchema = false)
-public abstract class DogFactRelationalDatabaseImpl : RoomDatabase(),
-    DogFactAppRelationalDatabase {
+@Database(entities = arrayOf(ChessMoveEntity::class), version = 1, exportSchema = false)
+public abstract class ChessMovesRelationalDatabaseImpl : RoomDatabase(),
+    ChessMovesRelationalDatabase {
 
-    override abstract fun dogFactDao(): DogFactDao
+    override abstract fun chessMovesDao(): ChessMovesDao
 
     companion object {
         @Volatile
-        var dbInstance: DogFactRelationalDatabaseImpl? = null
+        var dbInstance: ChessMovesRelationalDatabaseImpl? = null
 
-        fun getDatabase(context: Context, scope: CoroutineScope): DogFactRelationalDatabaseImpl {
+        fun getDatabase(context: Context, scope: CoroutineScope): ChessMovesRelationalDatabaseImpl {
 
             return dbInstance ?: synchronized(this) {
                 val instance = Room.databaseBuilder(        // if singleton instance is null initialize it
                     context.applicationContext,
-                    DogFactRelationalDatabaseImpl::class.java,
+                    ChessMovesRelationalDatabaseImpl::class.java,
                     "room_database"
                 ).fallbackToDestructiveMigration()
                 .addCallback(PopulateDatabaseCallback(scope))

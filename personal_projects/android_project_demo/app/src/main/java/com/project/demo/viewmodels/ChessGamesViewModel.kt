@@ -9,26 +9,26 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import com.project.demo.DogFactAppContainer
-import com.project.demo.DogFactApplication
-import com.project.demo.models.DogFactEntity
-import com.project.demo.views.DogFactCellData
+import com.project.demo.ChessAppContainer
+import com.project.demo.ChessApplication
+import com.project.demo.models.ChessMoveEntity
+import com.project.demo.views.ChessMovesCellData
 import kotlinx.coroutines.launch
 
-class DogFactViewModel(
-    private val container: DogFactAppContainer,
+class ChessGameViewModel(
+    private val container: ChessAppContainer,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val repository = container.joggingAppRepository
-    private val _dogFactsLiveData = MutableLiveData<List<DogFactCellData>>()
-    val dogFactsLiveData: LiveData<List<DogFactCellData>> = _dogFactsLiveData
+    private val _chessMovesLiveData = MutableLiveData<List<ChessMovesCellData>>()
+    val chessMovesLiveData: LiveData<List<ChessMovesCellData>> = _chessMovesLiveData
 
     fun setupListeners() {
         viewModelScope.launch {
-            repository.allDogFacts.collect() { dogFactsEntities ->
-                _dogFactsLiveData.postValue(dogFactsEntities.map { DogFactCellData(
+            repository.allChessMoves.collect() { chessMoveEntities ->
+                _chessMovesLiveData.postValue(chessMoveEntities.map { ChessMovesCellData(
                     title = "Title",
-                    subText = it.dogFact
+                    subText = "position index: ${it.positionIndex}"
                 )})
             }
         }
@@ -44,8 +44,8 @@ class DogFactViewModel(
                 val application = checkNotNull(extras[APPLICATION_KEY])
                 val savedStateHandle = extras.createSavedStateHandle()
 
-                return DogFactViewModel(
-                    (application as DogFactApplication).container,
+                return ChessGameViewModel(
+                    (application as ChessApplication).container,
                     savedStateHandle
                 ) as T
             }

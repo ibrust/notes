@@ -9,9 +9,9 @@
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/dog_fact_recycler_view"
+        android:id="@+id/chess_moves_recycler_view"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/dog_fact_card"
+        tools:listitem="@layout/chess_move_card"
         >
 
     </androidx.recyclerview.widget.RecyclerView>

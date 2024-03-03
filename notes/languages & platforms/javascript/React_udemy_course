@@ -51,7 +51,7 @@ he recommends installing the react developer tools from the chrome web store
 
 
 ===========================================
-REACT BASICS 
+REACT BASICS
 ===========================================
 
 people often develop react using nodeJS due to the tools nodeJS offers. 
@@ -63,7 +63,7 @@ npm installs packages locally by default. to run the locally installed package y
     npm install package_name
     ./node_modules/.bin/package_name            // execute the package 
 
-    
+
 if you add the package name to "scripts" in package.json you can execute the package via npm run: 
 
     // packages.json

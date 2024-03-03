@@ -7,15 +7,15 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.project.demo.R
 
-class DogFactCellData(val title: String, val subText: String)
+class ChessMovesCellData(val title: String, val subText: String)
 
-class DogFactRecyclerViewAdapter(
-    private val dogFactsList: List<DogFactCellData>
-) : RecyclerView.Adapter<DogFactRecyclerViewAdapter.ViewHolder>() {
+class ChessMoveSetsRecyclerViewAdapter(
+    private val chessMovesList: List<ChessMovesCellData>
+) : RecyclerView.Adapter<ChessMoveSetsRecyclerViewAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(
-            R.layout.dog_fact_card,
+            R.layout.chess_move_set_card,
             parent,
             false
         )
@@ -23,13 +23,13 @@ class DogFactRecyclerViewAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val dogFactCellData = dogFactsList[position]
-        holder.titleView.text = dogFactCellData.title
-        holder.subTextView.text = dogFactCellData.subText
+        val chessMovesCellData = chessMovesList[position]
+        holder.titleView.text = chessMovesCellData.title
+        holder.subTextView.text = chessMovesCellData.subText
     }
 
     override fun getItemCount(): Int {
-        return dogFactsList.size
+        return chessMovesList.size
     }
 
     class ViewHolder(cellView: View) : RecyclerView.ViewHolder(cellView) {

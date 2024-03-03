@@ -4,12 +4,12 @@ import android.app.Application
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 
-class DogFactApplication : Application() {
-    lateinit var container: DogFactAppContainer
+class ChessApplication : Application() {
+    lateinit var container: ChessAppContainer
 
     override fun onCreate() {
         super.onCreate()
         val applicationScope = CoroutineScope(SupervisorJob())
-        container = DogFactAppContainer(context = this, scope = applicationScope)
+        container = ChessAppContainer(context = this, scope = applicationScope)
     }
 }
