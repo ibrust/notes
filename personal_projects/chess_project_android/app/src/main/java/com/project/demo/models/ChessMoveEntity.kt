@@ -52,6 +52,9 @@ interface ChessMoveSetsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(chessPosition: ChessPositionEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(chessMoveSet: ChessMoveSetEntity)
+
     @Query("DELETE FROM all_movesets_table WHERE movesetId = :movesetId")
     suspend fun deleteChessMoveset(movesetId: Int)
 }

@@ -19,13 +19,13 @@ class ChessGameViewModel(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val repository = container.joggingAppRepository
-    private val _chessMovesLiveData = MutableLiveData<List<ChessMovesCellData>>()
-    val chessMovesLiveData: LiveData<List<ChessMovesCellData>> = _chessMovesLiveData
+    private val _availableChessMoveSetsLiveData = MutableLiveData<List<ChessMovesCellData>>()
+    val availableChessMoveSetsLiveData: LiveData<List<ChessMovesCellData>> = _availableChessMoveSetsLiveData
 
     fun setupListeners() {
         viewModelScope.launch {
             repository.availableChessMoveSets.collect() { chessMoveSets ->
-                _chessMovesLiveData.postValue(chessMoveSets.map { ChessMovesCellData(
+                _availableChessMoveSetsLiveData.postValue(chessMoveSets.map { ChessMovesCellData(
                     title = "${it.movesetId}",
                     subText = "${it.tableName}"
                 )})

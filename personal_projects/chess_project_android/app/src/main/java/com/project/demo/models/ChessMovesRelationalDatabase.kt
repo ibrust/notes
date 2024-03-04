@@ -52,6 +52,10 @@ public abstract class ChessMovesRelationalDatabaseImpl : RoomDatabase(),
                 scope.launch {
                     val chessMoveSetsDao = database.chessMoveSetsDao()
                     chessMoveSetsDao.deleteChessMoveset(movesetId = 0)
+                    chessMoveSetsDao.insert(ChessMoveSetEntity(
+                        tableName = "veresov",
+                        movesetId = 0
+                    ))
                     chessMoveSetsDao.insert(ChessPositionEntity(
                         movesetId = 0,
                         fullMoveNumber = 1,

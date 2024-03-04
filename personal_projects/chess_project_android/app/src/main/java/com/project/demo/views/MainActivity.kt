@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun setupListeners() {
-        viewModel.chessMovesLiveData.observe(this, Observer {chessMoves ->
+        viewModel.availableChessMoveSetsLiveData.observe(this, Observer {chessMoves ->
             cellData.clear()
             cellData.addAll(chessMoves)
             chessMoves.let { adapter.notifyDataSetChanged() }
