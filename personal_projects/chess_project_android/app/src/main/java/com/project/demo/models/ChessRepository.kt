@@ -4,24 +4,24 @@ import androidx.annotation.WorkerThread
 import kotlinx.coroutines.flow.Flow
 
 interface ChessRepository {
-    val allChessMoves: Flow<List<ChessMoveEntity>>
+    val availableChessMoveSets: Flow<List<ChessMoveSetEntity>>
 }
 
 class ChessRepositoryImpl(private val db: ChessMovesRelationalDatabase) :
     ChessRepository {
 
-    private val chessMovesDao: ChessMovesDao
-        get() = db.chessMovesDao()
+    private val chessMovesetsDao: ChessMoveSetsDao
+        get() = db.chessMoveSetsDao()
 
-    override val allChessMoves: Flow<List<ChessMoveEntity>> = chessMovesDao.getAllChessMoves()
+    override val availableChessMoveSets: Flow<List<ChessMoveSetEntity>> = chessMovesetsDao.getAvailableChessMoveSets()
 
     @WorkerThread
-    suspend fun deleteAllChessMoves() {
-        chessMovesDao.deleteAllChessMoves()
+    suspend fun deleteChessMoveset(movesetId: Int) {
+        chessMovesetsDao.deleteChessMoveset(movesetId = movesetId)
     }
 
     @WorkerThread
-    suspend fun insert(entity: ChessMoveEntity) {
-        chessMovesDao.insert(entity)
+    suspend fun insert(entity: ChessPositionEntity) {
+        chessMovesetsDao.insert(entity)
     }
 }

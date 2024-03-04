@@ -11,7 +11,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.project.demo.ChessAppContainer
 import com.project.demo.ChessApplication
-import com.project.demo.models.ChessMoveEntity
 import com.project.demo.views.ChessMovesCellData
 import kotlinx.coroutines.launch
 
@@ -25,10 +24,10 @@ class ChessGameViewModel(
 
     fun setupListeners() {
         viewModelScope.launch {
-            repository.allChessMoves.collect() { chessMoveEntities ->
-                _chessMovesLiveData.postValue(chessMoveEntities.map { ChessMovesCellData(
-                    title = "Title",
-                    subText = "position index: ${it.positionIndex}"
+            repository.availableChessMoveSets.collect() { chessMoveSets ->
+                _chessMovesLiveData.postValue(chessMoveSets.map { ChessMovesCellData(
+                    title = "${it.movesetId}",
+                    subText = "${it.tableName}"
                 )})
             }
         }

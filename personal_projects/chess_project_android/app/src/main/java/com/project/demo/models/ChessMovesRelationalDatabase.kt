@@ -4,19 +4,21 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 interface ChessMovesRelationalDatabase {
-    fun chessMovesDao(): ChessMovesDao
+    fun chessMoveSetsDao(): ChessMoveSetsDao
 }
 
-@Database(entities = arrayOf(ChessMoveEntity::class), version = 1, exportSchema = false)
+@Database(entities = arrayOf(ChessPositionEntity::class, ChessMoveSetEntity::class), version = 2, exportSchema = false)
+@TypeConverters(Square.RoomConverter::class)
 public abstract class ChessMovesRelationalDatabaseImpl : RoomDatabase(),
     ChessMovesRelationalDatabase {
 
-    override abstract fun chessMovesDao(): ChessMovesDao
+    override abstract fun chessMoveSetsDao(): ChessMoveSetsDao
 
     companion object {
         @Volatile
@@ -48,9 +50,15 @@ public abstract class ChessMovesRelationalDatabaseImpl : RoomDatabase(),
             super.onCreate(db)
             dbInstance?.let { database ->
                 scope.launch {
-                    val chessMovesDao = database.chessMovesDao()
-                    chessMovesDao.deleteAllChessMoves()
-                    chessMovesDao.insert(ChessMoveEntity(positionIndex = 12))
+                    val chessMoveSetsDao = database.chessMoveSetsDao()
+                    chessMoveSetsDao.deleteChessMoveset(movesetId = 0)
+                    chessMoveSetsDao.insert(ChessPositionEntity(
+                        movesetId = 0,
+                        fullMoveNumber = 1,
+                        colorsMove = ChessColor.WHITE,
+                        enPassantTargetSquare = null,
+                        piecePlacementData = ""
+                    ))
                 }
             }
         }

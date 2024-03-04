@@ -1,5 +1,6 @@
 package com.project.demo.models
 
+import androidx.room.TypeConverter
 import kotlin.math.abs
 import kotlin.math.floor
 
@@ -17,7 +18,7 @@ class ChessBoard() {
         for (row in Row.values().reversed()) {
             string += "\n"
             for (column in Column.values()) {
-                val index = getSquaresIndex(row, column)
+                val index = getSquaresIndex(Square(row, column))
                 val emptySquare = "- "
                 string += "${board[index] ?: emptySquare}"
             }
@@ -30,7 +31,6 @@ class ChessBoard() {
         for (index in 0..<ChessBoard.totalSquares) {
             board[index] = null
         }
-
         for (index in Row.TWO.indices()) {
             board[index] = WhitePawn()
         }
@@ -38,29 +38,29 @@ class ChessBoard() {
             board[index] = BlackPawn()
         }
 
-        board[getSquaresIndex(Row.ONE, Column.A)] = Rook(color = ChessColor.WHITE)
-        board[getSquaresIndex(Row.ONE, Column.H)] = Rook(color = ChessColor.WHITE)
-        board[getSquaresIndex(Row.EIGHT, Column.A)] = Rook(color = ChessColor.BLACK)
-        board[getSquaresIndex(Row.EIGHT, Column.H)] = Rook(color = ChessColor.BLACK)
+        board[getSquaresIndex(Square(Row.ONE, Column.A))] = Rook(color = ChessColor.WHITE)
+        board[getSquaresIndex(Square(Row.ONE, Column.H))] = Rook(color = ChessColor.WHITE)
+        board[getSquaresIndex(Square(Row.EIGHT, Column.A))] = Rook(color = ChessColor.BLACK)
+        board[getSquaresIndex(Square(Row.EIGHT, Column.H))] = Rook(color = ChessColor.BLACK)
 
-        board[getSquaresIndex(Row.ONE, Column.B)] = Knight(color = ChessColor.WHITE)
-        board[getSquaresIndex(Row.ONE, Column.G)] = Knight(color = ChessColor.WHITE)
-        board[getSquaresIndex(Row.EIGHT, Column.B)] = Knight(color = ChessColor.BLACK)
-        board[getSquaresIndex(Row.EIGHT, Column.G)] = Knight(color = ChessColor.BLACK)
+        board[getSquaresIndex(Square(Row.ONE, Column.B))] = Knight(color = ChessColor.WHITE)
+        board[getSquaresIndex(Square(Row.ONE, Column.G))] = Knight(color = ChessColor.WHITE)
+        board[getSquaresIndex(Square(Row.EIGHT, Column.B))] = Knight(color = ChessColor.BLACK)
+        board[getSquaresIndex(Square(Row.EIGHT, Column.G))] = Knight(color = ChessColor.BLACK)
 
-        board[getSquaresIndex(Row.ONE, Column.C)] = Bishop(color = ChessColor.WHITE)
-        board[getSquaresIndex(Row.ONE, Column.F)] = Bishop(color = ChessColor.WHITE)
-        board[getSquaresIndex(Row.EIGHT, Column.C)] = Bishop(color = ChessColor.BLACK)
-        board[getSquaresIndex(Row.EIGHT, Column.F)] = Bishop(color = ChessColor.BLACK)
+        board[getSquaresIndex(Square(Row.ONE, Column.C))] = Bishop(color = ChessColor.WHITE)
+        board[getSquaresIndex(Square(Row.ONE, Column.F))] = Bishop(color = ChessColor.WHITE)
+        board[getSquaresIndex(Square(Row.EIGHT, Column.C))] = Bishop(color = ChessColor.BLACK)
+        board[getSquaresIndex(Square(Row.EIGHT, Column.F))] = Bishop(color = ChessColor.BLACK)
 
-        board[getSquaresIndex(Row.ONE, Column.D)] = Queen(color = ChessColor.WHITE)
-        board[getSquaresIndex(Row.ONE, Column.E)] = King(color = ChessColor.WHITE)
-        board[getSquaresIndex(Row.EIGHT, Column.D)] = Queen(color = ChessColor.BLACK)
-        board[getSquaresIndex(Row.EIGHT, Column.E)] = King(color = ChessColor.BLACK)
+        board[getSquaresIndex(Square(Row.ONE, Column.D))] = Queen(color = ChessColor.WHITE)
+        board[getSquaresIndex(Square(Row.ONE, Column.E))] = King(color = ChessColor.WHITE)
+        board[getSquaresIndex(Square(Row.EIGHT, Column.D))] = Queen(color = ChessColor.BLACK)
+        board[getSquaresIndex(Square(Row.EIGHT, Column.E))] = King(color = ChessColor.BLACK)
     }
 
-    fun getPiece(row: Row, column: Column): ChessPiece? {
-        return board[getSquaresIndex(row, column)]
+    fun getPiece(square: Square): ChessPiece? {
+        return board[getSquaresIndex(Square(square.row, square.column))]
     }
 
     fun movePiece(piece: ChessPiece?, destinationIndex: Int) {
@@ -249,9 +249,9 @@ class ChessBoard() {
         return Column.values().find { it.number == index % ChessBoard.width }
     }
 
-    private fun getSquaresIndex(row: Row, column: Column): Int {
-        for (index in column.indices()) {
-            if (index in row.indices()) {
+    private fun getSquaresIndex(square: Square): Int {
+        for (index in square.column.indices()) {
+            if (index in square.row.indices()) {
                 return index
             }
         }
@@ -296,34 +296,3 @@ class ChessBoard() {
     }
 }
 
-enum class Row(val number: Int) {
-    ONE(1), TWO(2), THREE(3), FOUR(4),
-    FIVE(5), SIX(6), SEVEN(7), EIGHT(8);
-
-    private fun endingIndex(): Int {
-        return (this.number * ChessBoard.width) - 1
-    }
-
-    private fun startingIndex(): Int {
-        return (this.number - 1) * ChessBoard.width
-    }
-
-    fun indices(): Array<Int> {
-        return (this.startingIndex()..this.endingIndex()).toList().toTypedArray()
-    }
-}
-
-enum class Column(val number: Int) {
-    A(1), B(2), C(3), D(4),
-    E(5), F(6), G(7), H(8);
-
-    fun indices(): Array<Int> {
-        var indices: Array<Int> = Array(ChessBoard.height) { 0 }
-
-        @OptIn(ExperimentalStdlibApi::class)
-        for (index in 0..<ChessBoard.height) {
-            indices[index] = (ChessBoard.width * index) + (this.number - 1)
-        }
-        return indices
-    }
-}
