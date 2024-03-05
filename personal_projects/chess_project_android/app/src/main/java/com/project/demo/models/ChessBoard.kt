@@ -1,16 +1,48 @@
 package com.project.demo.models
 
-import androidx.room.TypeConverter
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.math.abs
 import kotlin.math.floor
 
+interface ChessBoardInterface {
+    val state: Flow<ChessBoardState>
 
-class ChessBoard() {
+    fun tryMovingPiece(piece: ChessPiece, square: Square)
+    fun getValidMoves(piece: ChessPiece): Array<Square>
+}
 
+data class ChessBoardState(
+    val moveWhiteCastledOn: Int?,
+    val moveBlackCastledOn: Int?,
+    val fullMoveNumber: Int,
+    val colorToMove: ChessColor,
+    val board: Array<ChessPiece?>
+)
+
+// TODO: implement castling, move number tracking / color to move tracking, en passant, end of game condition
+class ChessBoard(): ChessBoardInterface {
+
+    override val state: Flow<ChessBoardState>
+        get() = _state
+    private lateinit var _state: MutableStateFlow<ChessBoardState>
+
+    // TODO: whenever this board updates we need to publish something...
+    // maybe just access the board through the state object
+    // but do we need to construct a new state object every time we mutate the data?
+    // yeah, kinda like in the tenderplanruleengine... where we created a new data object, set its properties, then set it as the data
+    // but data classes created some problems there... we need to make ChessBoardState a class and get that working somehow...
     private var board: Array<ChessPiece?> = arrayOfNulls(ChessBoard.totalSquares)
 
     init {
         setupBoard()
+        _state = MutableStateFlow(ChessBoardState(
+            moveWhiteCastledOn = null,
+            moveBlackCastledOn = null,
+            fullMoveNumber = 1,
+            colorToMove = ChessColor.WHITE,
+            board = board
+        ))
     }
 
     override fun toString(): String {
@@ -18,49 +50,58 @@ class ChessBoard() {
         for (row in Row.values().reversed()) {
             string += "\n"
             for (column in Column.values()) {
-                val index = getSquaresIndex(Square(row, column))
                 val emptySquare = "- "
-                string += "${board[index] ?: emptySquare}"
+                string += "${board[Square(row, column)] ?: emptySquare}"
             }
         }
         return string
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
+    // TODO: implement
+    override fun tryMovingPiece(piece: ChessPiece, square: Square) {
+        return
+    }
+
+    // TODO: implement
+    override fun getValidMoves(piece: ChessPiece): Array<Square> {
+        return arrayOf()
+    }
+
     fun setupBoard() {
-        for (index in 0..<ChessBoard.totalSquares) {
-            board[index] = null
-        }
-        for (index in Row.TWO.indices()) {
-            board[index] = WhitePawn()
-        }
-        for (index in Row.SEVEN.indices()) {
-            board[index] = BlackPawn()
+        for (square in Square.allSquares()) {
+            board[square] = null
         }
 
-        board[getSquaresIndex(Square(Row.ONE, Column.A))] = Rook(color = ChessColor.WHITE)
-        board[getSquaresIndex(Square(Row.ONE, Column.H))] = Rook(color = ChessColor.WHITE)
-        board[getSquaresIndex(Square(Row.EIGHT, Column.A))] = Rook(color = ChessColor.BLACK)
-        board[getSquaresIndex(Square(Row.EIGHT, Column.H))] = Rook(color = ChessColor.BLACK)
+        for (square in Row.TWO.squares()) {
+            board[square] = WhitePawn()
+        }
+        for (square in Row.SEVEN.squares()) {
+            board[square] = BlackPawn()
+        }
 
-        board[getSquaresIndex(Square(Row.ONE, Column.B))] = Knight(color = ChessColor.WHITE)
-        board[getSquaresIndex(Square(Row.ONE, Column.G))] = Knight(color = ChessColor.WHITE)
-        board[getSquaresIndex(Square(Row.EIGHT, Column.B))] = Knight(color = ChessColor.BLACK)
-        board[getSquaresIndex(Square(Row.EIGHT, Column.G))] = Knight(color = ChessColor.BLACK)
+        board[Square(Row.ONE, Column.A)] = Rook(color = ChessColor.WHITE)
+        board[Square(Row.ONE, Column.H)] = Rook(color = ChessColor.WHITE)
+        board[Square(Row.EIGHT, Column.A)] = Rook(color = ChessColor.BLACK)
+        board[Square(Row.EIGHT, Column.H)] = Rook(color = ChessColor.BLACK)
 
-        board[getSquaresIndex(Square(Row.ONE, Column.C))] = Bishop(color = ChessColor.WHITE)
-        board[getSquaresIndex(Square(Row.ONE, Column.F))] = Bishop(color = ChessColor.WHITE)
-        board[getSquaresIndex(Square(Row.EIGHT, Column.C))] = Bishop(color = ChessColor.BLACK)
-        board[getSquaresIndex(Square(Row.EIGHT, Column.F))] = Bishop(color = ChessColor.BLACK)
+        board[Square(Row.ONE, Column.B)] = Knight(color = ChessColor.WHITE)
+        board[Square(Row.ONE, Column.G)] = Knight(color = ChessColor.WHITE)
+        board[Square(Row.EIGHT, Column.B)] = Knight(color = ChessColor.BLACK)
+        board[Square(Row.EIGHT, Column.G)] = Knight(color = ChessColor.BLACK)
 
-        board[getSquaresIndex(Square(Row.ONE, Column.D))] = Queen(color = ChessColor.WHITE)
-        board[getSquaresIndex(Square(Row.ONE, Column.E))] = King(color = ChessColor.WHITE)
-        board[getSquaresIndex(Square(Row.EIGHT, Column.D))] = Queen(color = ChessColor.BLACK)
-        board[getSquaresIndex(Square(Row.EIGHT, Column.E))] = King(color = ChessColor.BLACK)
+        board[Square(Row.ONE, Column.C)] = Bishop(color = ChessColor.WHITE)
+        board[Square(Row.ONE, Column.F)] = Bishop(color = ChessColor.WHITE)
+        board[Square(Row.EIGHT, Column.C)] = Bishop(color = ChessColor.BLACK)
+        board[Square(Row.EIGHT, Column.F)] = Bishop(color = ChessColor.BLACK)
+
+        board[Square(Row.ONE, Column.D)] = Queen(color = ChessColor.WHITE)
+        board[Square(Row.ONE, Column.E)] = King(color = ChessColor.WHITE)
+        board[Square(Row.EIGHT, Column.D)] = Queen(color = ChessColor.BLACK)
+        board[Square(Row.EIGHT, Column.E)] = King(color = ChessColor.BLACK)
     }
 
     fun getPiece(square: Square): ChessPiece? {
-        return board[getSquaresIndex(Square(square.row, square.column))]
+        return board[Square(square.row, square.column)]
     }
 
     fun movePiece(piece: ChessPiece?, destinationIndex: Int) {
@@ -72,7 +113,7 @@ class ChessBoard() {
 
     fun getValidMovesForPiece(piece: ChessPiece): Array<Int> {
         // get moves that are on the board / not obstructed by your own piece
-        var candidateMoveIndices = getCandidateMoveIndicesForPiece(piece)
+        val candidateMoveIndices = getCandidateMoveIndicesForPiece(piece)
 
         // remove moves that check the king
         for (moveIndex in candidateMoveIndices) {
@@ -114,9 +155,10 @@ class ChessBoard() {
         return false
     }
 
+    // TODO: maybe convert all these index-related methods to use squares instead
     private fun getCandidateMoveIndicesForPiece(piece: ChessPiece): MutableList<Int> {
         val piecesCurrentIndex = getPiecesIndex(piece) ?: return mutableListOf()
-        var validMoveIndices: MutableList<Int> = arrayListOf()
+        val validMoveIndices: MutableList<Int> = arrayListOf()
         val piecesRow = getRow(piecesCurrentIndex)
         for (move in piece.moveSet) {
             if (piece is WhitePawn && piecesRow != Row.TWO && move == Move.NORTHTWICE) {
@@ -163,7 +205,6 @@ class ChessBoard() {
     }
 
     private fun isDiagonalPawnMoveIntoEmptySquare(move: Move, piece: ChessPiece, destinationIndex: Int): Boolean {
-        val piecesCurrentIndex = getPiecesIndex(piece) ?: return true
         if (move.isDiagonalPawnMove(piece)) {
             return board[destinationIndex] == null
         }
@@ -190,8 +231,7 @@ class ChessBoard() {
     }
 
     private fun calculateMovesDestinationIndex(piecesCurrentIndex: Int, move: Move, distance: Int?): Int? {
-        val destinationIndex = piecesCurrentIndex + changeOfPositionOnBoard(move, distance)
-        return destinationIndex
+        return piecesCurrentIndex + changeOfPositionOnBoard(move, distance)
     }
 
     private fun doesMoveStayOnBoard(move: Move, startingIndex: Int, destinationIndex: Int): Boolean {
@@ -247,15 +287,6 @@ class ChessBoard() {
 
     private fun getColumn(index: Int): Column? {
         return Column.values().find { it.number == index % ChessBoard.width }
-    }
-
-    private fun getSquaresIndex(square: Square): Int {
-        for (index in square.column.indices()) {
-            if (index in square.row.indices()) {
-                return index
-            }
-        }
-        return -1
     }
 
     fun changeOfPositionOnBoard(move: Move, distance: Int?): Int {

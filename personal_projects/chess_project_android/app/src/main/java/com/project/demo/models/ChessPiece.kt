@@ -6,6 +6,23 @@ sealed class ChessPiece() {
     abstract override fun toString(): String
 }
 
+operator fun Array<ChessPiece?>.get(square: Square): ChessPiece? {
+    for (index in square.column.indices()) {
+        if (index in square.row.indices()) {
+            return this[index]
+        }
+    }
+    return null
+}
+
+operator fun Array<ChessPiece?>.set(square: Square, piece: ChessPiece?) {
+    for (index in square.column.indices()) {
+        if (index in square.row.indices()) {
+            this[index] = piece
+        }
+    }
+}
+
 class Knight(override var color: ChessColor): ChessPiece() {
     override var moveSet: Array<Move> = arrayOf(
         Move.JUMPNNE, Move.JUMPNNW, Move.JUMPENE, Move.JUMPESE,

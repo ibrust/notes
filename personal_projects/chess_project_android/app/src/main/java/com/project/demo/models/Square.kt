@@ -26,6 +26,18 @@ class Square(val row: Row, val column: Column) {
             return square.toIndex()
         }
     }
+
+    companion object {
+        fun allSquares(): ArrayList<Square> {
+            val squares: ArrayList<Square> = arrayListOf()
+            for (row in Row.values()) {
+                for (column in Column.values()) {
+                    squares.add(Square(row, column))
+                }
+            }
+            return squares
+        }
+    }
 }
 
 enum class Row(val number: Int) {
@@ -46,6 +58,14 @@ enum class Row(val number: Int) {
 
     fun indices(): Array<Int> {
         return (this.startingIndex()..this.endingIndex()).toList().toTypedArray()
+    }
+
+    fun squares(): ArrayList<Square> {
+        val squares: ArrayList<Square> = arrayListOf()
+        for (column in Column.values()) {
+            squares.add(Square(this, column))
+        }
+        return squares
     }
 
     companion object {
@@ -80,6 +100,14 @@ enum class Column(val number: Int) {
             indices[index] = (ChessBoard.width * index) + (this.number - 1)
         }
         return indices
+    }
+
+    fun squares(): ArrayList<Square> {
+        val squares: ArrayList<Square> = arrayListOf()
+        for (row in Row.values()) {
+            squares.add(Square(row, this))
+        }
+        return squares
     }
 
     companion object {

@@ -7,7 +7,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
-import androidx.room.TypeConverter
 import kotlinx.coroutines.flow.Flow
 import kotlin.collections.List
 
