@@ -2,14 +2,12 @@ package com.project.demo.models
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlin.math.abs
-import kotlin.math.floor
 
 interface ChessBoardInterface {
     val state: Flow<ChessBoardState>
 
-    fun tryMovingPiece(piece: ChessPiece, square: Square)
-    fun getValidMoves(piece: ChessPiece): Array<Square>
+    fun tryMovingPiece(currentSquare: Square, destinationSquare: Square)
+    fun getValidMoves(square: Square): Array<Square>?
 }
 
 data class ChessBoardState(
@@ -57,16 +55,6 @@ class ChessBoard(): ChessBoardInterface {
         return string
     }
 
-    // TODO: implement
-    override fun getValidMoves(piece: ChessPiece): Array<Square> {
-        return arrayOf()
-    }
-
-    // TODO: implement
-    override fun tryMovingPiece(piece: ChessPiece, square: Square) {
-        return
-    }
-
     fun setupBoard() {
         for (square in Square.allSquares()) {
             board[square] = null
@@ -100,17 +88,8 @@ class ChessBoard(): ChessBoardInterface {
         board[Square(Row.EIGHT, Column.E)] = King(color = ChessColor.BLACK)
     }
 
-    fun getPiece(square: Square): ChessPiece? {
-        return board[Square(square.row, square.column)]
-    }
-
-    private fun movePiece(piece: ChessPiece, square: Square) {
-        val piecesSquare: Square = findPiecesSquare(piece) ?: return
-        board[piecesSquare] = null
-        board[piecesSquare] = piece
-    }
-
-    fun getValidMovesForPiece(piece: ChessPiece): Array<Square> {
+    override fun getValidMoves(square: Square): Array<Square>? {
+        val piece: ChessPiece = board[square] ?: return null
         // get moves that are on the board / not obstructed by your own piece
         val squaresOfUnobstructedMoves = getSquaresOfUnobstructedMoves(piece)
 
@@ -122,6 +101,19 @@ class ChessBoard(): ChessBoardInterface {
         }
 
         return squaresOfUnobstructedMoves.toTypedArray()
+    }
+
+    override fun tryMovingPiece(currentSquare: Square, destinationSquare: Square) {
+        val validMoves: Array<Square> = getValidMoves(currentSquare) ?: return
+        if (validMoves.contains(destinationSquare)) {
+            performPieceMovement(currentSquare, destinationSquare)
+        }
+    }
+
+    private fun performPieceMovement(currentSquare: Square, destinationSquare: Square) {
+        val piece: ChessPiece = board[currentSquare] ?: return
+        board[currentSquare] = null
+        board[destinationSquare] = piece
     }
 
     private fun doesMovePutKingInCheck(piece: ChessPiece, destinationSquare: Square): Boolean {
