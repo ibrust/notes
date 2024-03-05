@@ -7,7 +7,7 @@ interface ChessRepository {
     val availableChessMoveSets: Flow<List<ChessMoveSetEntity>>
 }
 
-class ChessRepositoryImpl(private val db: ChessMovesRelationalDatabase) :
+class ChessRepositoryImpl(private val db: ChessMoveSetRelationalDatabase) :
     ChessRepository {
 
     private val chessMovesetsDao: ChessMoveSetsDao
