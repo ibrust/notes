@@ -3,8 +3,6 @@ package com.project.demo.models
 import androidx.room.TypeConverter
 import kotlin.math.floor
 
-data class Point(val x: Int, val y: Int)
-
 class Square(val row: Row, val column: Column) {
     override fun toString(): String {
         return row.toString() + column.toString()

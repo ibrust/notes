@@ -10,11 +10,10 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import com.project.demo.R
 import com.project.demo.models.Column
+import com.project.demo.models.Point
 import com.project.demo.models.Row
 import com.project.demo.models.Square
 import kotlin.math.min
-
-data class SquareOrigin(val x: Int, val y: Int)
 
 class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
 
@@ -22,7 +21,7 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
     val whiteKingBitmap = BitmapFactory.decodeResource(resources, R.drawable.whiteking)
     val blackQueenBitmap = BitmapFactory.decodeResource(resources, R.drawable.blackqueen)
     val blackKingBitmap = BitmapFactory.decodeResource(resources, R.drawable.blackking)
-    var squareOrigins: ArrayList<SquareOrigin> = arrayListOf()
+    var squareOrigins: ArrayList<Point> = arrayListOf()
     var paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     override fun onDraw(canvas: Canvas?) {
@@ -40,7 +39,7 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
             for (column in 0..7) {
                 val top: Float = squareSize * row
                 val left: Float = squareSize * column
-                squareOrigins.add(SquareOrigin(x = left.toInt(), y = top.toInt()))
+                squareOrigins.add(Point(x = left.toInt(), y = top.toInt()))
             }
         }
 
@@ -59,29 +58,35 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
             }
 
             // need starting positions to be driven by chessgame model, not initialized here
-            var rect: Rect = makeRect(squareOrigins.getOrigin(Square(Row.ONE, Column.D)), squareSize)
+            var rect: Rect = makeRect(squareOrigins[Square(Row.ONE, Column.D)], squareSize)
             canvas?.drawBitmap(whiteQueenBitmap, null, rect, paint)
-            rect = makeRect(squareOrigins.getOrigin(Square(Row.ONE, Column.E)), squareSize)
+            rect = makeRect(squareOrigins[Square(Row.ONE, Column.E)], squareSize)
             canvas?.drawBitmap(whiteKingBitmap, null, rect, paint)
 
-            rect = makeRect(squareOrigins.getOrigin(Square(Row.EIGHT, Column.D)), squareSize)
+            rect = makeRect(squareOrigins[Square(Row.EIGHT, Column.D)], squareSize)
             canvas?.drawBitmap(blackQueenBitmap, null, rect, paint)
-            rect = makeRect(squareOrigins.getOrigin(Square(Row.EIGHT, Column.E)), squareSize)
+            rect = makeRect(squareOrigins[Square(Row.EIGHT, Column.E)], squareSize)
             canvas?.drawBitmap(blackKingBitmap, null, rect, paint)
 
         }
     }
 
-    private fun makeRect(origin: SquareOrigin, squareSize: Float): Rect {
+    private fun makeRect(origin: Point, squareSize: Float): Rect {
         return Rect(origin.x, origin.y, origin.x + squareSize.toInt(), origin.y + squareSize.toInt())
     }
 }
 
-private fun ArrayList<SquareOrigin>.getOrigin(square: Square): SquareOrigin {
-    val rowNumber = square.row.number - 1
-    val columnNumber = square.column.number - 1
-    val index = ((7 - rowNumber) * 8) + columnNumber
+operator fun ArrayList<Point>.get(square: Square): Point {
+    val index: Int = this.getIndex(square)
     return this[index]
 }
 
+operator fun ArrayList<Point>.set(square: Square, point: Point) {
+    this[this.getIndex(square)] = point
+}
 
+private fun ArrayList<Point>.getIndex(square: Square): Int {
+    val rowNumber = square.row.number - 1
+    val columnNumber = square.column.number - 1
+    return ((7 - rowNumber) * 8) + columnNumber
+}
