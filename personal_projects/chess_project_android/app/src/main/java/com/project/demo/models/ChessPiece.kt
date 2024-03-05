@@ -6,18 +6,20 @@ sealed class ChessPiece() {
     abstract override fun toString(): String
 }
 
-operator fun Array<ChessPiece?>.get(square: Square): ChessPiece? {
-    for (index in square.column.indices()) {
-        if (index in square.row.indices()) {
+operator fun Array<ChessPiece?>.get(square: Square?): ChessPiece? {
+    val unwrappedSquare: Square = square ?: return null
+    for (index in unwrappedSquare.column.indices()) {
+        if (index in unwrappedSquare.row.indices()) {
             return this[index]
         }
     }
     return null
 }
 
-operator fun Array<ChessPiece?>.set(square: Square, piece: ChessPiece?) {
-    for (index in square.column.indices()) {
-        if (index in square.row.indices()) {
+operator fun Array<ChessPiece?>.set(square: Square?, piece: ChessPiece?) {
+    val unwrappedSquare: Square = square ?: return
+    for (index in unwrappedSquare.column.indices()) {
+        if (index in unwrappedSquare.row.indices()) {
             this[index] = piece
         }
     }
@@ -113,5 +115,36 @@ enum class Move {
 
     fun isDiagonalPawnMove(piece: ChessPiece): Boolean {
         return (piece is Pawn && (this == SOUTHEAST || this == SOUTHWEST || this == NORTHEAST || this == NORTHWEST))
+    }
+
+    fun calculateDestinationSquare(currentSquare: Square, distance: Int?): Square? {
+        return when (this) {
+            NORTH -> currentSquare + Point(x = 0, y = 1)
+            SOUTH -> currentSquare + Point(x = 0, y = -1)
+            EAST -> currentSquare + Point(x = 1, y = 0)
+            WEST -> currentSquare + Point(x = -1, y = 0)
+            NORTHTWICE -> currentSquare + Point(x = 0, y = 2)
+            SOUTHTWICE -> currentSquare + Point(x = 0, y = -2)
+            NORTHWEST -> currentSquare + Point(x = -1, y = 1)
+            NORTHEAST -> currentSquare + Point(x = 1, y = 1)
+            SOUTHWEST -> currentSquare + Point(x = -1, y = -1)
+            SOUTHEAST -> currentSquare + Point(x = 1, y = -1)
+            JUMPNNE -> currentSquare + Point(x = 1, y = 2)
+            JUMPNNW -> currentSquare + Point(x = -1, y = 2)
+            JUMPENE -> currentSquare + Point(x = 2, y = 1)
+            JUMPESE -> currentSquare + Point(x = 2, y = -1)
+            JUMPSSE -> currentSquare + Point(x = 1, y = -2)
+            JUMPSSW -> currentSquare + Point(x = -1, y = -2)
+            JUMPWNW -> currentSquare + Point(x = -2, y = 1)
+            JUMPWSW -> currentSquare + Point(x = -2, y = -1)
+            RANGENORTH -> currentSquare + Point(x = 0, y = distance ?: 0)
+            RANGESOUTH -> currentSquare + Point(x = 0, y = -(distance ?: 0))
+            RANGEEAST -> currentSquare + Point(x = distance ?: 0, y = 0)
+            RANGEWEST -> currentSquare + Point(x = -(distance ?: 0), y = 0)
+            RANGENORTHEAST -> currentSquare + Point(x = distance ?: 0, y = distance ?: 0)
+            RANGENORTHWEST -> currentSquare + Point(x = -(distance ?: 0), y = distance ?: 0)
+            RANGESOUTHEAST -> currentSquare + Point(x = distance ?: 0, y = -(distance ?: 0))
+            RANGESOUTHWEST -> currentSquare + Point(x = -(distance ?: 0), y = -(distance ?: 0))
+        }
     }
 }

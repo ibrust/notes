@@ -58,13 +58,13 @@ class ChessBoard(): ChessBoardInterface {
     }
 
     // TODO: implement
-    override fun tryMovingPiece(piece: ChessPiece, square: Square) {
-        return
+    override fun getValidMoves(piece: ChessPiece): Array<Square> {
+        return arrayOf()
     }
 
     // TODO: implement
-    override fun getValidMoves(piece: ChessPiece): Array<Square> {
-        return arrayOf()
+    override fun tryMovingPiece(piece: ChessPiece, square: Square) {
+        return
     }
 
     fun setupBoard() {
@@ -104,50 +104,46 @@ class ChessBoard(): ChessBoardInterface {
         return board[Square(square.row, square.column)]
     }
 
-    fun movePiece(piece: ChessPiece?, destinationIndex: Int) {
-        val unwrappedPiece: ChessPiece = piece ?: return
-        val currentIndex: Int = getPiecesIndex(unwrappedPiece) ?: return
-        board[currentIndex] = null
-        board[destinationIndex] = unwrappedPiece
+    private fun movePiece(piece: ChessPiece, square: Square) {
+        val piecesSquare: Square = findPiecesSquare(piece) ?: return
+        board[piecesSquare] = null
+        board[piecesSquare] = piece
     }
 
-    fun getValidMovesForPiece(piece: ChessPiece): Array<Int> {
+    fun getValidMovesForPiece(piece: ChessPiece): Array<Square> {
         // get moves that are on the board / not obstructed by your own piece
-        val candidateMoveIndices = getCandidateMoveIndicesForPiece(piece)
+        val squaresOfUnobstructedMoves = getSquaresOfUnobstructedMoves(piece)
 
         // remove moves that check the king
-        for (moveIndex in candidateMoveIndices) {
-            if (doesMovePutKingInCheck(piece, moveIndex)) {
-                candidateMoveIndices.remove(moveIndex)
+        for (newSquare in squaresOfUnobstructedMoves) {
+            if (doesMovePutKingInCheck(piece, newSquare)) {
+                squaresOfUnobstructedMoves.remove(newSquare)
             }
         }
 
-        return candidateMoveIndices.toTypedArray()
+        return squaresOfUnobstructedMoves.toTypedArray()
     }
 
-    private fun doesMovePutKingInCheck(piece: ChessPiece, destinationIndex: Int): Boolean {
-        val piecesCurrentIndex = getPiecesIndex(piece) ?: return true
+    private fun doesMovePutKingInCheck(piece: ChessPiece, destinationSquare: Square): Boolean {
+        val currentSquare = findPiecesSquare(piece) ?: return true
         val copyOfBoard = board.toList().toTypedArray()
-        copyOfBoard[piecesCurrentIndex] = null
-        copyOfBoard[destinationIndex] = piece
+        copyOfBoard[currentSquare] = null
+        copyOfBoard[destinationSquare] = piece
 
-        // get index of the king
-        var enemyKingsPosition: Int = 0
-        @OptIn(ExperimentalStdlibApi::class)
-        for (index in 0..<ChessBoard.totalSquares) {
-            if (copyOfBoard[index] != null && copyOfBoard[index]?.color != piece.color && copyOfBoard[index] is King) {
-                enemyKingsPosition = index
+        var squareOfPiecesKing: Square? = null
+        for (square in Square.allSquares()) {
+            if (copyOfBoard[square] != null && copyOfBoard[square]?.color == piece.color && copyOfBoard[square] is King) {
+                squareOfPiecesKing = square
             }
         }
 
         // scan the board for checks from any enemy pieces
-        @OptIn(ExperimentalStdlibApi::class)
-        for (index in 0..<ChessBoard.totalSquares) {
-            if (copyOfBoard[index] != null && copyOfBoard[index]?.color != piece.color) {
-                // found an enemy piece, now see if it can take the king
-                val enemyPiece = copyOfBoard[index] ?: continue
-                val enemyPieceCandidateMoves = getCandidateMoveIndicesForPiece(enemyPiece)
-                if (enemyPieceCandidateMoves.contains(enemyKingsPosition)) {
+        for (square in Square.allSquares()) {
+            if (copyOfBoard[square] != null && copyOfBoard[square]?.color != piece.color) {
+                // found an enemy piece, now see if it can take our pieces king
+                val enemyPiece = copyOfBoard[square] ?: continue
+                val enemyPiecesUnobstructedMoves = getSquaresOfUnobstructedMoves(enemyPiece)
+                if (enemyPiecesUnobstructedMoves.contains(squareOfPiecesKing)) {
                     return true
                 }
             }
@@ -155,11 +151,10 @@ class ChessBoard(): ChessBoardInterface {
         return false
     }
 
-    // TODO: maybe convert all these index-related methods to use squares instead
-    private fun getCandidateMoveIndicesForPiece(piece: ChessPiece): MutableList<Int> {
-        val piecesCurrentIndex = getPiecesIndex(piece) ?: return mutableListOf()
-        val validMoveIndices: MutableList<Int> = arrayListOf()
-        val piecesRow = getRow(piecesCurrentIndex)
+    private fun getSquaresOfUnobstructedMoves(piece: ChessPiece): MutableList<Square> {
+        val piecesCurrentSquare = findPiecesSquare(piece) ?: return mutableListOf()
+        val piecesRow = piecesCurrentSquare.row
+        val validSquares: MutableList<Square> = arrayListOf()
         for (move in piece.moveSet) {
             if (piece is WhitePawn && piecesRow != Row.TWO && move == Move.NORTHTWICE) {
                 continue
@@ -170,154 +165,60 @@ class ChessBoard(): ChessBoardInterface {
             if (move.isRange()) {
                 @OptIn(ExperimentalStdlibApi::class)
                 for (distance in 1..<ChessBoard.width) {
-                    val destinationIndex: Int = calculateMovesDestinationIndex(piecesCurrentIndex, move, distance) ?: continue
-                    if (!isMovementPathValid(move, piece, destinationIndex)) {
+                    val destinationSquare: Square = move.calculateDestinationSquare(piecesCurrentSquare, distance) ?: continue
+                    if (!isMovementPathUnobstructed(move, piece, destinationSquare)) {
                         break
                     }
-                    validMoveIndices.add(destinationIndex)
+                    validSquares.add(destinationSquare)
                 }
             } else {
-                val destinationIndex: Int = calculateMovesDestinationIndex(piecesCurrentIndex, move, null) ?: continue
-                if (isMovementPathValid(move, piece, destinationIndex)) {
-                    validMoveIndices.add(destinationIndex)
+                val destinationSquare: Square = move.calculateDestinationSquare(piecesCurrentSquare, null) ?: continue
+                if (isMovementPathUnobstructed(move, piece, destinationSquare)) {
+                    validSquares.add(destinationSquare)
                 }
             }
         }
-        return validMoveIndices
+        return validSquares
     }
 
-    private fun isMovementPathValid(move: Move, piece: ChessPiece, destinationIndex: Int): Boolean {
-        val piecesCurrentIndex = getPiecesIndex(piece) ?: return false
-        // check that the move is on the board
-        if (!doesMoveStayOnBoard(move, startingIndex = piecesCurrentIndex, destinationIndex = destinationIndex)) {
-            return false
-        }
+    private fun isMovementPathUnobstructed(move: Move, piece: ChessPiece, destinationSquare: Square): Boolean {
+        val isSquareOccupied = board[destinationSquare] != null
+        val destinationPiecesColor = board[destinationSquare]?.color
 
-        // check if destination is occupied by your own piece
-        val isSquareOccupied = board[destinationIndex] != null
-        val destinationPiecesColor = board[destinationIndex]?.color
         if (isSquareOccupied && destinationPiecesColor == piece.color) {
             return false
         }
-
         return !(isForwardPawnMoveAndRunsIntoPieces(move, piece)
-                || isDiagonalPawnMoveIntoEmptySquare(move, piece, destinationIndex))
+                || isDiagonalPawnMoveIntoEmptySquare(move, piece, destinationSquare))
     }
 
-    private fun isDiagonalPawnMoveIntoEmptySquare(move: Move, piece: ChessPiece, destinationIndex: Int): Boolean {
+    private fun isDiagonalPawnMoveIntoEmptySquare(move: Move, piece: ChessPiece, destinationSquare: Square): Boolean {
         if (move.isDiagonalPawnMove(piece)) {
-            return board[destinationIndex] == null
+            return board[destinationSquare] == null
         }
         return false
     }
 
     private fun isForwardPawnMoveAndRunsIntoPieces(move: Move, piece: ChessPiece): Boolean {
-        val piecesCurrentIndex = getPiecesIndex(piece) ?: return true
+        val currentSquare = findPiecesSquare(piece) ?: return false
         if (move.isForwardPawnMove(piece)) {
-            val oneSquareAhead: Int
-            val twoSquaresAhead: Int
-            if (piece is WhitePawn) {
-                oneSquareAhead = piecesCurrentIndex + ChessBoard.width
-                twoSquaresAhead = piecesCurrentIndex + (ChessBoard.width * 2)
-            } else {
-                oneSquareAhead = piecesCurrentIndex - ChessBoard.width
-                twoSquaresAhead = piecesCurrentIndex - (ChessBoard.width * 2)
-            }
+            val increment = if (piece is WhitePawn) 1 else -1
+            val oneSquareAhead: Square? = currentSquare + Point(x = 0, y = increment)
+            val twoSquaresAhead: Square? = currentSquare + Point(x = 0, y = increment * 2)
             val oneSquareAheadBlocksMove = board[oneSquareAhead] != null
-            val twoSquaresAheadBlocksMove = move == Move.NORTHTWICE && board[twoSquaresAhead] != null
+            val twoSquaresAheadBlocksMove = (move == Move.NORTHTWICE || move == Move.SOUTHTWICE) && board[twoSquaresAhead] != null
             return (oneSquareAheadBlocksMove || twoSquaresAheadBlocksMove)
         }
         return false
     }
 
-    private fun calculateMovesDestinationIndex(piecesCurrentIndex: Int, move: Move, distance: Int?): Int? {
-        return piecesCurrentIndex + changeOfPositionOnBoard(move, distance)
-    }
-
-    private fun doesMoveStayOnBoard(move: Move, startingIndex: Int, destinationIndex: Int): Boolean {
-        if (destinationIndex < 0 || destinationIndex >= ChessBoard.totalSquares) {
-            return false
-        }
-        val startingColumn: Column = getColumn(index = startingIndex) ?: return false
-        val destinationColumn: Column = getColumn(index = destinationIndex) ?: return false
-        val startingRow: Row = getRow(index = startingIndex) ?: return false
-        val destinationRow: Row = getRow(index = destinationIndex) ?: return false
-        val columnChange = startingColumn.number - destinationColumn.number
-        val rowChange = startingRow.number - destinationRow.number
-
-        return when (move) {
-            Move.NORTH, Move.SOUTH, Move.RANGENORTH, Move.RANGESOUTH, Move.SOUTHTWICE, Move.NORTHTWICE -> {
-                startingColumn == destinationColumn
-            }
-            Move.EAST, Move.WEST, Move.RANGEEAST, Move.RANGEWEST -> startingRow == destinationRow
-            Move.NORTHWEST, Move.NORTHEAST, Move.SOUTHWEST, Move.SOUTHEAST -> {
-                abs(startingColumn.number - destinationColumn.number) == 1 && abs(startingRow.number - destinationRow.number) == 1
-            }
-            Move.JUMPNNE, Move.JUMPNNW, Move.JUMPENE, Move.JUMPESE, Move.JUMPSSE, Move.JUMPSSW, Move.JUMPWNW, Move.JUMPWSW -> {
-                (abs(columnChange) == 1 && abs(rowChange) == 2) || (abs(columnChange) == 2 && abs(rowChange) == 1)
-            }
-            Move.RANGENORTHEAST -> {
-                abs(columnChange) == abs(rowChange) && destinationColumn > startingColumn && destinationRow > startingRow
-            }
-            Move.RANGENORTHWEST -> {
-                abs(columnChange) == abs(rowChange) && destinationColumn < startingColumn && destinationRow > startingRow
-            }
-            Move.RANGESOUTHEAST -> {
-                abs(columnChange) == abs(rowChange) && destinationColumn > startingColumn && destinationRow < startingRow
-            }
-            Move.RANGESOUTHWEST -> {
-                abs(columnChange) == abs(rowChange) && destinationColumn < startingColumn && destinationRow < startingRow
-            }
-        }
-    }
-
-    private fun getPiecesIndex(piece: ChessPiece): Int? {
-        @OptIn(ExperimentalStdlibApi::class)
-        for (index in 0..<ChessBoard.totalSquares) {
-            if (board[index] == piece) {
-                return index
+    private fun findPiecesSquare(piece: ChessPiece): Square? {
+        for (square in Square.allSquares()) {
+            if (board[square] == piece) {
+                return square
             }
         }
         return null
-    }
-
-    private fun getRow(index: Int): Row? {
-        return Row.values().find { it.number == (floor(index.toDouble() / ChessBoard.width) + 1).toInt() }
-    }
-
-    private fun getColumn(index: Int): Column? {
-        return Column.values().find { it.number == index % ChessBoard.width }
-    }
-
-    fun changeOfPositionOnBoard(move: Move, distance: Int?): Int {
-        return when (move) {
-            Move.NORTH -> ChessBoard.width
-            Move.SOUTH -> -ChessBoard.width
-            Move.NORTHTWICE -> ChessBoard.width * 2
-            Move.SOUTHTWICE -> -ChessBoard.width * 2
-            Move.EAST -> 1
-            Move.WEST -> -1
-            Move.NORTHWEST -> ChessBoard.width - 1
-            Move.NORTHEAST -> ChessBoard.width + 1
-            Move.SOUTHWEST -> -ChessBoard.width - 1
-            Move.SOUTHEAST -> -ChessBoard.width + 1
-            Move.JUMPNNE -> (ChessBoard.width * 2) + 1
-            Move.JUMPNNW -> (ChessBoard.width * 2) - 1
-            Move.JUMPENE -> ChessBoard.width + 2
-            Move.JUMPESE -> -ChessBoard.width + 2
-            Move.JUMPSSE -> -(ChessBoard.width * 2) + 1
-            Move.JUMPSSW -> -(ChessBoard.width * 2) - 1
-            Move.JUMPWNW -> ChessBoard.width - 2
-            Move.JUMPWSW -> -ChessBoard.width - 2
-            Move.RANGENORTH -> ChessBoard.width * (distance ?: 0)
-            Move.RANGESOUTH -> -ChessBoard.width * (distance ?: 0)
-            Move.RANGEEAST -> 1 * (distance ?: 0)
-            Move.RANGEWEST -> -1 * (distance ?: 0)
-            Move.RANGENORTHEAST -> (ChessBoard.width + 1) * (distance ?: 0)
-            Move.RANGENORTHWEST -> (ChessBoard.width - 1) * (distance ?: 0)
-            Move.RANGESOUTHEAST -> (-ChessBoard.width + 1) * (distance ?: 0)
-            Move.RANGESOUTHWEST -> (-ChessBoard.width - 1) * (distance ?: 0)
-        }
     }
 
     companion object {

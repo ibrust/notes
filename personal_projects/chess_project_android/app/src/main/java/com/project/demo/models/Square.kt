@@ -3,6 +3,8 @@ package com.project.demo.models
 import androidx.room.TypeConverter
 import kotlin.math.floor
 
+data class Point(val x: Int, val y: Int)
+
 class Square(val row: Row, val column: Column) {
     override fun toString(): String {
         return row.toString() + column.toString()
@@ -10,6 +12,18 @@ class Square(val row: Row, val column: Column) {
 
     fun toIndex(): Int {
         return (row.number * ChessBoard.width) + column.number - 1
+    }
+
+    operator fun plus(point: Point): Square? {
+        val newRow = this.row + point.y
+        val newColumn = this.column + point.x
+        return makeSquare(newRow, newColumn)
+    }
+
+    operator fun minus(point: Point): Square? {
+        val newRow = this.row - point.y
+        val newColumn = this.column - point.x
+        return makeSquare(newRow, newColumn)
     }
 
     class RoomConverter {
@@ -36,6 +50,12 @@ class Square(val row: Row, val column: Column) {
                 }
             }
             return squares
+        }
+
+        fun makeSquare(row: Row?, column: Column?): Square? {
+            val unwrappedRow: Row = row ?: return null
+            val unwrappedColumn: Column = column ?: return null
+            return Square(row, column)
         }
     }
 }
@@ -66,6 +86,16 @@ enum class Row(val number: Int) {
             squares.add(Square(this, column))
         }
         return squares
+    }
+
+    operator fun plus(number: Int): Row? {
+        val sum = number + this.number
+        return if (sum > 8 || sum < 1) null else makeRow(sum)
+    }
+
+    operator fun minus(number: Int): Row? {
+        val difference = this.number - number
+        return if (difference > 8 || difference < 1) null else makeRow(difference)
     }
 
     companion object {
@@ -108,6 +138,16 @@ enum class Column(val number: Int) {
             squares.add(Square(row, this))
         }
         return squares
+    }
+
+    operator fun plus(number: Int): Column? {
+        val sum = number + this.number
+        return if (sum > 8 || sum < 1) null else Column.makeColumn(sum)
+    }
+
+    operator fun minus(number: Int): Column? {
+        val difference = this.number - number
+        return if (difference > 8 || difference < 1) null else Column.makeColumn(difference)
     }
 
     companion object {
