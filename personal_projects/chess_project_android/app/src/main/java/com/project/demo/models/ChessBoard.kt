@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 interface ChessBoardInterface {
-    val stateFlow: Flow<ChessBoardState>
+    val chessBoardStateFlow: Flow<ChessBoardState>
 
     fun tryMovingPiece(currentSquare: Square, destinationSquare: Square)
     fun getSquaresOfValidMoves(piecesCurrentSquare: Square): Array<Square>?
@@ -14,7 +14,7 @@ interface ChessBoardInterface {
 // TODO: implement castling, move number tracking / color to move tracking, en passant, end of game condition
 // also figure out whether we need a coroutine context in here / other local datasource conventions
 class ChessBoard(): ChessBoardInterface {
-    override val stateFlow: StateFlow<ChessBoardState>
+    override val chessBoardStateFlow: StateFlow<ChessBoardState>
         get() = _stateFlow
     private var _stateFlow: MutableStateFlow<ChessBoardState> = MutableStateFlow(ChessBoardState(
         moveWhiteCastledOn = null,

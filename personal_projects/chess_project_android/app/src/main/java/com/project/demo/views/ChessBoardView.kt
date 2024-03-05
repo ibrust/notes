@@ -9,10 +9,7 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.project.demo.R
-import com.project.demo.models.Column
-import com.project.demo.models.Point
-import com.project.demo.models.Row
-import com.project.demo.models.Square
+import com.project.demo.models.*
 import kotlin.math.min
 
 class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
@@ -76,17 +73,4 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
     }
 }
 
-operator fun ArrayList<Point>.get(square: Square): Point {
-    val index: Int = this.getIndex(square)
-    return this[index]
-}
 
-operator fun ArrayList<Point>.set(square: Square, point: Point) {
-    this[this.getIndex(square)] = point
-}
-
-private fun ArrayList<Point>.getIndex(square: Square): Int {
-    val rowNumber = square.row.number - 1
-    val columnNumber = square.column.number - 1
-    return ((7 - rowNumber) * 8) + columnNumber
-}
