@@ -83,7 +83,7 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
                 // for each piece gets its corresponding bitmap and render it in its current location
                 val unwrappedPiece = state.chessBoard[square] ?: continue
                 val piecesBitmap = pieceBitmaps.getBitMap(unwrappedPiece.pieceId) ?: continue
-                var rect: Rect = makeRect(squareOrigins[square], squareSize)
+                val rect: Rect = makeRect(squareOrigins[square], squareSize)
                 canvas.drawBitmap(piecesBitmap.bitmap, null, rect, paint)
             }
 

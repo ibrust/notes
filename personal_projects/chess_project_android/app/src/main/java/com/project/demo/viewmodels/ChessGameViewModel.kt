@@ -37,6 +37,7 @@ class ChessGameViewModel(
             }
 
             repository.chessBoardStateFlow.collect() { chessBoardState ->
+                val board = chessBoardState.board
                 _chessBoardStateLiveData.postValue(ChessBoardView.State(
                     chessBoard = chessBoardState.board,
                     fullMoveNumber = chessBoardState.fullMoveNumber,

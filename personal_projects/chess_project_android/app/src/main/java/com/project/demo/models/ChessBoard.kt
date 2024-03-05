@@ -19,7 +19,7 @@ class ChessBoard(): ChessBoardInterface {
     private var _stateFlow: MutableStateFlow<ChessBoardState> = MutableStateFlow(ChessBoardState(
         moveWhiteCastledOn = null,
         moveBlackCastledOn = null,
-        fullMoveNumber = 1,
+        fullMoveNumber = 0,
         colorToMove = ChessColor.WHITE,
         board = arrayOfNulls(ChessBoard.totalSquares)
     ))
@@ -47,6 +47,8 @@ class ChessBoard(): ChessBoardInterface {
     private fun setupBoard() {
         val state = getState().copy()
         val board = state.board
+
+        state.fullMoveNumber = 1
         for (square in Square.allSquares()) {
             board[square] = null
         }
