@@ -2,45 +2,34 @@ package com.project.demo.models
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 interface ChessBoardInterface {
-    val state: Flow<ChessBoardState>
+    val stateFlow: Flow<ChessBoardState>
 
     fun tryMovingPiece(currentSquare: Square, destinationSquare: Square)
     fun getSquaresOfValidMoves(piecesCurrentSquare: Square): Array<Square>?
 }
 
-data class ChessBoardState(
-    val moveWhiteCastledOn: Int?,
-    val moveBlackCastledOn: Int?,
-    val fullMoveNumber: Int,
-    val colorToMove: ChessColor,
-    val board: Array<ChessPiece?>
-)
-
 // TODO: implement castling, move number tracking / color to move tracking, en passant, end of game condition
+// also figure out whether we need a coroutine context in here / other local datasource conventions
 class ChessBoard(): ChessBoardInterface {
+    override val stateFlow: StateFlow<ChessBoardState>
+        get() = _stateFlow
+    private var _stateFlow: MutableStateFlow<ChessBoardState> = MutableStateFlow(ChessBoardState(
+        moveWhiteCastledOn = null,
+        moveBlackCastledOn = null,
+        fullMoveNumber = 1,
+        colorToMove = ChessColor.WHITE,
+        board = arrayOfNulls(ChessBoard.totalSquares)
+    ))
 
-    override val state: Flow<ChessBoardState>
-        get() = _state
-    private lateinit var _state: MutableStateFlow<ChessBoardState>
-
-    // TODO: whenever this board updates we need to publish something...
-    // maybe just access the board through the state object
-    // but do we need to construct a new state object every time we mutate the data?
-    // yeah, kinda like in the tenderplanruleengine... where we created a new data object, set its properties, then set it as the data
-    // but data classes created some problems there... we need to make ChessBoardState a class and get that working somehow...
-    private var board: Array<ChessPiece?> = arrayOfNulls(ChessBoard.totalSquares)
+    private fun getState(): ChessBoardState {
+        return _stateFlow.value
+    }
 
     init {
         setupBoard()
-        _state = MutableStateFlow(ChessBoardState(
-            moveWhiteCastledOn = null,
-            moveBlackCastledOn = null,
-            fullMoveNumber = 1,
-            colorToMove = ChessColor.WHITE,
-            board = board
-        ))
     }
 
     override fun toString(): String {
@@ -49,13 +38,15 @@ class ChessBoard(): ChessBoardInterface {
             string += "\n"
             for (column in Column.values()) {
                 val emptySquare = "- "
-                string += "${board[Square(row, column)] ?: emptySquare}"
+                string += "${getState().board[Square(row, column)] ?: emptySquare}"
             }
         }
         return string
     }
 
-    fun setupBoard() {
+    private fun setupBoard() {
+        val state = getState().copy()
+        val board = state.board
         for (square in Square.allSquares()) {
             board[square] = null
         }
@@ -86,10 +77,12 @@ class ChessBoard(): ChessBoardInterface {
         board[Square(Row.ONE, Column.E)] = King(color = ChessColor.WHITE)
         board[Square(Row.EIGHT, Column.D)] = Queen(color = ChessColor.BLACK)
         board[Square(Row.EIGHT, Column.E)] = King(color = ChessColor.BLACK)
+
+        _stateFlow.value = state
     }
 
     override fun getSquaresOfValidMoves(piecesCurrentSquare: Square): Array<Square>? {
-        val piece: ChessPiece = board[piecesCurrentSquare] ?: return null
+        val piece: ChessPiece = getState().board[piecesCurrentSquare] ?: return null
 
         val squaresOfUnobstructedMoves = getSquaresOfUnobstructedMoves(piece)
         // remove moves that check the king
@@ -110,14 +103,17 @@ class ChessBoard(): ChessBoardInterface {
     }
 
     private fun performPieceMovement(currentSquare: Square, destinationSquare: Square) {
+        val state = getState().copy()
+        val board = state.board
         val piece: ChessPiece = board[currentSquare] ?: return
         board[currentSquare] = null
         board[destinationSquare] = piece
+        _stateFlow.value = state
     }
 
     private fun doesMovePutKingInCheck(piece: ChessPiece, destinationSquare: Square): Boolean {
         val currentSquare = findPiecesSquare(piece) ?: return true
-        val copyOfBoard = board.toList().toTypedArray()
+        val copyOfBoard = getState().board.copy()
         copyOfBoard[currentSquare] = null
         copyOfBoard[destinationSquare] = piece
 
@@ -173,8 +169,8 @@ class ChessBoard(): ChessBoardInterface {
     }
 
     private fun isMovementPathUnobstructed(move: Move, piece: ChessPiece, destinationSquare: Square): Boolean {
-        val isSquareOccupied = board[destinationSquare] != null
-        val destinationPiecesColor = board[destinationSquare]?.color
+        val isSquareOccupied = getState().board[destinationSquare] != null
+        val destinationPiecesColor = getState().board[destinationSquare]?.color
 
         if (isSquareOccupied && destinationPiecesColor == piece.color) {
             return false
@@ -185,13 +181,14 @@ class ChessBoard(): ChessBoardInterface {
 
     private fun isDiagonalPawnMoveIntoEmptySquare(move: Move, piece: ChessPiece, destinationSquare: Square): Boolean {
         if (move.isDiagonalPawnMove(piece)) {
-            return board[destinationSquare] == null
+            return getState().board[destinationSquare] == null
         }
         return false
     }
 
     private fun isForwardPawnMoveAndRunsIntoPieces(move: Move, piece: ChessPiece): Boolean {
         val currentSquare = findPiecesSquare(piece) ?: return false
+        val board = getState().board
         if (move.isForwardPawnMove(piece)) {
             val increment = if (piece is WhitePawn) 1 else -1
             val oneSquareAhead: Square? = currentSquare + Point(x = 0, y = increment)
@@ -205,7 +202,7 @@ class ChessBoard(): ChessBoardInterface {
 
     private fun findPiecesSquare(piece: ChessPiece): Square? {
         for (square in Square.allSquares()) {
-            if (board[square] == piece) {
+            if (getState().board[square] == piece) {
                 return square
             }
         }
