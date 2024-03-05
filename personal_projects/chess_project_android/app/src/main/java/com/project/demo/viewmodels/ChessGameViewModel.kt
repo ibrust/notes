@@ -11,7 +11,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.project.demo.ChessAppContainer
 import com.project.demo.ChessApplication
+import com.project.demo.models.ChessBoardState
+import com.project.demo.views.ChessBoardView
 import com.project.demo.views.ChessMovesCellData
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class ChessGameViewModel(
@@ -21,6 +24,8 @@ class ChessGameViewModel(
     private val repository = container.joggingAppRepository
     private val _availableChessMoveSetsLiveData = MutableLiveData<List<ChessMovesCellData>>()
     val availableChessMoveSetsLiveData: LiveData<List<ChessMovesCellData>> = _availableChessMoveSetsLiveData
+    private val _chessBoardStateLiveData = MutableLiveData<ChessBoardView.State>()
+    val chessBoardStateLiveData: LiveData<ChessBoardView.State> = _chessBoardStateLiveData
 
     fun setupListeners() {
         viewModelScope.launch {
@@ -29,6 +34,14 @@ class ChessGameViewModel(
                     title = "${it.movesetId}",
                     subText = "${it.tableName}"
                 )})
+            }
+
+            repository.chessBoardStateFlow.collect() { chessBoardState ->
+                _chessBoardStateLiveData.postValue(ChessBoardView.State(
+                    chessBoard = chessBoardState.board,
+                    fullMoveNumber = chessBoardState.fullMoveNumber,
+                    colorToMove = chessBoardState.colorToMove
+                ))
             }
         }
     }

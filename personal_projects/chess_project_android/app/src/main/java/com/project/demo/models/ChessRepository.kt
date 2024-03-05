@@ -13,7 +13,9 @@ interface ChessRepository: ChessBoardInterface {
 class ChessRepositoryImpl(private val db: ChessMoveSetRelationalDatabase) :
     ChessRepository {
 
-    val chessBoard: ChessBoardInterface = ChessBoard()
+    // TODO: inject a coroutine scope maybe? maybe read about localdatasource designs
+    // and maybe rename the class to ChessBoardLocalDataSource...
+    private val chessBoard: ChessBoardInterface = ChessBoard()
 
     private val chessMovesetsDao: ChessMoveSetsDao
         get() = db.chessMoveSetsDao()

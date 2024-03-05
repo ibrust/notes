@@ -14,6 +14,7 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var cellData: ArrayList<ChessMovesCellData>
     private lateinit var adapter: ChessMoveSetsRecyclerViewAdapter
+    private lateinit var chessBoardView: ChessBoardView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,6 +22,7 @@ class MainActivity : ComponentActivity() {
         setContentView(binding.root)
 
         setupRecyclerView()
+        chessBoardView = binding.chessBoardView
         viewModel.setupListeners()
         setupListeners()
     }
@@ -33,10 +35,13 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun setupListeners() {
-        viewModel.availableChessMoveSetsLiveData.observe(this, Observer {chessMoves ->
+        viewModel.availableChessMoveSetsLiveData.observe(this, Observer { chessMoves ->
             cellData.clear()
             cellData.addAll(chessMoves)
             chessMoves.let { adapter.notifyDataSetChanged() }
+        })
+        viewModel.chessBoardStateLiveData.observe(this, Observer { chessBoardViewState ->
+            chessBoardView.update(chessBoardViewState)
         })
     }
 }

@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintDimensionRatio="1:1"
-        android:id="@+id/chess_board"
+        android:id="@+id/chess_board_view"
         app:layout_constraintBottom_toTopOf="@id/chess_moves_recycler_view"
         app:layout_constraintTop_toTopOf="@id/constraint_layout"
         >
@@ -25,7 +25,7 @@
         android:layout_height="wrap_content"
         android:background="@color/colorAccent"
         android:layout_marginTop="10dp"
-        app:layout_constraintTop_toBottomOf="@id/chess_board"
+        app:layout_constraintTop_toBottomOf="@id/chess_board_view"
         android:id="@+id/chess_moves_recycler_view"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/chess_move_set_card"

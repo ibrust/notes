@@ -11,7 +11,7 @@ interface ChessBoardInterface {
     fun getSquaresOfValidMoves(piecesCurrentSquare: Square): Array<Square>?
 }
 
-// TODO: implement castling, move number tracking / color to move tracking, en passant, end of game condition
+// TODO: implement castling, move number tracking / color to move tracking, en passant, end of game condition, pawn promotion
 // also figure out whether we need a coroutine context in here / other local datasource conventions
 class ChessBoard(): ChessBoardInterface {
     override val chessBoardStateFlow: StateFlow<ChessBoardState>
