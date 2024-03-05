@@ -7,7 +7,7 @@ interface ChessBoardInterface {
     val state: Flow<ChessBoardState>
 
     fun tryMovingPiece(currentSquare: Square, destinationSquare: Square)
-    fun getValidMoves(square: Square): Array<Square>?
+    fun getSquaresOfValidMoves(piecesCurrentSquare: Square): Array<Square>?
 }
 
 data class ChessBoardState(
@@ -88,11 +88,10 @@ class ChessBoard(): ChessBoardInterface {
         board[Square(Row.EIGHT, Column.E)] = King(color = ChessColor.BLACK)
     }
 
-    override fun getValidMoves(square: Square): Array<Square>? {
-        val piece: ChessPiece = board[square] ?: return null
-        // get moves that are on the board / not obstructed by your own piece
-        val squaresOfUnobstructedMoves = getSquaresOfUnobstructedMoves(piece)
+    override fun getSquaresOfValidMoves(piecesCurrentSquare: Square): Array<Square>? {
+        val piece: ChessPiece = board[piecesCurrentSquare] ?: return null
 
+        val squaresOfUnobstructedMoves = getSquaresOfUnobstructedMoves(piece)
         // remove moves that check the king
         for (newSquare in squaresOfUnobstructedMoves) {
             if (doesMovePutKingInCheck(piece, newSquare)) {
@@ -104,7 +103,7 @@ class ChessBoard(): ChessBoardInterface {
     }
 
     override fun tryMovingPiece(currentSquare: Square, destinationSquare: Square) {
-        val validMoves: Array<Square> = getValidMoves(currentSquare) ?: return
+        val validMoves: Array<Square> = getSquaresOfValidMoves(currentSquare) ?: return
         if (validMoves.contains(destinationSquare)) {
             performPieceMovement(currentSquare, destinationSquare)
         }
