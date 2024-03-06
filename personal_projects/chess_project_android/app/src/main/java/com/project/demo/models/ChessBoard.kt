@@ -16,7 +16,7 @@ interface ChessBoardInterface {
     fun didReleaseOnSquare(square: Square)
 }
 
-// TODO: implement castling, move number tracking / color to move tracking, en passant, end of game condition, pawn promotion
+// TODO: implement castling, move number tracking, en passant, end of game condition, pawn promotion
 // also figure out whether we need a coroutine context in here / other local datasource conventions
 // also maybe rename this to ChessBoardModel or ChessBoardLocalDataSource?
 class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {

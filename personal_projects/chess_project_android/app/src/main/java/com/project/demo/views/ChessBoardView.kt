@@ -106,6 +106,7 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
     override fun layout(l: Int, t: Int, r: Int, b: Int) {
         super.layout(l, t, r, b)
 
+        // not sure if these values will always be correct but for now it's working, can revisit if a problem arises
         val viewWidth = this.width.toFloat()
         val viewHeight = this.height.toFloat()
         val squareSize = (min(viewWidth, viewHeight) - 1) / 8
