@@ -125,14 +125,11 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         // - find out if the piece should be grabbed
         //    - depends on game mode, whether square is occupied, color of piece
         //    - doesn't depend on whether there are valid moves
-        // - store information on whether a piece has been grabbed
-        //    - in the release method this information will need to be cleared out as well
 
 
         if (isClickToMoveModeActivated == false) {
             setActiveSquare(square)
         }
-
     }
 
     override fun didReleaseOnSquare(square: Square) {

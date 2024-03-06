@@ -128,6 +128,7 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
         val viewWidth = this.width.toFloat()
         val viewHeight = this.height.toFloat()
         val squareSize = (min(viewWidth, viewHeight) - 1) / 8
+        val movingPointCopy = movingPoint
 
         canvas?.apply {
             for (row in 0..7) {
@@ -147,10 +148,10 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
                 val unwrappedPiece = state.chessBoard[square] ?: continue
                 val piecesBitmap = pieceBitmaps[getChessPieceImageResource(unwrappedPiece)] ?: continue
                 val rect: Rect
-                if (square == state.activeSquare) {
-                    val point = movingPoint ?: continue
+                if (square == state.activeSquare && movingPointCopy != null) {
+                    movingPointCopy ?: continue
                     // TODO: find a way to reuse the point object or something
-                    val topLeftPoint = Point(x = point.x - (squareSize / 2).toInt(), y = point.y - (squareSize / 2).toInt())
+                    val topLeftPoint = Point(x = movingPointCopy.x - (squareSize / 2).toInt(), y = movingPointCopy.y - (squareSize / 2).toInt())
                     rect = makeRect(topLeftPoint, squareSize)
                 } else {
                     rect = makeRect(squareOrigins[square], squareSize)
