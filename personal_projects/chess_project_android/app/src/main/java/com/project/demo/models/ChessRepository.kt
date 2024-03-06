@@ -2,10 +2,12 @@ package com.project.demo.models
 
 import androidx.annotation.WorkerThread
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 interface ChessRepository: ChessBoardInterface {
     val availableChessMoveSets: Flow<List<ChessMoveSetEntity>>
-    override val chessBoardStateFlow: Flow<ChessBoardState>
+    override val chessBoardStateFlow: StateFlow<ChessBoardState>
     override fun tryMovingPiece(currentSquare: Square, destinationSquare: Square)
     override fun getSquaresOfValidMoves(piecesCurrentSquare: Square): Array<Square>?
 }
@@ -22,7 +24,7 @@ class ChessRepositoryImpl(private val db: ChessMoveSetRelationalDatabase) :
 
     override val availableChessMoveSets: Flow<List<ChessMoveSetEntity>> = chessMovesetsDao.getAvailableChessMoveSets()
 
-    override val chessBoardStateFlow: Flow<ChessBoardState> = chessBoard.chessBoardStateFlow
+    override val chessBoardStateFlow: StateFlow<ChessBoardState> = chessBoard.chessBoardStateFlow
 
     override fun tryMovingPiece(currentSquare: Square, destinationSquare: Square) {
         chessBoard.tryMovingPiece(currentSquare, destinationSquare)

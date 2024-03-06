@@ -1,11 +1,11 @@
 package com.project.demo.models
 
 class ChessBoardState(
-    var moveWhiteCastledOn: Int?,
-    var moveBlackCastledOn: Int?,
-    var fullMoveNumber: Int,
-    var colorToMove: ChessColor,
-    var board: Array<ChessPiece?>
+    val moveWhiteCastledOn: Int?,
+    val moveBlackCastledOn: Int?,
+    val fullMoveNumber: Int,
+    val colorToMove: ChessColor,
+    val board: Array<ChessPiece?>
 ) {
     fun copy(): ChessBoardState {
         return ChessBoardState(

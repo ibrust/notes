@@ -35,7 +35,9 @@ class ChessGameViewModel(
                     subText = "${it.tableName}"
                 )})
             }
+        }
 
+        viewModelScope.launch {
             repository.chessBoardStateFlow.collect() { chessBoardState ->
                 val board = chessBoardState.board
                 _chessBoardStateLiveData.postValue(ChessBoardView.State(

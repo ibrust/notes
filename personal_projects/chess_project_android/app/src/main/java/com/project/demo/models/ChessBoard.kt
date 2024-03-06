@@ -3,9 +3,10 @@ package com.project.demo.models
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 interface ChessBoardInterface {
-    val chessBoardStateFlow: Flow<ChessBoardState>
+    val chessBoardStateFlow: StateFlow<ChessBoardState>
 
     fun tryMovingPiece(currentSquare: Square, destinationSquare: Square)
     fun getSquaresOfValidMoves(piecesCurrentSquare: Square): Array<Square>?
@@ -14,8 +15,6 @@ interface ChessBoardInterface {
 // TODO: implement castling, move number tracking / color to move tracking, en passant, end of game condition, pawn promotion
 // also figure out whether we need a coroutine context in here / other local datasource conventions
 class ChessBoard(): ChessBoardInterface {
-    override val chessBoardStateFlow: StateFlow<ChessBoardState>
-        get() = _stateFlow
     private var _stateFlow: MutableStateFlow<ChessBoardState> = MutableStateFlow(ChessBoardState(
         moveWhiteCastledOn = null,
         moveBlackCastledOn = null,
@@ -23,6 +22,7 @@ class ChessBoard(): ChessBoardInterface {
         colorToMove = ChessColor.WHITE,
         board = arrayOfNulls(ChessBoard.totalSquares)
     ))
+    override val chessBoardStateFlow: StateFlow<ChessBoardState> = _stateFlow.asStateFlow()
 
     private fun getState(): ChessBoardState {
         return _stateFlow.value
@@ -45,10 +45,7 @@ class ChessBoard(): ChessBoardInterface {
     }
 
     private fun setupBoard() {
-        val state = getState().copy()
-        val board = state.board
-
-        state.fullMoveNumber = 1
+        val board = getState().copy().board
         for (square in Square.allSquares()) {
             board[square] = null
         }
@@ -80,7 +77,13 @@ class ChessBoard(): ChessBoardInterface {
         board[Square(Row.EIGHT, Column.D)] = Queen(color = ChessColor.BLACK)
         board[Square(Row.EIGHT, Column.E)] = King(color = ChessColor.BLACK)
 
-        _stateFlow.value = state
+        _stateFlow.value = ChessBoardState(
+            moveWhiteCastledOn = null,
+            moveBlackCastledOn = null,
+            fullMoveNumber = 1,
+            colorToMove = ChessColor.WHITE,
+            board = board
+        )
     }
 
     override fun getSquaresOfValidMoves(piecesCurrentSquare: Square): Array<Square>? {
