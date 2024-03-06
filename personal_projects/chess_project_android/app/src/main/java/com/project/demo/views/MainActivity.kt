@@ -5,16 +5,14 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.project.demo.databinding.ActivityMainBinding
 import com.project.demo.models.Square
 import com.project.demo.viewmodels.ChessGameViewModel
 import java.lang.ref.WeakReference
 
 
-interface MainActivityDelegate {
-    fun didTouchDownOnSquare(square: Square)
-    fun didReleaseOnSquare(square: Square)
-}
+interface MainActivityDelegate: ChessBoardViewDelegate {}
 
 class MainActivity : ComponentActivity(), ChessBoardViewDelegate {
 
@@ -56,10 +54,10 @@ class MainActivity : ComponentActivity(), ChessBoardViewDelegate {
     }
 
     override fun didTouchDownOnSquare(square: Square) {
-        Log.d("ACTIVITY", "didTouchDownOnSquare")
+        viewModel.didTouchDownOnSquare(square)
     }
 
     override fun didReleaseOnSquare(square: Square) {
-        Log.d("ACTIVITY", "didReleaseOnSquare")
+        viewModel.didReleaseOnSquare(square)
     }
 }

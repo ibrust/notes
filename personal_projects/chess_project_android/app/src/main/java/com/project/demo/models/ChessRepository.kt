@@ -7,9 +7,6 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface ChessRepository: ChessBoardInterface {
     val availableChessMoveSets: Flow<List<ChessMoveSetEntity>>
-    override val chessBoardStateFlow: StateFlow<ChessBoardState>
-    override fun tryMovingPiece(currentSquare: Square, destinationSquare: Square)
-    override fun getSquaresOfValidMoves(piecesCurrentSquare: Square): Array<Square>?
 }
 
 class ChessRepositoryImpl(private val db: ChessMoveSetRelationalDatabase) :
@@ -25,6 +22,14 @@ class ChessRepositoryImpl(private val db: ChessMoveSetRelationalDatabase) :
     override val availableChessMoveSets: Flow<List<ChessMoveSetEntity>> = chessMovesetsDao.getAvailableChessMoveSets()
 
     override val chessBoardStateFlow: StateFlow<ChessBoardState> = chessBoard.chessBoardStateFlow
+
+    override fun didTouchDownOnSquare(square: Square) {
+        chessBoard.didTouchDownOnSquare(square)
+    }
+
+    override fun didReleaseOnSquare(square: Square) {
+        chessBoard.didReleaseOnSquare(square)
+    }
 
     override fun tryMovingPiece(currentSquare: Square, destinationSquare: Square) {
         chessBoard.tryMovingPiece(currentSquare, destinationSquare)

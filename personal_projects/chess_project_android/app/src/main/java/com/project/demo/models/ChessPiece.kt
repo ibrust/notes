@@ -11,6 +11,13 @@ sealed class ChessPiece() {
         return pieceId.hashCode() * 31 + color.hashCode() * 17 + moveSet.hashCode() * 11
     }
 
+    fun isPieceGrabbable(): Boolean {
+        return when (GameMode.currentGameMode) {
+            GameMode.EXPLORATION -> true
+            GameMode.COMPETITIVE -> return ChessColor.playerColor == color
+        }
+    }
+
     companion object {
         private var id: Int = 0
         fun getPieceId(): Int {

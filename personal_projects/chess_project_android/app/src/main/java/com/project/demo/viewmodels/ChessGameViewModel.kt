@@ -1,5 +1,6 @@
 package com.project.demo.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
@@ -12,15 +13,17 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import com.project.demo.ChessAppContainer
 import com.project.demo.ChessApplication
 import com.project.demo.models.ChessBoardState
+import com.project.demo.models.Square
 import com.project.demo.views.ChessBoardView
 import com.project.demo.views.ChessMovesCellData
+import com.project.demo.views.MainActivityDelegate
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class ChessGameViewModel(
     private val container: ChessAppContainer,
     private val savedStateHandle: SavedStateHandle
-) : ViewModel() {
+) : ViewModel(), MainActivityDelegate {
     private val repository = container.joggingAppRepository
     private val _availableChessMoveSetsLiveData = MutableLiveData<List<ChessMovesCellData>>()
     val availableChessMoveSetsLiveData: LiveData<List<ChessMovesCellData>> = _availableChessMoveSetsLiveData
@@ -39,7 +42,6 @@ class ChessGameViewModel(
 
         viewModelScope.launch {
             repository.chessBoardStateFlow.collect() { chessBoardState ->
-                val board = chessBoardState.board
                 _chessBoardStateLiveData.postValue(ChessBoardView.State(
                     chessBoard = chessBoardState.board,
                     fullMoveNumber = chessBoardState.fullMoveNumber,
@@ -47,6 +49,14 @@ class ChessGameViewModel(
                 ))
             }
         }
+    }
+
+    override fun didTouchDownOnSquare(square: Square) {
+        repository.didTouchDownOnSquare(square)
+    }
+
+    override fun didReleaseOnSquare(square: Square) {
+        repository.didReleaseOnSquare(square)
     }
 
     companion object {

@@ -9,10 +9,15 @@ interface ChessBoardInterface {
 
     fun tryMovingPiece(currentSquare: Square, destinationSquare: Square)
     fun getSquaresOfValidMoves(piecesCurrentSquare: Square): Array<Square>?
+
+    fun didTouchDownOnSquare(square: Square)
+
+    fun didReleaseOnSquare(square: Square)
 }
 
 // TODO: implement castling, move number tracking / color to move tracking, en passant, end of game condition, pawn promotion
 // also figure out whether we need a coroutine context in here / other local datasource conventions
+// also maybe rename this to ChessBoardModel or ChessBoardLocalDataSource?
 class ChessBoard(): ChessBoardInterface {
     private var _stateFlow: MutableStateFlow<ChessBoardState> = MutableStateFlow(ChessBoardState(
         moveWhiteCastledOn = null,
@@ -104,6 +109,26 @@ class ChessBoard(): ChessBoardInterface {
         if (validMoves.contains(destinationSquare)) {
             performPieceMovement(currentSquare, destinationSquare)
         }
+    }
+
+    override fun didTouchDownOnSquare(square: Square) {
+        // things to do in this method:
+        // - find out if the piece should be grabbed
+        //    - depends on game mode, whether square is occupied, color of piece
+        //    - doesn't depend on whether there are valid moves
+        // - store information on whether a piece has been grabbed
+        //    - in the release method this information will need to be cleared out as well
+        // - return a boolean indicating if the piece should be grabbed
+        //    - is there a better way to do this?
+        //    - could the chess piece itself contain this information, for example?
+        //    - remember the piece is grabbable all game, it just may not be movable
+        //    - could I ever encounter a situation where I've grabbed a piece in the view but here in the model I'm not grabbing it?
+        //       - if the piece has data indicating whether it's grabbable this shouldn't happen...
+        //    - actually I can just publish this data
+    }
+
+    override fun didReleaseOnSquare(square: Square) {
+
     }
 
     private fun performPieceMovement(currentSquare: Square, destinationSquare: Square) {
