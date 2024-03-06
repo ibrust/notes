@@ -117,15 +117,22 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         val piece: ChessPiece = board[currentSquare] ?: return
         board[currentSquare] = null
         board[destinationSquare] = piece
+        state.colorToMove = state.colorToMove.otherColor()
         _stateFlow.value = state
     }
 
     override fun didTouchDownOnSquare(square: Square) {
-        // things to do in this method:
-        // - find out if the piece should be grabbed
-        //    - depends on game mode, whether square is occupied, color of piece
-        //    - doesn't depend on whether there are valid moves
+        val board = getState().board
+        val piece = board[square] ?: return
 
+        if (GameMode.currentGameMode == GameMode.COMPETITIVE
+                    && piece.color != ChessColor.playerColor
+                    && piece.color != null) {
+            return
+        }
+        if (piece.color != _stateFlow.value.colorToMove) {
+            return
+        }
 
         if (isClickToMoveModeActivated == false) {
             setActiveSquare(square)
@@ -264,7 +271,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         val moveWhiteCastledOn: Int? = null,
         val moveBlackCastledOn: Int? = null,
         val fullMoveNumber: Int = 1,
-        val colorToMove: ChessColor = ChessColor.WHITE,
+        var colorToMove: ChessColor = ChessColor.WHITE,
         val board: Array<ChessPiece?> = arrayOfNulls(size = ChessBoard.totalSquares),
         var activatedSquare: Square? = null
     ) {

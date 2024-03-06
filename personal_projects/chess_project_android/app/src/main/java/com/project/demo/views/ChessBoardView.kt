@@ -128,7 +128,7 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
         val viewWidth = this.width.toFloat()
         val viewHeight = this.height.toFloat()
         val squareSize = (min(viewWidth, viewHeight) - 1) / 8
-        val movingPointCopy = movingPoint
+        val movingPointCopy = movingPoint       // copying prevents screen tearing, not entirely sure why, value may be changing while drawing
 
         canvas?.apply {
             for (row in 0..7) {
@@ -147,16 +147,24 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
             for (square in Square.allSquares()) {
                 val unwrappedPiece = state.chessBoard[square] ?: continue
                 val piecesBitmap = pieceBitmaps[getChessPieceImageResource(unwrappedPiece)] ?: continue
-                val rect: Rect
+
+                val movingPointCopy = movingPoint       // copying prevents screen tearing, not entirely sure why, value may be changing while drawing
+                if (square != state.activeSquare || movingPointCopy == null) {
+                    val rect: Rect = makeRect(squareOrigins[square], squareSize)
+                    canvas.drawBitmap(piecesBitmap, null, rect, paint)
+                }
+            }
+            for (square in Square.allSquares()) {
+                // render the moving piece last so it shows up on top of other pieces
                 if (square == state.activeSquare && movingPointCopy != null) {
                     movingPointCopy ?: continue
+                    val unwrappedPiece = state.chessBoard[square] ?: continue
+                    val piecesBitmap = pieceBitmaps[getChessPieceImageResource(unwrappedPiece)] ?: continue
                     // TODO: find a way to reuse the point object or something
                     val topLeftPoint = Point(x = movingPointCopy.x - (squareSize / 2).toInt(), y = movingPointCopy.y - (squareSize / 2).toInt())
-                    rect = makeRect(topLeftPoint, squareSize)
-                } else {
-                    rect = makeRect(squareOrigins[square], squareSize)
+                    val rect: Rect = makeRect(topLeftPoint, squareSize)
+                    canvas.drawBitmap(piecesBitmap, null, rect, paint)
                 }
-                canvas.drawBitmap(piecesBitmap, null, rect, paint)
             }
         }
     }
