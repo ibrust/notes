@@ -1,8 +1,11 @@
 package com.project.demo.models
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 interface ChessBoardInterface {
     val chessBoardStateFlow: StateFlow<ChessBoard.State>
@@ -15,7 +18,7 @@ interface ChessBoardInterface {
 // TODO: implement castling, move number tracking / color to move tracking, en passant, end of game condition, pawn promotion
 // also figure out whether we need a coroutine context in here / other local datasource conventions
 // also maybe rename this to ChessBoardModel or ChessBoardLocalDataSource?
-class ChessBoard(): ChessBoardInterface {
+class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
     private var _stateFlow: MutableStateFlow<ChessBoard.State> = MutableStateFlow(ChessBoard.State())
     override val chessBoardStateFlow: StateFlow<ChessBoard.State> = _stateFlow.asStateFlow()
 
@@ -84,25 +87,38 @@ class ChessBoard(): ChessBoardInterface {
         )
     }
 
+    suspend fun tryMovingPiece(currentSquare: Square, destinationSquare: Square) {
+        val validMoves: Array<Square> = getSquaresOfValidMoves(currentSquare) ?: return
+        if (validMoves.contains(destinationSquare)) {
+            performPieceMovement(currentSquare, destinationSquare)
+        }
+    }
+
     fun getSquaresOfValidMoves(piecesCurrentSquare: Square): Array<Square>? {
         val piece: ChessPiece = getState().board[piecesCurrentSquare] ?: return null
 
         val squaresOfUnobstructedMoves = getSquaresOfUnobstructedMoves(piece)
         // remove moves that check the king
+        var squareToRemove: Square? = null
         for (newSquare in squaresOfUnobstructedMoves) {
             if (doesMovePutKingInCheck(piece, newSquare)) {
-                squaresOfUnobstructedMoves.remove(newSquare)
+                squareToRemove = newSquare
             }
+        }
+        if (squareToRemove != null) {
+            squaresOfUnobstructedMoves.remove(squareToRemove)
         }
 
         return squaresOfUnobstructedMoves.toTypedArray()
     }
 
-    fun tryMovingPiece(currentSquare: Square, destinationSquare: Square) {
-        val validMoves: Array<Square> = getSquaresOfValidMoves(currentSquare) ?: return
-        if (validMoves.contains(destinationSquare)) {
-            performPieceMovement(currentSquare, destinationSquare)
-        }
+    private fun performPieceMovement(currentSquare: Square, destinationSquare: Square) {
+        val state = getState().copy()
+        val board = state.board
+        val piece: ChessPiece = board[currentSquare] ?: return
+        board[currentSquare] = null
+        board[destinationSquare] = piece
+        _stateFlow.value = state
     }
 
     override fun didTouchDownOnSquare(square: Square) {
@@ -121,15 +137,18 @@ class ChessBoard(): ChessBoardInterface {
     }
 
     override fun didReleaseOnSquare(square: Square) {
-        val activatedSquare: Square = _stateFlow.value.activatedSquare ?: return
-        if (square != activatedSquare) {
-            tryMovingPiece(activatedSquare, square)
-            setActiveSquare(null)
-            isClickToMoveModeActivated = false
-        } else {
-            isClickToMoveModeActivated = !isClickToMoveModeActivated
-            if (isClickToMoveModeActivated == false) {
+        scope.launch {
+            val activatedSquare: Square = _stateFlow.value.activatedSquare ?: return@launch
+            if (square != activatedSquare) {
+                tryMovingPiece(activatedSquare, square)
+
                 setActiveSquare(null)
+                isClickToMoveModeActivated = false
+            } else {
+                isClickToMoveModeActivated = !isClickToMoveModeActivated
+                if (isClickToMoveModeActivated == false) {
+                    setActiveSquare(null)
+                }
             }
         }
     }
@@ -138,15 +157,6 @@ class ChessBoard(): ChessBoardInterface {
         val copyOfState = _stateFlow.value.copy()
         copyOfState.activatedSquare = square
         _stateFlow.value = copyOfState
-    }
-
-    private fun performPieceMovement(currentSquare: Square, destinationSquare: Square) {
-        val state = getState().copy()
-        val board = state.board
-        val piece: ChessPiece = board[currentSquare] ?: return
-        board[currentSquare] = null
-        board[destinationSquare] = piece
-        _stateFlow.value = state
     }
 
     private fun doesMovePutKingInCheck(piece: ChessPiece, destinationSquare: Square): Boolean {
@@ -159,8 +169,10 @@ class ChessBoard(): ChessBoardInterface {
         for (square in Square.allSquares()) {
             if (copyOfBoard[square] != null && copyOfBoard[square]?.color == piece.color && copyOfBoard[square] is King) {
                 squareOfPiecesKing = square
+                break
             }
         }
+        squareOfPiecesKing ?: return true
 
         // scan the board for checks from any enemy pieces
         for (square in Square.allSquares()) {

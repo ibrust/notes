@@ -32,7 +32,7 @@ class ChessGameViewModel(
             repository.availableChessMoveSets.collect() { chessMoveSets ->
                 _availableChessMoveSetsLiveData.postValue(chessMoveSets.map { ChessMovesCellData(
                     title = "${it.movesetId}",
-                    subText = "${it.tableName}"
+                    subText = it.tableName
                 )})
             }
         }

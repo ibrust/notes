@@ -11,7 +11,8 @@ class ChessAppContainer(context: Context, scope: CoroutineScope) {
 
     init {
         joggingAppRepository = ChessRepositoryImpl(
-            ChessMoveSetRelationalDatabaseImpl.getDatabase(context = context, scope = scope)
+            ChessMoveSetRelationalDatabaseImpl.getDatabase(context = context, scope = scope),
+            scope = scope
         )
     }
 }
