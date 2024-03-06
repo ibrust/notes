@@ -42,7 +42,8 @@ class ChessGameViewModel(
                 _chessBoardStateLiveData.postValue(ChessBoardView.State(
                     chessBoard = chessBoardState.board,
                     fullMoveNumber = chessBoardState.fullMoveNumber,
-                    colorToMove = chessBoardState.colorToMove
+                    colorToMove = chessBoardState.colorToMove,
+                    activeSquare = chessBoardState.activatedSquare
                 ))
             }
         }
