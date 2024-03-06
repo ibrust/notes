@@ -42,6 +42,7 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
                 ))
             }
         }
+
         this.invalidate()
     }
 
@@ -92,13 +93,13 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
 
     fun getChessPieceImageResource(piece: ChessPiece): Int {
         return when (piece) {
-            is King -> if (piece.color == ChessColor.WHITE) R.drawable.whiteking else R.drawable.blackking
-            is Queen -> if (piece.color == ChessColor.WHITE) R.drawable.whitequeen else R.drawable.blackqueen
-            is Bishop -> if (piece.color == ChessColor.WHITE) R.drawable.whitebishop else R.drawable.blackbishop
-            is Knight -> if (piece.color == ChessColor.WHITE) R.drawable.whiteknight else R.drawable.blackknight
-            is Rook -> if (piece.color == ChessColor.WHITE) R.drawable.whiterook else R.drawable.blackrook
-            is WhitePawn -> R.drawable.whitepawn
-            is BlackPawn -> R.drawable.blackpawn
+            is King -> if (piece.color == ChessColor.WHITE) R.drawable.whitekingresized else R.drawable.blackkingresized
+            is Queen -> if (piece.color == ChessColor.WHITE) R.drawable.whitequeenresized else R.drawable.blackqueenresized
+            is Bishop -> if (piece.color == ChessColor.WHITE) R.drawable.whitebishopresized else R.drawable.blackbishopresized
+            is Knight -> if (piece.color == ChessColor.WHITE) R.drawable.whiteknightresized else R.drawable.blackknightresized
+            is Rook -> if (piece.color == ChessColor.WHITE) R.drawable.whiterookresized else R.drawable.blackrookresized
+            is WhitePawn -> R.drawable.whitepawnresized
+            is BlackPawn -> R.drawable.blackpawnresized
         }
     }
 

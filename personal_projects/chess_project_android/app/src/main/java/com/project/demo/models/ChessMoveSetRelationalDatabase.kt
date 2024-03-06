@@ -45,7 +45,7 @@ public abstract class ChessMoveSetRelationalDatabaseImpl : RoomDatabase(),
         private val scope: CoroutineScope
     ) : RoomDatabase.Callback() {
 
-        // called when DB is first built, but after the DB tables are setup
+        // called after the DB tables are setup
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
             dbInstance?.let { database ->
