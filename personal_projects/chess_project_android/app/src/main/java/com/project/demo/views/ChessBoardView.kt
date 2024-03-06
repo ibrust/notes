@@ -82,6 +82,7 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
             MotionEvent.ACTION_DOWN -> {
                 val touchedSquare = getSquareForTouchEvent(event.x.toInt(), event.y.toInt()) ?: return false
                 delegate?.get()?.didTouchDownOnSquare(touchedSquare)
+                movingPoint = null
 
                 Log.d(TAG, "${event.x}:${event.y}")
             }
@@ -94,7 +95,6 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
             MotionEvent.ACTION_UP -> {
                 val touchedSquare = getSquareForTouchEvent(event.x.toInt(), event.y.toInt()) ?: return false
                 delegate?.get()?.didReleaseOnSquare(touchedSquare)
-                movingPoint = null
 
                 Log.d(TAG, "${event.x}:${event.y}")
             }
@@ -154,17 +154,15 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
                     canvas.drawBitmap(piecesBitmap, null, rect, paint)
                 }
             }
-            for (square in Square.allSquares()) {
-                // render the moving piece last so it shows up on top of other pieces
-                if (square == state.activeSquare && movingPointCopy != null) {
-                    movingPointCopy ?: continue
-                    val unwrappedPiece = state.chessBoard[square] ?: continue
-                    val piecesBitmap = pieceBitmaps[getChessPieceImageResource(unwrappedPiece)] ?: continue
-                    // TODO: find a way to reuse the point object or something
-                    val topLeftPoint = Point(x = movingPointCopy.x - (squareSize / 2).toInt(), y = movingPointCopy.y - (squareSize / 2).toInt())
-                    val rect: Rect = makeRect(topLeftPoint, squareSize)
-                    canvas.drawBitmap(piecesBitmap, null, rect, paint)
-                }
+            // render the moving piece last so it shows up on top of other pieces
+            if (movingPointCopy != null) {
+                val activeSquare = state.activeSquare ?: return
+                val unwrappedPiece = state.chessBoard[activeSquare] ?: return
+                val piecesBitmap = pieceBitmaps[getChessPieceImageResource(unwrappedPiece)] ?: return
+                // TODO: find a way to reuse the point object or something
+                val topLeftPoint = Point(x = movingPointCopy.x - (squareSize / 2).toInt(), y = movingPointCopy.y - (squareSize / 2).toInt())
+                val rect: Rect = makeRect(topLeftPoint, squareSize)
+                canvas.drawBitmap(piecesBitmap, null, rect, paint)
             }
         }
     }
