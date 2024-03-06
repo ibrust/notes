@@ -5,10 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 interface ChessBoardInterface {
-    val chessBoardStateFlow: StateFlow<ChessBoardState>
-
-    fun tryMovingPiece(currentSquare: Square, destinationSquare: Square)
-    fun getSquaresOfValidMoves(piecesCurrentSquare: Square): Array<Square>?
+    val chessBoardStateFlow: StateFlow<ChessBoard.State>
 
     fun didTouchDownOnSquare(square: Square)
 
@@ -19,16 +16,12 @@ interface ChessBoardInterface {
 // also figure out whether we need a coroutine context in here / other local datasource conventions
 // also maybe rename this to ChessBoardModel or ChessBoardLocalDataSource?
 class ChessBoard(): ChessBoardInterface {
-    private var _stateFlow: MutableStateFlow<ChessBoardState> = MutableStateFlow(ChessBoardState(
-        moveWhiteCastledOn = null,
-        moveBlackCastledOn = null,
-        fullMoveNumber = 0,
-        colorToMove = ChessColor.WHITE,
-        board = arrayOfNulls(ChessBoard.totalSquares)
-    ))
-    override val chessBoardStateFlow: StateFlow<ChessBoardState> = _stateFlow.asStateFlow()
+    private var _stateFlow: MutableStateFlow<ChessBoard.State> = MutableStateFlow(ChessBoard.State())
+    override val chessBoardStateFlow: StateFlow<ChessBoard.State> = _stateFlow.asStateFlow()
 
-    private fun getState(): ChessBoardState {
+    private var isClickToMoveModeActivated: Boolean = false
+
+    private fun getState(): ChessBoard.State {
         return _stateFlow.value
     }
 
@@ -81,16 +74,17 @@ class ChessBoard(): ChessBoardInterface {
         board[Square(Row.EIGHT, Column.D)] = Queen(color = ChessColor.BLACK)
         board[Square(Row.EIGHT, Column.E)] = King(color = ChessColor.BLACK)
 
-        _stateFlow.value = ChessBoardState(
+        _stateFlow.value = ChessBoard.State(
             moveWhiteCastledOn = null,
             moveBlackCastledOn = null,
             fullMoveNumber = 1,
             colorToMove = ChessColor.WHITE,
-            board = board
+            board = board,
+            activatedSquare = null
         )
     }
 
-    override fun getSquaresOfValidMoves(piecesCurrentSquare: Square): Array<Square>? {
+    fun getSquaresOfValidMoves(piecesCurrentSquare: Square): Array<Square>? {
         val piece: ChessPiece = getState().board[piecesCurrentSquare] ?: return null
 
         val squaresOfUnobstructedMoves = getSquaresOfUnobstructedMoves(piece)
@@ -104,7 +98,7 @@ class ChessBoard(): ChessBoardInterface {
         return squaresOfUnobstructedMoves.toTypedArray()
     }
 
-    override fun tryMovingPiece(currentSquare: Square, destinationSquare: Square) {
+    fun tryMovingPiece(currentSquare: Square, destinationSquare: Square) {
         val validMoves: Array<Square> = getSquaresOfValidMoves(currentSquare) ?: return
         if (validMoves.contains(destinationSquare)) {
             performPieceMovement(currentSquare, destinationSquare)
@@ -118,17 +112,32 @@ class ChessBoard(): ChessBoardInterface {
         //    - doesn't depend on whether there are valid moves
         // - store information on whether a piece has been grabbed
         //    - in the release method this information will need to be cleared out as well
-        // - return a boolean indicating if the piece should be grabbed
-        //    - is there a better way to do this?
-        //    - could the chess piece itself contain this information, for example?
-        //    - remember the piece is grabbable all game, it just may not be movable
-        //    - could I ever encounter a situation where I've grabbed a piece in the view but here in the model I'm not grabbing it?
-        //       - if the piece has data indicating whether it's grabbable this shouldn't happen...
-        //    - actually I can just publish this data
+
+
+        if (isClickToMoveModeActivated == false) {
+            setActiveSquare(square)
+        }
+
     }
 
     override fun didReleaseOnSquare(square: Square) {
+        val activatedSquare: Square = _stateFlow.value.activatedSquare ?: return
+        if (square != activatedSquare) {
+            tryMovingPiece(activatedSquare, square)
+            setActiveSquare(null)
+            isClickToMoveModeActivated = false
+        } else {
+            isClickToMoveModeActivated = !isClickToMoveModeActivated
+            if (isClickToMoveModeActivated == false) {
+                setActiveSquare(null)
+            }
+        }
+    }
 
+    private fun setActiveSquare(square: Square?) {
+        val copyOfState = _stateFlow.value.copy()
+        copyOfState.activatedSquare = square
+        _stateFlow.value = copyOfState
     }
 
     private fun performPieceMovement(currentSquare: Square, destinationSquare: Square) {
@@ -242,6 +251,47 @@ class ChessBoard(): ChessBoardInterface {
         val height = 8
         val width = 8
         val totalSquares = height * width
+    }
+
+    class State(
+        val moveWhiteCastledOn: Int? = null,
+        val moveBlackCastledOn: Int? = null,
+        val fullMoveNumber: Int = 1,
+        val colorToMove: ChessColor = ChessColor.WHITE,
+        val board: Array<ChessPiece?> = arrayOfNulls(size = ChessBoard.totalSquares),
+        var activatedSquare: Square? = null
+    ) {
+        fun copy(): State {
+            return State(
+                moveWhiteCastledOn = this.moveWhiteCastledOn,
+                moveBlackCastledOn = this.moveBlackCastledOn,
+                fullMoveNumber = this.fullMoveNumber,
+                colorToMove = this.colorToMove,
+                board = this.board.copy(),
+                activatedSquare = this.activatedSquare
+            )
+        }
+
+        override fun toString(): String {
+            return "${moveWhiteCastledOn}, ${moveBlackCastledOn}, ${fullMoveNumber}, ${colorToMove}, ${board}, ${activatedSquare}"
+        }
+
+        override fun hashCode(): Int {
+            val sum1 = moveWhiteCastledOn.hashCode() * 31 + moveBlackCastledOn.hashCode() * 17
+            val sum2 = fullMoveNumber.hashCode() * 37 + colorToMove.hashCode() * 29
+            val sum3 = board.hashCode() * 11 + activatedSquare.hashCode() * 13
+            return sum1 + sum2 + sum3
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (other == null || other !is State) {
+                return false
+            }
+            val comp1 = moveWhiteCastledOn == other.moveWhiteCastledOn && moveBlackCastledOn == other.moveBlackCastledOn
+            val comp2 = fullMoveNumber == other.fullMoveNumber && colorToMove == other.colorToMove
+            val comp3 = board == other.board && activatedSquare == other.activatedSquare
+            return comp1 && comp2 && comp3
+        }
     }
 }
 

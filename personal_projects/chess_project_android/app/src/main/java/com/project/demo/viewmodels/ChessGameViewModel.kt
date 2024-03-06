@@ -1,6 +1,5 @@
 package com.project.demo.viewmodels
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
@@ -12,12 +11,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.project.demo.ChessAppContainer
 import com.project.demo.ChessApplication
-import com.project.demo.models.ChessBoardState
 import com.project.demo.models.Square
 import com.project.demo.views.ChessBoardView
 import com.project.demo.views.ChessMovesCellData
 import com.project.demo.views.MainActivityDelegate
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class ChessGameViewModel(

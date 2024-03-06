@@ -21,7 +21,7 @@ class ChessRepositoryImpl(private val db: ChessMoveSetRelationalDatabase) :
 
     override val availableChessMoveSets: Flow<List<ChessMoveSetEntity>> = chessMovesetsDao.getAvailableChessMoveSets()
 
-    override val chessBoardStateFlow: StateFlow<ChessBoardState> = chessBoard.chessBoardStateFlow
+    override val chessBoardStateFlow: StateFlow<ChessBoard.State> = chessBoard.chessBoardStateFlow
 
     override fun didTouchDownOnSquare(square: Square) {
         chessBoard.didTouchDownOnSquare(square)
@@ -29,13 +29,6 @@ class ChessRepositoryImpl(private val db: ChessMoveSetRelationalDatabase) :
 
     override fun didReleaseOnSquare(square: Square) {
         chessBoard.didReleaseOnSquare(square)
-    }
-
-    override fun tryMovingPiece(currentSquare: Square, destinationSquare: Square) {
-        chessBoard.tryMovingPiece(currentSquare, destinationSquare)
-    }
-    override fun getSquaresOfValidMoves(piecesCurrentSquare: Square): Array<Square>? {
-        return chessBoard.getSquaresOfValidMoves(piecesCurrentSquare)
     }
 
     @WorkerThread

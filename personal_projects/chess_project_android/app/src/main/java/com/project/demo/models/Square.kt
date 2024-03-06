@@ -8,6 +8,12 @@ class Square(val row: Row, val column: Column) {
         return "${column}${row}"
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (other == null || other !is Square)
+            return false
+        return row == other.row && column == other.column
+    }
+
     operator fun plus(point: Point): Square? {
         val newRow = this.row + point.y
         val newColumn = this.column + point.x
