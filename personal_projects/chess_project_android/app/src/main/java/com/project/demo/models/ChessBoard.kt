@@ -203,7 +203,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
                 @OptIn(ExperimentalStdlibApi::class)
                 inner@ for (distance in 1..<ChessBoard.width) {
                     val destinationSquare: Square = move.calculateDestinationSquare(piecesCurrentSquare, distance) ?: continue
-                    if (!isMovementPathUnobstructed(move, piece, destinationSquare, board)) {
+                    if (board[destinationSquare] != null) {
                         val destinationPiecesColor = board[destinationSquare]?.color
                         if (destinationPiecesColor != piece.color) {
                             validSquares.add(destinationSquare)
@@ -214,20 +214,17 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
                 }
             } else {
                 val destinationSquare: Square = move.calculateDestinationSquare(piecesCurrentSquare, null) ?: continue
-                if (isMovementPathUnobstructed(move, piece, destinationSquare, board)) {
+                if (board[destinationSquare] == null && !isDiagonalPawnMoveIntoEmptySquare(move, piece, destinationSquare)) {
                     validSquares.add(destinationSquare)
+                } else if (board[destinationSquare] != null) {
+                    val destinationPiecesColor = board[destinationSquare]?.color
+                    if (destinationPiecesColor != piece.color && !isForwardPawnMoveAndRunsIntoPieces(move, piece)) {
+                        validSquares.add(destinationSquare)
+                    }
                 }
             }
         }
         return validSquares
-    }
-
-    private fun isMovementPathUnobstructed(move: Move, piece: ChessPiece, destinationSquare: Square, board: Array<ChessPiece?>): Boolean {
-        if (board[destinationSquare] != null) {
-            return false
-        }
-        return !(isForwardPawnMoveAndRunsIntoPieces(move, piece)
-                || isDiagonalPawnMoveIntoEmptySquare(move, piece, destinationSquare))
     }
 
     private fun isDiagonalPawnMoveIntoEmptySquare(move: Move, piece: ChessPiece, destinationSquare: Square): Boolean {
