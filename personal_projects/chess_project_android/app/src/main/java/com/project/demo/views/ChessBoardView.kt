@@ -7,14 +7,24 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
+import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.project.demo.R
 import com.project.demo.models.*
+import java.lang.ref.WeakReference
 import kotlin.math.min
 
 
+interface ChessBoardViewDelegate {
+    fun didTouchDownOnSquare(square: Square)
+    fun didReleaseOnSquare(square: Square)
+}
+
 class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
+
+    var delegate: WeakReference<ChessBoardViewDelegate>? = null
 
     var squareOrigins: ArrayList<Point> = arrayListOf()
     var paint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -29,6 +39,8 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
 
     fun update(state: State) {
         this.state = state
+
+        // TODO: - bitmaps for each unique piece not needed, refactor
         // create bitmaps for any newly added pieces
         for (piece in state.chessBoard) {
             val unwrappedPiece: ChessPiece = piece ?: continue
@@ -46,7 +58,49 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
         this.invalidate()
     }
 
+    // TODO: don't have duplicate bitmaps here / remove the pieceId since it isn't needed
     val pieceBitmaps: ArrayList<ChessPieceBitMap> = arrayListOf()
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        event ?: return false
+
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                val touchedSquare = getSquareForTouchEvent(event.x.toInt(), event.y.toInt()) ?: return false
+                delegate?.get()?.didTouchDownOnSquare(touchedSquare)
+            }
+            MotionEvent.ACTION_MOVE -> {
+                Log.d(TAG, "${event.x}:${event.y}")
+            }
+            MotionEvent.ACTION_UP -> {
+                val touchedSquare = getSquareForTouchEvent(event.x.toInt(), event.y.toInt()) ?: return false
+                delegate?.get()?.didReleaseOnSquare(touchedSquare)
+            }
+
+        }
+        return true
+    }
+
+    fun getSquareForTouchEvent(x: Int, y: Int): Square? {
+        if (x < 0 || x > width || y < 0 || y > height) {
+            return null
+        }
+        var targetRow: Row = Row.ONE
+        for (row in Row.values().reversed()) {
+            if (squareOrigins[Square(row, Column.A)].y > y) {
+                break
+            }
+            targetRow = row
+        }
+        var targetColumn: Column = Column.A
+        for (column in Column.values()) {
+            if (squareOrigins[Square(Row.ONE, column)].x > x) {
+                break
+            }
+            targetColumn = column
+        }
+        return Square(targetRow, targetColumn)
+    }
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
@@ -58,6 +112,7 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
         val viewHeight = this.height.toFloat()
         val squareSize = (min(viewWidth, viewHeight) - 1) / 8
 
+        // TODO: - I'm not sure how often onDraw() fires, but if it's too often we may need to move this somewhere else
         squareOrigins.clear()
         for (row in 0..7) {
             for (column in 0..7) {
@@ -105,6 +160,10 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
 
     private fun makeRect(origin: Point, squareSize: Float): Rect {
         return Rect(origin.x, origin.y, origin.x + squareSize.toInt(), origin.y + squareSize.toInt())
+    }
+
+    companion object {
+        val TAG: String = "ChessBoardView"
     }
 }
 

@@ -5,7 +5,8 @@ enum class Column(val number: Int) {
     E(5), F(6), G(7), H(8);
 
     override fun toString(): String {
-        return this.number.toString()
+        val characters: Array<String> = arrayOf("a", "b", "c", "d", "e", "f", "g", "h")
+        return characters[this.number - 1]
     }
 
     fun squares(): ArrayList<Square> {

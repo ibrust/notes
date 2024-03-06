@@ -1,13 +1,22 @@
 package com.project.demo.views
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.lifecycle.Observer
 import com.project.demo.databinding.ActivityMainBinding
+import com.project.demo.models.Square
 import com.project.demo.viewmodels.ChessGameViewModel
+import java.lang.ref.WeakReference
 
-class MainActivity : ComponentActivity() {
+
+interface MainActivityDelegate {
+    fun didTouchDownOnSquare(square: Square)
+    fun didReleaseOnSquare(square: Square)
+}
+
+class MainActivity : ComponentActivity(), ChessBoardViewDelegate {
 
     private val viewModel: ChessGameViewModel by viewModels { ChessGameViewModel.Factory }
     private lateinit var binding: ActivityMainBinding
@@ -23,6 +32,7 @@ class MainActivity : ComponentActivity() {
 
         setupRecyclerView()
         chessBoardView = binding.chessBoardView
+        chessBoardView.delegate = WeakReference(this)
         viewModel.setupListeners()
         setupListeners()
     }
@@ -43,5 +53,13 @@ class MainActivity : ComponentActivity() {
         viewModel.chessBoardStateLiveData.observe(this, Observer { chessBoardViewState ->
             chessBoardView.update(chessBoardViewState)
         })
+    }
+
+    override fun didTouchDownOnSquare(square: Square) {
+        Log.d("ACTIVITY", "didTouchDownOnSquare")
+    }
+
+    override fun didReleaseOnSquare(square: Square) {
+        Log.d("ACTIVITY", "didReleaseOnSquare")
     }
 }

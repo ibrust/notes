@@ -5,7 +5,7 @@ import kotlin.math.floor
 
 class Square(val row: Row, val column: Column) {
     override fun toString(): String {
-        return row.toString() + column.toString()
+        return "${column}${row}"
     }
 
     operator fun plus(point: Point): Square? {

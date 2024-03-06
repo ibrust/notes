@@ -16,3 +16,4 @@ private fun ArrayList<Point>.getIndex(square: Square): Int {
     val columnNumber = square.column.number - 1
     return ((7 - rowNumber) * 8) + columnNumber
 }
+
