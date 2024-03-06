@@ -68,13 +68,15 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
             MotionEvent.ACTION_DOWN -> {
                 val touchedSquare = getSquareForTouchEvent(event.x.toInt(), event.y.toInt()) ?: return false
                 delegate?.get()?.didTouchDownOnSquare(touchedSquare)
+                Log.d(TAG, "${event.x}:${event.y}")
             }
             MotionEvent.ACTION_MOVE -> {
-                Log.d(TAG, "${event.x}:${event.y}")
+
             }
             MotionEvent.ACTION_UP -> {
                 val touchedSquare = getSquareForTouchEvent(event.x.toInt(), event.y.toInt()) ?: return false
                 delegate?.get()?.didReleaseOnSquare(touchedSquare)
+                Log.d(TAG, "${event.x}:${event.y}")
             }
 
         }

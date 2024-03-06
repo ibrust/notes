@@ -147,7 +147,7 @@ class BlackPawn(override val pieceId: Int = getPieceId()): Pawn(color = ChessCol
     }
 }
 
-class WhitePawn(override val pieceId: Int = getPieceId()): Pawn(color = ChessColor.BLACK, pieceId = pieceId) {
+class WhitePawn(override val pieceId: Int = getPieceId()): Pawn(color = ChessColor.WHITE, pieceId = pieceId) {
     override var moveSet: Array<Move> = arrayOf(
         Move.NORTH, Move.NORTHEAST, Move.NORTHWEST, Move.NORTHTWICE
     )

@@ -1,5 +1,6 @@
 package com.project.demo.models
 
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -87,27 +88,25 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         )
     }
 
-    suspend fun tryMovingPiece(currentSquare: Square, destinationSquare: Square) {
+    private fun tryMovingPiece(currentSquare: Square, destinationSquare: Square) {
         val validMoves: Array<Square> = getSquaresOfValidMoves(currentSquare) ?: return
         if (validMoves.contains(destinationSquare)) {
             performPieceMovement(currentSquare, destinationSquare)
         }
     }
 
-    fun getSquaresOfValidMoves(piecesCurrentSquare: Square): Array<Square>? {
+    private fun getSquaresOfValidMoves(piecesCurrentSquare: Square): Array<Square>? {
         val piece: ChessPiece = getState().board[piecesCurrentSquare] ?: return null
 
-        val squaresOfUnobstructedMoves = getSquaresOfUnobstructedMoves(piece)
+        val squaresOfUnobstructedMoves = getSquaresOfUnobstructedMoves(piece, getState().board)
         // remove moves that check the king
-        var squareToRemove: Square? = null
+        val squaresToRemove: ArrayList<Square> = arrayListOf()
         for (newSquare in squaresOfUnobstructedMoves) {
             if (doesMovePutKingInCheck(piece, newSquare)) {
-                squareToRemove = newSquare
+                squaresToRemove.add(newSquare)
             }
         }
-        if (squareToRemove != null) {
-            squaresOfUnobstructedMoves.remove(squareToRemove)
-        }
+        squaresOfUnobstructedMoves.removeAll(squaresToRemove)
 
         return squaresOfUnobstructedMoves.toTypedArray()
     }
@@ -179,7 +178,8 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
             if (copyOfBoard[square] != null && copyOfBoard[square]?.color != piece.color) {
                 // found an enemy piece, now see if it can take our pieces king
                 val enemyPiece = copyOfBoard[square] ?: continue
-                val enemyPiecesUnobstructedMoves = getSquaresOfUnobstructedMoves(enemyPiece)
+                // need to pass in a copy of the board here...
+                val enemyPiecesUnobstructedMoves = getSquaresOfUnobstructedMoves(enemyPiece, copyOfBoard)
                 if (enemyPiecesUnobstructedMoves.contains(squareOfPiecesKing)) {
                     return true
                 }
@@ -188,11 +188,11 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         return false
     }
 
-    private fun getSquaresOfUnobstructedMoves(piece: ChessPiece): MutableList<Square> {
+    private fun getSquaresOfUnobstructedMoves(piece: ChessPiece, board: Array<ChessPiece?>): MutableList<Square> {
         val piecesCurrentSquare = findPiecesSquare(piece) ?: return mutableListOf()
         val piecesRow = piecesCurrentSquare.row
         val validSquares: MutableList<Square> = arrayListOf()
-        for (move in piece.moveSet) {
+        outer@ for (move in piece.moveSet) {
             if (piece is WhitePawn && piecesRow != Row.TWO && move == Move.NORTHTWICE) {
                 continue
             }
@@ -201,16 +201,20 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
             }
             if (move.isRange()) {
                 @OptIn(ExperimentalStdlibApi::class)
-                for (distance in 1..<ChessBoard.width) {
+                inner@ for (distance in 1..<ChessBoard.width) {
                     val destinationSquare: Square = move.calculateDestinationSquare(piecesCurrentSquare, distance) ?: continue
-                    if (!isMovementPathUnobstructed(move, piece, destinationSquare)) {
-                        break
+                    if (!isMovementPathUnobstructed(move, piece, destinationSquare, board)) {
+                        val destinationPiecesColor = board[destinationSquare]?.color
+                        if (destinationPiecesColor != piece.color) {
+                            validSquares.add(destinationSquare)
+                        }
+                        break@inner
                     }
                     validSquares.add(destinationSquare)
                 }
             } else {
                 val destinationSquare: Square = move.calculateDestinationSquare(piecesCurrentSquare, null) ?: continue
-                if (isMovementPathUnobstructed(move, piece, destinationSquare)) {
+                if (isMovementPathUnobstructed(move, piece, destinationSquare, board)) {
                     validSquares.add(destinationSquare)
                 }
             }
@@ -218,11 +222,8 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         return validSquares
     }
 
-    private fun isMovementPathUnobstructed(move: Move, piece: ChessPiece, destinationSquare: Square): Boolean {
-        val isSquareOccupied = getState().board[destinationSquare] != null
-        val destinationPiecesColor = getState().board[destinationSquare]?.color
-
-        if (isSquareOccupied && destinationPiecesColor == piece.color) {
+    private fun isMovementPathUnobstructed(move: Move, piece: ChessPiece, destinationSquare: Square, board: Array<ChessPiece?>): Boolean {
+        if (board[destinationSquare] != null) {
             return false
         }
         return !(isForwardPawnMoveAndRunsIntoPieces(move, piece)
