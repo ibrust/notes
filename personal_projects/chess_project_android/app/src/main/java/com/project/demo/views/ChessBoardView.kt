@@ -28,6 +28,8 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
 
     var squareOrigins: ArrayList<Point> = arrayListOf()
     var paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    val pieceBitmaps: MutableMap<Int, Bitmap> = mutableMapOf()
+    private var state: State = State()
 
     data class State(
         val chessBoard: Array<ChessPiece?> = arrayOfNulls(size = ChessBoard.height * ChessBoard.width),
@@ -35,31 +37,40 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
         val colorToMove: ChessColor = ChessColor.WHITE
     )
 
-    private var state: State = State()
+    init {
+        val allPieces: ArrayList<ChessPiece> = arrayListOf(
+            King(ChessColor.WHITE), King(ChessColor.BLACK), Queen(ChessColor.WHITE), Queen(ChessColor.BLACK),
+            Bishop(ChessColor.WHITE), Bishop(ChessColor.BLACK), Rook(ChessColor.WHITE), Rook(ChessColor.BLACK),
+            Knight(ChessColor.WHITE), Knight(ChessColor.BLACK), BlackPawn(), WhitePawn()
+        )
+        for (piece in allPieces) {
+            makeBitMap(piece)
+        }
+    }
 
     fun update(state: State) {
         this.state = state
-
-        // TODO: - bitmaps for each unique piece not needed, refactor
-        // create bitmaps for any newly added pieces
-        for (piece in state.chessBoard) {
-            val unwrappedPiece: ChessPiece = piece ?: continue
-            if (pieceBitmaps.containsPiece(unwrappedPiece) == false) {
-                pieceBitmaps.add(ChessPieceBitMap(
-                    chessPiece = unwrappedPiece,
-                    bitmap = BitmapFactory.decodeResource(
-                        resources,
-                        getChessPieceImageResource(unwrappedPiece)
-                    )
-                ))
-            }
-        }
-
         this.invalidate()
     }
 
-    // TODO: don't have duplicate bitmaps here / remove the pieceId since it isn't needed
-    val pieceBitmaps: ArrayList<ChessPieceBitMap> = arrayListOf()
+    fun makeBitMap(piece: ChessPiece): Bitmap {
+        val resourceFile = getChessPieceImageResource(piece)
+        val bitmap = BitmapFactory.decodeResource(resources, resourceFile)
+        pieceBitmaps[resourceFile] = bitmap
+        return bitmap
+    }
+
+    fun getChessPieceImageResource(piece: ChessPiece): Int {
+        return when (piece) {
+            is King -> if (piece.color == ChessColor.WHITE) R.drawable.whitekingresized else R.drawable.blackkingresized
+            is Queen -> if (piece.color == ChessColor.WHITE) R.drawable.whitequeenresized else R.drawable.blackqueenresized
+            is Bishop -> if (piece.color == ChessColor.WHITE) R.drawable.whitebishopresized else R.drawable.blackbishopresized
+            is Knight -> if (piece.color == ChessColor.WHITE) R.drawable.whiteknightresized else R.drawable.blackknightresized
+            is Rook -> if (piece.color == ChessColor.WHITE) R.drawable.whiterookresized else R.drawable.blackrookresized
+            is WhitePawn -> R.drawable.whitepawnresized
+            is BlackPawn -> R.drawable.blackpawnresized
+        }
+    }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         event ?: return false
@@ -81,27 +92,6 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
 
         }
         return true
-    }
-
-    fun getSquareForTouchEvent(x: Int, y: Int): Square? {
-        if (x < 0 || x > width || y < 0 || y > height) {
-            return null
-        }
-        var targetRow: Row = Row.ONE
-        for (row in Row.values().reversed()) {
-            if (squareOrigins[Square(row, Column.A)].y > y) {
-                break
-            }
-            targetRow = row
-        }
-        var targetColumn: Column = Column.A
-        for (column in Column.values()) {
-            if (squareOrigins[Square(Row.ONE, column)].x > x) {
-                break
-            }
-            targetColumn = column
-        }
-        return Square(targetRow, targetColumn)
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -140,24 +130,33 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
             for (square in Square.allSquares()) {
                 // for each piece gets its corresponding bitmap and render it in its current location
                 val unwrappedPiece = state.chessBoard[square] ?: continue
-                val piecesBitmap = pieceBitmaps.getBitMap(unwrappedPiece.pieceId) ?: continue
+                val piecesBitmap = pieceBitmaps[getChessPieceImageResource(unwrappedPiece)] ?: continue
                 val rect: Rect = makeRect(squareOrigins[square], squareSize)
-                canvas.drawBitmap(piecesBitmap.bitmap, null, rect, paint)
+                canvas.drawBitmap(piecesBitmap, null, rect, paint)
             }
 
         }
     }
 
-    fun getChessPieceImageResource(piece: ChessPiece): Int {
-        return when (piece) {
-            is King -> if (piece.color == ChessColor.WHITE) R.drawable.whitekingresized else R.drawable.blackkingresized
-            is Queen -> if (piece.color == ChessColor.WHITE) R.drawable.whitequeenresized else R.drawable.blackqueenresized
-            is Bishop -> if (piece.color == ChessColor.WHITE) R.drawable.whitebishopresized else R.drawable.blackbishopresized
-            is Knight -> if (piece.color == ChessColor.WHITE) R.drawable.whiteknightresized else R.drawable.blackknightresized
-            is Rook -> if (piece.color == ChessColor.WHITE) R.drawable.whiterookresized else R.drawable.blackrookresized
-            is WhitePawn -> R.drawable.whitepawnresized
-            is BlackPawn -> R.drawable.blackpawnresized
+    fun getSquareForTouchEvent(x: Int, y: Int): Square? {
+        if (x < 0 || x > width || y < 0 || y > height) {
+            return null
         }
+        var targetRow: Row = Row.ONE
+        for (row in Row.values().reversed()) {
+            if (squareOrigins[Square(row, Column.A)].y > y) {
+                break
+            }
+            targetRow = row
+        }
+        var targetColumn: Column = Column.A
+        for (column in Column.values()) {
+            if (squareOrigins[Square(Row.ONE, column)].x > x) {
+                break
+            }
+            targetColumn = column
+        }
+        return Square(targetRow, targetColumn)
     }
 
     private fun makeRect(origin: Point, squareSize: Float): Rect {
