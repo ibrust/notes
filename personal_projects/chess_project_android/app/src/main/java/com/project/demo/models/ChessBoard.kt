@@ -344,7 +344,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
             } else if (move.isCastling()) {
                 if (canStillCastle(piece, move)
                         && castlePathIsClear(move, currentSquare, board)
-                        && !enemyPiecesPreventCastling(piece, move, currentSquare)) {
+                        && !enemyPiecesPreventCastling(piece, move, currentSquare, board)) {
                     val increment: Int = if (move == Move.CASTLEQUEENSIDE) -2 else 2
                     val destinationSquare: Square = currentSquare + Point(x = increment, y = 0) ?: continue
                     validSquares.add(destinationSquare)
@@ -379,12 +379,26 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         return false
     }
 
-    private fun enemyPiecesPreventCastling(king: ChessPiece, move: Move, currentSquare: Square): Boolean {
+    private fun enemyPiecesPreventCastling(king: ChessPiece, move: Move, currentSquare: Square, board: Array<ChessPiece?>): Boolean {
         val increment = if (move == Move.CASTLEKINGSIDE) 1 else -1
-        val oneSquareAhead: Square = currentSquare + Point(x = 0, y = increment) ?: return true
-        val twoSquaresAhead: Square = currentSquare + Point(x = 0, y = increment * 2) ?: return true
+        val oneSquareAhead: Square = currentSquare + Point(x = increment, y = 0) ?: return true
+        val twoSquaresAhead: Square = currentSquare + Point(x = increment * 2, y = 0) ?: return true
 
-        return (doesMovePutKingInCheck(king, oneSquareAhead) || doesMovePutKingInCheck(king, twoSquaresAhead))
+        // scan the board for checks from any enemy pieces
+        for (square in Square.allSquares()) {
+            if (board[square] != null && board[square]?.color != king.color) {
+                // found an enemy piece, now see if it can take our pieces king
+                val enemyPiece = board[square] ?: continue
+                if (enemyPiece is King) continue
+                val enemyPiecesUnobstructedMoves = getSquaresOfUnobstructedMoves(enemyPiece, board)
+                if (enemyPiecesUnobstructedMoves.contains(currentSquare)
+                        || enemyPiecesUnobstructedMoves.contains(oneSquareAhead)
+                        || enemyPiecesUnobstructedMoves.contains(twoSquaresAhead)) {
+                    return true
+                }
+            }
+        }
+        return false
     }
 
     private fun castlePathIsClear(move: Move, currentSquare: Square, board: Array<ChessPiece?>): Boolean {
