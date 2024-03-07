@@ -240,7 +240,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
             }
             piecesKing ?: return null
             kingsSquare ?: return null
-            return if (isKingInCheckAtDestination(piecesKing, kingsSquare, board)) {
+            return if (isKingInCheckAtSquare(piecesKing, kingsSquare, board)) {
                 if (colorToMove == ChessColor.WHITE) GameResult.BLACKWIN else GameResult.WHITEWIN
             } else {
                 GameResult.DRAW
@@ -320,10 +320,10 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         }
         squareOfPiecesKing ?: return true
         val piecesKing = copyOfBoard[squareOfPiecesKing] ?: return true
-        return isKingInCheckAtDestination(piecesKing, squareOfPiecesKing, copyOfBoard)
+        return isKingInCheckAtSquare(piecesKing, squareOfPiecesKing, copyOfBoard)
     }
 
-    private fun isKingInCheckAtDestination(king: ChessPiece, destinationSquare: Square, board: Array<ChessPiece?>): Boolean {
+    private fun isKingInCheckAtSquare(king: ChessPiece, square: Square, board: Array<ChessPiece?>): Boolean {
         // scan the board for checks from any enemy pieces
         for (square in Square.allSquares()) {
             if (board[square] != null && board[square]?.color != king.color) {
@@ -331,7 +331,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
                 val enemyPiece = board[square] ?: continue
                 if (enemyPiece is King) continue
                 val enemyPiecesUnobstructedMoves = getSquaresOfUnobstructedMoves(enemyPiece, board)
-                if (enemyPiecesUnobstructedMoves.contains(destinationSquare)) {
+                if (enemyPiecesUnobstructedMoves.contains(square)) {
                     return true
                 }
             }
