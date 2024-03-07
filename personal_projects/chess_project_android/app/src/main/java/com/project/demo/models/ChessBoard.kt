@@ -16,7 +16,7 @@ interface ChessBoardInterface {
     fun didReleaseOnSquare(square: Square)
 }
 
-// TODO: pawn promotion, win / lose, handle game result in view
+// TODO: pawn promotion, handle game result in view
 // also would like move backtracking, board flip, board reset, square highlighting, visual tracking of taken pieces, timer, & other features on chess.com
 // also figure out whether we need a coroutine context in here / other local datasource conventions
 // also maybe rename this to ChessBoardModel or ChessBoardLocalDataSource?
