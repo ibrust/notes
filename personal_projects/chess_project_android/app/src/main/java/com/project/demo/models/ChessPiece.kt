@@ -133,7 +133,7 @@ sealed class Pawn(override val color: ChessColor, override val pieceId: Int = ge
 
 class BlackPawn(override val pieceId: Int = getPieceId()): Pawn(color = ChessColor.BLACK, pieceId = pieceId) {
     override var moveSet: Array<Move> = arrayOf(
-        Move.SOUTH, Move.SOUTHEAST, Move.SOUTHWEST, Move.SOUTHTWICE
+        Move.SOUTH, Move.SOUTHEAST, Move.SOUTHWEST, Move.SOUTHTWICE, Move.ENPASSANT
     )
     override fun toString(): String {
         return "X "
@@ -152,7 +152,7 @@ class BlackPawn(override val pieceId: Int = getPieceId()): Pawn(color = ChessCol
 
 class WhitePawn(override val pieceId: Int = getPieceId()): Pawn(color = ChessColor.WHITE, pieceId = pieceId) {
     override var moveSet: Array<Move> = arrayOf(
-        Move.NORTH, Move.NORTHEAST, Move.NORTHWEST, Move.NORTHTWICE
+        Move.NORTH, Move.NORTHEAST, Move.NORTHWEST, Move.NORTHTWICE, Move.ENPASSANT
     )
     override fun toString(): String {
         return "O "
@@ -175,7 +175,7 @@ enum class Move {
     RANGENORTH, RANGESOUTH, RANGEEAST, RANGEWEST,
     RANGENORTHEAST, RANGENORTHWEST, RANGESOUTHEAST, RANGESOUTHWEST,
     JUMPNNE, JUMPNNW, JUMPENE, JUMPESE, JUMPSSE, JUMPSSW, JUMPWNW, JUMPWSW,
-    NORTHTWICE, SOUTHTWICE,
+    NORTHTWICE, SOUTHTWICE, ENPASSANT,
     CASTLEQUEENSIDE, CASTLEKINGSIDE;
 
     fun isRange(): Boolean {
@@ -226,7 +226,7 @@ enum class Move {
             RANGENORTHWEST -> currentSquare + Point(x = -(distance ?: 0), y = distance ?: 0)
             RANGESOUTHEAST -> currentSquare + Point(x = distance ?: 0, y = -(distance ?: 0))
             RANGESOUTHWEST -> currentSquare + Point(x = -(distance ?: 0), y = -(distance ?: 0))
-            CASTLEKINGSIDE, CASTLEQUEENSIDE -> return null
+            CASTLEKINGSIDE, CASTLEQUEENSIDE, ENPASSANT -> return null
         }
     }
 }
