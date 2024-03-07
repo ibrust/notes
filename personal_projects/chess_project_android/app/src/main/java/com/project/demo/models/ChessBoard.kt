@@ -1,12 +1,10 @@
 package com.project.demo.models
 
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 interface ChessBoardInterface {
     val chessBoardStateFlow: StateFlow<ChessBoard.State>
@@ -40,7 +38,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         var colorToMove: ChessColor = ChessColor.WHITE,
         val board: Array<ChessPiece?> = arrayOfNulls(size = ChessBoard.totalSquares),
         var activatedSquare: Square? = null,
-        var result: GameResult? = null
+        var gameState: GameState? = null
     ) {
         fun copy(): State {
             return State(
@@ -48,18 +46,18 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
                 colorToMove = this.colorToMove,
                 board = this.board.copy(),
                 activatedSquare = this.activatedSquare,
-                result = this.result
+                gameState = this.gameState
             )
         }
 
         override fun toString(): String {
-            return "${fullMoveNumber}, ${colorToMove}, ${board}, ${activatedSquare}, ${result}"
+            return "${fullMoveNumber}, ${colorToMove}, ${board}, ${activatedSquare}, ${gameState}"
         }
 
         override fun hashCode(): Int {
             val sum1 = fullMoveNumber.hashCode() * 37 + colorToMove.hashCode() * 29
             val sum2 = board.hashCode() * 11 + activatedSquare.hashCode() * 13
-            val sum3 = result.hashCode() * 17
+            val sum3 = gameState.hashCode() * 17
             return sum1 + sum2 + sum3
         }
 
@@ -69,7 +67,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
             }
             val comp1 = fullMoveNumber == other.fullMoveNumber && colorToMove == other.colorToMove
             val comp2 = board == other.board && activatedSquare == other.activatedSquare
-            val comp3 = result == other.result
+            val comp3 = gameState == other.gameState
             return comp1 && comp2 && comp3
         }
     }
@@ -134,7 +132,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
             colorToMove = ChessColor.WHITE,
             board = board,
             activatedSquare = null,
-            result = null
+            gameState = null
         )
     }
 
@@ -202,7 +200,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
             state.fullMoveNumber += 1
         }
         trackPositionWasReached(board)
-        state.result = checkForResult(state.colorToMove, state.board)
+        state.gameState = checkForResult(state.colorToMove, state.board)
 
         _stateFlow.value = state
     }
@@ -222,11 +220,11 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         return potentialMoves.isEmpty()
     }
 
-    private fun checkForResult(colorToMove: ChessColor, board: Array<ChessPiece?>): GameResult? {
+    private fun checkForResult(colorToMove: ChessColor, board: Array<ChessPiece?>): GameState? {
         val repetitions = mapOfPositionsReached[board.hashString()]
         val noMovesRemain = checkIfNoMovesRemain(colorToMove, board)
         if (repetitions == 3 || fiftyMoveRuleTracker >= 50) {
-            return GameResult.DRAW
+            return GameState.DRAW
         }
         if (noMovesRemain) {
             // if the color to move is in check they lose, otherwise it's a stalemate
@@ -241,9 +239,9 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
             piecesKing ?: return null
             kingsSquare ?: return null
             return if (isKingInCheckAtSquare(piecesKing, kingsSquare, board)) {
-                if (colorToMove == ChessColor.WHITE) GameResult.BLACKWIN else GameResult.WHITEWIN
+                if (colorToMove == ChessColor.WHITE) GameState.BLACKWIN else GameState.WHITEWIN
             } else {
-                GameResult.DRAW
+                GameState.DRAW
             }
         }
         return null
@@ -323,7 +321,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         return isKingInCheckAtSquare(piecesKing, squareOfPiecesKing, copyOfBoard)
     }
 
-    private fun isKingInCheckAtSquare(king: ChessPiece, square: Square, board: Array<ChessPiece?>): Boolean {
+    private fun isKingInCheckAtSquare(king: ChessPiece, targetSquare: Square, board: Array<ChessPiece?>): Boolean {
         // scan the board for checks from any enemy pieces
         for (square in Square.allSquares()) {
             if (board[square] != null && board[square]?.color != king.color) {
@@ -331,7 +329,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
                 val enemyPiece = board[square] ?: continue
                 if (enemyPiece is King) continue
                 val enemyPiecesUnobstructedMoves = getSquaresOfUnobstructedMoves(enemyPiece, board)
-                if (enemyPiecesUnobstructedMoves.contains(square)) {
+                if (enemyPiecesUnobstructedMoves.contains(targetSquare)) {
                     return true
                 }
             }
