@@ -4,6 +4,8 @@ sealed class ChessPiece() {
     abstract var moveSet: Array<Move>
     abstract val color: ChessColor
     abstract val pieceId: Int
+    var hasPieceMoved: Boolean = false
+
     abstract override fun toString(): String
     abstract override fun equals(other: Any?): Boolean
     abstract fun copy(): ChessPiece
@@ -71,7 +73,8 @@ class Queen(override val color: ChessColor, override val pieceId: Int = getPiece
 class King(override val color: ChessColor, override val pieceId: Int = getPieceId()): ChessPiece() {
     override var moveSet: Array<Move> = arrayOf(
         Move.NORTH, Move.SOUTH, Move.EAST, Move.WEST,
-        Move.NORTHWEST, Move.NORTHEAST, Move.SOUTHWEST, Move.SOUTHEAST
+        Move.NORTHWEST, Move.NORTHEAST, Move.SOUTHWEST, Move.SOUTHEAST,
+        Move.CASTLEKINGSIDE, Move.CASTLEQUEENSIDE
     )
     override fun toString(): String {
         return "K "
@@ -172,7 +175,8 @@ enum class Move {
     RANGENORTH, RANGESOUTH, RANGEEAST, RANGEWEST,
     RANGENORTHEAST, RANGENORTHWEST, RANGESOUTHEAST, RANGESOUTHWEST,
     JUMPNNE, JUMPNNW, JUMPENE, JUMPESE, JUMPSSE, JUMPSSW, JUMPWNW, JUMPWSW,
-    NORTHTWICE, SOUTHTWICE;
+    NORTHTWICE, SOUTHTWICE,
+    CASTLEQUEENSIDE, CASTLEKINGSIDE;
 
     fun isRange(): Boolean {
         return when (this) {
@@ -188,6 +192,10 @@ enum class Move {
 
     fun isDiagonalPawnMove(piece: ChessPiece): Boolean {
         return (piece is Pawn && (this == SOUTHEAST || this == SOUTHWEST || this == NORTHEAST || this == NORTHWEST))
+    }
+
+    fun isCastling(): Boolean {
+        return this == CASTLEKINGSIDE ||  this == CASTLEQUEENSIDE
     }
 
     fun calculateDestinationSquare(currentSquare: Square, distance: Int?): Square? {
@@ -218,6 +226,7 @@ enum class Move {
             RANGENORTHWEST -> currentSquare + Point(x = -(distance ?: 0), y = distance ?: 0)
             RANGESOUTHEAST -> currentSquare + Point(x = distance ?: 0, y = -(distance ?: 0))
             RANGESOUTHWEST -> currentSquare + Point(x = -(distance ?: 0), y = -(distance ?: 0))
+            CASTLEKINGSIDE, CASTLEQUEENSIDE -> return null
         }
     }
 }

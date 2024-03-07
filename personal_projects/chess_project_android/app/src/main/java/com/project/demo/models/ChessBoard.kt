@@ -25,6 +25,9 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
 
     private var isClickToMoveModeActivated: Boolean = false
 
+    private var hasWhiteCastled: Boolean = false
+    private var hasBlackCastled: Boolean = false
+
     private fun getState(): ChessBoard.State {
         return _stateFlow.value
     }
@@ -79,8 +82,6 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         board[Square(Row.EIGHT, Column.E)] = King(color = ChessColor.BLACK)
 
         _stateFlow.value = ChessBoard.State(
-            moveWhiteCastledOn = null,
-            moveBlackCastledOn = null,
             fullMoveNumber = 1,
             colorToMove = ChessColor.WHITE,
             board = board,
@@ -115,8 +116,29 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         val state = getState().copy()
         val board = state.board
         val piece: ChessPiece = board[currentSquare] ?: return
+
         board[currentSquare] = null
         board[destinationSquare] = piece
+
+        val twoSquaresEast = currentSquare + Point(x = 2, y = 0)
+        val twoSquaresWest = currentSquare + Point(x = -2, y = 0)
+        if ((piece is King) && (destinationSquare == twoSquaresEast || destinationSquare == twoSquaresWest)) {
+            val row: Row = if (piece.color == ChessColor.BLACK) Row.EIGHT else Row.ONE
+            val column: Column = if (destinationSquare == twoSquaresEast) Column.H else Column.A
+            val rook = board[Square(row, column)]
+            val increment = if (destinationSquare == twoSquaresEast) Point(x = -2, y = 0) else Point(x = 3, y = 0)
+
+            board[Square(row, column)] = null
+            board[Square(row, column) + increment] = rook
+
+            if (piece.color == ChessColor.BLACK) {
+                hasBlackCastled = true
+            } else {
+                hasWhiteCastled = true
+            }
+        }
+
+        piece.hasPieceMoved = true
         state.colorToMove = state.colorToMove.otherColor()
         _stateFlow.value = state
     }
@@ -193,8 +215,8 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
     }
 
     private fun getSquaresOfUnobstructedMoves(piece: ChessPiece, board: Array<ChessPiece?>): MutableList<Square> {
-        val piecesCurrentSquare = findPiecesSquare(piece) ?: return mutableListOf()
-        val piecesRow = piecesCurrentSquare.row
+        val currentSquare = findPiecesSquare(piece) ?: return mutableListOf()
+        val piecesRow = currentSquare.row
         val validSquares: MutableList<Square> = arrayListOf()
         outer@ for (move in piece.moveSet) {
             if (piece is WhitePawn && piecesRow != Row.TWO && move == Move.NORTHTWICE) {
@@ -206,7 +228,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
             if (move.isRange()) {
                 @OptIn(ExperimentalStdlibApi::class)
                 inner@ for (distance in 1..<ChessBoard.width) {
-                    val destinationSquare: Square = move.calculateDestinationSquare(piecesCurrentSquare, distance) ?: continue
+                    val destinationSquare: Square = move.calculateDestinationSquare(currentSquare, distance) ?: continue
                     if (board[destinationSquare] != null) {
                         val destinationPiecesColor = board[destinationSquare]?.color
                         if (destinationPiecesColor != piece.color) {
@@ -216,8 +238,16 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
                     }
                     validSquares.add(destinationSquare)
                 }
+            } else if (move.isCastling()) {
+                if (canStillCastle(piece, move)
+                        && castlePathIsClear(move, currentSquare, board)
+                        && !enemyPiecesPreventCastling(move, currentSquare, board)) {
+                    val increment: Int = if (move == Move.CASTLEQUEENSIDE) -2 else 2
+                    val destinationSquare: Square = currentSquare + Point(x = increment, y = 0) ?: continue
+                    validSquares.add(destinationSquare)
+                }
             } else {
-                val destinationSquare: Square = move.calculateDestinationSquare(piecesCurrentSquare, null) ?: continue
+                val destinationSquare: Square = move.calculateDestinationSquare(currentSquare, null) ?: continue
                 if (board[destinationSquare] == null && !isDiagonalPawnMoveIntoEmptySquare(move, piece, destinationSquare)) {
                     validSquares.add(destinationSquare)
                 } else if (board[destinationSquare] != null) {
@@ -229,6 +259,43 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
             }
         }
         return validSquares
+    }
+
+    private fun enemyPiecesPreventCastling(move: Move, currentSquare: Square, board: Array<ChessPiece?>): Boolean {
+        return false
+    }
+
+    private fun castlePathIsClear(move: Move, currentSquare: Square, board: Array<ChessPiece?>): Boolean {
+        var pathIsClear: Boolean = false
+        if (move == Move.CASTLEQUEENSIDE) {
+            pathIsClear = (board[currentSquare + Point(x = -1, y = 0)] == null
+                    && board[currentSquare + Point(x = -2, y = 0)] == null
+                    && board[currentSquare + Point(x = -3, y = 0)] == null)
+        } else if (move == Move.CASTLEKINGSIDE) {
+            pathIsClear = (board[currentSquare + Point(x = 1, y = 0)] == null
+                    && board[currentSquare + Point(x = 2, y = 0)] == null)
+        }
+        return pathIsClear
+    }
+
+    private fun canStillCastle(piece: ChessPiece, move: Move): Boolean {
+        if (piece !is King || piece.hasPieceMoved) return false
+        if (!move.isCastling()) return false
+        val board = _stateFlow.value.board
+        val hasQueensRookMoved: Boolean
+        val hasKingsRookMoved: Boolean
+        if (piece.color == ChessColor.WHITE) {
+            hasQueensRookMoved = board[Square(Row.ONE, Column.A)]?.hasPieceMoved == false
+            hasKingsRookMoved = board[Square(Row.ONE, Column.H)]?.hasPieceMoved == false
+            val targetRookHasntMoved: Boolean = if (move == Move.CASTLEKINGSIDE) hasKingsRookMoved else hasQueensRookMoved
+            return (!hasWhiteCastled && targetRookHasntMoved)
+        } else {
+            hasQueensRookMoved = board[Square(Row.EIGHT, Column.A)]?.hasPieceMoved == false
+            hasKingsRookMoved = board[Square(Row.EIGHT, Column.H)]?.hasPieceMoved == false
+            val targetRookHasntMoved: Boolean = if (move == Move.CASTLEKINGSIDE) hasKingsRookMoved else hasQueensRookMoved
+            return (!hasBlackCastled && targetRookHasntMoved)
+        }
+
     }
 
     private fun isDiagonalPawnMoveIntoEmptySquare(move: Move, piece: ChessPiece, destinationSquare: Square): Boolean {
@@ -268,8 +335,6 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
     }
 
     class State(
-        val moveWhiteCastledOn: Int? = null,
-        val moveBlackCastledOn: Int? = null,
         val fullMoveNumber: Int = 1,
         var colorToMove: ChessColor = ChessColor.WHITE,
         val board: Array<ChessPiece?> = arrayOfNulls(size = ChessBoard.totalSquares),
@@ -277,8 +342,6 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
     ) {
         fun copy(): State {
             return State(
-                moveWhiteCastledOn = this.moveWhiteCastledOn,
-                moveBlackCastledOn = this.moveBlackCastledOn,
                 fullMoveNumber = this.fullMoveNumber,
                 colorToMove = this.colorToMove,
                 board = this.board.copy(),
@@ -287,24 +350,22 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         }
 
         override fun toString(): String {
-            return "${moveWhiteCastledOn}, ${moveBlackCastledOn}, ${fullMoveNumber}, ${colorToMove}, ${board}, ${activatedSquare}"
+            return "${fullMoveNumber}, ${colorToMove}, ${board}, ${activatedSquare}"
         }
 
         override fun hashCode(): Int {
-            val sum1 = moveWhiteCastledOn.hashCode() * 31 + moveBlackCastledOn.hashCode() * 17
-            val sum2 = fullMoveNumber.hashCode() * 37 + colorToMove.hashCode() * 29
-            val sum3 = board.hashCode() * 11 + activatedSquare.hashCode() * 13
-            return sum1 + sum2 + sum3
+            val sum1 = fullMoveNumber.hashCode() * 37 + colorToMove.hashCode() * 29
+            val sum2 = board.hashCode() * 11 + activatedSquare.hashCode() * 13
+            return sum1 + sum2
         }
 
         override fun equals(other: Any?): Boolean {
             if (other == null || other !is State) {
                 return false
             }
-            val comp1 = moveWhiteCastledOn == other.moveWhiteCastledOn && moveBlackCastledOn == other.moveBlackCastledOn
-            val comp2 = fullMoveNumber == other.fullMoveNumber && colorToMove == other.colorToMove
-            val comp3 = board == other.board && activatedSquare == other.activatedSquare
-            return comp1 && comp2 && comp3
+            val comp1 = fullMoveNumber == other.fullMoveNumber && colorToMove == other.colorToMove
+            val comp2 = board == other.board && activatedSquare == other.activatedSquare
+            return comp1 && comp2
         }
     }
 }
