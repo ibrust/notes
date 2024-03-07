@@ -38,7 +38,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         var colorToMove: ChessColor = ChessColor.WHITE,
         val board: Array<ChessPiece?> = arrayOfNulls(size = ChessBoard.totalSquares),
         var activatedSquare: Square? = null,
-        var gameState: GameState? = null
+        var gameState: GameState = GameState.PLAYING
     ) {
         fun copy(): State {
             return State(
@@ -132,7 +132,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
             colorToMove = ChessColor.WHITE,
             board = board,
             activatedSquare = null,
-            gameState = null
+            gameState = GameState.PLAYING
         )
     }
 
@@ -220,7 +220,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         return potentialMoves.isEmpty()
     }
 
-    private fun checkForResult(colorToMove: ChessColor, board: Array<ChessPiece?>): GameState? {
+    private fun checkForResult(colorToMove: ChessColor, board: Array<ChessPiece?>): GameState {
         val repetitions = mapOfPositionsReached[board.hashString()]
         val noMovesRemain = checkIfNoMovesRemain(colorToMove, board)
         if (repetitions == 3 || fiftyMoveRuleTracker >= 50) {
@@ -236,15 +236,15 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
                     kingsSquare = square
                 }
             }
-            piecesKing ?: return null
-            kingsSquare ?: return null
+            piecesKing ?: return GameState.PLAYING
+            kingsSquare ?: return GameState.PLAYING
             return if (isKingInCheckAtSquare(piecesKing, kingsSquare, board)) {
                 if (colorToMove == ChessColor.WHITE) GameState.BLACKWIN else GameState.WHITEWIN
             } else {
                 GameState.DRAW
             }
         }
-        return null
+        return GameState.PLAYING
     }
 
     private fun setEnPassantSquare(piece: ChessPiece, currentSquare: Square, destinationSquare: Square) {

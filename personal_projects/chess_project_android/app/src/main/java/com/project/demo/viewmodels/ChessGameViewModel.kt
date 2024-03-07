@@ -43,7 +43,8 @@ class ChessGameViewModel(
                     chessBoard = chessBoardState.board,
                     fullMoveNumber = chessBoardState.fullMoveNumber,
                     colorToMove = chessBoardState.colorToMove,
-                    activeSquare = chessBoardState.activatedSquare
+                    activeSquare = chessBoardState.activatedSquare,
+                    gameState = chessBoardState.gameState
                 ))
             }
         }

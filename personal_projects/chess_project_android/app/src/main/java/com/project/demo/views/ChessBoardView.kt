@@ -12,8 +12,32 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.project.demo.R
-import com.project.demo.models.*
+import com.project.demo.models.Bishop
+import com.project.demo.models.BlackPawn
+import com.project.demo.models.ChessBoard
+import com.project.demo.models.ChessColor
+import com.project.demo.models.ChessPiece
+import com.project.demo.models.Column
+import com.project.demo.models.GameState
+import com.project.demo.models.King
+import com.project.demo.models.Knight
+import com.project.demo.models.Point
+import com.project.demo.models.Queen
+import com.project.demo.models.Rook
+import com.project.demo.models.Row
+import com.project.demo.models.Square
+import com.project.demo.models.WhitePawn
+import com.project.demo.models.get
 import java.lang.ref.WeakReference
+import kotlin.collections.ArrayList
+import kotlin.collections.MutableMap
+import kotlin.collections.arrayListOf
+import kotlin.collections.contentEquals
+import kotlin.collections.contentHashCode
+import kotlin.collections.mutableMapOf
+import kotlin.collections.reversed
+import kotlin.collections.set
+import kotlin.math.max
 import kotlin.math.min
 
 
@@ -22,7 +46,9 @@ interface ChessBoardViewDelegate {
     fun didReleaseOnSquare(square: Square)
 }
 
-class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
+class ChessBoardView @JvmOverloads constructor(
+    context: Context?, attrs: AttributeSet? = null, defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr) {
 
     var delegate: WeakReference<ChessBoardViewDelegate>? = null
 
@@ -37,8 +63,31 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
         val chessBoard: Array<ChessPiece?> = arrayOfNulls(size = ChessBoard.height * ChessBoard.width),
         val fullMoveNumber: Int = 1,
         val colorToMove: ChessColor = ChessColor.WHITE,
-        val activeSquare: Square? = null
-    )
+        val activeSquare: Square? = null,
+        val gameState: GameState = GameState.PLAYING
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as State
+
+            val comp1 = (chessBoard.contentEquals(other.chessBoard) && (fullMoveNumber == other.fullMoveNumber))
+            val comp2 = (colorToMove == other.colorToMove) && (activeSquare == other.activeSquare)
+            val comp3 = (gameState == other.gameState)
+
+            return (comp1 && comp2 && comp3)
+        }
+
+        override fun hashCode(): Int {
+            var result = chessBoard.contentHashCode()
+            result = 31 * result + fullMoveNumber
+            result = 17 * result + colorToMove.hashCode()
+            result = 23 * result + (activeSquare?.hashCode() ?: 0)
+            result = 47 * result + gameState.hashCode()
+            return result
+        }
+    }
 
     init {
         val allPieces: ArrayList<ChessPiece> = arrayListOf(
@@ -56,59 +105,29 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
         this.invalidate()
     }
 
-    fun makeBitMap(piece: ChessPiece): Bitmap {
-        val resourceFile = getChessPieceImageResource(piece)
-        val bitmap = BitmapFactory.decodeResource(resources, resourceFile)
-        pieceBitmaps[resourceFile] = bitmap
-        return bitmap
-    }
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val minWidth = suggestedMinimumWidth + paddingLeft + paddingRight
+        val parentWidth = MeasureSpec.getSize(widthMeasureSpec)
+        val minHeight = suggestedMinimumHeight + paddingTop + paddingBottom
+        val parentHeight = MeasureSpec.getSize(heightMeasureSpec)
 
-    fun getChessPieceImageResource(piece: ChessPiece): Int {
-        return when (piece) {
-            is King -> if (piece.color == ChessColor.WHITE) R.drawable.whitekingresized else R.drawable.blackkingresized
-            is Queen -> if (piece.color == ChessColor.WHITE) R.drawable.whitequeenresized else R.drawable.blackqueenresized
-            is Bishop -> if (piece.color == ChessColor.WHITE) R.drawable.whitebishopresized else R.drawable.blackbishopresized
-            is Knight -> if (piece.color == ChessColor.WHITE) R.drawable.whiteknightresized else R.drawable.blackknightresized
-            is Rook -> if (piece.color == ChessColor.WHITE) R.drawable.whiterookresized else R.drawable.blackrookresized
-            is WhitePawn -> R.drawable.whitepawnresized
-            is BlackPawn -> R.drawable.blackpawnresized
+        val desiredWidth: Int
+        val desiredHeight: Int
+        when (MeasureSpec.getMode(widthMeasureSpec)) {
+            MeasureSpec.EXACTLY -> desiredWidth = parentWidth
+            else -> desiredWidth =  max(minWidth, parentWidth)
         }
-    }
-
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
-        event ?: return false
-
-        when (event.action) {
-            MotionEvent.ACTION_DOWN -> {
-                val touchedSquare = getSquareForTouchEvent(event.x.toInt(), event.y.toInt()) ?: return false
-                delegate?.get()?.didTouchDownOnSquare(touchedSquare)
-                movingPoint = null
-
-                Log.d(TAG, "${event.x}:${event.y}")
-            }
-            MotionEvent.ACTION_MOVE -> {
-                movingPoint = Point(event.x.toInt(), event.y.toInt())
-
-                // TODO: invalidate only part of the screen
-                invalidate()
-            }
-            MotionEvent.ACTION_UP -> {
-                val touchedSquare = getSquareForTouchEvent(event.x.toInt(), event.y.toInt()) ?: return false
-                delegate?.get()?.didReleaseOnSquare(touchedSquare)
-
-                Log.d(TAG, "${event.x}:${event.y}")
-            }
-
+        when (MeasureSpec.getMode(heightMeasureSpec)) {
+            MeasureSpec.EXACTLY -> desiredHeight = parentHeight
+            else -> desiredHeight =  max(minHeight, parentHeight)
         }
-        return true
+        setMeasuredDimension(desiredWidth, desiredHeight)
     }
 
-    override fun layout(l: Int, t: Int, r: Int, b: Int) {
-        super.layout(l, t, r, b)
-
-        // not sure if these values will always be correct but for now it's working, can revisit if a problem arises
-        val viewWidth = this.width.toFloat()
-        val viewHeight = this.height.toFloat()
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        val viewWidth = w.toFloat()
+        val viewHeight = w.toFloat()
         val squareSize = (min(viewWidth, viewHeight) - 1) / 8
         squareOrigins.clear()
         for (row in 0..7) {
@@ -149,7 +168,6 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
                 val unwrappedPiece = state.chessBoard[square] ?: continue
                 val piecesBitmap = pieceBitmaps[getChessPieceImageResource(unwrappedPiece)] ?: continue
 
-                val movingPointCopy = movingPoint       // copying prevents screen tearing, not entirely sure why, value may be changing while drawing
                 if (square != state.activeSquare || movingPointCopy == null) {
                     val rect: Rect = makeRect(squareOrigins[square], squareSize)
                     canvas.drawBitmap(piecesBitmap, null, rect, paint)
@@ -168,7 +186,35 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
         }
     }
 
-    fun getSquareForTouchEvent(x: Int, y: Int): Square? {
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        event ?: return false
+
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                val touchedSquare = getSquareForTouchEvent(event.x.toInt(), event.y.toInt()) ?: return false
+                delegate?.get()?.didTouchDownOnSquare(touchedSquare)
+                movingPoint = null
+
+                Log.d(TAG, "${event.x}:${event.y}")
+            }
+            MotionEvent.ACTION_MOVE -> {
+                movingPoint = Point(event.x.toInt(), event.y.toInt())
+
+                // TODO: invalidate only part of the screen
+                invalidate()
+            }
+            MotionEvent.ACTION_UP -> {
+                val touchedSquare = getSquareForTouchEvent(event.x.toInt(), event.y.toInt()) ?: return false
+                delegate?.get()?.didReleaseOnSquare(touchedSquare)
+
+                Log.d(TAG, "${event.x}:${event.y}")
+            }
+
+        }
+        return true
+    }
+
+    private fun getSquareForTouchEvent(x: Int, y: Int): Square? {
         if (x < 0 || x > width || y < 0 || y > height) {
             return null
         }
@@ -189,12 +235,31 @@ class ChessBoardView(context: Context?, attrs: AttributeSet?) : View(context, at
         return Square(targetRow, targetColumn)
     }
 
+    private fun makeBitMap(piece: ChessPiece): Bitmap {
+        val resourceFile = getChessPieceImageResource(piece)
+        val bitmap = BitmapFactory.decodeResource(resources, resourceFile)
+        pieceBitmaps[resourceFile] = bitmap
+        return bitmap
+    }
+
+    private fun getChessPieceImageResource(piece: ChessPiece): Int {
+        return when (piece) {
+            is King -> if (piece.color == ChessColor.WHITE) R.drawable.whitekingresized else R.drawable.blackkingresized
+            is Queen -> if (piece.color == ChessColor.WHITE) R.drawable.whitequeenresized else R.drawable.blackqueenresized
+            is Bishop -> if (piece.color == ChessColor.WHITE) R.drawable.whitebishopresized else R.drawable.blackbishopresized
+            is Knight -> if (piece.color == ChessColor.WHITE) R.drawable.whiteknightresized else R.drawable.blackknightresized
+            is Rook -> if (piece.color == ChessColor.WHITE) R.drawable.whiterookresized else R.drawable.blackrookresized
+            is WhitePawn -> R.drawable.whitepawnresized
+            is BlackPawn -> R.drawable.blackpawnresized
+        }
+    }
+
     private fun makeRect(origin: Point, squareSize: Float): Rect {
         return Rect(origin.x, origin.y, origin.x + squareSize.toInt(), origin.y + squareSize.toInt())
     }
 
     companion object {
-        val TAG: String = "ChessBoardView"
+        private val TAG: String = "ChessBoardView"
     }
 }
 
