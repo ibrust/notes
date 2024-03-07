@@ -108,13 +108,16 @@ class ChessBoardView @JvmOverloads constructor(
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val specWidth = MeasureSpec.getSize(widthMeasureSpec)
         val specHeight = MeasureSpec.getSize(heightMeasureSpec)
+        val minWidth = suggestedMinimumWidth + paddingLeft + paddingRight
+        val minHeight = suggestedMinimumHeight + paddingTop + paddingBottom
 
-        val requestedHeight: Int
+        val desiredWidth = max(specWidth, minWidth)
+        var desiredHeight: Int
         when (MeasureSpec.getMode(heightMeasureSpec)) {
-            MeasureSpec.EXACTLY, MeasureSpec.AT_MOST -> requestedHeight = min(specHeight, specWidth)
-            else -> requestedHeight = specWidth
+            MeasureSpec.EXACTLY, MeasureSpec.AT_MOST -> desiredHeight = min(specHeight, max(specWidth, minHeight))
+            else -> desiredHeight = max(specWidth, minHeight)
         }
-        setMeasuredDimension(specWidth, requestedHeight)
+        setMeasuredDimension(desiredWidth, desiredHeight)
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
