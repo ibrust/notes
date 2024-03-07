@@ -201,21 +201,31 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         if (state.colorToMove == ChessColor.WHITE) {
             state.fullMoveNumber += 1
         }
-        val repetitions: Int = trackPositionWasReached(board)
-        state.result = checkForResult(repetitions)
+        trackPositionWasReached(board)
+        state.result = checkForResult(state.colorToMove, state.board)
 
         _stateFlow.value = state
     }
 
-    private fun trackPositionWasReached(board: Array<ChessPiece?>): Int {
+    private fun trackPositionWasReached(board: Array<ChessPiece?>) {
         val hashString = board.hashString()
         val currentValue: Int? = mapOfPositionsReached[hashString]
         mapOfPositionsReached[hashString] = (currentValue ?: 0) + 1
-        return (currentValue ?: 0) + 1
     }
 
-    private fun checkForResult(repetitions: Int): GameResult? {
-        if (repetitions == 3 || fiftyMoveRuleTracker >= 50) {
+    private fun checkForStalemate(colorToMove: ChessColor, board: Array<ChessPiece?>): Boolean {
+        val pieces = board.getPiecesForColor(colorToMove)
+        val potentialMoves: MutableList<Square> = mutableListOf()
+        for (piece in pieces) {
+            potentialMoves.addAll(getSquaresOfUnobstructedMoves(piece, board))
+        }
+        return potentialMoves.isEmpty()
+    }
+
+    private fun checkForResult(colorToMove: ChessColor, board: Array<ChessPiece?>): GameResult? {
+        val repetitions = mapOfPositionsReached[board.hashString()]
+        val isStalemate = checkForStalemate(colorToMove, board)
+        if (isStalemate || repetitions == 3 || fiftyMoveRuleTracker >= 50) {
             return GameResult.DRAW
         }
         return null

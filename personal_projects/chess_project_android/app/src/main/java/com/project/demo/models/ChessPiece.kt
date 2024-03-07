@@ -190,6 +190,17 @@ fun Array<ChessPiece?>.hashString(): String {
     return builder.toString()
 }
 
+fun Array<ChessPiece?>.getPiecesForColor(color: ChessColor): Array<ChessPiece> {
+    val pieces: ArrayList<ChessPiece> = arrayListOf()
+    for (piece in this) {
+        piece ?: continue
+        if (piece.color == color) {
+            pieces.add(piece)
+        }
+    }
+    return pieces.toTypedArray()
+}
+
 operator fun Array<ChessPiece?>.get(square: Square?): ChessPiece? {
     val unwrappedSquare: Square = square ?: return null
     for (index in unwrappedSquare.column.indices()) {
