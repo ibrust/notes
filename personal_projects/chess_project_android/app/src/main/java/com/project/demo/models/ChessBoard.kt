@@ -16,7 +16,7 @@ interface ChessBoardInterface {
     fun didReleaseOnSquare(square: Square)
 }
 
-// TODO: pawn promotion, win / lose, stalemate
+// TODO: pawn promotion, win / lose, handle game result in view
 // also would like move backtracking, board flip, board reset, square highlighting, visual tracking of taken pieces, timer, & other features on chess.com
 // also figure out whether we need a coroutine context in here / other local datasource conventions
 // also maybe rename this to ChessBoardModel or ChessBoardLocalDataSource?
@@ -213,7 +213,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         mapOfPositionsReached[hashString] = (currentValue ?: 0) + 1
     }
 
-    private fun checkForStalemate(colorToMove: ChessColor, board: Array<ChessPiece?>): Boolean {
+    private fun checkIfNoMovesRemain(colorToMove: ChessColor, board: Array<ChessPiece?>): Boolean {
         val pieces = board.getPiecesForColor(colorToMove)
         val potentialMoves: MutableList<Square> = mutableListOf()
         for (piece in pieces) {
@@ -224,9 +224,27 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
 
     private fun checkForResult(colorToMove: ChessColor, board: Array<ChessPiece?>): GameResult? {
         val repetitions = mapOfPositionsReached[board.hashString()]
-        val isStalemate = checkForStalemate(colorToMove, board)
-        if (isStalemate || repetitions == 3 || fiftyMoveRuleTracker >= 50) {
+        val noMovesRemain = checkIfNoMovesRemain(colorToMove, board)
+        if (repetitions == 3 || fiftyMoveRuleTracker >= 50) {
             return GameResult.DRAW
+        }
+        if (noMovesRemain) {
+            // if the color to move is in check they lose, otherwise it's a stalemate
+            var piecesKing: ChessPiece? = null
+            var kingsSquare: Square? = null
+            for (square in Square.allSquares()) {
+                if (board[square] is King && board[square]?.color == colorToMove) {
+                    piecesKing = board[square]
+                    kingsSquare = square
+                }
+            }
+            piecesKing ?: return null
+            kingsSquare ?: return null
+            return if (isKingInCheckAtDestination(piecesKing, kingsSquare, board)) {
+                if (colorToMove == ChessColor.WHITE) GameResult.BLACKWIN else GameResult.WHITEWIN
+            } else {
+                GameResult.DRAW
+            }
         }
         return null
     }
@@ -301,15 +319,19 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
             }
         }
         squareOfPiecesKing ?: return true
+        val piecesKing = copyOfBoard[squareOfPiecesKing] ?: return true
+        return isKingInCheckAtDestination(piecesKing, squareOfPiecesKing, copyOfBoard)
+    }
 
+    private fun isKingInCheckAtDestination(king: ChessPiece, destinationSquare: Square, board: Array<ChessPiece?>): Boolean {
         // scan the board for checks from any enemy pieces
         for (square in Square.allSquares()) {
-            if (copyOfBoard[square] != null && copyOfBoard[square]?.color != piece.color) {
+            if (board[square] != null && board[square]?.color != king.color) {
                 // found an enemy piece, now see if it can take our pieces king
-                val enemyPiece = copyOfBoard[square] ?: continue
-                // need to pass in a copy of the board here...
-                val enemyPiecesUnobstructedMoves = getSquaresOfUnobstructedMoves(enemyPiece, copyOfBoard)
-                if (enemyPiecesUnobstructedMoves.contains(squareOfPiecesKing)) {
+                val enemyPiece = board[square] ?: continue
+                if (enemyPiece is King) continue
+                val enemyPiecesUnobstructedMoves = getSquaresOfUnobstructedMoves(enemyPiece, board)
+                if (enemyPiecesUnobstructedMoves.contains(destinationSquare)) {
                     return true
                 }
             }
