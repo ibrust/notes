@@ -47,14 +47,17 @@ class Square(val row: Row, val column: Column) {
 
     companion object {
         fun allSquares(): ArrayList<Square> {
-            val squares: ArrayList<Square> = arrayListOf()
-            for (row in Row.values()) {
-                for (column in Column.values()) {
-                    squares.add(Square(row, column))
+            if (allSquaresSaved.isEmpty()) {
+                for (row in Row.values()) {
+                    for (column in Column.values()) {
+                        allSquaresSaved.add(Square(row, column))
+                    }
                 }
             }
-            return squares
+            return allSquaresSaved
         }
+
+        private val allSquaresSaved: ArrayList<Square> = arrayListOf()
 
         fun makeSquare(row: Row?, column: Column?): Square? {
             val unwrappedRow: Row = row ?: return null

@@ -10,6 +10,13 @@ enum class ChessColor {
         }
     }
 
+    override fun toString(): String {
+        return when (this) {
+            BLACK -> "B"
+            WHITE -> "W"
+        }
+    }
+
     companion object {
         var playerColor: ChessColor = ChessColor.WHITE
     }

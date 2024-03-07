@@ -1,5 +1,7 @@
 package com.project.demo.models
 
+import java.lang.StringBuilder
+
 sealed class ChessPiece() {
     abstract var moveSet: Array<Move>
     abstract val color: ChessColor
@@ -36,7 +38,7 @@ class Knight(override val color: ChessColor, override val pieceId: Int = getPiec
     )
 
     override fun toString(): String {
-        return "N "
+        return "N$color"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -56,7 +58,7 @@ class Queen(override val color: ChessColor, override val pieceId: Int = getPiece
         Move.RANGENORTHWEST, Move.RANGENORTHEAST, Move.RANGESOUTHWEST, Move.RANGESOUTHEAST
     )
     override fun toString(): String {
-        return "Q "
+        return "Q$color"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -77,7 +79,7 @@ class King(override val color: ChessColor, override val pieceId: Int = getPieceI
         Move.CASTLEKINGSIDE, Move.CASTLEQUEENSIDE
     )
     override fun toString(): String {
-        return "K "
+        return "K$color"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -96,7 +98,7 @@ class Rook(override val color: ChessColor, override val pieceId: Int = getPieceI
         Move.RANGENORTH, Move.RANGESOUTH, Move.RANGEEAST, Move.RANGEWEST
     )
     override fun toString(): String {
-        return "R "
+        return "R$color"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -115,7 +117,7 @@ class Bishop(override val color: ChessColor, override val pieceId: Int = getPiec
         Move.RANGENORTHEAST, Move.RANGENORTHWEST, Move.RANGESOUTHEAST, Move.RANGESOUTHWEST
     )
     override fun toString(): String {
-        return "B "
+        return "B$color"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -136,7 +138,7 @@ class BlackPawn(override val pieceId: Int = getPieceId()): Pawn(color = ChessCol
         Move.SOUTH, Move.SOUTHEAST, Move.SOUTHWEST, Move.SOUTHTWICE, Move.ENPASSANT
     )
     override fun toString(): String {
-        return "X "
+        return "p$color"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -155,7 +157,7 @@ class WhitePawn(override val pieceId: Int = getPieceId()): Pawn(color = ChessCol
         Move.NORTH, Move.NORTHEAST, Move.NORTHWEST, Move.NORTHTWICE, Move.ENPASSANT
     )
     override fun toString(): String {
-        return "O "
+        return "P$color"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -169,68 +171,6 @@ class WhitePawn(override val pieceId: Int = getPieceId()): Pawn(color = ChessCol
     }
 }
 
-enum class Move {
-    NORTH, SOUTH, EAST, WEST,
-    NORTHWEST, NORTHEAST, SOUTHWEST, SOUTHEAST,
-    RANGENORTH, RANGESOUTH, RANGEEAST, RANGEWEST,
-    RANGENORTHEAST, RANGENORTHWEST, RANGESOUTHEAST, RANGESOUTHWEST,
-    JUMPNNE, JUMPNNW, JUMPENE, JUMPESE, JUMPSSE, JUMPSSW, JUMPWNW, JUMPWSW,
-    NORTHTWICE, SOUTHTWICE, ENPASSANT,
-    CASTLEQUEENSIDE, CASTLEKINGSIDE;
-
-    fun isRange(): Boolean {
-        return when (this) {
-            RANGENORTH, RANGESOUTH, RANGEEAST, RANGEWEST,
-            RANGENORTHEAST, RANGENORTHWEST, RANGESOUTHEAST, RANGESOUTHWEST -> true
-            else -> false
-        }
-    }
-
-    fun isForwardPawnMove(piece: ChessPiece): Boolean {
-        return (piece is Pawn && (this == SOUTHTWICE || this == NORTHTWICE || this == SOUTH || this == NORTH))
-    }
-
-    fun isDiagonalPawnMove(piece: ChessPiece): Boolean {
-        return (piece is Pawn && (this == SOUTHEAST || this == SOUTHWEST || this == NORTHEAST || this == NORTHWEST))
-    }
-
-    fun isCastling(): Boolean {
-        return this == CASTLEKINGSIDE ||  this == CASTLEQUEENSIDE
-    }
-
-    fun calculateDestinationSquare(currentSquare: Square, distance: Int?): Square? {
-        return when (this) {
-            NORTH -> currentSquare + Point(x = 0, y = 1)
-            SOUTH -> currentSquare + Point(x = 0, y = -1)
-            EAST -> currentSquare + Point(x = 1, y = 0)
-            WEST -> currentSquare + Point(x = -1, y = 0)
-            NORTHTWICE -> currentSquare + Point(x = 0, y = 2)
-            SOUTHTWICE -> currentSquare + Point(x = 0, y = -2)
-            NORTHWEST -> currentSquare + Point(x = -1, y = 1)
-            NORTHEAST -> currentSquare + Point(x = 1, y = 1)
-            SOUTHWEST -> currentSquare + Point(x = -1, y = -1)
-            SOUTHEAST -> currentSquare + Point(x = 1, y = -1)
-            JUMPNNE -> currentSquare + Point(x = 1, y = 2)
-            JUMPNNW -> currentSquare + Point(x = -1, y = 2)
-            JUMPENE -> currentSquare + Point(x = 2, y = 1)
-            JUMPESE -> currentSquare + Point(x = 2, y = -1)
-            JUMPSSE -> currentSquare + Point(x = 1, y = -2)
-            JUMPSSW -> currentSquare + Point(x = -1, y = -2)
-            JUMPWNW -> currentSquare + Point(x = -2, y = 1)
-            JUMPWSW -> currentSquare + Point(x = -2, y = -1)
-            RANGENORTH -> currentSquare + Point(x = 0, y = distance ?: 0)
-            RANGESOUTH -> currentSquare + Point(x = 0, y = -(distance ?: 0))
-            RANGEEAST -> currentSquare + Point(x = distance ?: 0, y = 0)
-            RANGEWEST -> currentSquare + Point(x = -(distance ?: 0), y = 0)
-            RANGENORTHEAST -> currentSquare + Point(x = distance ?: 0, y = distance ?: 0)
-            RANGENORTHWEST -> currentSquare + Point(x = -(distance ?: 0), y = distance ?: 0)
-            RANGESOUTHEAST -> currentSquare + Point(x = distance ?: 0, y = -(distance ?: 0))
-            RANGESOUTHWEST -> currentSquare + Point(x = -(distance ?: 0), y = -(distance ?: 0))
-            CASTLEKINGSIDE, CASTLEQUEENSIDE, ENPASSANT -> return null
-        }
-    }
-}
-
 fun Array<ChessPiece?>.copy(): Array<ChessPiece?> {
     val copyOfArray: Array<ChessPiece?> = arrayOfNulls(size = this.size)
     var index = 0
@@ -239,6 +179,15 @@ fun Array<ChessPiece?>.copy(): Array<ChessPiece?> {
         index++
     }
     return copyOfArray
+}
+
+fun Array<ChessPiece?>.hashString(): String {
+    var builder = StringBuilder()
+    for (square in Square.allSquares()) {
+        val str: String = this[square].toString()
+        builder.append(str)
+    }
+    return builder.toString()
 }
 
 operator fun Array<ChessPiece?>.get(square: Square?): ChessPiece? {

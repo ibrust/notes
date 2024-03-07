@@ -16,8 +16,8 @@ interface ChessBoardInterface {
     fun didReleaseOnSquare(square: Square)
 }
 
-// TODO: end of game condition, pawn promotion
-// also would like move backtracking, board flip, square highlighting, visual tracking of taken pieces, & other features seen on chess.com
+// TODO: pawn promotion, win / lose, stalemate
+// also would like move backtracking, board flip, board reset, square highlighting, visual tracking of taken pieces, timer, & other features on chess.com
 // also figure out whether we need a coroutine context in here / other local datasource conventions
 // also maybe rename this to ChessBoardModel or ChessBoardLocalDataSource?
 class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
@@ -28,6 +28,8 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
     private var hasWhiteCastled: Boolean = false
     private var hasBlackCastled: Boolean = false
     private var enPassantSquare: Square? = null
+    private var fiftyMoveRuleTracker: Int = 0
+    private var mapOfPositionsReached: MutableMap<String, Int> = mutableMapOf()
 
     private fun getState(): ChessBoard.State {
         return _stateFlow.value
@@ -37,25 +39,28 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         var fullMoveNumber: Int = 1,
         var colorToMove: ChessColor = ChessColor.WHITE,
         val board: Array<ChessPiece?> = arrayOfNulls(size = ChessBoard.totalSquares),
-        var activatedSquare: Square? = null
+        var activatedSquare: Square? = null,
+        var result: GameResult? = null
     ) {
         fun copy(): State {
             return State(
                 fullMoveNumber = this.fullMoveNumber,
                 colorToMove = this.colorToMove,
                 board = this.board.copy(),
-                activatedSquare = this.activatedSquare
+                activatedSquare = this.activatedSquare,
+                result = this.result
             )
         }
 
         override fun toString(): String {
-            return "${fullMoveNumber}, ${colorToMove}, ${board}, ${activatedSquare}"
+            return "${fullMoveNumber}, ${colorToMove}, ${board}, ${activatedSquare}, ${result}"
         }
 
         override fun hashCode(): Int {
             val sum1 = fullMoveNumber.hashCode() * 37 + colorToMove.hashCode() * 29
             val sum2 = board.hashCode() * 11 + activatedSquare.hashCode() * 13
-            return sum1 + sum2
+            val sum3 = result.hashCode() * 17
+            return sum1 + sum2 + sum3
         }
 
         override fun equals(other: Any?): Boolean {
@@ -64,7 +69,8 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
             }
             val comp1 = fullMoveNumber == other.fullMoveNumber && colorToMove == other.colorToMove
             val comp2 = board == other.board && activatedSquare == other.activatedSquare
-            return comp1 && comp2
+            val comp3 = result == other.result
+            return comp1 && comp2 && comp3
         }
     }
 
@@ -89,6 +95,8 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         hasWhiteCastled = false
         hasBlackCastled = false
         enPassantSquare = null
+        mapOfPositionsReached = mutableMapOf()
+
         val board: Array<ChessPiece?> = arrayOfNulls(size = ChessBoard.totalSquares)
         for (square in Square.allSquares()) {
             board[square] = null
@@ -125,7 +133,8 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
             fullMoveNumber = 1,
             colorToMove = ChessColor.WHITE,
             board = board,
-            activatedSquare = null
+            activatedSquare = null,
+            result = null
         )
     }
 
@@ -158,14 +167,13 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         val piece: ChessPiece = board[currentSquare] ?: return
 
         board[currentSquare] = null
+        var didCapturePiece = board[destinationSquare] != null
         board[destinationSquare] = piece
 
-        if (destinationSquare == enPassantSquare) {
-            if (piece is WhitePawn) {
-                board[destinationSquare + Point(x = 0, y = -1)] = null
-            } else if (piece is BlackPawn) {
-                board[destinationSquare + Point(x = 0, y = 1)] = null
-            }
+        if (destinationSquare == enPassantSquare && piece is Pawn) {
+            val increment = if (piece is WhitePawn) -1 else 1
+            board[destinationSquare + Point(x = 0, y = increment)] = null
+            didCapturePiece = true
         }
 
         val twoSquaresEast = currentSquare + Point(x = 2, y = 0)
@@ -188,14 +196,32 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
 
         setEnPassantSquare(piece, currentSquare, destinationSquare)
         piece.hasPieceMoved = true
+        fiftyMoveRuleTracker = if (!didCapturePiece) fiftyMoveRuleTracker + 1 else 0
         state.colorToMove = state.colorToMove.otherColor()
         if (state.colorToMove == ChessColor.WHITE) {
             state.fullMoveNumber += 1
         }
+        val repetitions: Int = trackPositionWasReached(board)
+        state.result = checkForResult(repetitions)
+
         _stateFlow.value = state
     }
 
-    fun setEnPassantSquare(piece: ChessPiece, currentSquare: Square, destinationSquare: Square) {
+    private fun trackPositionWasReached(board: Array<ChessPiece?>): Int {
+        val hashString = board.hashString()
+        val currentValue: Int? = mapOfPositionsReached[hashString]
+        mapOfPositionsReached[hashString] = (currentValue ?: 0) + 1
+        return (currentValue ?: 0) + 1
+    }
+
+    private fun checkForResult(repetitions: Int): GameResult? {
+        if (repetitions == 3 || fiftyMoveRuleTracker >= 50) {
+            return GameResult.DRAW
+        }
+        return null
+    }
+
+    private fun setEnPassantSquare(piece: ChessPiece, currentSquare: Square, destinationSquare: Square) {
         if (piece is Pawn) {
             val twoSquaresSouth = currentSquare + Point(x = 0, y = -2)
             val twoSquaresNorth = currentSquare + Point(x = 0, y = 2)
@@ -216,8 +242,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         val piece = board[square] ?: return
 
         if (GameMode.currentGameMode == GameMode.COMPETITIVE
-                    && piece.color != ChessColor.playerColor
-                    && piece.color != null) {
+                    && piece.color != ChessColor.playerColor) {
             return
         }
         if (piece.color != _stateFlow.value.colorToMove) {
@@ -309,7 +334,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
             } else if (move.isCastling()) {
                 if (canStillCastle(piece, move)
                         && castlePathIsClear(move, currentSquare, board)
-                        && !enemyPiecesPreventCastling(piece, move, currentSquare, board)) {
+                        && !enemyPiecesPreventCastling(piece, move, currentSquare)) {
                     val increment: Int = if (move == Move.CASTLEQUEENSIDE) -2 else 2
                     val destinationSquare: Square = currentSquare + Point(x = increment, y = 0) ?: continue
                     validSquares.add(destinationSquare)
@@ -317,7 +342,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
             } else if (move == Move.ENPASSANT) {
                 val unwrappedEnPassantSquare = enPassantSquare ?: continue
 
-                if (canPerformEnPassant(piece, currentSquare, unwrappedEnPassantSquare, board)) {
+                if (canPerformEnPassant(piece, currentSquare, unwrappedEnPassantSquare)) {
                     validSquares.add(unwrappedEnPassantSquare)
                 }
             } else {
@@ -335,7 +360,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         return validSquares
     }
 
-    private fun canPerformEnPassant(piece: ChessPiece, currentSquare: Square, enPassantSquare: Square, board: Array<ChessPiece?>): Boolean {
+    private fun canPerformEnPassant(piece: ChessPiece, currentSquare: Square, enPassantSquare: Square): Boolean {
         if (piece is WhitePawn) {
             return (currentSquare == enPassantSquare + Point(x = 1, y = -1) || currentSquare == enPassantSquare + Point(x = -1, y = -1))
         } else if (piece is BlackPawn) {
@@ -344,7 +369,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         return false
     }
 
-    private fun enemyPiecesPreventCastling(king: ChessPiece, move: Move, currentSquare: Square, board: Array<ChessPiece?>): Boolean {
+    private fun enemyPiecesPreventCastling(king: ChessPiece, move: Move, currentSquare: Square): Boolean {
         val increment = if (move == Move.CASTLEKINGSIDE) 1 else -1
         val oneSquareAhead: Square = currentSquare + Point(x = 0, y = increment) ?: return true
         val twoSquaresAhead: Square = currentSquare + Point(x = 0, y = increment * 2) ?: return true
