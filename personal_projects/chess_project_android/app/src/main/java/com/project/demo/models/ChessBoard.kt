@@ -16,7 +16,7 @@ interface ChessBoardInterface {
     fun didReleaseOnSquare(square: Square)
 }
 
-// TODO: implement castling, move number tracking, en passant, end of game condition, pawn promotion
+// TODO: implement move number tracking, en passant, end of game condition, pawn promotion
 // also figure out whether we need a coroutine context in here / other local datasource conventions
 // also maybe rename this to ChessBoardModel or ChessBoardLocalDataSource?
 class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
@@ -241,7 +241,7 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
             } else if (move.isCastling()) {
                 if (canStillCastle(piece, move)
                         && castlePathIsClear(move, currentSquare, board)
-                        && !enemyPiecesPreventCastling(move, currentSquare, board)) {
+                        && !enemyPiecesPreventCastling(piece, move, currentSquare, board)) {
                     val increment: Int = if (move == Move.CASTLEQUEENSIDE) -2 else 2
                     val destinationSquare: Square = currentSquare + Point(x = increment, y = 0) ?: continue
                     validSquares.add(destinationSquare)
@@ -261,8 +261,12 @@ class ChessBoard(private val scope: CoroutineScope): ChessBoardInterface {
         return validSquares
     }
 
-    private fun enemyPiecesPreventCastling(move: Move, currentSquare: Square, board: Array<ChessPiece?>): Boolean {
-        return false
+    private fun enemyPiecesPreventCastling(king: ChessPiece, move: Move, currentSquare: Square, board: Array<ChessPiece?>): Boolean {
+        val increment = if (move == Move.CASTLEKINGSIDE) 1 else -1
+        val oneSquareAhead: Square = currentSquare + Point(x = 0, y = increment) ?: return true
+        val twoSquaresAhead: Square = currentSquare + Point(x = 0, y = increment * 2) ?: return true
+
+        return (doesMovePutKingInCheck(king, oneSquareAhead) || doesMovePutKingInCheck(king, twoSquaresAhead))
     }
 
     private fun castlePathIsClear(move: Move, currentSquare: Square, board: Array<ChessPiece?>): Boolean {
