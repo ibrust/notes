@@ -106,28 +106,21 @@ class ChessBoardView @JvmOverloads constructor(
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val minWidth = suggestedMinimumWidth + paddingLeft + paddingRight
-        val parentWidth = MeasureSpec.getSize(widthMeasureSpec)
-        val minHeight = suggestedMinimumHeight + paddingTop + paddingBottom
-        val parentHeight = MeasureSpec.getSize(heightMeasureSpec)
+        val specWidth = MeasureSpec.getSize(widthMeasureSpec)
+        val specHeight = MeasureSpec.getSize(heightMeasureSpec)
 
-        val desiredWidth: Int
-        val desiredHeight: Int
-        when (MeasureSpec.getMode(widthMeasureSpec)) {
-            MeasureSpec.EXACTLY -> desiredWidth = parentWidth
-            else -> desiredWidth =  max(minWidth, parentWidth)
-        }
+        val requestedHeight: Int
         when (MeasureSpec.getMode(heightMeasureSpec)) {
-            MeasureSpec.EXACTLY -> desiredHeight = parentHeight
-            else -> desiredHeight =  max(minHeight, parentHeight)
+            MeasureSpec.EXACTLY, MeasureSpec.AT_MOST -> requestedHeight = min(specHeight, specWidth)
+            else -> requestedHeight = specWidth
         }
-        setMeasuredDimension(desiredWidth, desiredHeight)
+        setMeasuredDimension(specWidth, requestedHeight)
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         val viewWidth = w.toFloat()
-        val viewHeight = w.toFloat()
+        val viewHeight = h.toFloat()
         val squareSize = (min(viewWidth, viewHeight) - 1) / 8
         squareOrigins.clear()
         for (row in 0..7) {

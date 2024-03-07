@@ -12,8 +12,9 @@
 
     <com.project.demo.views.ChessBoardView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintDimensionRatio="1:1"
+        android:layout_height="wrap_content"
+        android:minWidth="200dp"
+        android:minHeight="200dp"
         android:id="@+id/chess_board_view"
         app:layout_constraintBottom_toTopOf="@id/chess_moves_recycler_view"
         app:layout_constraintTop_toTopOf="@id/constraint_layout"
