@@ -5,4 +5,8 @@
     <color name="colorAccent">#FF03DAC5</color>
     <color name="colorWhiteGreen">#FFBEC8CA</color>
     <color name="colorBlackGreen">#FF49575A</color>
+    <color name="colorGreyGreen">#FF69756D</color>
+    <color name="blackBackground">#FF0C0F05</color>
+    <color name="chessYellow">#FFF4F7AA</color>
+    <color name="chessBrown">#FF443A23</color>
 </resources>
