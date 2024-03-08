@@ -13,14 +13,14 @@ import com.project.demo.ChessAppContainer
 import com.project.demo.ChessApplication
 import com.project.demo.models.Square
 import com.project.demo.views.ChessBoardView
+import com.project.demo.views.ChessGameActivityDelegate
 import com.project.demo.views.ChessMovesCellData
-import com.project.demo.views.MainActivityDelegate
 import kotlinx.coroutines.launch
 
 class ChessGameViewModel(
     private val container: ChessAppContainer,
     private val savedStateHandle: SavedStateHandle
-) : ViewModel(), MainActivityDelegate {
+) : ViewModel(), ChessGameActivityDelegate {
     private val repository = container.joggingAppRepository
     private val _availableChessMoveSetsLiveData = MutableLiveData<List<ChessMovesCellData>>()
     val availableChessMoveSetsLiveData: LiveData<List<ChessMovesCellData>> = _availableChessMoveSetsLiveData

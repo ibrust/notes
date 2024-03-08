@@ -1,23 +1,22 @@
 package com.project.demo.views
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.project.demo.databinding.ActivityMainBinding
+import com.project.demo.databinding.ActivityChessGameBinding
 import com.project.demo.models.Square
 import com.project.demo.viewmodels.ChessGameViewModel
 import java.lang.ref.WeakReference
 
 
-interface MainActivityDelegate: ChessBoardViewDelegate {}
+interface ChessGameActivityDelegate: ChessBoardViewDelegate {}
 
-class MainActivity : ComponentActivity(), ChessBoardViewDelegate {
+class ChessGameActivity : ComponentActivity(), ChessBoardViewDelegate {
 
     private val viewModel: ChessGameViewModel by viewModels { ChessGameViewModel.Factory }
-    private lateinit var binding: ActivityMainBinding
+    private lateinit var binding: ActivityChessGameBinding
 
     private lateinit var cellData: ArrayList<ChessMovesCellData>
     private lateinit var adapter: ChessMoveSetsRecyclerViewAdapter
@@ -25,7 +24,7 @@ class MainActivity : ComponentActivity(), ChessBoardViewDelegate {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityChessGameBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         setupRecyclerView()
