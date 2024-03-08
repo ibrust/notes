@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#FF6200EE</color>
-    <color name="colorPrimaryDark">#FF3700B3</color>
-    <color name="colorAccent">#FF03DAC5</color>
     <color name="colorWhiteGreen">#FFBEC8CA</color>
     <color name="colorBlackGreen">#FF49575A</color>
     <color name="colorGreyGreen">#FF69756D</color>
+    <color name="panelTextGrey">#FF564F63</color>
     <color name="blackBackground">#FF0C0F05</color>
     <color name="chessYellow">#FFF4F7AA</color>
+    <color name="chessTransparentYellow">#44BBC10B</color>
     <color name="chessBrown">#FF443A23</color>
+    <color name="transparent">#00000000</color>
 </resources>

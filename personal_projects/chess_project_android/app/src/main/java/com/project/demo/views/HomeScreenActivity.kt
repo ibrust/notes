@@ -4,15 +4,14 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
 import com.project.demo.databinding.ActivityHomeScreenBinding
-import com.project.demo.viewmodels.ChessGameViewModel
 import com.project.demo.viewmodels.HomeScreenViewModel
 
 class HomeScreenActivity : AppCompatActivity() {
-    private val viewModel: ChessGameViewModel by viewModels { HomeScreenViewModel.Factory }
+    private val viewModel: HomeScreenViewModel by viewModels { HomeScreenViewModel.Factory }
     private lateinit var binding: ActivityHomeScreenBinding
 
-    // private lateinit var cellData: ArrayList<HomeScreenCellData>
-    private lateinit var adapter: ChessMoveSetsRecyclerViewAdapter
+    private lateinit var sectionsData: ArrayList<HomeScreenSectionsData>
+    private lateinit var adapter: HomeScreenRecyclerViewAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,9 +22,9 @@ class HomeScreenActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-//        val recyclerView = binding.homeScreenRecyclerView
-//        cellData = ArrayList()
-//        adapter = HomeScreenRecyclerViewAdapter(cellData)
-//        recyclerView.adapter = adapter
+        val recyclerView = binding.homeScreenRecyclerView
+        sectionsData = ArrayList()
+        adapter = HomeScreenRecyclerViewAdapter(sectionsData)
+        recyclerView.adapter = adapter
     }
 }

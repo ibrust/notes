@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.project.demo.databinding.ActivityChessGameBinding
 import com.project.demo.models.Square
 import com.project.demo.viewmodels.ChessGameViewModel

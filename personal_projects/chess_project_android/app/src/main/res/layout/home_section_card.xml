@@ -1,5 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
-
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -25,7 +23,7 @@
             android:layout_height="wrap_content"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="CHESS MOVE SET 1"
+            tools:text="SECTION 1"
             android:padding="4dp"
             android:textStyle="bold"
             android:textColor="@color/panelTextGrey"
@@ -37,8 +35,8 @@
             android:layout_height="wrap_content"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toBottomOf="@id/title"
-            android:padding="4dp"
             tools:text="dummy text"
+            android:padding="4dp"
             android:textColor="@color/panelTextGrey"
             />
 
