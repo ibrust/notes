@@ -60,7 +60,7 @@ class ChessBoardView @JvmOverloads constructor(
     private var movingPoint: Point? = null
 
     data class State(
-        val chessBoard: Array<ChessPiece?> = arrayOfNulls(size = ChessBoard.height * ChessBoard.width),
+        val chessBoard: Array<ChessPiece?> = arrayOfNulls(size = ChessBoard.totalSquares),
         val fullMoveNumber: Int = 1,
         val colorToMove: ChessColor = ChessColor.WHITE,
         val activeSquare: Square? = null,
@@ -112,12 +112,16 @@ class ChessBoardView @JvmOverloads constructor(
         val minHeight = suggestedMinimumHeight + paddingTop + paddingBottom
 
         val desiredWidth = max(specWidth, minWidth)
-        var desiredHeight: Int
-        when (MeasureSpec.getMode(heightMeasureSpec)) {
-            MeasureSpec.EXACTLY, MeasureSpec.AT_MOST -> desiredHeight = min(specHeight, max(specWidth, minHeight))
-            else -> desiredHeight = max(specWidth, minHeight)
+        val desiredHeight = when (MeasureSpec.getMode(heightMeasureSpec)) {
+            MeasureSpec.EXACTLY -> specHeight
+            MeasureSpec.AT_MOST -> min(specHeight, max(specWidth, minHeight))
+            else -> max(specWidth, minHeight)
         }
-        setMeasuredDimension(desiredWidth, desiredHeight)
+
+        setMeasuredDimension(
+            resolveSize(desiredWidth, widthMeasureSpec),
+            desiredHeight
+        )
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
