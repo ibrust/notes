@@ -72,7 +72,6 @@ fun ArrayList<HomeScreenRepository.PlayButtonData>.toCellData(): ArrayList<PlayB
 fun HomeScreenRepository.PlayButtonData.toCellData(): PlayButtonData {
     return PlayButtonData(
         resId = this.resId,
-        title = this.buttonTitle,
-        viewId = View.generateViewId()
+        title = this.buttonTitle
     )
 }

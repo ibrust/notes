@@ -10,29 +10,28 @@ import androidx.recyclerview.widget.RecyclerView
 import com.project.demo.R
 import com.project.demo.models.ChessPiece
 import com.project.demo.models.GameState
+import java.lang.ref.WeakReference
 
 
-open class HomeScreenCellData() {
-    fun getRecentGamesData(): RecentGamesData? {
-        return this as? RecentGamesData
-    }
-    fun getPlayButtonData(): RecentGamesData? {
-        return this as? RecentGamesData
-    }
-}
+open class HomeScreenCellData()
 class PlayButtonData(
     val resId: Int,
-    val title: String,
-    val viewId: Int
+    val title: String
 ) : HomeScreenCellData()
 class RecentGamesData(
     val result: GameState,
     val positions: ArrayList<ArrayList<ChessPiece?>>
 ) : HomeScreenCellData()
 
+interface HomeScreenRecyclerViewDelegate {
+    fun didClickPlayButton(position: Int)
+}
+
 class HomeScreenRecyclerViewAdapter(
-    private val homeScreenCellData: ArrayList<HomeScreenCellData>
+    private val homeScreenCellData: ArrayList<HomeScreenCellData>,
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    var delegate: WeakReference<HomeScreenRecyclerViewDelegate>? = null
 
     override fun getItemViewType(position: Int): Int {
         return position
@@ -68,13 +67,19 @@ class HomeScreenRecyclerViewAdapter(
                 val buttonsViewHolder = holder as? PlayButtonsViewHolder ?: return
                 buttonsViewHolder.titleView.text = playButtonData.title
                 buttonsViewHolder.imageView.setBackgroundResource(playButtonData.resId)
-                buttonsViewHolder.cardView.id = playButtonData.viewId
+                buttonsViewHolder.cardView.setOnClickListener {
+                    didClickPlayButton(position)
+                }
             }
             else -> {
                 val recentGamesData = homeScreenCellData[position] as? RecentGamesData ?: return
                 val recentGamesViewHolder = holder as? RecentGamesViewHolder ?: return
             }
         }
+    }
+
+    fun didClickPlayButton(position: Int) {
+        delegate?.get()?.didClickPlayButton(position)
     }
 
     override fun getItemCount(): Int {
