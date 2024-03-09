@@ -10,7 +10,7 @@ class HomeScreenActivity : AppCompatActivity() {
     private val viewModel: HomeScreenViewModel by viewModels { HomeScreenViewModel.Factory }
     private lateinit var binding: ActivityHomeScreenBinding
 
-    private lateinit var sectionsData: ArrayList<HomeScreenSectionsData>
+    private lateinit var cellData: HomeScreenCellData
     private lateinit var adapter: HomeScreenRecyclerViewAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,8 +23,8 @@ class HomeScreenActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         val recyclerView = binding.homeScreenRecyclerView
-        sectionsData = ArrayList()
-        adapter = HomeScreenRecyclerViewAdapter(sectionsData)
+        cellData = HomeScreenCellData()
+        adapter = HomeScreenRecyclerViewAdapter(cellData)
         recyclerView.adapter = adapter
     }
 }

@@ -6,14 +6,25 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.project.demo.R
+import com.project.demo.models.ChessPiece
+import com.project.demo.models.GameState
 
-class HomeScreenSectionsData(
-    val resId: Int?,
-    val title: String
-)
+class HomeScreenCellData(
+    val playButtonData: ArrayList<PlayButtonData> = arrayListOf(),
+    val recentGamesData: ArrayList<RecentGamesData> = arrayListOf()
+) {
+    class PlayButtonData(
+        val resId: Int?,
+        val title: String
+    )
+    class RecentGamesData(
+        val result: GameState,
+        val positions: ArrayList<ArrayList<ChessPiece?>>
+    )
+}
 
 class HomeScreenRecyclerViewAdapter(
-    private val homeScreenPanelsData: List<HomeScreenSectionsData>
+    private val homeScreenCellData: HomeScreenCellData
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun getItemViewType(position: Int): Int {
@@ -36,32 +47,33 @@ class HomeScreenRecyclerViewAdapter(
                     parent,
                     false
                 )
-                return SectionsViewHolder(view)
+                return RecentGamesViewHolder(view)
             }
 
         }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        val cellData = homeScreenPanelsData[position]
         when (holder.itemViewType) {
             0, 1, 2 -> {
+                val cellData = homeScreenCellData.playButtonData[position]
                 val buttonsViewHolder = holder as? PlayButtonsViewHolder ?: return
                 buttonsViewHolder.titleView.text = cellData.title
                 val resId = cellData.resId ?: return
                 buttonsViewHolder.imageView.setBackgroundResource(resId)
             }
             else -> {
-
+                val cellData = homeScreenCellData.recentGamesData[position - 3]
+                val recentGamesViewHolder = holder as? RecentGamesViewHolder ?: return
             }
         }
     }
 
     override fun getItemCount(): Int {
-        return homeScreenPanelsData.size
+        return homeScreenCellData.playButtonData.size + homeScreenCellData.recentGamesData.size
     }
 
-    class SectionsViewHolder(cellView: View) : RecyclerView.ViewHolder(cellView) {
+    class RecentGamesViewHolder(cellView: View) : RecyclerView.ViewHolder(cellView) {
         val titleView: TextView = cellView.findViewById(R.id.home_button_title)
     }
 
