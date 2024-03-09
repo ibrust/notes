@@ -15,7 +15,7 @@
         android:id="@+id/home_screen_recycler_view"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/home_screen_play_buttons"
-        android:padding="40dp"
+        android:padding="25dp"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
