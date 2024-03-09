@@ -14,6 +14,7 @@ import com.project.demo.models.HomeScreenRepository
 import com.project.demo.views.ChessBoardView
 import com.project.demo.views.ChessMovesCellData
 import com.project.demo.views.HomeScreenCellData
+import com.project.demo.views.PlayButtonData
 import kotlinx.coroutines.launch
 
 /*
@@ -28,23 +29,14 @@ class HomeScreenViewModel(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val repository = container.homeScreenRepository
-    private val _homeScreenLiveData = MutableLiveData<HomeScreenCellData>()
-    val homeScreenLiveData: LiveData<HomeScreenCellData> = _homeScreenLiveData
-
-    init {
-        _homeScreenLiveData.postValue(HomeScreenCellData(
-            playButtonData = repository.playButtonData.toCellData(),
-            recentGamesData = arrayListOf()
-        ))
-    }
+    private val _homeScreenLiveData = MutableLiveData<List<HomeScreenCellData>>()
+    val homeScreenLiveData: LiveData<List<HomeScreenCellData>> = _homeScreenLiveData
 
     fun setupListeners() {
         viewModelScope.launch {
             repository.recentGamesData.collect() { recentGames ->
-                _homeScreenLiveData.postValue(HomeScreenCellData(
-                    playButtonData = repository.playButtonData.toCellData(),
-                    recentGamesData = arrayListOf()
-                ))
+                val playButtonData = repository.playButtonData.toCellData()
+                _homeScreenLiveData.postValue(playButtonData)
             }
         }
     }
@@ -68,14 +60,14 @@ class HomeScreenViewModel(
     }
 }
 
-fun ArrayList<HomeScreenRepository.PlayButtonData>.toCellData(): ArrayList<HomeScreenCellData.PlayButtonData> {
-    var cellData = arrayListOf<HomeScreenCellData.PlayButtonData>()
+fun ArrayList<HomeScreenRepository.PlayButtonData>.toCellData(): ArrayList<PlayButtonData> {
+    var cellData = arrayListOf<PlayButtonData>()
     for (data in this) {
         cellData.add(data.toCellData())
     }
     return cellData
 }
 
-fun HomeScreenRepository.PlayButtonData.toCellData(): HomeScreenCellData.PlayButtonData {
-    return HomeScreenCellData.PlayButtonData(this.resId, this.buttonTitle)
+fun HomeScreenRepository.PlayButtonData.toCellData(): PlayButtonData {
+    return PlayButtonData(this.resId, this.buttonTitle)
 }

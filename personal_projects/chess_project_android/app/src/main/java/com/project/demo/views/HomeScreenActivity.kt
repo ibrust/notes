@@ -11,7 +11,7 @@ class HomeScreenActivity : AppCompatActivity() {
     private val viewModel: HomeScreenViewModel by viewModels { HomeScreenViewModel.Factory }
     private lateinit var binding: ActivityHomeScreenBinding
 
-    private lateinit var cellData: HomeScreenCellData
+    private lateinit var cellData: ArrayList<HomeScreenCellData>
     private lateinit var adapter: HomeScreenRecyclerViewAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,15 +27,16 @@ class HomeScreenActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         val recyclerView = binding.homeScreenRecyclerView
-        cellData = HomeScreenCellData()
+        cellData = arrayListOf<HomeScreenCellData>()
         adapter = HomeScreenRecyclerViewAdapter(cellData)
         recyclerView.adapter = adapter
     }
 
     private fun setupListeners() {
         viewModel.homeScreenLiveData.observe(this, Observer { homeScreenCellData ->
-            cellData = homeScreenCellData
-            adapter.notifyDataSetChanged()
+            cellData.clear()
+            cellData.addAll(homeScreenCellData)
+            homeScreenCellData.let { adapter.notifyDataSetChanged() }
         })
     }
 }
