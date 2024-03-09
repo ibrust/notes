@@ -5,6 +5,7 @@
     <color name="colorGreyGreen">#FF69756D</color>
     <color name="panelTextGrey">#FF564F63</color>
     <color name="blackBackground">#FF0C0F05</color>
+    <color name="transparentGrey">#550C0F05</color>
     <color name="chessYellow">#FFF4F7AA</color>
     <color name="chessTransparentYellow">#44BBC10B</color>
     <color name="chessBrown">#FF443A23</color>
