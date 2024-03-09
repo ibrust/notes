@@ -3,6 +3,7 @@ package com.project.demo.views
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.project.demo.R
@@ -82,7 +83,7 @@ class HomeScreenRecyclerViewAdapter(
     }
 
     class PlayButtonsViewHolder(cellView: View) : RecyclerView.ViewHolder(cellView) {
-        val imageView: TextView = cellView.findViewById(R.id.home_button_image_view)
+        val imageView: ImageView = cellView.findViewById(R.id.home_button_image_view)
         val titleView: TextView = cellView.findViewById(R.id.home_button_title)
     }
 }
