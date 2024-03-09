@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.project.demo.R
 import com.project.demo.models.ChessPiece
@@ -21,7 +22,8 @@ open class HomeScreenCellData() {
 }
 class PlayButtonData(
     val resId: Int,
-    val title: String
+    val title: String,
+    val viewId: Int
 ) : HomeScreenCellData()
 class RecentGamesData(
     val result: GameState,
@@ -66,6 +68,7 @@ class HomeScreenRecyclerViewAdapter(
                 val buttonsViewHolder = holder as? PlayButtonsViewHolder ?: return
                 buttonsViewHolder.titleView.text = playButtonData.title
                 buttonsViewHolder.imageView.setBackgroundResource(playButtonData.resId)
+                buttonsViewHolder.cardView.id = playButtonData.viewId
             }
             else -> {
                 val recentGamesData = homeScreenCellData[position] as? RecentGamesData ?: return
@@ -85,5 +88,6 @@ class HomeScreenRecyclerViewAdapter(
     class PlayButtonsViewHolder(cellView: View) : RecyclerView.ViewHolder(cellView) {
         val imageView: ImageView = cellView.findViewById(R.id.home_button_image_view)
         val titleView: TextView = cellView.findViewById(R.id.home_button_title)
+        val cardView: CardView = cellView.findViewById(R.id.play_button_cardview)
     }
 }

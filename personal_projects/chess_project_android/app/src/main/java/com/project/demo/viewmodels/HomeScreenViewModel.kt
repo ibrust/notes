@@ -1,5 +1,6 @@
 package com.project.demo.viewmodels
 
+import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
@@ -69,5 +70,9 @@ fun ArrayList<HomeScreenRepository.PlayButtonData>.toCellData(): ArrayList<PlayB
 }
 
 fun HomeScreenRepository.PlayButtonData.toCellData(): PlayButtonData {
-    return PlayButtonData(this.resId, this.buttonTitle)
+    return PlayButtonData(
+        resId = this.resId,
+        title = this.buttonTitle,
+        viewId = View.generateViewId()
+    )
 }
