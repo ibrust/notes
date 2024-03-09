@@ -21,7 +21,7 @@ class ChessGameViewModel(
     private val container: ChessAppContainer,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel(), ChessGameActivityDelegate {
-    private val repository = container.joggingAppRepository
+    private val repository = container.chessGameRepository
     private val _availableChessMoveSetsLiveData = MutableLiveData<List<ChessMovesCellData>>()
     val availableChessMoveSetsLiveData: LiveData<List<ChessMovesCellData>> = _availableChessMoveSetsLiveData
     private val _chessBoardStateLiveData = MutableLiveData<ChessBoardView.State>()

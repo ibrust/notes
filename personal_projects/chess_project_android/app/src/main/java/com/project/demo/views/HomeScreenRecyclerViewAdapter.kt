@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.project.demo.R
 import com.project.demo.models.ChessPiece
 import com.project.demo.models.GameState
+import kotlin.math.abs
 
 class HomeScreenCellData(
     val playButtonData: ArrayList<PlayButtonData> = arrayListOf(),
@@ -56,6 +57,7 @@ class HomeScreenRecyclerViewAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder.itemViewType) {
             0, 1, 2 -> {
+                if (homeScreenCellData.playButtonData.size <= position) return
                 val cellData = homeScreenCellData.playButtonData[position]
                 val buttonsViewHolder = holder as? PlayButtonsViewHolder ?: return
                 buttonsViewHolder.titleView.text = cellData.title
@@ -63,7 +65,9 @@ class HomeScreenRecyclerViewAdapter(
                 buttonsViewHolder.imageView.setBackgroundResource(resId)
             }
             else -> {
-                val cellData = homeScreenCellData.recentGamesData[position - 3]
+                val offsetPosition = abs(position - 3)
+                if (homeScreenCellData.recentGamesData.size <= offsetPosition) return
+                val cellData = homeScreenCellData.recentGamesData[offsetPosition]
                 val recentGamesViewHolder = holder as? RecentGamesViewHolder ?: return
             }
         }

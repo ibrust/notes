@@ -1,45 +1,53 @@
 package com.project.demo.viewmodels
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.project.demo.ChessAppContainer
 import com.project.demo.ChessApplication
+import com.project.demo.models.HomeScreenRepository
+import com.project.demo.views.ChessBoardView
+import com.project.demo.views.ChessMovesCellData
+import com.project.demo.views.HomeScreenCellData
+import kotlinx.coroutines.launch
 
 /*
-so I want this to have a recycler view with different sections
-sections will include:
-- section for playing games - can play against computer, against other players (eventually), or for exploring the chess board
-- section for exploring recent games - will save last however many games in a database for viewing
-- section for exploring / creating movesets
+at the bottom there should be a toolbar of some sort - maybe for settings, account, return to homepage, etc.
 
-for the recent games / move sets sections there will be an arrow, and if they click it this'll push another activity
-with a longer list of games / move sets and more in depth features for that function
-
-for move sets... you'll need the ability to delete / add move sets
-add will take you to the explorer, and there will be a button to save your move sets or edit them, or something like this
-______________
-
-then at the bottom th ere should be a toolbar for settings, account, and homepage (I think...)
-_______________
-
-but FOR NOW let's juts do the 'play game' section
-I suppose we could also do the recent games section... we could refactor the database for that purpose
-and then we can deal with the movesets later, since that's more difficult
-
-on movesets screen let's have icons of small chessboards with the ending position? or a random position in the middle of the game?
-
-app names: KING CRUSHER ? FALLEN KING ? KING SACRIFICE ? QUEEN SAC
-I think Queen Sac comes closest
-
+at the top there should be a logo of some sort
+app name: QueenSac.net ? maybe with a cartoon picture of a queen ramming into something
  */
 
 class HomeScreenViewModel(
     private val container: ChessAppContainer,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+    private val repository = container.homeScreenRepository
+    private val _homeScreenLiveData = MutableLiveData<HomeScreenCellData>()
+    val homeScreenLiveData: LiveData<HomeScreenCellData> = _homeScreenLiveData
+
+    init {
+        _homeScreenLiveData.postValue(HomeScreenCellData(
+            playButtonData = repository.playButtonData.toCellData(),
+            recentGamesData = arrayListOf()
+        ))
+    }
+
+    fun setupListeners() {
+        viewModelScope.launch {
+            repository.recentGamesData.collect() { recentGames ->
+                _homeScreenLiveData.postValue(HomeScreenCellData(
+                    playButtonData = repository.playButtonData.toCellData(),
+                    recentGamesData = arrayListOf()
+                ))
+            }
+        }
+    }
 
     companion object {
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
@@ -58,4 +66,16 @@ class HomeScreenViewModel(
             }
         }
     }
+}
+
+fun ArrayList<HomeScreenRepository.PlayButtonData>.toCellData(): ArrayList<HomeScreenCellData.PlayButtonData> {
+    var cellData = arrayListOf<HomeScreenCellData.PlayButtonData>()
+    for (data in this) {
+        cellData.add(data.toCellData())
+    }
+    return cellData
+}
+
+fun HomeScreenRepository.PlayButtonData.toCellData(): HomeScreenCellData.PlayButtonData {
+    return HomeScreenCellData.PlayButtonData(this.resId, this.buttonTitle)
 }

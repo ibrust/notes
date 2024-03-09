@@ -3,6 +3,7 @@ package com.project.demo.views
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
+import androidx.lifecycle.Observer
 import com.project.demo.databinding.ActivityHomeScreenBinding
 import com.project.demo.viewmodels.HomeScreenViewModel
 
@@ -19,6 +20,9 @@ class HomeScreenActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setupRecyclerView()
+
+        viewModel.setupListeners()
+        setupListeners()
     }
 
     private fun setupRecyclerView() {
@@ -26,5 +30,12 @@ class HomeScreenActivity : AppCompatActivity() {
         cellData = HomeScreenCellData()
         adapter = HomeScreenRecyclerViewAdapter(cellData)
         recyclerView.adapter = adapter
+    }
+
+    private fun setupListeners() {
+        viewModel.homeScreenLiveData.observe(this, Observer { homeScreenCellData ->
+            cellData = homeScreenCellData
+            adapter.notifyDataSetChanged()
+        })
     }
 }
