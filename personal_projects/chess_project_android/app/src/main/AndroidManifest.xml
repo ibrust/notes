@@ -26,7 +26,8 @@
         <activity
             android:name=".views.ChessGameActivity"
             android:exported="false"
-            android:theme="@style/AppTheme">
+            android:theme="@style/AppTheme"
+            android:parentActivityName=".views.HomeScreenActivity">
         </activity>
     </application>
 

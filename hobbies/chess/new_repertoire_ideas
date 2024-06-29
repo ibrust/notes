@@ -1,0 +1,256 @@
+ideal reprtoire ideas: 
+black:
+- petrov (cool move I haven't looked at much yet)
+- paulsen french (if there was a way to incorporate the paulsen french as black it'd be nice)
+- old benoni (hmmm... playing against the Nc3 benoni may make you stronger against it as white?)
+- sicilian defense - B20 (sidelines other than the open and closed sicilian - so learn your sidelines basically)
+- sicilian taimanov w/ 5. Nc3 - B45 - from the french sicilian, alternative to the four knights
+- Sicilian, Najdorf, Opocensky Variation - B92 - strange move against the najdorf. Maybe it's worth learning different sicilians. Maybe understanding this move would be useful. 
+
+white: 
+- paulsen french (so what I'm doing with the chigorin)
+- caro-kann - B15 w/ 3. Nc3 - main line (so maybe figure out a better response to the caro-kann, or work on your existing response)
+- bogo-indian defense - maybe defending against this would help me not have to avoid it 
+- E54 Nimzo-Indian, 4.e3, Gligoric System with 7...dxc4 - same here. I think this variation is transpositional as well
+- B74 Sicilian, Dragon, Classical, 9.Nb3 - interesting way of fighting the dragon 
+
+___________________________
+
+ideal openings to learn for general improvement as a player / positional understanding / etc. 
+
+1) D98 white - Grünfeld, Russian, Smyslov Variation
+2) E06 black - closed catalan w/ 5. Nf3 - just mix in the closed catalan for a while, for learning purposes
+3) E31 black - Nimzo-Indian, Leningrad Variation, Main line
+
+
+most my style: 
+1) E06 black - closed catalan 
+2) C53 black - guioco piano 
+
+
+_______________
+
+easiest way to get 2000: 
+1) E68 w/ white - King's Indian, Fianchetto, Classical Variation, 8.e4
+2) D28 w/ black - QGA, Classical Variation 7.Qe2
+3) D36 w/ white - QGD, Exchange, positional line, 6.Qc2
+4) B10 - caro-kann defense (landed on white but if relevant...?) 
+5) E44 w/ white - Nimzo-Indian, Fischer Variation, 5.Ne2
+
+
+________________________
+tree thresholds (modified):
+at move 2 -> 5%+ 
+at move 4 -> 10%+
+at move 5 -> 15%+
+at move 8 -> 20%+
+at move 20 -> 25%+
+at move 25 -> 30%+
+
+maybe start with building a tree based around this, and get it as deep as move 20 at least. 
+    though really you can probably just keep drilling down until there's no more moves left or not enough games left
+    then you can flesh it out afterwards, starting at the base and going lower than 5%, etc. 
+
+    but this doesn't really address how to handle positions that are unique... maybe mark positions as unique and explore them based on instinct. 
+        also try expanding the search criteria to increase the number of games / players 
+
+in the next step work toward:
+at move 3 -> 5%
+at move 6 -> 10%
+at move 15 -> 15%
+at move 20+ -> 20%
+
+_______________
+
+
+Van Geet specific preferences: 
+
+1... c6 (4%): for now I'm playing my weird sidelines in the main line 
+    after I switch to the chigorin vs. d5 I'll play the Jobava london w/ c6 transposition here
+1... e5 (8%): Napoleon attack - most brutal variation
+1... e6 (5%): Paulsen French via 2. d4 - confuses many people on the way there - most challenging variation I'll face
+1... c5 (11%): Two Knights Sicilian (3rd most brutal lines - agreed)
+1... Nf6 (22%): Alekhines Scandinavian + Falkbeer Gambit - 2nd most brutal variation (it's also the 3rd most challening... depends on whether they know the lines)
+1... Nc6 (2%): Van Geet Berlin Gambit - 2nd most challenging variation I'll face (probably these are nimzowitsch defense players)
+1... d5 (34%): Closed Scandinavian for now, but Chigorin Setup later as I get more serious (maybe... this line is just fun though. 4th most brutal lines anyway)
+    the only 2 significant lines added by playing the Chigorin setup here are the Irish Gambit and the Alburt Defense 
+    and playing the Closed Scandinavian means you probably need to play the Two Knights Caro-Kann or the mainline Caro-Kann
+1... d6 (4%): Byrne Variation / a few small Van Geet specific sidelines
+1... g6 (7%): Pseudo-Byrne Variation / sidelines (looks the same as the chigorin setup)
+1... f6 (1%): Dutch, Raphael Variation 
+1... b6 (1%): Owen Defense
+
+
+overall I think all the lines here are brutal, and I think black is going to be so confused he won't know what hit him. 
+    The added complexity is justified by the fact black won't know what's going on and is going to be more vulnerable. 
+
+eventually the goal should probably be to know multiple lines for each one of these moves so that you can play in tournaments
+
+lines that will most throw people for a loop: 
+    Berlin Gambit (the non-nimzowitsch players probably) > closed scandinavian lines vs d5 > owen defense > napoleon attack > caro kann lines 
+
+most brutal transpositions: 
+    1) closed scandinavian (accidentally end up in a caro kann, french, alekhines scandinavian)
+    2) alekhines scandinavian (they wind up in a falkbeer gambit or some weird scandinavian)
+    3) owens defense 
+    4) dutch, raphael variation 
+    5) caro-kann - apparently they just don't know what they're in for 
+    6) napoleon attack
+
+    number representing strength of sicilian two knights transpositions: 16/100 
+        so people will be actively transposing and successful in doing so often, bear that in mind. 
+        still many tricky lines people can fall into. it's more like... if they make it to their chosen sicilian it's because they guided themselves to it. 
+
+most brutal in speed chess: 
+    1) caro-kann lines 
+    2) van geet berlin gambit 
+    3) napoleon attack 
+    4) closed scandinavian 
+
+most innovative: 
+    1) dutch, raphael variatoin 
+    2) closed scandinavian 
+    3) byrne variation of the pirc 
+    4) two knights sicilian 
+
+best ideas / right ideas: 
+    1) napoleon attack 
+    2) owen defense 
+    3) van geet berlin gambit (great confirmation)
+    4) byrne variation of the pirc 
+    5) dutch, raphael variation 
+
+thing to most modify and to what degree: 
+    1) closed scandinavian, 8/10 - yeah at some point I'll probably play the chigorin, but for now I'm happy with what I have 
+        general number to conceptualize closed scandinavian with: 83/100 - so it's a great line anyway. they're all great lines really 
+
+overall number representing the repertoire: 76/100 
+I think this will just be my lifetime repertoire though. It's just too epic. 
+
+
+___________________________________
+
+most complex openings: 
+
+    B30 - sicilian, rossolimo 
+
+    C03 - french, tarrasch 
+
+    E83 King's Indian, Sämisch, 6...Nc6 (Panno Variation)
+
+    B43 Sicilian, Kan, 5.Nc3
+
+    E32 Nimzo-Indian, Classical Variation (4.Qc2)
+
+
+most overrated openings: 
+
+    E23 Nimzo-Indian, Spielmann, 4...c5, 5.dxc5 Nc6 (this is some sideline in the nimzo)
+
+openings that most play to my strengths and which I would be strongest at: 
+
+    B13 Caro–Kann, Exchange Variation
+
+    A13 English Opening: 1...e6 (without: 2.e4, 2.d4)
+
+    B61 Sicilian, Richter–Rauzer, Larsen Variation, 7.Qd2
+
+
+opening that most exemplifies the type of player I am: 
+
+    B03 Alekhine's Defence 3.d4
+
+
+opening my methods would most innovate: 
+
+    E69 King's Indian, Fianchetto, Classical Main line
+
+key opening I'm looking for: 
+
+    B82 Sicilian, Scheveningen, 6.f4
+
+openings to most throw black off to reach 2000 elo: 
+
+    B32 Sicilian Defence, 2.Nf3 Nc6 3.d4 (without 3...cxd4 4.Nxd4 Nf6 (B33), 4...e6 (B44–B47) 4...g6 (B34))
+
+___________________________
+
+Grunfeld: it's extremely complex, and if you don't know the theory... the pawn gets pushed and you have problems. 
+    The upside is your opponent has to know the theory as well, and will be confused by the position. 
+    So you could think of it as a theoretical battle. 
+
+Slav: 
+    You're going to just throw people off and kill them with the lines you've selected. 
+    And you could do that the rest of your chess career depending on what your aspirations are. 
+    It's an easier approach.
+
+Richter-Rauzer line via d6: 
+    it's an amazing opening, the whole classical setup, the only issue is reaching it reliably. You definitely want to play this. 
+    but over time you will be able to do that, and you won't mind it. It's not as fun as when you reach the rauzer, but you'll be fine with it. 
+
+nimzo indian (as black): 
+    The issue is it is it's been so played, and you have to know so many lines. Lines you're not aware of tracing back 50 years. 
+    At that point you're playing someone elses game. 
+
+QGA: 
+    it's a good opening it's just not as fun. It's a very typical position, it's not that uncommon 
+
+tarrasch / semi-tarrasch: 
+    it's an amazing opening unless your opponent knows the lines, at which point it can be a bit of a druge, but overall it's fine 
+
+semi-slav: 
+    it's completely epic, and once you know all the particular moves you'll see how epic it is 
+
+Taimanov: 
+    it's a bit easier to play, it's a little more intuitive but you're not going to get the same advantage. 
+
+nimzowitsch sicilian: 
+    though in theory people can play the sharp line and get an advantage... it's never going to be a problem. 
+    this will throw people off and get you good positions. 
+    it can also transpose to the rauzer, so it can be a way to avoid some anti-sicilians like the moscow or the delayed alapin 
+    it's a good opening to keep in your repertoire, though it probably shouldn't displace the rauzer but rather compliment it 
+
+_____________________________
+
+I think I'm sticking with the Grunfeld actually. 
+Slav is cool too though. 
+Maybe try both and see how you feel, but I get multiple good indications for the Grunfeld, and I feel like it's epic. 
+slav is epic too, and semi-slav is a long term options as well. 
+Hard to choose between them. 
+Maybe just try them both for a while. 
+
+______________________________
+
+a more conventional ideal repertoire as white... would be based on: 
+
+E57 Nimzo-Indian, 4.e3, Main line with 8...dxc4 and 9...Bxc4 cxd4
+
+I've gotten this nimzo indian 4. e3 line alot
+
+I suppose the tarrasch french would be added in there. 
+Then I could play the QGD exchange. Infact I even got this for the QGD: D35 QGD, Exchange Variation
+
+Then all that's left is the KID (which shouldn't be hard) and the Grunfeld, which I play. 
+Yeah, I can see the value of this repertoire.
+
+But what should I do against the slav? That would be the key. 
+
+__________________________
+
+significant sicilian to learn as white: 
+
+B77 Sicilian, Dragon, Yugoslav Attack, 9.Bc4
+
+___________________________
+
+open sicilians frequency: 
+
+rauzer setup via d6: 3.6% 
+rauzer setup via Nc6: 2.5% 
+so overall about 6% of sicilian games (which are in turn 36% of e4 games) they get a rauzer setup if they're playing the open sicilian. 
+    if they play the rossolimo against d6 or something it's going to be less than that 
+
+
+
+
+

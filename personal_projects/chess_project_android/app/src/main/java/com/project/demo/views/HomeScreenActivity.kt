@@ -22,6 +22,8 @@ class HomeScreenActivity : AppCompatActivity(), HomeScreenRecyclerViewDelegate {
         binding = ActivityHomeScreenBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        supportActionBar?.title = "Home Screen"
+
         setupRecyclerView()
 
         viewModel.setupListeners()
@@ -39,14 +41,21 @@ class HomeScreenActivity : AppCompatActivity(), HomeScreenRecyclerViewDelegate {
     override fun didClickPlayButton(position: Int) {
         when (position) {
             0 -> {
+                // TODO: implement a server & get two players playing
                 val intent = Intent(this, ChessGameActivity::class.java)
                 startActivity(intent)
             }
             1 -> {
-
+                // TODO: integrate stockfish or some other engine / pass in some data her to play against stockfish
+                val intent = Intent(this, ChessGameActivity::class.java)
+                startActivity(intent)
             }
             2 -> {
-
+                // TODO: create a different activity for exploration mode since it's alot different than the other 2 / needs a move tree
+                // though the others could have some kind of move tree as well... that might be useful information even in a game
+                // we'll see what chess.com does / what makes sense
+                val intent = Intent(this, ChessGameActivity::class.java)
+                startActivity(intent)
             }
             else -> return
         }

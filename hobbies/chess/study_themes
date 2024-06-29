@@ -12,23 +12,23 @@ themes of positional play:
     9) diagonals & color complexes 
     10) the bishop pair 
     11) flank pawn attacks 
-    12) pawn majorities 
+    12*) pawn majorities 
     13) passed pawns 
     14) backward pawns 
-    15) pawn structures (isolated pawn, closed positions, etc.)
+    15*) pawn structures (isolated pawn, closed positions, etc.)
     16) pawn breakthroughs 
     17) prophylaxis 
     18) exchange sacrifices 
     19) piece sacrifices 
-    20) pawn sacrifices 
+    20*) pawn sacrifices 
     21) counter attacking / active defense 
-    22) clearance sacrifices 
+    22*) clearance sacrifices 
     23) in-between moves 
     24) king safety & usage 
     25) exchanging pieces 
-    26) strategy based on material (opposite colored bishops, queen exchange, etc.)
-    27) playing with material imbalances (piece for 3 pawns, knight vs bishop, bishop vs rook, etc.)
-    28) anticipating the endgame
+    26*) strategy based on material (opposite colored bishops, queen exchange, etc.)
+    27*) playing with material imbalances (piece for 3 pawns, knight vs bishop, bishop vs rook, etc.)
+    28*) anticipating the endgame
 
 themes of calculation: 
 
@@ -144,10 +144,10 @@ openings I'd like to play eventually:
             not that common, should throw off many players 
             good attacking opening
             good winrates 
+            works against reti / english
         cons: 
             if player knows how to respond you're left defending an IQP
-            not sure if it's my style exactly
-            don't think it works against reti / english 
+            not sure if it's my style exactly 
         
     QID + english - 30/100 - fun factor: 10/100
         pros: 
@@ -245,4 +245,87 @@ ultimately the ideal tournament repertoire should consist of:
     - playing like 4 different first moves as white such as the nimzo larsen, bird, 1. d4, 1. Nc3
     - experimenting with the QGD in addition to the veresov. I also like the vienna after 1. Nc3
 
+______________________
+
+ideal sicilian as black: 
+    B68 - richter-rauzer, neo-modern, early variations
+        1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6 6.Bg5 e6 7.Qd2 a6 8.O-O-O Bd7 9.f4 Be7
+
+most significant irregular opening as white: 
+    A00, Saragossa opening (1. c3) 
+
+ideal defense against d4 as black: 
+    D70 neo-grunfeld: 1.d4 Nf6 2.g3 g6 3.c4 d5 
+        or, more commonly, 1.d4 Nf6 2.c4 g6 3.g3 d5 (the latter is known as the Kemeri Variation)
+
+and I'm not giving up the Van Geet, but just for fun and maybe long term prospects... (like if I was getting really serious) 
+my ideal opening as white (a repertoire based on this): 
+
+    C04 French, Tarrasch, Guimard Main line
+
+    looking into it... you can play d4 > Nd2 (instead of Nc3) and get all kinds of strange transpositions into the breyer slav / tarrasch french 
+        plus some unique lines...
+        I like this cuz it's also along the lines of my chigorin / van geet / reti / saragossa approach 
+        I may just stick with all these very weird openings and develop a few different systems. This Nd7 move can be another system I work on 
+
+        what's amazing is 2. Nd2 scores just as well as 2. Nc3!!! wow. That is mind blowing. 
+
+    followup opening just to clarify any questions I may have regarding the C04 move above: 
+        E70 King's Indian, 4.e4
+    
+        so it seems to me this does suggest a system opening approach to the tarrasch french similar to what I've done with the Van Geet 
+        one interesting thing about this is the KID doesn't actually contest e4 
+        so I suppose when e4 isn't contested it makes sense, but otherwise maybe another move makes sense 
+        so that does clarify things for what I'm trying to do 
+
+        the first move will be d4, I just confirmed that 
+            and Nd7 should be the 2nd move, I confirmed that as well. At least in some situations - against d4/d5 it seems like it should work 
+            So this makes alot of sense 
+
+one more white suggestion for fun (the next best one):
+
+    E43 Nimzo-Indian, Fischer Variation
+    yeah I think I had this suggested earlier actually 
+
+
+now if I wanted to create a systems based opening around a particular move order this would be another ideal one apparently: 
+    B37 Sicilian, Accelerated Fianchetto, Maroczy bind, 5...Bg7 (without 6.Be3 (B38))
+
+
+way I should conceptualize my playing the Grunfeld and why it's been selected: 
+
+    Death: A major change or transformation, possibly traumatic and unexpected. Freedom from the shackles of the past. A new beginning. Death coupled with rebirth, usually related to consciousness and lifestyle.
+
+    Pisces: An imaginative and otherworldly dreamer, selfless and empathetic. Inner duality, balancing loving tolerance and righteous anger. Kindness and compassion resulting from dedicated introspection. Mysticism and uncanny intuition.
+
+way to conceptualize the Van Geet: 
+
+    Two of Wands (Dominion): Established power and influence over others. Setting goals and a vision for the future. Coming to grips with the impact of past decisions, considering the current state of affairs, and developing a plan of action. Responsible leadership.
+
+way to conceptualize this Nd2 idea: 
+
+    Death: A major change or transformation, possibly traumatic and unexpected. Freedom from the shackles of the past. A new beginning. Death coupled with rebirth, usually related to consciousness and lifestyle.
+
+way to conceptualize the richter-rauzer ideas: 
+
+    Nine of Pentacles (Gain), when reversed: Elitism and snobbishness.
+    Five of Painting (Hardship): Tangible difficulties, insecurity, or financial worries. Possible material losses, pain, or illness. Accusations and criticism, or blame from others. Exclusion. Suffering. Issues of support, loyalty, or companionship in hard times. In the creative process: Realize that the problems you are trying to solve may put you at odds with others who do not recognize your value. Be ready to grapple with personal blocks and fears, and to hear more from your inner voice than reasons why things won't work.
+
+
+    I think e4 is just a hard opening to face. I've gotten the richter-rauzer so many times as the ideal way to respond to it, and the winrates look very good. 
+        It's also more viable at higher level than the openings I play now. 
+        but it's very sharp, especially the lines leading up to it... 
+        you need to know alot of theory to get to it. 
+        Unless you bypass that via the nimzowitsch lines, which I guess works... even though it's dubious. But maybe one day I'll do that, who knows. 
+
+________________
+
+as a surface level look at how often a typical d4 player will encounter various moves: 
+
+grunfeld: 4.7% of games 
+slav: 11.2% of games (includes triangle from QGD as well)
+QGA: 2.7% of games 
+QGD: 15.4%
+nimzo indian: 11.8%
+KID: ~9.6%
 

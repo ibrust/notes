@@ -68,37 +68,6 @@ php, kotlin, go
 most overrated language: 
 c++, sql
 
-------------------------------------------
-best to study a particular topic with:
-
-database: c# 
-servers: go
-distributed systems: typescript
-CGI: python
-
-multithreading: swift 
-networking: swift > java 
-web tech: php 
-mvc frameworks: java 
-machine learning: c++ 
-
-GIS: javascript 
-full stack development: javascript 
-front end: go 
-security: go 
-graphics: go 
-
-NLP: go 
-hacking: SQL
-microservices: php
-entrepreneurial: python
-backend: php
-
-cloud: c++, c#
-amazon web services: c
-gaming: c#
-OS: swift 
-algorithms: kotlin 
 ----------------------------------
 ultimate language for a topic: 
 CGI: python

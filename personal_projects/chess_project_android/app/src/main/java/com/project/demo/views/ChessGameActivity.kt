@@ -3,6 +3,7 @@ package com.project.demo.views
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.project.demo.databinding.ActivityChessGameBinding
 import com.project.demo.models.Square
@@ -12,7 +13,7 @@ import java.lang.ref.WeakReference
 
 interface ChessGameActivityDelegate: ChessBoardViewDelegate {}
 
-class ChessGameActivity : ComponentActivity(), ChessBoardViewDelegate {
+class ChessGameActivity : AppCompatActivity(), ChessBoardViewDelegate {
 
     private val viewModel: ChessGameViewModel by viewModels { ChessGameViewModel.Factory }
     private lateinit var binding: ActivityChessGameBinding
@@ -25,6 +26,9 @@ class ChessGameActivity : ComponentActivity(), ChessBoardViewDelegate {
         super.onCreate(savedInstanceState)
         binding = ActivityChessGameBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        supportActionBar?.title = "Online 1v1"
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         setupRecyclerView()
         chessBoardView = binding.chessBoardView

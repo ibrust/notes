@@ -85,7 +85,7 @@ npx is a newer nodeJS command that executes a package immediately.
     
     many packages for project setup (like create-react-app) are generators, not saved binaries. 
         so to setup a project they don't need to be installed, just executed. 
-            this can be nice since it ensures you always execute the most updated package
+            npx here can be nice since it ensures you always execute the most updated package
 
 
 the following command generates the boilerplate of a react project in the target directory: 
@@ -100,7 +100,7 @@ for large projects usually people use a react framework, since react by itself i
                     full-stack react development framework (so sounds like it goes beyond just the UI stuff react does)
 
     remix           npx create-remix
-                    full-stack react development framework with nested routing (sounds like its network layer is also divided into components)
+                    full-stack react development framework with nested routing (looks like a hierarchical breakdown in how URLs are specified)
                     
     gatspy          npx create-gatsby 
                     react framework for fast CMS-backed websites. it has a rich plugin ecosystem and graphQL layer 
@@ -247,19 +247,20 @@ this is App.js converted into a class component:
 understanding of when react renders / rerenders is essential.
 
 components state can be used within JSX.
-    you must treat the state object as immutable after it's been initialized.
+    you must treat the state objects properties as immutable after it's been initialized.
     react will only rerender the state when it's been set to a new object.
         if you merely change one of its properties this won't trigger a rerender.
     always use setState() to modify the state, it will create the new object automatically.
-        setState() takes a dictionary as an argument and merges it with the existing state object
-within JSX you can also bind event handlers to any HTMl element:
+        setState() takes a dictionary as an argument and shallow merges it with the existing state object
+
+within JSX you can also bind event handlers to any HTML element:
 
     class App extends Component {
         constructor() {
             super();
 
             this.state = {                      // for simplicity we're setting the state within the constructor
-                age: 37
+                age: 37 
             }
         }
 
@@ -267,16 +268,207 @@ within JSX you can also bind event handlers to any HTMl element:
             return (
                 <div className="App">
                     I'm {this.state.age} years old
+                    <button onClick={() => {                        // notice the use of {} in JSX to insert code
+                        this.setState({age: 38});
+                    }}>
+                    Next Birthday is!
+                    </button> 
                 </div>
-                <button onClick={() => {
-                    this.setState({age: 38});
-                }}>
-                    Fast Forward 1 year
-                </button>
             );
         }
     }
 
+you can either pass a dictionary object to setState() and it will shallow merge it, or you can pass an update function / completion to it (which is recommended). 
+
+setState(), during its shallow merge, does not do type checking to ensure consistency between previous / updated values, which can break the code. 
+    also setState() updates the state object asynchronously, not immediately. react batches these rerendering updates as an optimization. 
+
+    so if you tried to access the new state right after changing it you might get stale values. 
+    through the use of an update function / completion you can mitigate this problems:
+
+    this.setState(
+        (state, props) => {                             // the update function can access state / props. it returns the dictionary to be merged. 
+                                                        // here you can update the new state based on the previous state. 
+            return {age: 38};
+        },
+        () => {                                         // the completion is called when the state is finished updating. now you can reliably access the new state
+            console.log("updated state: ", this.state);
+        }
+    );
+
+
+in an SPA (single page application) written in React your first request will fetch a new document and all the initial React code. 
+    subsequent requests / responses will often (though not always) not contain new documents or react code, but just data used to update / create / delete components.
+        so usually you won't see the white loading page for loading a new document anymore any React
+        but note that sometimes you can get new pages if it's a really custom page 
+
+
+you can use JSX to loop through arrays and update the UI: 
+
+
+    class App extends Component {
+        constructor() {
+            super();
+
+            this.state = { 
+                pets: [
+                    {
+                        id: "1",
+                        name: "chili"
+                    },
+                    {
+                        id: "2",
+                        name: "java"
+                    },
+                    {
+                        id: "3",
+                        name: "yogi"
+                    },
+                ]
+            }
+        }
+
+        render() {
+            return ( 
+                <div className="App">
+                    my dogs: 
+                    {                                                   // when you're iterating through array values react requires you give each one a primary key. 
+                        this.state.pets.map((dog) => {                  // react uses the key to know what part of the screen to rerender. 
+                                                                        // you would assign the key to whatever top-level HTML tag is associated with that element. 
+                            return <h1 key={dog.id}>{dog.name}</h1>;    // why are two levels of {} needed? Apparently JSX's {} can only evaluate one expression. 
+                        })                                              // and apparently you should not use semicolon (;) in JSX either or it'll throw an error 
+                    }
+                </div>
+            );
+        }
+    }
+
+
+there are a variety of Component lifecycle methods: 
+
+    class App extends Component {
+        constructor() {
+            super();
+
+            this.state = {
+                pets: []
+            }
+        }
+
+        // mounting is the first time the component is placed onto the react DOM and rendered onto the page. this will only be called once 
+        componentDidMount() {
+            // make the initial request
+            fetch("https://petsdata/pets")
+                .then(response => response.json())
+                .then(petData => this.setState(() => {
+                    return {pets: petData}
+                },
+                () => {
+                    console.log(this.state);
+                });
+        }
+
+        componentDidUpdate() {
+            ...
+        }
+
+        componentDidCatch() {
+            ... 
+        }
+
+        componentWillUnmount() {
+            ... 
+        }
+
+        render() { 
+            return ( 
+                <div className="App">
+                    my pets: 
+                    { 
+                        this.state.pets.map((pet) => { 
+                            return <h1 key={pet.id}>{pet.name}</h1>;
+                        }) 
+                    }
+                </div>
+            );
+        }
+    }
+
+
+
+render() is run immediately after the constructor. 
+    render() determines what HTML will be mounted onto the reactDOM, and subsequently shown on screen
+    After this mounting / rendering process is complete componentDidMount() will be called 
+
+    also note that calling setState() will trigger render() to run again
+
+
+note that while these JSX tags look and act like regular HTML they are actually React components. 
+    but there are some slight differences in the naming and capitalization of properties.
+
+        <div className="App">                           // you use className here instead of the typical class property
+        <input 
+            type="search" 
+            onChange=(event) => {                       // onChange is camel case instead of lowercase
+                console.log(event.target.value)         // this event would normally make its way toward a viewmodel and be stored in local data or do something else
+            } 
+        /> 
+
+    note the events generated by these react HTML components are special react events. 
+        these are generated within the components lifecycle methods, and react adds some metadata in addition to the typical DOM metadata 
+
+
+remember that render() is called repeatedly. 
+    So if you do things like create anonymous functions within render() those will get recreated repeatedly.
+        As an optimization you'd call a named function from within render() instead 
+
+React props are the parameters that you can pass into a component upon initializing it. 
+    i.e. <img src="dog.jpg" /> - src here is a prop 
+
+note that whenever a components props change or setState() gets called this will trigger a rerender of the component 
+
+typically the UI is broken down into various components stored in separate .jsx files, often in a components folder 
+    often styling files & others are stored with the particular component, and these may all be stored together in a sub-folder for the component 
+
+
+    components 
+        petView
+            petView.component.jsx           // component here just helps to distinguish between the folder and the file when importing 
+            petView.component.css
+
+
+    // petView.jsx 
+    import { Component } from "react";
+    
+    class PetView extends Component {
+
+        render() {
+            const dogName = this.props.dogName;                     // here's how you access the props
+            return (
+                <div>                                               // note that components must have 1 top-level HTML tag 
+                    <img src="dog.png" />
+                    <h1>{`BARK!, My name is ${dogName}!`}</h1>      // template literals are apparently a convenient way of insert strings via JSX
+                </div>
+            );
+        }
+    }
+
+    export PetView;
+
+
+    // App.js
+    import { Component } from "react";
+    import { PetView } from "./components/petView/petView.component";
+
+    ... 
+
+    render() {
+        return <PetView dogName="Yogi" /> 
+    }
+
+
+React renders the components using an HTML element / component tree traversal starting at App and working downwards
+    each time it reaches a new element it will call its constructor 
 
 
 
