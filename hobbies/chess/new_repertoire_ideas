@@ -42,7 +42,7 @@ ________________________
 tree thresholds (modified):
 at move 2 -> 5%+ 
 at move 4 -> 10%+
-at move 5 -> 15%+
+at move 6 -> 15%+
 at move 8 -> 20%+
 at move 20 -> 25%+
 at move 25 -> 30%+
@@ -249,6 +249,72 @@ rauzer setup via d6: 3.6%
 rauzer setup via Nc6: 2.5% 
 so overall about 6% of sicilian games (which are in turn 36% of e4 games) they get a rauzer setup if they're playing the open sicilian. 
     if they play the rossolimo against d6 or something it's going to be less than that 
+
+
+
+______________________
+
+classical sicilian - 64/100 - issue with this is if you make one wrong move your opponent may capitalize on it since they'll know the lines more 
+
+nimzowitsch sicilian - 64/100 - you'll be getting your opponents out of book and playing them on a human level, not too many people know these lines, but if you really wanted to climb high elo you'd have to switch to something else
+
+four knights sicilian - 90/100 - if you wanted to play an opening to get people out of book you'd do better with the nimzowitsch sicilian 
+
+taimanov - 5/100 - this is an interesting option, it will get your opponents out of book - many of them, at least. so it avoids the problems you have in the classical where one wrong move is the end of you. it's also more legitimate than the four knights. interesting option 
+
+accelerated dragon - 45/100 - it's a great opening, can be played at the highest level and alot of people don't take it seriously enough. 
+
+petrov - 37/100 - if you put the effort into learning it you'd do very well 
+
+nimzowitsch defense (1... Nc6) - 15/100 - so if you want to play the classical Nf3 Nc6 setup this is just simply a better way of reaching it, you're correct in that analysis. And you don't have to play that way if you don't want to. 
+
+_________________________
+
+downsides the way I see it: 
+
+classical sicilian: 
+    - gota face the rossolimo occasionally, and a few other anti sicilian lines (though they aren't too difficult it's still not enjoyable)
+    - won't throw good players off 
+
+nimzowitsch sicilian: 
+    - the forward e pawn is a bit annoying to deal with even if it's not the mainline position and the engine scores it fine 
+    - the mainline, though rare, may become more of a problem at higher elo 
+
+four knights sicilian: 
+    - the french sicilian has to face the stronger alapin 
+
+taimanov: 
+    - again french sicilian has to face the stronger alapin 
+
+accelerated dragon: 
+    - frequently runs into the rossolimo 
+
+petrov: 
+    - lines can be sharper and people seem to know them better, more forcing 
+
+nimzowitsch defense: 
+    - williams defense isn't really that appealing
+    - transposing into the mainline ruy lopez / italian / scotch / four knights positions is a little daunting
+
+____________________
+
+petrov / nimzowitsch sicilian would be effective up until 2400 
+taimanov up until 2300 
+nimzowitsch defense / four knights defense 2600
+
+nimzowitsch defense most aligns with my chess goals 
+petrov would most facilitate capping out at 2400 
+four knights sicilian also aligns with chess goals 
+
+positions that feel the best to play: 
+    four knights > accelerated dragon > classical sicilian > petrov > taimanov > nimzowitsch defense > nimzowitsch sicilian 
+
+positions that most fit my playstyle: 
+    accelerated dragon > nimzowitsch defense > petrov > nimzowitsch sicilian > taimanov > classical sicilian > four knights sicilian 
+
+positions that will most give me the kind of edge over opponents I'm looking for: 
+    accelerated dragon > nizmowitsch defense > petrov > taimanov > nimzowitsch sicilian > four knights sicilian > classical sicilian 
+
 
 
 
