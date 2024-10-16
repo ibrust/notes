@@ -37,97 +37,6 @@ easiest way to get 2000:
 4) B10 - caro-kann defense (landed on white but if relevant...?) 
 5) E44 w/ white - Nimzo-Indian, Fischer Variation, 5.Ne2
 
-
-________________________
-tree thresholds (modified):
-at move 2 -> 5%+ 
-at move 4 -> 10%+
-at move 6 -> 15%+
-at move 8 -> 20%+
-at move 20 -> 25%+
-at move 25 -> 30%+
-
-maybe start with building a tree based around this, and get it as deep as move 20 at least. 
-    though really you can probably just keep drilling down until there's no more moves left or not enough games left
-    then you can flesh it out afterwards, starting at the base and going lower than 5%, etc. 
-
-    but this doesn't really address how to handle positions that are unique... maybe mark positions as unique and explore them based on instinct. 
-        also try expanding the search criteria to increase the number of games / players 
-
-in the next step work toward:
-at move 3 -> 5%
-at move 6 -> 10%
-at move 15 -> 15%
-at move 20+ -> 20%
-
-_______________
-
-
-Van Geet specific preferences: 
-
-1... c6 (4%): for now I'm playing my weird sidelines in the main line 
-    after I switch to the chigorin vs. d5 I'll play the Jobava london w/ c6 transposition here
-1... e5 (8%): Napoleon attack - most brutal variation
-1... e6 (5%): Paulsen French via 2. d4 - confuses many people on the way there - most challenging variation I'll face
-1... c5 (11%): Two Knights Sicilian (3rd most brutal lines - agreed)
-1... Nf6 (22%): Alekhines Scandinavian + Falkbeer Gambit - 2nd most brutal variation (it's also the 3rd most challening... depends on whether they know the lines)
-1... Nc6 (2%): Van Geet Berlin Gambit - 2nd most challenging variation I'll face (probably these are nimzowitsch defense players)
-1... d5 (34%): Closed Scandinavian for now, but Chigorin Setup later as I get more serious (maybe... this line is just fun though. 4th most brutal lines anyway)
-    the only 2 significant lines added by playing the Chigorin setup here are the Irish Gambit and the Alburt Defense 
-    and playing the Closed Scandinavian means you probably need to play the Two Knights Caro-Kann or the mainline Caro-Kann
-1... d6 (4%): Byrne Variation / a few small Van Geet specific sidelines
-1... g6 (7%): Pseudo-Byrne Variation / sidelines (looks the same as the chigorin setup)
-1... f6 (1%): Dutch, Raphael Variation 
-1... b6 (1%): Owen Defense
-
-
-overall I think all the lines here are brutal, and I think black is going to be so confused he won't know what hit him. 
-    The added complexity is justified by the fact black won't know what's going on and is going to be more vulnerable. 
-
-eventually the goal should probably be to know multiple lines for each one of these moves so that you can play in tournaments
-
-lines that will most throw people for a loop: 
-    Berlin Gambit (the non-nimzowitsch players probably) > closed scandinavian lines vs d5 > owen defense > napoleon attack > caro kann lines 
-
-most brutal transpositions: 
-    1) closed scandinavian (accidentally end up in a caro kann, french, alekhines scandinavian)
-    2) alekhines scandinavian (they wind up in a falkbeer gambit or some weird scandinavian)
-    3) owens defense 
-    4) dutch, raphael variation 
-    5) caro-kann - apparently they just don't know what they're in for 
-    6) napoleon attack
-
-    number representing strength of sicilian two knights transpositions: 16/100 
-        so people will be actively transposing and successful in doing so often, bear that in mind. 
-        still many tricky lines people can fall into. it's more like... if they make it to their chosen sicilian it's because they guided themselves to it. 
-
-most brutal in speed chess: 
-    1) caro-kann lines 
-    2) van geet berlin gambit 
-    3) napoleon attack 
-    4) closed scandinavian 
-
-most innovative: 
-    1) dutch, raphael variatoin 
-    2) closed scandinavian 
-    3) byrne variation of the pirc 
-    4) two knights sicilian 
-
-best ideas / right ideas: 
-    1) napoleon attack 
-    2) owen defense 
-    3) van geet berlin gambit (great confirmation)
-    4) byrne variation of the pirc 
-    5) dutch, raphael variation 
-
-thing to most modify and to what degree: 
-    1) closed scandinavian, 8/10 - yeah at some point I'll probably play the chigorin, but for now I'm happy with what I have 
-        general number to conceptualize closed scandinavian with: 83/100 - so it's a great line anyway. they're all great lines really 
-
-overall number representing the repertoire: 76/100 
-I think this will just be my lifetime repertoire though. It's just too epic. 
-
-
 ___________________________________
 
 most complex openings: 
@@ -273,7 +182,6 @@ _________________________
 downsides the way I see it: 
 
 classical sicilian: 
-    - gota face the rossolimo occasionally, and a few other anti sicilian lines (though they aren't too difficult it's still not enjoyable)
     - won't throw good players off 
 
 nimzowitsch sicilian: 
@@ -314,61 +222,3 @@ positions that most fit my playstyle:
 
 positions that will most give me the kind of edge over opponents I'm looking for: 
     accelerated dragon > nizmowitsch defense > petrov > taimanov > nimzowitsch sicilian > four knights sicilian > classical sicilian 
-
-
-____________________________________
-
-
-how to fight the caro kann in the van geet, round 2: 
-
-ranked in order of choice: 
-1: 4. f3 - blackmar diemmer gambit transposition 
-2: tartakower variation (the mainline caro kann where you take the knight)
-3: 5. Qd3 - develop the queen early instead of going into the main line 
-4: 4. Bc4 - von hennig gambit 
-5: alien gambit 
-
-two knights?
-goldman variation?
-
-70% of players you run into throughout the Van Geet who are in the caro-kann will be caro-kann players. 
-
-1) caro-kann players are used to playing the same thing against every opening. with the blackmar diemer you really throw them for a loop. 
-
-2) even though the tarakower is a main line it's a fine line, and you could study it in quite alot of depth 
-
-3) 5. Qd3 - so this is a nice way of throwing off the opponent and can be played. it doesnt have the edge you might be looking for, but you will get a person out of their book, so you can play it 
-
-two knights) so the issue with this is it's actually quite a known line, played 10%. and while it is a good line... it's a line your caro-kann opponent is going to know 
-
-goldman variation) so the main issue with this opening is it's actually a bit sharp, the queen is vulnerable to being harassed, so you really need to know your lines here 
-
-
-two knights - 10% of games 
-tartakower - 12.5% of games - so not a ton more than the two knights 
-
-_______________
-
-I'm leaning toward the tartakower
-
-__________________________
-
-against 4... Bf5 - 
-
-Ng3) so this is a game that your opponent will have played many times before, and they'll know all the positions and moves well. this does translate into a reduced winrate unless you can find little nuances in the positions, ways of throwing them off
-
-Nc5) its a great way of throwing opponents off, they won't have any idea what you're doing 
-
-___________
-
-actually... the blackmar diemer line looks coolf or now. I'll just go with that and maybe later I'll play the tartakower
-
-
-
-
-
-
-
-
-
-
