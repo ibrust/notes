@@ -1,0 +1,319 @@
+=================================================================
+GET STARTED
+=================================================================
+
+- for github to find the workflows they must be in .github/workflows and must be .yml or .yaml files
+
+- workflows are defined by the YAML file
+  workflows run when a repo event fires, you trigger an event manually, you send a POST to github's rest API, or they can run on a defined schedule
+- a workflow contains one or more jobs which can run in sequence or in parallel
+    each job is run inside its own VM runner, or inside a container
+      runners only run one job at a time
+      for the runner you can use github's VMs, or you can use your own self-hosted VMs (located in your cloud)
+        github has windows, linux, and macOS runnerers available
+    each job has one or more steps (executed in the same runner) that either run a shell script you define, or run an action
+      an action is a reusable series of jobs or code. you can write your own or use github's predefined ones.
+- you can configure a job so that it requires that another job be complete before it runs.
+    just bear in mind that the jobs will run on separate VMs
+- you can also use a matrix to run the same job multiple times with different combinations of variables
+    i.e. if you want to run build jobs for different architectures, then followup with dependent packaging jobs for the different builds
+
+- you can use githubs environment configs to provide more control over deployments, i.e.:
+    - limit access to secrets
+    - require approval for a job to proceed
+    - restrict which branches can trigger a workflow
+
+
+
+=================================================================
+YAML
+=================================================================
+
+- here's a list of noteworthy YAML operators and syntactic quirks:
+
+  #       comment
+
+  &       an "anchor", defines a reusable block of content
+  *       an "alias", reuses content defined by the anchor
+  <<:     the "merge key" operator, merges the contents of a mapping (usually an alias) into another mapping
+
+  |       precedes a multiline string to specify "literal" parsing style, i.e. newlines will be included in the parsed output
+  >       precedes a multiline string to specify "folded" parsing style, i.e. newlines will be stripped out of the parsed output
+
+  prop_name: |
+    Line 1
+    Line 2          # Line 1\nLine 2
+  prop_name2: >
+    Line 1
+    Line 2          # Line 1 Line 2
+
+YAML does alot of type coercion:
+  value1: yes       becomes true
+  value2: on        becomes true
+  value3: no        becomes false
+  value4: off       becomes false
+  value5: "yes"     stays a string. To prevent type coercion you often must quote the value
+
+  value6: 123       becomes integer
+  value7: 1.0       becomes float
+
+YAML interprets all of these as null values:
+  null1: null
+  null2: ~
+  null3:
+
+YAML supports both block and inline styles for lists and maps:
+  fruits:
+    - apple
+    - banana
+    - cherry
+  fruits: [apple, banana, cherry]
+
+YAML is indentation sensitive like python. Uses spaces only (not tabs) and be consistent with the amount of indentation.
+
+=================================================================
+CONCEPTS - WORKFLOWS AND ACTIONS
+=================================================================
+
+- a workflow consists of the following components:
+  1) a set of events that trigger the workflow
+  2) a set of jobs (each which execute on its own VM) which run a series of steps
+  3) each step can run either a script or an action
+
+- workflow triggers are defined in the "on" section of the YML file.
+    when an event occurs github searches the .github/workflows directory for any workflows that include the event in the "on" section
+      some workflows require that the workflow file is present on the repo's main branch in order to run.
+      each workflow run will use the version of the workflow present in the associated commit SHA or git ref of the event.
+        when a workflow runs github sets the GITHUB_SHA and GITHUB_REF environment variables in the runner environment.
+
+- in variables you can store non-sensitive config information such as compiler flags, usernames, server names, etc.
+- actions or workflow steps can do CRUD operations on variables.
+- there are two ways to set custom variables:
+  1) for use within a single workflow use the "env" section of the YML file
+  2) for use across multiple workflows define the variable at the organization, repo, or environment level.
+      variables defined at the organization level can be limited to specific repositories.
+- for sensitive information use secrets instead of variables. variables will show up in the build output unmasked.
+
+- the context is a read-only object made available to the workflow which contains metadata about the workflow:
+    - what triggered the workflow
+    - what branch it's running on
+    - what labels are present
+    - info about the runner environment
+    - info about jobs and step
+    - variables
+
+- contexts are available throughout the workflow, and can be accessed at workflow-level, job-level, and step-level.
+    they are not available between workflows.
+
+- in contrast, default environment variables are automatically set by github,
+  but they exist only on the runner that's executing the steps of the job.
+  which means they aren't available at workflow-level, or even at the job-level prior to step execution.
+- because the context is available prior to set execution it can be used in conditional logic to determine whether to run steps.
+
+- you access the context / environment variables using the expression syntax,
+    which tells github to evaluate the code as an expression rather than a string:
+      ${{ <context_property> }} i.e. ${{ github.event_name}}
+
+    the exception to this is when you're using an expression in an if clause, where you can omit ${{ }}
+
+- beware that much of the context data should be treated as untrusted sources of input.
+
+    the following context properties should not be trusted, because they can be manipulated by the user to contain shell commands, etc.:
+      github.actor                            // username of the person who triggered the workflow
+      github.event.*                          // the full webhook payload for the event. contains issue title, comment body, PR description
+      github.event.issue.*
+      github.event.comment.body
+      github.event.pull_request.labels
+      github.event.pull_request.*             // contains fields like title, body, head.ref, etc. that are user editable
+      github.head_ref                         // source branch of the PR
+      github.base_ref                         // target branch of the PR
+      github.ref                              // branch or tag that triggered the workflow
+
+      steps.<step_id>.outputs.<output_name>   // gets the output for a specific step. problematic if the referenced step contains unsafe output
+
+    the following context properties are safe:
+      github.repository                       // the owner/repo name
+      github.workflow                         // name of the workflow file
+      github.event_name                       // name of the event that triggered the workflow
+      github.run_id                           // unique ID for the workflow run
+      github.sha
+
+      runner.os
+      runner.arch                             // X64, ARM, etc.
+      runner.name
+
+      env.<VAR_NAME>                          // access to environment variables you defined in the "env" section
+      job.status                              // success, failure, etc.
+      matrix.<KEY_NAME>                       // value of a matrix parameter for the current job
+      secrets.<SECRET_NAME>
+
+    untrusted properties should not be passed as input into shell commands, i.e.:
+      run: echo "Running command for ${{ github.actor }}"   // dangerous
+
+- you can reuse code in 2 ways:
+    1) composite actions
+        - defines a sequence of steps.
+        - it must be stored in its own directory, i.e. .github/actions/<action_directory>/action.yml
+            apparently the idea is these actions are publishable packages
+            i.e. you can also put scripts, a README, etc. in here
+        - called by a job, and runs within that job
+        - syntactically it's called by referencing the package, not the yml file
+        - can't specify the type of machine it will be run on
+        - runs just like another step within a job, so it modifies the VM state that subsequent steps can access
+        - can be nested and you can have up to 10 composite actions in one workflow
+    2) reusable workflows
+        - it's a workflow called from another workflow.
+        - better for larger, more complex processes that have multiple jobs, like deployment flows, CI pipelines, etc.
+        - you can specify the type of machine on which it will run
+        - it's run as a separate job, so you can't access VM state (like environment variables) in the calling code afterwards
+        - you can connect a max of four levels of workflows
+
+- github actions can use YAML anchors to write reusable code:
+
+  default_step: &default_step       // creates a "pointer" reference
+    run: echo "Running Step..."
+
+  jobs:
+    demo-job:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Step 1
+          <<: *defaults             // dereferences the pointer & merges its contents into the block
+
+- github actions can do anything you want, including calling github APIs or third party APIs
+    (useful for publishing npm modules, sending SMS alerts, or deploying code)
+
+- there are 3 types of actions:
+  1) docker container actions
+      only Linux containers are available.
+      packaging the OS / environment / dependencies along with the action ensures the runtime environment is consistent,
+      but it does slow down execution because you have to build and retrieve the container.
+
+      even though these actions run inside their own environment, github allows you to define inputs and outputs
+        in the action.yml file so that the action can interact with other steps:
+
+            inputs:
+              name:
+                required: true
+            outputs:
+              greeting:
+                description: "Your Response Message"
+
+        then inside the container you write outputs to a special file:
+
+            echo "greeting=Hello, $INPUT_NAME!" >> $GITHUB_OUTPUT
+
+        gitHub reads this file and makes the output available to later steps using:
+
+            ${{ steps.my_docker_action.outputs.greeting }}
+
+        you can also pass environment variables into the container using the "env" section.
+          inside the container these will be available like any other environment variable:
+
+            - name: Run Docker Action
+              uses: my-org/my-docker-action@v1
+              env:
+                MY_VAR: "some value"
+
+        all steps in a job also share the same workspace directory (github/workspace)
+          so you can read/write files there and other steps can access them
+
+  2) javascript actions
+      these run directly on the VM runner.
+      they're simpler and they'll run faster than a docker container action
+      to ensure the javascript written works across all OS environments (windows, linux, mac) you should only use simple, pure javascript.
+
+  3) composite actions
+      allows you to run multiple steps in one reusable action
+      they're run directly on the VM runner unless the caller explicitly tells it to run in a container using the 'container' keyword
+
+        jobs:
+          run-linter:
+            runs-on: ubuntu-latest
+            container: node:18
+            steps:
+              - uses: ./linter-action
+
+- environments are a way to define deployment targets (i.e. staging, production)
+    and control how and when workflows run in those contexts.
+- with environments you can:
+    - prevent accidental deployment or add manual approval for deployment to an environment (like production)
+    - store secrets only available in a specific environment
+    - track who approved a deployment and when it happened
+    - restrict which branches can trigger a workflow
+
+- you define environments in your repo settings or directly in the workflow:
+
+    jobs:
+      deploy:
+        runs-on: ubuntu-latest
+        environment: production       # if the environment has required reviewers the job will pause until someone approves it
+        steps:
+          - run: echo "Deploying to production"
+
+- each job in a workflow can reference only 1 environment.
+    any protection rules for that environment must pass before the job is sent to the runner.
+
+- by defaults jobs and workflows can run concurrently.
+    using the concurrency keyword you can limit how many runs of a workflow can happen simultaneously, and cancel in-progress runs.
+    this can be useful for:
+      - preventing duplicate deployments, i.e.
+          concurrency:
+            group: deploy-main
+            cancel-in-progress: true
+
+      - throttling heavy jobs to one run at a time per environment or branch, i.e.
+          concurrency:
+            group: test-${{ github.ref }}
+
+      - avoiding conflicts over shared resources
+
+      - canceling older runs when a new commit is pushed to a PR, i.e.
+          concurrency:
+            group: pr-${{ github.head_ref }}
+            cancel-in-progress: true
+
+      - ensuring only one to deployment to staging or production happens at a time, i.e.
+          concurrency:
+            group: deploy-${{ github.environment }}
+
+- workflow jobs can create artifacts, which are just files produced during the job.
+    artifacts can be used by other jobs in the same workflow.
+    common examples of artifacts include:
+      - log files
+      - test results
+      - stress test performance output
+      - code coverage results
+
+- artifacts are similar to cached dependencies, but there's a slight difference.
+    artifacts are usually recreated on every run.
+    you use caching for files that don't change often between runs, i.e. the build dependencies.
+
+- artifacts are deleted within 90 days by default, though you can customize retention to up to 400 days
+- when a workflow run is deleted all artifacts associated with it are also deleted from storage.
+    workflows aren't deleted automatically by github.
+      - you can manually delete the workflow.
+      - they're also deleted when the repository or branch are deleted.
+      - eventually github may prune old workflows for very large repos, but this is rare and not documented behavior
+
+- by default, jobs on github-hosted runners start with a clean runner image.
+    this means they must download dependencies each time.
+    to do caching github provides an action called "actions/cache" you can use:
+
+        # saves the node_modules folder using a hash of package-lock.json to detect changes
+        - name: Cache Node.js modules
+          uses: actions/cache@v3
+          with:
+            path: node_modules
+            key: ${{ runner.os }}-node_modules-${{ hashFiles('**/package-lock.json') }}
+            restore-keys: |
+              ${{ runner.os }}-node_modules-
+        - name: Install dependencies
+          run: npm install --ignore-scripts && npx patch-package
+
+    note: when using self-hosted runners, caches are still stored on github-owned cloud storage.
+      customer-owned storage is only available via Github Enterprise Server.
+
+- you can setup email alerts for github actions which will trigger when a workflow run completes.
+    you can use the runs status to determine whether these alerts are sent.
+    

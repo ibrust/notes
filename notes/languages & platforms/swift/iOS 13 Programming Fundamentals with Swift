@@ -42,7 +42,7 @@ a module is the top-level namespace. your app is a module and has its own namesp
 when you import a module all the modules top-level declarations become accessible without the need to precede them by the modules namespace name 
 
 Swift itself is defined in a module - the Swift module. You don't have to import it because your code always implicitly imports it. 
-the Swift module is where things like print() come from - print is a top-level declaration inside the Swift moduel. 
+the Swift module is where things like print() come from - print is a top-level declaration inside the Swift module. 
     this explains why you're able to use print() anywhere.
 if you wanted to you could access print() through Swift.print(). You would only do this if you had defined your own print() within your local namespace 
     (it may be useful to override some Swift top-level declarations in your projects - keep it in mind)
@@ -116,6 +116,7 @@ consider using typealias with function signatures if they get too long / cumbers
 
 you can define and immediately call closures (similar to javascript) 
     one use of this might be to define a middle parameter in a function call. I'm not sure of other uses, the author says he'll mention them 
+
         func doSomething(param1: {
                     let obj = Object()
                     obj.prop1 = 10 
@@ -126,7 +127,9 @@ you can define and immediately call closures (similar to javascript)
             ...
         }
 
-apparently closures can modify the variables they capture. The author even implies this applies to pass by value types. I'll have to try this in the playground- 
+apparently closures can modify the variables they capture. The author even implies this applies to pass by value types. 
+    I'll have to try this in the playground:
+
     func pass100(_ f: (Int) -> ()) {
         f(100)
     }
@@ -139,6 +142,7 @@ apparently closures can modify the variables they capture. The author even impli
     print(x)                    // new value 
 
 like in javascript you can give persistent state to a function via returning it as a closure: 
+
     func getCounter() -> (() -> ()) {
         var count = 0 
         return {
@@ -155,20 +159,24 @@ like in javascript you can give persistent state to a function via returning it 
 the compiler forces you to use self in closures because the self has been captured by the closure, and the compiler wants that to be explicit 
 
 curried function: this is a function that returns a function that takes a parameter. it's named after Haskell Curry (inventor of Haskell?) 
-    so this returned function has some persistent state, and some parameterized state. 
+    so this returned function may have some persistent state (via closure), and some parameterized state. 
 
-you can assign functions, or pass them as parameters, using the name of the function. but what if there are multiple implementations of that function name? 
+you can assign functions, or pass them as parameters, using the name of the function. 
+    but what if there are multiple implementations of that function name? 
     in that case you should specify which function signature you're passing using the as keyword: 
+
         func bark() { ... } 
         func bark(_ loudly: Bool) { ... } 
         ... 
         let barkFunction = bark as (Bool) -> ()
 
-in objective-C, a selector is a function pointer. In Cocoa you often must call functions that expect a selector parameter, usually named selector: or action: 
-    to form the selector it is necessary to construct a string representing the method's objective-C name. 
-        if the string for the objective-C function name isn't formed right you will get an 'unrecognized selector' crash 
-        since this is a common mistake and error-prone, Swift has the #selector syntax to help you construct the selector 
-        with the #selector syntax the compiler validates the function reference and forms the string for you 
+in objective-C a selector is a function pointer. 
+    In Cocoa you often must call functions that expect a selector parameter. this is a string that represents a method name. 
+    the name is usually formatted somehting like 'functionName:'
+    to create the selector use #selector() and pass a string representing the method's objective-C name. 
+        this is a safer alternative to forming the string yourself.
+        if the method name isn't formed right you'll get an 'unrecognized selector' crash 
+        with the #selector() syntax the compiler validates the function reference and forms the string for you. 
         
             @IBOutlet var button : UIButton! 
             func viewDidLoad() {
@@ -178,7 +186,9 @@ in objective-C, a selector is a function pointer. In Cocoa you often must call f
             @objc func buttonPressed(_ sender: Any) { ... }
 
         you can still crash even with the #selector syntax if you send the message to the wrong target (one that doesn't have the function) 
-        very rarely you may need to create the string manually. in this case the raw string would be "buttonPressed:". you'll probably never use this approach
+        very rarely you may need to create the string manually. 
+            in the example above the raw string would be "buttonPressed:". 
+            you'll probably never use this approach
 
 =======================================================
 CHAPTER 3 - VARIABLES AND SIMPLE TYPES 
@@ -237,7 +247,9 @@ if you wanted to add these getters & setters to every property you'd duplicate a
 
 // ------ DIDSET / WILLSET
 
-these computed getters / setters aren't needed as often as you'd imagine, because didSet / willSet allow you to add functionality to a stored variable directly: 
+these computed getters / setters aren't needed as often as you'd imagine, 
+    because didSet / willSet allow you to add functionality to a stored variable directly: 
+    
     var x: Int = 0 {
         didSet {
             print(oldValue) 
@@ -246,6 +258,7 @@ these computed getters / setters aren't needed as often as you'd imagine, becaus
             print(newValue)
         }
     }
+
 these didSet/willSet functions aren't called when the variable is initialized
 didSet also is not called when the stored variables value is changed within it 
 
@@ -291,10 +304,12 @@ toggle() is a useful boolean property:
 // ------ INTS 
 
 the variety of Int & Double types in Swift exist mostly for compatibility with Objective-C, according to the author
-    though they should save memory in many scenarios, i.e. image processing (assuming swift doesn't implement them on 64-word boundaries - it could be worth testing)
+    though they should save memory in many scenarios, 
+    i.e. image processing (assuming swift doesn't implement them on 64-word boundaries - it could be worth testing)
 
 the Int type (a struct) is an integer between Int.min and Int.max
-    Int.min and Int.max are platform-specific values. the author claims they span the full 64 bit range of twos compliment values on his machine (so they're giant numbers) 
+    Int.min and Int.max are platform-specific values. 
+    the author claims they span the full 64 bit range of twos compliment values on his machine (so they're giant numbers) 
 you can actually use leading 0s in your numeric literals for padding or whatever else
 prefix a numeric literal with 0b, 0o, or 0x for binary, octal, or hex
 
@@ -335,11 +350,11 @@ object types declared within function bodies only exist in that scope
 
 in a class, static properties or methods can also optionally be declared using the class keyword 
 
-when you add an initializer the default one provided goes away (for classes too - they get a default init() if no properties actually require initialization)
+when you add an initializer the default one provided goes away 
+    (for classes too - they get a default init() if no properties actually require initialization)
 
-be careful not to supply meaningless default parameters, sometimes you want to enforce input of parameters 
-
-within an init you may not refer to self until all instance properties are set except if you're referring directly to an already initialized property
+within an init you may not refer to self until all instance properties are set 
+    except if you're referring directly to an already initialized property
 
 a delegating init is one which calls another init 
 a delegating init can't refer to self at all until after it calls the delegate init - not even to set properties
@@ -350,9 +365,9 @@ setters aren't called during initialization
 
 you can give instance properties initial values outside of init functions, but can't refer to any other instance properties or methods when doing so. 
     a workaround is to make the property computed or lazy - that way it's value is calculated after self is finished setting up 
-    likewise when initializing instance properties using anonymous function calls dont refer to self, since self is uninitialized (this was our bottomsheet bug)
-        a fix to this bug is to make the var lazy
-these restrictions dont apply to static propreties, as static initializers are lazy by default 
+    likewise when initializing instance properties using anonymous function calls dont refer to self, since self is uninitialized 
+        (this was our bottomsheet bug - a fix to this bug is to make the var lazy)
+these restrictions dont apply to static properties, as static initializers are lazy by default 
     but use of a static property won't prevent anonymous function initializations that reference self introducing bugs 
         this is due to a quirk in the compiler implementation 
 
@@ -379,7 +394,7 @@ you can add subscripts to your types if it feels appropriate:
         var number: Int
         ... 
         subscript(ix: Int) -> Int {
-            get {                                                   // subscripts are implemented via a unique combination of methods + getter & setter syntax
+            get {                                       // subscripts are implemented via a unique combination of methods + getter & setter syntax
                 let s = String(self.number) 
                 return (Int(String(s[s.index(s.startIndex, offsetBy: ix)])))
             }
@@ -392,8 +407,7 @@ you can add subscripts to your types if it feels appropriate:
         }
     }
 
-
-an enum with a type declaration implicitly adopts teh RawRepresentable protocol. 
+an enum with a type declaration implicitly adopts the RawRepresentable protocol. 
     this means it implicitly has an init(rawValue:) and a rawValue property
 the raw values associated with enums are limited to Ints and Strings
 
@@ -445,7 +459,7 @@ an enum instance method can actually modify self, changing the instance.
 structs lose their default initializer if any of the properties that must be initialized are declared private.
 
 if a struct method sets a property it must be marked as mutating 
-    if a getter sets a property it must be marked as mutating get. setters and subscriptsi are already mutating by default 
+    if a getter sets a property it must be marked as mutating get. setters and subscripts are already mutating by default 
 
 a mutating method in a struct changes the instance itself. 
     you can actually change the instance directly by setting self to a new instance 
@@ -456,7 +470,7 @@ note that with classes it's possible to have multiple references to the same obj
     so this makes threading problems possible with classes that can't occur with structs 
     so you should prefer structs unless you have a good reason to need a class 
 
-note that with a struct, if a mutating method captures self within an escaping closure is an error and won't compile. 
+note that with a struct, if a mutating method captures self within an escaping closure it's an error and won't compile. 
     you can't mutate the struct at some later time, this could introduce semantic problems. it must be done synchronously. 
     this can be done via changing the struct to a class though, since mutating the class does not require changing the instance.
 
@@ -486,8 +500,7 @@ in Cocoa (UIKit) NSObject is the one base class that all objects inherit from
 there is no such base class in Swift itself, classes don't have to inherit from something 
 
 
-
-to override a method you must use the same method signature, including same parameter names.
+to override a method you must use the same method signature, including the same parameter names.
     however, you can actually replace the type with that of its superclass, or with an optional, and still override the method:
 
     class Dog {
@@ -507,21 +520,24 @@ when initializing a class there are some additional rules that ensure all proper
 
 classes have 2 kinds of initializers:
 
-    1) designated initializers - a class can be instantiated only be a call to a designated initializer. initializers are considered designated by default. 
-                                 these inits must ensure all properties are initialized, and can't delegate to another init of the same class. 
-                                 a class with stored properties requiring initialization must have a designated initializer. 
-                                 if the class has no properties that require initialization it gets an init() by default, but this init does nothing. 
+    1) designated initializers: 
+        a class can be instantiated only by a call to a designated initializer. initializers are considered designated by default. 
+        these inits must ensure all properties are initialized, and can't delegate to another init of the same class. 
+        a class with stored properties requiring initialization must have a designated initializer. 
+        if the class has no properties that require initialization it gets an init() by default, but this init does nothing. 
 
-    2) convenience initializer - marked with the keyword convenience. this is a delegating initializer - it must contain a call to another init somewhere. 
+    2) convenience initializer:
+        marked with the keyword convenience. this is a delegating initializer - it must contain a call to another init somewhere. 
 
 in a designated initializer, until all properties are initialized, 
     you can only use self to access a property you're initializing or fetch a property already initialized. 
 
 in a convenience initializer you cannot use self for any purpose until you call a designated initializer. 
 
-if a subclass doesn't have its own initializers, then it inherits its initializers from the superclass 
-    a subclass is also eligible to declare convenience inits without declaring its own designated init, since it can call its superclasses designated init 
-once a subclass declares its own designated init though, no initializers from the superclass are inherited 
+if a subclass doesn't have its own initializers then it inherits its initializers from the superclass.
+    a subclass is also eligible to declare convenience inits without declaring its own designated init, 
+        since it can call its superclasses designated init. 
+once a subclass declares its own designated init, though, no initializers from the superclass are inherited 
     also, every designated init in the subclass must call a designated init in the superclass. 
         note that, if you don't add it, swift will try to automatically call a superclass designated init for you behind the scenes, 
             but this might not work due to access restrictions or something
@@ -698,8 +714,9 @@ to specify that a protocol can only be adopted by any class (no structs or enums
         weak var delegate: WalletViewControllerDelegate? 
     }
 
-ObjC supports optional protocol members, but Swift does. 
-    for this reason you can declare protocol members in Swift as @objc optional, but this isn't meant for use within Swift, it's just a compatibility feature: 
+ObjC supports optional protocol members, but Swift doesn't. 
+    for this reason you can declare protocol members in Swift as @objc optional, 
+    but this isn't meant for use within Swift, it's just a compatibility feature: 
 
     @objc protocol Organism {
         @objc optional var legCount: Int? { get set }
@@ -707,7 +724,7 @@ ObjC supports optional protocol members, but Swift does.
     }
 
 Swift has to do some gymnastics to accommodate these @objc optional members. 
-Swift wraps these @objc optional vars return value in an optional. so you can in end up with a double wrapped optional here:
+Swift wraps these @objc optional vars return value in an optional. so you can end up with a double wrapped optional here:
 
     let worm = Worm()
     if let legCount = worm.legCount {               // worm.legCount is an Int?? 
@@ -725,7 +742,8 @@ also, if you decalre these @objc optionals as { get set } you still can't set th
     guard let steps = millipede.walk?() else { return }
 
 inits declared in a protocol are implicity required. the classes that implement the protocol must mark those inits as required 
-    this is why, when you inherit from UIViewController & implement an init, you no longer inherit the required init for NSCoder protocol & have to implement it:
+    this is why, when you inherit from UIViewController & implement an init, 
+    you no longer inherit the required init for NSCoder protocol & have to implement it:
 
     class WalletTxViewController: UIViewController {
         init() {                                                    // now you no longer inherit the required init for NSCoder 
@@ -871,6 +889,7 @@ by constraining a generic to a particular class / protocol you can use that type
 
 a generic protocol can only be used as a type constraint. trying to use it in any other way results in a compile error
     to circumvent this you must use type erasure. for more details read http://robnapier.net/erasure 
+
 
 
 so far we've mostly resolved generics using inference. you can also resolve them manually, and sometimes this is necessary.

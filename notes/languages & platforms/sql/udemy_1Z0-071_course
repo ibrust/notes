@@ -1,0 +1,35 @@
+    SELECT Col# COLUMN2, NAME AS NAME2, TYPE#        /* example renaming a column. the AS keyword is optional but more readable */ 
+    FROM COL#;                                 /* you can easily accidentally rename a field if you forget the comma between fields */
+
+    SELECT Col# "column number", NAME, TYPE#        /* if the new column name contains a space wrap it in quotes */ 
+    FROM COL#;                                      
+
+the above string is referred to as a quoted identifier.
+non-quoted identifiers must start with a letter. 
+    they can contain letters, numbers, _, $, and #. 
+    they're limited to 30 characters max. 
+quoted identifiers can start with a number, and can contain spaces
+
+semicolons are needed at the end of queries. if it's one query it may execute, but if there are multiple it won't work. 
+    some IDEs will insert semicolons at the end, but you shouldn't rely on this. 
+
+comments are -- and /* */ 
+
+within the WHERE clause in oracle SQL instead of == you use =
+
+
+according to AI the logical execution order of SQL statements is: 
+    FROM > WHERE > GROUP BY > HAVING > SELECT > DISTINCT > ORDER BY > LIMIT / OFFSET 
+
+but this may not be the actual execution order because the database may optimize the query if it can. 
+    there is no guaranteed order, and the phases of a query are complicated.
+        your query may be transformed into something else before execution. 
+    
+    according to the oracle docs the phases of running a query are: 
+        Parsing > Transformation > Estimation > Plan generation > Execution
+
+
+
+
+
+

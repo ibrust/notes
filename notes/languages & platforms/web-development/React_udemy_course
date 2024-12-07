@@ -1,0 +1,682 @@
+
+===========================================
+REACT KEY CONCEPTS 
+===========================================
+
+React was released in 2013 
+
+web development has a long history 
+    there have been cross-browser compatibility issues from the beginning (browser wars)
+
+    jQuery is an old framework that allowed easy cross-browser interaction with the DOM 
+
+    websites evolved into larger web-apps, and javascript files started getting larger / more numerous. 
+        backbonejs came out, which helped to organize large numbers of javascript files 
+    
+    traditionally you just used HTML files for each page, and you'd request a new page each time you clicked a link 
+        but AJAX was introduced, which combined with jQuery & backbone allowed for single-page architectures 
+            single-page architectures are built more like a desktop application 
+            instead of getting new documents from the server you have 1 document, 
+                and the javascript (using AJAX and local data) would simply update the DOM & rerender the UI 
+    
+    single-page applications became very popular
+        in 2010 angularJS (created by google) was the standard way of building single-page applications
+        angularJS allowed people to easily use MVC patterns in building their web apps 
+    
+    angularJS had difficulty dealing with the complexities of very large projects
+        facebook developed react as a solution 
+        angularJS also rewrote their whole library, and renamed it angular. but alot of people still moved to react at this time 
+
+    react did 4 main things to deal with large project complexity: 
+        1) react manages the DOM, the developer does not directly manipulate it via javascript 
+            before react you'd often use the DOM API, or some library like jQuery
+            note that this was an imperative approach to interacting with the DOM
+                in contrast React provides a declarative API for updating the DOM
+                and it sounds like this declarative API is driven by state in a way that's functional-reactive
+            DOM manipulation is an expensive operation. the browser must change or add the elements, then relayout the whole page
+        2) react also uses components for building the UI 
+            and you can have subcomponents within larger components, etc. 
+            this made the UI alot more reusable 
+            these react components are implemented using javascript functions
+                these functions receive view attributes (which it calls props) and return JSX
+        3) react uses a unidirectional data flow 
+            so the State drives changes. it feeds into the JSX functional components 
+            react manages its virtual DOM (a javascript version of the DOM)
+                and based off that it will maintain / update the real DOM as the state changes
+            in turn a user-input event mutates the State and this will trigger new updates 
+        4) react was only a UI framework, unlike angularJS which was an entire MVC framework (too heavy handed)
+
+he recommends installing the react developer tools from the chrome web store 
+    in the developer tools you'll now be able to see your react UI components
+
+
+===========================================
+REACT BASICS
+===========================================
+
+people often develop react using nodeJS due to the tools nodeJS offers. 
+    nodeJS provides easy access (via its package manager) to these popular tools.
+    nodeJS also has good module dependency managers (these can be CommonJS modules or the newer ES6 modules) 
+
+npm installs packages locally by default. to run the locally installed package you have to specify the full path: 
+
+    npm install package_name
+    ./node_modules/.bin/package_name            // execute the package 
+
+
+if you add the package name to "scripts" in package.json you can execute the package via npm run: 
+
+    // packages.json
+    {
+        ...
+        "scripts": {
+            "package_name": "package_name"
+        }
+    }
+
+    // command line 
+    npm run package_name                        // execute the package 
+
+
+npx is a newer nodeJS command that executes a package immediately. 
+    it first checks whether the command exists in the $PATH, then it checks local binaries, then it attempts to download the package. 
+    after one of these steps succeeds it will execute the package
+    note that it will not install the package it downloads, it will just immediately execute it. 
+    
+    many packages for project setup (like create-react-app) are generators, not saved binaries. 
+        so to setup a project they don't need to be installed, just executed. 
+            npx here can be nice since it ensures you always execute the most updated package
+
+
+the following command generates the boilerplate of a react project in the target directory (though I think create-react-app is now outdated): 
+
+    npx create-react-app directory_name
+
+
+for large projects usually people use a react framework, since react by itself is just a UI framework. 
+    here are some react-based frameworks that can be used with react, and commands to setup a project using them: 
+
+    next.js         npx create-next-app@latest
+                    full-stack react development framework (so sounds like it goes beyond just the UI stuff react does)
+
+    remix           npx create-remix
+                    full-stack react development framework with nested routing (looks like a hierarchical breakdown in how URLs are specified)
+                    
+    gatspy          npx create-gatsby 
+                    react framework for fast CMS-backed websites. it has a rich plugin ecosystem and graphQL layer 
+
+    expo            npx create-expo-app 
+                    react framework for creating cross-platform Android, iOS, and web apps
+
+
+you should use ESLint / Prettier for code formatting / typescript
+    read for more details:  https://react.dev/learn/editor-setup  and  https://react.dev/learn/typescript
+
+
+after generating the boilerplate via 'create-react-app' you'll see alot of node_modules / files, and package-lock.json will list some dependencies / scripts:
+
+    // project directory structure
+    app_root/
+        build/
+        node_modules/
+        public/
+            favicon.ico
+            index.html
+            logo192.png
+            manifest.json               // for progressive web app compliance, where user can download web app to their desktop / open it by clicking an icon
+            robots.txt                  // instructions for web scrapers
+        src/
+            App.css
+            App.js                      // App.js is the actual react application=
+            index.css
+            index.js                    // index.js is the javascript entry point of every react project
+    .gitignore
+    package-lock.json
+    package.json
+    README.md
+
+    ----------------------------------------------
+    // index.js
+    import React from 'react';                  // React is the underlying engine. It does rendering / diffing / determining what to render, etc.
+    import ReactDOM from 'react-dom/client';    // ReactDOM is the object graph the engine generates. this one is for web, there are others (react native)
+    import './index.css';
+    import App from './App';
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+
+    root.render(                            // render the application into the 'root' div element
+        <React.StrictMode>                  // React has its own strict mode for deprecating old React code. everything in these tags runs in strict
+            <App />                         // note that strict mode will cause double rendering during development to catch bugs
+        </React.StrictMode>
+    );
+
+
+    ----------------------------------------------
+    // package.json
+    ...
+    "dependencies": {
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-scripts": "5.0.1",           // contains scripts used to start / build / test / eject the app
+        "web-vitals": "^2.1.4"
+    },
+    "scripts": {
+        "start": "react-scripts start",     // `npm start` will run the app on a local dev server (accessible via the browser)
+        "build": "react-scripts build",     // `npm build` bundles the code using babel / webpack, optimizing it for distribution. output is in build
+        "eject": "react-scripts eject"      // `npm eject` will output the babel / webpack config files so you can modify them.
+    },                                      // you should most likely not need to eject, instead you should just rely on the react team to maintain the config
+
+
+    ----------------------------------------------
+    // App.js
+    import logo from './logo.svg';
+    import './App.css';
+
+    function App() {                                                            // think of this function as a UI component
+        return (                                                                // this is a functional component that returns HTML (via JSX)
+            <div className="App">
+                <header className="App-header">
+                    <img src={logo} className="App-logo" alt="logo" />
+                    <p>
+                        Edit <code>src/App.js</code> and save to reload.
+                    </p>
+                    <a
+                        className="App-link"
+                        href="https://reactjs.org"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Learn React
+                    </a>
+                </header>
+            </div>
+        );
+    }
+
+    export default App;
+    ----------------------------------------------
+
+
+
+React essentially lets you write components that return HTML.
+components can be written using either classes or functional hooks.
+    apparently the industry is shying away from hooks in favor of classes because hooks add complexity
+
+this is App.js converted into a class component:
+
+
+    // App.js
+    import { Component } from 'react';                  // class components inherit from Component
+    import logo from './logo.svg';
+    import './App.css';
+
+    class App extends Component {
+        render() {                                  // the render() method returns what the component renders - so here we must return the JSX
+            return (
+                <div className="App">
+                    <header className="App-header">
+                        <img src={logo} className="App-logo" alt="logo" />
+                        <p>
+                            Edit <code>src/App.js</code> and save to reload.
+                        </p>
+                        <a
+                            className="App-link"
+                            href="https://reactjs.org"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Learn React
+                        </a>
+                    </header>
+                </div>
+            );
+        }
+    }
+
+    export default App;
+
+
+understanding of when react renders / rerenders is essential.
+
+components state can be used within JSX.
+    you must treat the state objects properties as immutable after it's been initialized.
+    react will only rerender the state when it's been set to a new object.
+        if you merely change one of its properties this won't trigger a rerender.
+    always use setState() to modify the state, it will create the new object automatically.
+        setState() takes a dictionary as an argument and shallow merges it with the existing state object
+
+within JSX you can also bind event handlers to any HTML element:
+
+    class App extends Component {
+        constructor() {
+            super();
+
+            this.state = {                      // for simplicity we're setting the state within the constructor
+                age: 37 
+            }
+        }
+
+        render() {
+            return (
+                <div className="App">
+                    I'm {this.state.age} years old
+                    <button onClick={() => {                        // notice the use of {} in JSX to insert code
+                        this.setState({age: 38});
+                    }}>
+                    Next Birthday is!
+                    </button> 
+                </div>
+            );
+        }
+    }
+
+you can either pass a dictionary object to setState() and it will shallow merge it, or you can pass an update function / completion to it (which is recommended). 
+
+setState(), during its shallow merge, does not do type checking to ensure consistency between previous / updated values, which can break the code. 
+    also setState() updates the state object asynchronously, not immediately. react batches these rerendering updates as an optimization. 
+
+    so if you tried to access the new state right after changing it you might get stale values. 
+    through the use of an update function / completion you can mitigate this problems:
+
+    this.setState(
+        (state, props) => {                             // the update function can access state / props. it returns the dictionary to be merged. 
+                                                        // here you can update the new state based on the previous state. 
+            return {age: 38};
+        },
+        () => {                                         // the completion is called when the state is finished updating. now you can reliably access the new state
+            console.log("updated state: ", this.state);
+        }
+    );
+
+
+in an SPA (single page application) written in React your first request will fetch a new document and all the initial React code. 
+    subsequent requests / responses will often (though not always) not contain new documents or react code, but just data used to update / create / delete components.
+        so usually you won't see the white loading page for loading a new document anymore any React
+        but note that sometimes you can get new pages if it's a really custom page 
+
+
+you can use JSX to loop through arrays and update the UI: 
+
+    class App extends Component {
+        constructor() {
+            super();
+
+            this.state = { 
+                pets: [
+                    {
+                        id: "1",
+                        name: "chili"
+                    },
+                    {
+                        id: "2",
+                        name: "java"
+                    },
+                    {
+                        id: "3",
+                        name: "yogi"
+                    },
+                ]
+            }
+        }
+
+        render() {
+            return ( 
+                <div className="App">
+                    my dogs: 
+                    {                                                   // when you're iterating through array values react requires you give each one a primary key. 
+                        this.state.pets.map((dog) => {                  // react uses the key to know what part of the screen to rerender. 
+                                                                        // you would assign the key to whatever top-level HTML tag is associated with that element. 
+                            return <h1 key={dog.id}>{dog.name}</h1>;    // why are two levels of {} needed? Apparently JSX's {} can only evaluate one expression. 
+                        })                                              // and apparently you should not use semicolon (;) in JSX either or it'll throw an error 
+                    }
+                </div>
+            );
+        }
+    }
+
+
+there are a variety of Component lifecycle methods: 
+
+    class App extends Component {
+        constructor() {
+            super();
+
+            this.state = {
+                pets: []
+            }
+        }
+
+        // mounting is the first time the component is placed onto the react DOM and rendered onto the page. this will only be called once 
+        componentDidMount() {
+            // make the initial request
+            fetch("https://petsdata/pets")
+                .then(response => response.json())
+                .then(petData => this.setState(() => {
+                    return {pets: petData}
+                },
+                () => {
+                    console.log(this.state);
+                });
+        }
+
+        componentDidUpdate() {
+            ...
+        }
+
+        componentDidCatch() {
+            ... 
+        }
+
+        componentWillUnmount() {
+            ... 
+        }
+
+        render() { 
+            return ( 
+                <div className="App">
+                    my pets: 
+                    { 
+                        this.state.pets.map((pet) => { 
+                            return <h1 key={pet.id}>{pet.name}</h1>;
+                        }) 
+                    }
+                </div>
+            );
+        }
+    }
+
+
+
+render() is run immediately after the constructor. 
+    render() determines what HTML will be mounted onto the reactDOM, and subsequently shown on screen
+    After this mounting / rendering process is complete componentDidMount() will be called 
+
+    also note that calling setState() will trigger render() to run again
+
+
+note that while these JSX tags look and act like regular HTML they are actually React components. 
+    but there are some slight differences in the naming and capitalization of properties.
+
+        <div className="App">                           // you use className here instead of the typical class property
+        <input 
+            type="search" 
+            onChange=(event) => {                       // onChange is camel case instead of lowercase
+                console.log(event.target.value)         // this event would normally make its way toward a viewmodel and be stored in local data or do something else
+            } 
+        /> 
+
+    note the events generated by these react HTML components are special react events. 
+        these are generated within the components lifecycle methods, and react adds some metadata in addition to the typical DOM metadata 
+
+
+remember that render() is called repeatedly. 
+    So if you do things like create anonymous functions within render() those will get recreated repeatedly.
+        As an optimization you'd call a named function from within render() instead 
+
+React props are the parameters that you can pass into a component upon initializing it. 
+    i.e. <img src="dog.jpg" /> - src here is a prop 
+
+note that whenever a components props change or setState() gets called this will trigger a rerender of the component 
+
+typically the UI is broken down into various components stored in separate .jsx files, often in a components folder 
+    often styling files & others are stored with the particular component, and these may all be stored together in a sub-folder for the component 
+
+
+    components 
+        petView
+            petView.component.jsx           // component here just helps to distinguish between the folder and the file when importing 
+            petView.component.css
+
+
+    // petView.jsx 
+    import { Component } from "react";
+    
+    class PetView extends Component {
+
+        render() {
+            const dogName = this.props.dogName;                     // here's how you access the props
+            return (
+                <div>                                               // note that components must have 1 top-level HTML tag 
+                    <img src="dog.png" />
+                    <h1>{`BARK!, My name is ${dogName}!`}</h1>      // template literals are apparently a convenient way of insert strings via JSX
+                </div>
+            );
+        }
+    }
+
+    export PetView;
+
+
+    // App.js
+    import { Component } from "react";
+    import { PetView } from "./components/petView/petView.component";
+
+    ... 
+
+    render() {
+        return <PetView dogName="Yogi" /> 
+    }
+
+
+React renders the components using an HTML element / component tree traversal starting at App and working downwards
+    each time it reaches a new element it will call its constructor 
+
+
+note that when you import css files react will compile that css into one giant file. 
+    i.e. the css you import in a component is available in other components.
+
+
+class component lifecycle during mount / updating / unmount: 
+
+    mount           constructor > render() > react updates DOM and refs > componentDidMount() 
+
+    updating        render() > react updates DOM and refs > componentDidUpdate()
+
+    unmount         componentDidUnmount()
+
+updating is triggered via new props, setState(), or forceUpdate()
+
+functional components don't persist as instances, or have a lifecycle. 
+    They use hooks which implement side effects to emulate lifecycles.
+
+
+the useState() hook persists a single value, unlike in class components where setState() handles all values 
+
+
+note that whenever a functional component is rerendered the entire function will get rerun. 
+    this is different than class components, where only the render() method gets rerun. 
+
+the way react determines whether to rerun a functional component is when the props or state change.
+    react also memoizes state / props changes
+        if the state doesn't get changed, just reset to the same value, that won't trigger a rerender. 
+
+
+the useEffect() hook will rerun its callback whenever something in its dependency array changes: 
+
+    useEffect(() => {
+        ...
+    }, []);                     // an empty dependency array will run once on mount 
+
+    useEffect(() => {
+        ...                     // no dependency array will cause the effect to run on every render 
+    });                         // similar to code at the root level, but with the key difference that useEffect runs after the DOM updates
+
+
+react functional components always get 2 arguments - props & forwardRef
+
+
+since changing the DOM is an expensive operation react maintains and modifies its virtual DOM, a mirror of the actual DOM but implemented in javascript. 
+    this allows react to optimize and batch changes to the actual DOM
+
+There's an option option in the React Dev tools that allows you to see what parts of the DOM are being repainted.
+    To find this option go to Elements > Click the 3 dots > more tools > rendering > Paint flashing 
+
+
+to use SASS it looks like you install it as a package, write .scss files, and compile them into .css files.  
+
+    npm install sass
+    sass source/styles/index.scss build/styles/index.css            // build a specific file using the sass compiler 
+
+
+you can also watch for changes to .scss files and automatically recompile: 
+
+    sass --watch source/styles          // watch an entire directory using the sass compiler 
+
+    the VSCode extension `Live Sass Compiler` will also do this 
+
+apparently create-react-app uses its webpack configuration to do this automatically during bundling,
+    so this manual compilation is not actually necessary assuming the bundler is configured correctly 
+
+
+react-router is the most popular way of doing navigation in react. 
+    reach-router used to be popular too but not as much nowdays 
+
+react apps use URL-based navigation. 
+the URL has an arbitrary structure of segments and sub-segments, i.e. 
+    
+    https://www.website.com/base-segment-1/sub-segment2
+
+during navigation the structure of these URL segments dictates the structure of component changes. 
+    i.e. certain parts of the screen get replaced while other parts remain unchanged. 
+        a change in the base segment will likely change most or all of the screen,
+        while a change in the sub-segment would only change a smaller part of the screen. 
+        and there may be certain components, like footers / headers, that even changing the base segment won't effect.  
+    
+basic example: 
+
+    ----------------------------------------------------------------
+    // index.js
+    import React from 'react';
+    import ReactDom from 'react-dom';
+    import { BrowserRouter } from 'react-router-dom';
+    import App from './App';
+    
+    ReactDOM.render(
+        <React.StrictMode>
+            <BrowserRouter>                     // necessary wrapper to make react-router work 
+                <App />
+            </BrowserRouter>
+        </React.StrictMode>, 
+        document.getElementById('root')
+    );
+
+    ----------------------------------------------------------------
+    // App.js
+    import { Router, Route } from 'react-router-dom';
+    import HomeScreen from './routes/homescreen';
+    import ProductsScreen from './routes/productsscreen';
+    import AddToCartModal from './modals/addtocart';
+
+    const App = () => {
+        return (
+            <Routes>
+                <Route path='/home' element={<HomeScreen />}>
+                    <Route                              // this is a nested route. its path is relative to its parent
+                        path='/addtocart'               // i.e. the path to this will be /home/addtocart 
+                        element={<AddToCartModal        // the parent component will still render (though you can prevent that)
+                    />} />                              // note that you need an Outlet in the parent component 
+                                                        // to indicate where to render the nested component 
+                </Route>
+                <Route path='/products' element={<ProductsScreen />} />
+            </Routes>
+        );
+    }
+
+    ----------------------------------------------------------------
+    // routes/homescreen.tsx
+    export default function HomeScreen() {
+        return (
+            <div>
+                <HomeBanner />
+                <FeaturedSliders />
+                <RecentlyViewed />
+                <Outlet />              // Outlet component that addtocart will be fit into
+            </div>
+        );
+    }
+
+    
+
+here's how you'd create a component like a nav bar that always persists / add to it links to various pages: 
+
+    import HomeLogo from "../assets/homelogo.svg";
+
+    NavigationBar() => {
+        return(
+            <>
+                <div className="navbar">
+                    <Link className="logo-container " to="/">           // if user clicks logo they'll return to the homepage
+                        <HomeLogo className="home-logo" />
+                    </Link>
+                    <div className="links-wrapper">
+                        <Link className="navlink" to="/products">
+                            Products
+                        </Link>
+                        <Link className="navlink" to="/offers">
+                            Offers
+                        </Link>
+                    </div>
+                </div>
+                <Outlet />                  // the nested routes (home / products pages) will be inserted into this outlet
+            </>
+        )
+    }
+
+    ----------------------------------------------------------------
+
+    Const App = () => {
+        return(
+            <Routes>
+                <Route path="/" element={<NavigationBar />}>
+                    <Route index element={<HomeScreen />}>              // index makes this the component inserted for the base path "/"
+                    <Route path="/products" element=<ProductsScreen />>
+                    <Route path="/offers" element=<OffersScreen />>
+                </Route>
+            </Routes>
+        )
+    }
+
+
+to avoid any issues with CSS class clashes you can use the styled-components package.
+    this allows you to write the CSS styles in javascript within the components .
+    though to me it seems kind of a pain because you have to add component wrappers to your components. 
+
+
+    import styled from 'styled-components';
+    import Link from 'react-router-dom';
+
+    // navigation.styles.jsx
+    export const NavigationBarContainer = styled.div`          // you just put the CSS within this backtick syntax
+        height: 70px;
+        width: 100%;
+        display: flex;
+    `
+    export const LogoContainer = styled(Link)`    // here we're wrapping with styles the "Link" component from react-router-dom
+        height: 100%;                             // note you could also inherit from a styled component, like NavigationBarContainer
+        width: 70px;
+        padding: 25px;
+    `
+
+    // navigation.component.jsx 
+    import { NavigationBarContainer, LogoContainer } from ./navigation.styles.jsx
+
+    NavigationBar() => {
+        return(
+            <>
+                <NavigationBarContainer>                        // replace the div with the new JS style class
+                    <LogoContainer " to="/">                    // the CSS will be applied w/ a uniquely generated className
+                        <HomeLogo className="home-logo" />
+                    </LogoContainer>
+                    <div className="links-wrapper">
+                        <Link className="navlink" to="/products">
+                            Products
+                        </Link>
+                        <Link className="navlink" to="/offers">
+                            Offers
+                        </Link>
+                    </div>
+                </NavigationBarContainer>
+                <Outlet />
+            </>
+        )
+    }

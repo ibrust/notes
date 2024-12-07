@@ -1,0 +1,1375 @@
+============================================================================================
+SENCHA OVERVIEW & ARCHITECTURE
+============================================================================================
+
+sencha (i.e. Ext JS) is an app framework for building cross-platform web apps.
+    it can be used simply as a component library, or can be used for the whole application.
+
+sencha has a microloader, which is a dynamic javascript and CSS loader.
+  it loads files and dependencies lazily to improve load times.
+  key aspects of the microloader can be configured in app.json,
+    such as appCache.enabled (controls how the loader interacts with the browsers cache)
+
+sencha Ext 7.x is split into two toolkits:
+    1) Classic (for traditional desktop-style UI)
+    2) Modern (for mobile / touch-friendly UI)
+
+Some initial points on Sencha:
+  1) It has a unified namespace. All classes & functions live under the global Ext namespace. This avoids polluting the global scope
+
+  2) It has its own class system.
+
+        Ext.define('MyClass', { ... })      // define a class
+        Ext.create()                        // create a class instance
+
+      the class system supports single inheritance + mixins (via a 'mixins' property)
+
+      internally sencha will dynamically load required class files (using its loader or sencha cmd build),
+        so you don't have to manually manage <script> tags
+
+      classes can also have aliases for convenient lookup
+
+  3) Classes can be referred to / initialized using aliases
+        Unfortunately, for Sencha's various class types, you set the alias using different properties. The idea was to avoid naming collisions:
+
+          xtype                   used for classes that extent Ext.Component
+          ptype                   used for plugins
+          layout / ltype          used for layout managers
+          feature / ftype         used for grid features
+          store                   used as a shortcut for Ext.data.Store and its subclasses.
+                                    the class instantiating it often prepends the "store" namespace automatically
+          proxy                   used for data proxies
+          reader                  used for data readers
+          model                   while not technically an alias, the model config accepts an alternateClassName which acts as an alias
+          widget                  used for various widgets including grid cells
+
+  4) You can extend any Sencha class to create custom components or override framework classes if needed
+
+  5) Sencha uses a custom event system.
+      Many classes fire events. They usually use Observable as a mixin, or they may extend it.
+        You can attach listeners to an Observable using on() or addListener.
+
+      Sencha also supports an event bus for controllers (in classic MVC architecture) to listen for events by selector.
+
+  6) Classic toolkit comes with various themes.
+      To change theme you include a different CSS file (if using a compiled build).
+      Classic's themes are optimized for mouse, whereas Modern is more optimized for mobile touch events.
+
+============================================================================================
+APPLICATION STRUCTURE & LIFECYCLE
+============================================================================================
+
+The Ext.App namespace contains classes related to architecture, including the Application class and MVC/MVVM support classes.
+
+You use Ext.app.Application to define / configure the app at the root level:
+
+  // Application.js
+  Ext.define("Test.Connect.Reloaded", {
+    extend: "Ext.app.Application",
+    name: "TestApp",
+
+    stores: [
+      // global stores
+    ],
+
+    launch: function () {
+      // runs after the root view is initialized and the app is ready
+    },
+
+    // triggers when the application detects the cached version of the app is older than the version on the server
+    // the most common trigger is when the user refreshes the page and the microloader detects a new version is available
+    // it can also trigger on initial load
+    onAppUpdate: function () {
+      Ext.Msg.confirm("Update Available", "Download App Update?",
+        function(choice) {
+          if (choice === "yes") {
+            window.location.reload();
+          }
+        }
+      );
+    }
+  });
+
+  // App.js - this is the app entry point, which will instantiate the Application class
+  Ext.application({
+    name: "TestApp",
+    extend: "Test.Connect.Reloaded",
+    requires: [
+      "TestApp.view.main.Main"                // the root view of the application
+    ],
+    mainView: "TestApp.view.main.Main"
+  });
+
+When Ext.application() is called sencha will go through a bootstrapping sequence:
+  1) Sencha first ensures the DOM loads before Ext.application() proceeds (essentially wrapping the call in Ext.onReady)
+      This guarantees all scripts have been loaded before initialization begins
+  2) Ext.application() establishes the apps global namespace - i.e. if your app is named TestApp it'll create a global TestApp namespace.
+      This helps avoid variable collisions.
+      Sencha also adds a convenience method to the namespace `TestApp.getApplication()` that can be used to fetch the Application instance
+  3) Before loading any application classes, Sencha configures the class loader to point to the apps folder structure.
+      If you provided an 'appFolder' config Sencha maps your namespace to that folder.
+      Now when Sencha needs to fetch one of your components it knows where to find them.
+  4) Sencha defines the Application class.
+      For this Ext.application() either uses the class you defined (if you passed a class name) or generates one on the fly.
+      This process also ensures any requirements you declared are included.
+      i.e. if you included the "requires" config or listed controllers/models they'll be included as requirements here.
+  5) Upon defining the Application class Sencha loads the specified controllers, models, and any other classes the app needs.
+      Sencha's class loader will go through a process of resolving their file paths within the apps folder structure (provided earlier).
+  6) Once all classes are loaded Sencha will initialize the application.
+      This is done inside an Ext.onReady() callback, so it will happen after the DOM onready event fires.
+      Only one Application instance is created for the whole app.
+      The constructor of Ext.app.Application runs, which in turn calls its superclass (Ext.app.BaseController or similar)
+      The app is now running and can be accessed via `TestApp.getApplication()`
+  7) During Application's init Sencha applies some global configurations - i.e. the handling of QuickTips, default token, etc..
+  8) The application will now instantiate every controller that was specified as required, along with their models and stores.
+        Ext.app.Controller's have an init method which gets called during this phase.
+          The controllers setup their event handlers and references.
+        This step ensures any global controllers (i.e. those managing overall app UI or routes) are ready.
+  9) Sencha creates the root view.
+        A viewport is a special container that automatically sizes and positions itself to fill the browser window and manage window resizing
+        if the root view is not a specialized `Ext.container.Viewport` it must at least be a class that extends `Ext.container.Container`.
+        if the root view is just a Container it gets a viewport plugin.
+          Sencha will attach the root view to the document body automatically and make it behave as a Viewport.
+  10) Sencha calls the Application's launch() method.
+        This is a hook for you to run custom code in once everything else is ready.
+        By this point the DOM is ready, all classes are loaded, controllers are initialized, the root view / viewport is created and rendered on the page.
+
+In modern build setups Sencha Cmd and app.json also coordinate with Ext.app.Application during the bootstrapping process
+
+You do not need to manually create instances of or include script tags for core application components like controllers, stores, models, and views.
+  Instead, you simply list their logical names in the relevant configuration properties within the Application class, i.e.:
+
+    controllers: ['MainController'],
+    stores: ['LocalDataStore'],
+
+  these class instances will then be available to the rest of the application by auto-generated methods, i.e.
+
+    this.getMainController()
+    this.getLocalDataStore()
+
+
+Sencha supports both MVC and MVVC.
+  with MVC you use Ext.app.Controller. This is the older approach.
+  with MVVM (preferred) views have an associated Ext.app.ViewModel and optionally a Ext.app.ViewController
+
+Sencha has an odd idea of what ViewModel's and ViewControllers do:
+  ViewModel
+    - exposes formulas (which are data binding handlers)
+    - propagates model changes to the view
+    - contains local data via its `data` property, and model classes via its `stores` property
+    - can support two-way binding between the view and model (where the controller is bypassed)
+  ViewController
+    - handles user input events & mutates viewmodel data (but why not reference the model directly?)
+    - coordinates with external systems (API calls, navigation)
+
+  The way they've implemented ViewModel's they're pretty tightly coupled with the Model. They can mutate it in various ways.
+    To keep this architecture clean we should just use MVVM and minimize the use of the controller as much as possible. This seems to be the direction Sencha is headed.
+    Currently one exception where we must use a ViewController is listeners, whose binding mechanism requires a controller.
+      We'll have to use a controller there but we can just delegate the logic from the ViewController to the ViewModel.
+
+    Sencha has something they call "two way binding", which is just a data flow between the viewmodel's `data` property and the view.
+      It bypasses the controller so they gave it a name but it's just a typical pattern used by numerous other frameworks.
+      You can't setup two way binding with a store.
+
+        Ext.define("TestApp.view.main.Main", {
+            extend: 'Ext.tab.Panel',
+            xtype: 'app-main',
+
+            requires: [
+                'Ext.plugin.Viewport',                      // plugin to make the root view fit the viewport
+                'TestApp.view.main.MainController',
+                'TestApp.view.main.MainModel'
+            ],
+
+            controller: 'main',     // this is shorthand, it works only if the controller class has been registered with the alias 'controller.main'
+            viewModel: {
+                type: 'main'        // this is the object syntax, it's more flexible and allows you to pass additional configs to the viewmodel (data, formulas, etc.)
+            },
+
+            listeners: {
+                tabchange: 'onTabChange'      // attaches to the controller method
+            },
+
+            // dockedItems is a special config used in container components (Panel, TabPanel, Window, etc.)
+            // to define child components that are "docked" to a specific edge of the container
+            dockedItems: [{
+                xtype: 'toolbar',
+                dock: 'top',
+                items: [{
+                    xtype: 'displayfield',
+                    fieldLabel: 'Active Tab',
+                    bind: '{activeTabTitle}'        // listens to the viewmodel data
+                }]
+            }],
+
+            // child components go here. these are treated as tabs by Panel
+            items: [
+                {
+                    title: 'Home',
+                    html: '<h2>Home</h2>'
+                },
+                {
+                    title: 'Products',
+                    layout: 'vbox',
+                    items: [
+                        {
+                            xtype: 'grid',
+                            bind: '{products}',
+                            columns: [
+                                { text: 'Name', dataIndex: 'name', flex: 1 },
+                                { text: 'Price', dataIndex: 'price', flex: 1 }
+                            },
+                            height: 200
+                        },
+                        {
+                            xtype: 'displayfield',
+                            fieldLabel: 'Total Products',
+                            bind: '{productCount}'        // listens to the viewmodel data
+                        },
+                        {
+                            xtype: 'button',
+                            text: 'Add Product',
+                            handler: 'onAddProduct'       // attaches to the controller method
+                        }
+                    ]
+                }
+            ]
+        });
+
+        Ext.define('TestApp.view.main.MainController', {
+            extend: 'Ext.app.ViewController',
+            alias: 'controller.main',
+
+            init: function () {
+                // runs when the controller initializes
+            },
+
+            // any listener methods immediately delegate to the viewmodel
+            onTabChange: function (tabPanel, newCard, oldCard) {
+                this.getViewModel().handleTabChange(tabPanel, newCard, oldCard);
+            },
+
+            onAddProduct: function () {
+                this.getViewModel().handleAddProduct();
+            }
+        });
+
+        Ext.define('TestApp.view.main.MainViewModel', {
+            extend: 'Ext.app.ViewModel',
+            alias: 'viewmodel.main',
+
+            // data is meant for local state
+            // you can bind UI components directly to data
+            data: {
+                activeTabTitle: 'Home'
+            }
+
+            // stores a collection of records, typically of a single model type
+            stores: {
+                products: {
+                    model: 'TestApp.model.Product',
+                    autoLoad: true,
+                    data: [
+                        { name: 'Widget', price: 25 },
+                        { name: 'Gadget', price: 40 }
+                    ]
+                }
+            },
+
+            formulas: {
+                productCount: function (get) {                  // the "get" param is used to access other data properties or formulas
+                    const store = this.getStore('products');    // the "getStore" method is used to access a store
+                    return store ? store.getCount() : 0;
+                }
+            }
+
+            // VC delegate methods
+            handleTabChange: function (tabPanel, newCard, oldCard) {
+                this.set('activeTabTitle', newCard.title);
+            },
+            handleAddProduct: function () {
+                const store = this.getStore('products');
+                store.add({ name: 'New Item', price: 30 });
+            }
+        });
+
+
+ViewControllers are tied to the lifecycle of a specific view instance.
+  When the view is created / destroyed the same happens to its controller.
+  Note that Application-level controllers, created at app launch, will still persist the entire application lifecycle.
+
+the View can propagate events to ViewControllers in 2 ways:
+  1) they have a deprecated 'control' property which uses CSS-like selectors to target components in the view hierarchy.
+
+        control {
+          'button[action=save]': {        // specify which component / event should trigger a specific method
+            click: 'onSaveButtonClick'
+          }
+        }
+
+  2) via 'listeners' combined with component reference names, part of the new auto wiring syntax.
+
+        controller: 'main',
+        listeners: {
+          click: "onSaveButtonClick"
+        }
+
+
+The best way for a ViewController to delegate to a ViewModel is direct access via getViewModel(). The returned ViewModel allows you to:
+
+    1) call get() / set() to manipulate the data object:
+
+          let title = this.getViewModel().get('pageTitle');
+          this.getViewModel().set('formData', formValues);
+
+    2) call getStore() to access stores:
+
+          this.getViewModel().getStore('myStore').load();
+
+    3) call custom methods (preferred because it moves all logic out of the VC):
+
+          onAddProduct: function () {
+              this.getViewModel().handleAddProduct();
+          }
+
+There are other mechanisms the ViewController has for interacting with the ViewModel, but they're better avoided:
+
+    1) the ViewController can setup a binding to react to changes in the ViewModel data:
+
+          this.getViewModel().bind('{someDataProperty}', this.onDataChange, this);
+
+    2) the ViewController has specific lifecycle methods associated with the ViewModel,
+          like initViewModel() which is called when the viewmodel gets created.
+          In here you could setup certain interactions with the ViewModel
+
+ViewModels hold a data object (for local data), stores (collections of models, usually from a remote source), and formulas (methods that trigger when data/stores mutate).
+  ViewModels also have links, which lazily load & reference (not copy) models located outside the ViewModel (global or application level models/stores, parent ViewModel stores, etc.)
+ViewModels are defined alongside a view.
+  That view (or its child items) can use a special bind config or binding syntax to tie itself to the viewmodel data.
+  Some examples of binding syntax:
+
+    1) direct binding             {user.name}
+    2) template string            'hello {userName}!'       insert the bound data into a string
+    3) boolean logic binding      {!isAdmin}                bind the result of boolean logic
+    4) multi binding                                        bind the entire object w/ multiple fields in one go
+
+ViewModel formulas react to data or store changes.
+  They derive their value from local data, stores, or other formulas.
+  They can be defined as a function, or as an object with get/set (get is required).
+
+formulas will fire in 2 circumstances:
+  1) when the ViewModel is initialized and bindings to them are resolved
+  2) when any of the data they access changes
+
+  But they'll only fire when their data dependencies change, otherwise the event will be filtered out.
+
+formulas will setup the necessary bindings on whatever data is accessed within them automatically.
+
+You can bind the UI directly to formulas.
+You can also chain formulas.
+You can even make a formula two-way by making it an object & giving it a setter, where it can mutate data.
+  Bear in mind you may use a component that internally sets up a two-way binding without realizing it
+
+remember that a bind will not fire until it's fulfilled.
+  A bind will remain 'unfulfilled' as long as the data you've bound to has not been set yet.
+  And in some cases, especially with asynchronous data loading, the component may try to bind before the viewmodel has the data.
+
+
+    formulas: {
+        productCount: function (get) {                  // the "get" param is used to access other data properties or formulas
+            const store = this.getStore('products');    // the "getStore" method is used to access a store
+            return store ? store.getCount() : 0;
+        },
+      }
+    }
+
+    Ext.define('TestApp.view.SomeForm', {
+        extend: 'Ext.form.Panel',
+        title: 'Person Form',
+        width: 400,
+
+        // you can define the viewmodel inline like this if you want
+        viewModel: {
+            data: {
+                firstName: 'John',
+                lastName: 'Doe'
+            },
+            formulas: {
+                fullName: function(get) {                     // use anonymous functions in formulas instead of arrow functions, so that `this` refers to the viewmodel instance
+                    const fn = get('firstName'),
+                          ln = get('lastName');
+                    return (fn && ln) ? fn + ' ' + ln : (fn || ln || '');
+                }
+
+                // if you define a setter method it becomes a "two way formula", and the UI can write to it
+                name: {
+                  get: function(get) {
+                      var fn = get('firstName'), ln = get('lastName');
+                      return (fn && ln) ? fn + ' ' + ln : (fn || ln || '');
+                  },
+                  set: function(value) {
+                      var space = value.indexOf(' '),
+                          first = value, last = '';
+                      if (space > -1) {
+                          first = value.substring(0, space);
+                          last  = value.substring(space + 1);
+                      }
+                      // update the underlying fields in `data`, which will in turn trigger the formula getter
+                      // with this.set you can modify anything in `data`, but not stores
+                      this.set('firstName', first);
+                      this.set('lastName', last);
+                  }
+            }
+        },
+
+        layout: 'form',
+        items: [{
+            xtype: 'textfield',
+            fieldLabel: 'First Name',
+            bind: '{firstName}'           // two-way bind
+        },{
+            xtype: 'textfield',
+            fieldLabel: 'Last Name',
+            bind: '{lastName}'
+        },{
+            xtype: 'displayfield',
+            fieldLabel: 'Full Name',
+            bind: '{fullName}'            // one-way bind to the computed formula
+        },{
+            xtype: 'button',
+            text: 'Submit',
+            bind: {
+                disabled: '{!fullName}'   // boolean logic bind
+            }
+        }]
+    });
+
+
+Sencha designed some components with a publishing API so they can make publicly available their state updates.
+  i.e. a grid publishes its currently selected record; a checkbox publishes its checked state.
+  Give these components a reference name and you can bind to these published properties directly within the view:
+
+    items: [{
+      xtype: 'checkbox',
+      reference: 'isAdmin',
+      boxLabel: 'Is Admin'
+    },{
+      xtype: 'textfield',
+      fieldLabel: 'Admin Code',
+      bind: {
+          disabled: '{!isAdmin.checked}'        // checked is one of these component API properties
+      }
+    }]
+
+
+The typical pattern for sibling components sharing state is to put the common state in a ViewModel defined by a wrapper component:
+
+      Ext.create('Ext.container.Container', {
+        viewModel: {
+            type: 'main'
+        },
+        layout: 'hbox',
+        items: [{
+            xtype: 'view1'
+        },{
+            xtype: 'view2'
+        }]
+      });
+
+  Sencha's ViewModel hierarchy is actually based on the view hierarchy, not a prototype chain of ViewModels.
+    Each view can optionally define a ViewModel.
+    If a view does not define a ViewModel it will traverse up the view hierarchy to find one.
+      This allows deeply nested components to bind to data or formulas defined in a parent ViewModel.
+
+    A child components bindings will first check the associated ViewModel's data for the binding.
+      If the data isn't found it'll bubble up the ViewModel hierarchy searching for the binding.
+
+    If a child view modifies data that lives in a parent ViewModel all the components bound to that data,
+      regardless of where they are in the hierarchy, will update.
+
+
+ViewModels have a variety of methods, including getters / setters to mutate `data`, lifecycle methods, etc.:
+
+  1) constructor(config)        called when the ViewModel is created. Often used to setup watchers, listeners, perform custom initialization, etc.
+
+  2) get(path)                  retrieve a value from `data` or formulas. If called inside a formula the viewmodel will track it as a dependency of that formula
+                                    The ViewModel batches these updates, so they may not happen immediately.
+                                    To force them to be immediate you can call viewModel.notify(), but that's rarely needed.
+
+  3) set(path, value)           sets a value in `data` and triggers any bindings or formulas that depend on that path
+
+  4) notify()                   forces the ViewModel to reevaluate all bindings and formulas.
+
+  5) getStore(storeId)          retrieves a store, allowing you to interact with it (i.e. call load(), getProxy(), loadData(newData), etc.)
+
+  6) watch(config)              an imperative version of a formula. watches one or more ViewModel properties for a change & executes a callback in response.
+
+  7) linkTo(name, config)       a way of imperatively creating a link to an external record or store (alternative to the declarative links config).
+                                    linkTo() is a more flexible than the links config - it can also be used for convenience to reference the ViewModels internal nested data / store properties
+
+  8) unlink(name)               removes a previously linked record or store
+
+  9) getData()                  returns the raw `data` object
+
+  10) getParent()               returns the parent ViewModel. Useful for accessing shared data or coordinating between components
+
+============================================================================================
+EXT.DATA - MODELS, STORES, PROXIES
+============================================================================================
+
+The three central classes of Ext.data are:
+
+  1) Ext.data.Model - just a model class, defines a set of fields along with associated methods
+
+  2) Ext.data.Store - it's a collection of model instances, and handles operations on the collection (i.e. sorting, filtering, paging)
+
+  3) Ext.data.Proxy - handles the API calls for a model or store
+
+  Many supporting classes in Ext.data (readers, writers, validators, etc.) enhance these core classes.
+
+      Ext.define('TestApp.model.User', {
+        extend: 'Ext.data.Model',
+        fields: [
+            { name: 'id', type: 'int' },
+            { name: 'firstName', type: 'string' },
+            { name: 'lastName', type: 'string' },
+            { name: 'birthDate', type: 'date' }
+        ],
+        validators: {
+            firstName: 'presence',              // built-in validator to make a field required
+            birthDate: { type: 'presence' }
+        },
+
+        proxy: {
+            type: 'ajax',
+            api: {
+                create: 'api/users/create',
+                read: 'api/users/read',
+                update: 'api/users/update',
+                destroy: 'api/users/delete'
+            },
+            reader: { type: 'json', rootProperty: 'users', totalProperty: 'total' }
+        }
+      });
+
+
+Sencha proxies can be of various types:
+  ajax              just a typical API call
+  rest              a subclass of ajax with default RESTful URLs and actions
+  jsonp             cross domain calls
+  memory            for client-side data
+  localstorage
+  sessionstorage    HTLM5 browser storage APIs
+
+
+Models can specify a relationship with other models. There are a variety of fields used to do this:
+
+  1) belongsTo
+        declares a many-to-one or one-to-one relationship with another model (can't know which)
+        auto-generates a getter and setter for working with the referenced model
+  2) hasMany
+        declares a one-to-many or many-to-many relationship with another model (can't know which)
+        creates a method like posts() that return a store of the associated models
+  3) hasOne
+        declares a one-to-one relationship with another model (but it can't enforce that relationship)
+        auto-generates a getter and setter for working with the referenced model
+  4) reference
+        this is just a shortcut for auto-generating the belongsTo field
+
+  Note that none of these actually enforce the cardinality of the relationship. That requires business logic.
+    They only generate getters / setters, and add metadata that can be used by stores and proxies to auto-load related data
+
+        Ext.define('TestApp.model.User', {
+          extend: 'TestApp.model.Base',                 // Base could be a common model with a "userId" field
+          fields: [ { name: 'name', type: 'string' } ],
+        });
+
+        Ext.define('TestApp.model.Post', {
+          extend: 'TestApp.model.Base',
+          fields: [
+              { name: 'userId', reference: 'User' },      // establishes a relationship between Post & User, with userId as a pseudo "foreign key".
+              { name: 'title', type: 'string' }           // when this relationship is established Sencha automatically generates accessor methods
+          ]                                               // on the Post model for working with associated User data.
+        });
+
+        Behind the scenes the reference caused belongsTo to be generated:
+            belongsTo: {
+              model: "User",
+              getterName: "getUser",
+              setterName: "setUser",
+              foreignKey: "userId",
+            }
+
+        Which in turn causes the getters / setters / metadata to be auto-generated
+          i.e. post.getUser(), post.setuser(user)
+
+  there's no shortcut for adding "hasMany" so you have to add it manually:
+
+      Ext.define('TestApp.model.User', {
+        extend: 'TestApp.model.Base',
+        fields: [ { name: 'name', type: 'string' } ],
+        hasMany: {
+            model: 'TestApp.model.Post',
+            name: 'posts'                              // now user.posts() can be called, which will return a store with add(), each(), and getCount()
+        }
+      });
+
+A store is configured with a model type.
+Stores often have their own Proxy defined for loading the data.
+  If not, they will fall back tot he proxy defined on their associated Model.
+  Regardless, store.load() (called automatically when the ViewModel is created) will use a proxy to fetch data (unless you're using local data).
+
+      Ext.define('TestApp.view.main.MainViewModel', {
+          extend: 'Ext.app.ViewModel',
+          alias: 'viewmodel.main',
+          data: {
+              searchQuery: '',
+              selectedCategory: ''
+          },
+          stores: {
+              users: {
+                  extend: 'Ext.data.Store',
+                  alias: 'store.users',
+                  model: 'TestApp.model.User',
+                  autoLoad: {
+                      // autoload can be set to 'true' or to a configurable object
+                      // the params config here is bindable, and allows you to dynamically update the parameters used in AJAX requests.
+                      // but note that Sencha will not automatically trigger reload from here. For that you need to do some gymnastics.
+                      // You must bind to a formula which calls load(), then returns the params object which you use here.
+                      params: {
+                          search: '{searchQuery}',
+                          category: '{selectedCategory}'
+                      },
+                  },
+                  pageSize: 50,
+                  proxy: {                          // you can also load a store with local data w/ the 'data' property - useful for development / testing
+                      type: 'ajax',                 // i.e. data: [ { id: 1, name: "Joe" }, { id: 2, name: "Bob" } ]
+                      url: '/api/users',
+                      reader: {
+                          type: 'json',
+                          rootProperty: 'data'
+                      }
+                  }
+
+              }
+          }
+      });
+
+
+Stores provide an API to sort, filter, and group local or remote data:
+
+      // local sorting
+      const store = Ext.create('Ext.data.Store', {
+        fields: ['name', 'id'],
+        data: [
+            { name: 'Alice', id: 3 },
+            { name: 'Bob', id: 1 },
+            { name: 'Charlie', id: 2 }
+        ],
+        sorters: [
+            { property: 'name', direction: 'ASC' },     // first sort records alphabetically by name, then by id
+            { property: 'id', direction: 'ASC' }
+        ]
+      });
+
+      // remote sorting
+      const store = Ext.create('Ext.data.Store', {
+          proxy: {
+              type: 'ajax',
+              url: '/api/users',
+              reader: {
+                  type: 'json',
+                  rootProperty: 'data'
+              }
+          },
+          remoteSort: true,
+          sorters: [{ property: 'name', direction: 'ASC' }]
+      });
+
+      // local filtering
+      store.filter({                // filter the data to only include elements with the name "Bob"
+          property: 'name',
+          value: 'Bob'
+      });
+
+      // remote filtering
+      const store = Ext.create('Ext.data.Store', {
+          proxy: {
+              type: 'ajax',
+              url: '/api/users',
+              reader: {
+                  type: 'json',
+                  rootProperty: 'data'
+              }
+          },
+          remoteFilter: true,             // this causes the filter to be sent to the server, which returns only matching records
+          filters: [{
+              property: 'department',
+              value: 'Engineering'
+          }],
+          autoLoad: true
+      });
+
+      // grouping is done by specifying a groupField
+      const store = Ext.create('Ext.data.Store', {
+          fields: ['name', 'department'],
+          groupField: 'department',
+          data: [
+              { name: 'Alice', department: 'HR' },
+              { name: 'Bob', department: 'Engineering' },
+              { name: 'Charlie', department: 'Engineering' }
+          ]
+      });
+
+Stores have a paging API:
+
+      const store = Ext.create('Ext.data.Store', {
+          extend: 'Ext.data.Store',
+          alias: 'store.users',
+          model: 'TestApp.model.User',
+          pageSize: 25,
+          proxy: {
+              type: 'ajax',
+              url: '/api/users',
+              reader: {
+                  type: 'json',
+                  rootProperty: 'data',
+                  totalProperty: 'totalRecords'     // totalRecords is a presumed property in the API response.
+              }                                     // the proxy/reader must be told the total records for the paging to work
+          },
+          autoLoad: true
+      });
+
+      store.loadPage(2);
+
+You can pair the paging API with Ext.toolbar.Paging to provide a paging UI:
+    {
+        xtype: 'pagingtoolbar',
+        store: store,
+        dock: 'bottom',
+        displayInfo: true
+    }
+
+You can add / remove records from the Store.
+  These changes are only staged, Sencha will not send them to the backend until you call sync() to commit them.
+  The Model also has a complimentary API for staging and committing changes:
+
+    store.add({ name: 'Alice', department: 'HR' })                // create a new model instance and include it
+    store.remove(record)                                          // mark a record for removal
+    record.set('name', 'Updated Name')                            // update a particular record (which will mark it a dirty)
+
+    store.sync()                                    // send all pending CRUD requests to the server (using the proxy's configured URLs)
+    record.save()                                   // commit changes made to a single model instance
+
+    store.rejectChanges()                           // reverts all pending changes
+
+    store.getModifiedRecords()
+    store.getNewRecords()
+    store.getRemovedRecords()                       // these return arrays of records with pending changes
+
+
+Proxies use a Reader (i.e. Ext.data.reader.Json) to parse the server response into Model instances.
+  It can also use a Writer to format API requests.
+
+============================================================================================
+UI COMPONENTS
+============================================================================================
+
+Every UI element in Sencha inherits from Ext.Component, which provides fundamental behavior like show/hide, sizing, custom UI events, etc..
+
+A Container (Ext.container.Container) is like the div of Sencha.
+  It's a special component that can hold other components (child items), configure their layout manager, add/remove components, etc..
+  So every Panel, Window, Toolbar, etc. is a subclass of Container.
+  If all you need is a basic wrapper you can use Container on its own.
+
+List of common Components:
+
+    Ext.panel.Panel               A frequently used, versatile Container subclass.
+                                  It can be given a header, body, and footer, toolbar, title, can be made collapsible or draggable, etc.
+
+    Ext.button.Button
+
+    Ext.toolbar.Toolbar           horizontal or vertical bar that contains collections of UI controls, usually buttons or menus.
+                                  by default it expects its child items to be buttons, but it can hold any component.
+                                  commonly docked in a Panel
+
+    Ext.menu.Menu                 A floating menu panel that contains menu items.
+                                  Can float independently or be attached to components (i.e. a button can be given a drop-down menu)
+
+    Ext.tab.Panel                 A Container with navigation tabs. Each child tab gets a header (which has a title and optional icon/close button)
+
+Ext.Window (Ext.window.Window) is the basic floating dialogue. It's a subclass of Panel, so it inherits all container capabilities.
+  By default it supports dragging and has a close button.
+  You create a Window with "modal: true" to grey out the background.
+
+Ext.chart / Ext.d3 (for rendering documents) / Ext.calendar also contain a variety of data visualization components.
+
+============================================================================================
+EXT.LAYOUT - LAYOUT MANAGERS AND CONTAINER ORGANIZATION
+============================================================================================
+
+Every Ext.container.Container (and subclasses like Panel, Window, FormPanel, etc.) has a layout manager (an instance of a class in Ext.layout.*) that handles its children.
+  the container's layout governs how those items are arranged.
+
+Sencha provides a variety of layout types:
+
+  - auto (auto layout)      this is the default. It behaves like unformatted HTML where elements just flow one after another.
+                            essentially this is a no-op and it relies on each childs width/height or CSS
+
+  - hbox / vbox             horizontal or vertical stacks. they allow you to specify a flex ratio or fixed size for each child.
+                            i.e. setting flex: 2 / flex: 1 on two siblings will make one twice as wide as the other.
+
+  - border                  divides the container into five regions - north, south, east, west, and center.
+                            you specify for each childh component a region. the center region fills any unused space.
+                            border layout also supports collapsible panels
+
+  - column                  arranges children into columns.
+                            each child can have a columnWidth between 0 and 1 (like a percentage of the container width)
+                            similar to hbox but the API for percentage width is a bit simpler. often used in multi-column forms
+
+  - fit                     simple layout that stretches a single child to fill the container. when a container has 1 child you should just use this.
+
+  - card                    stacks children on top of one another, but shows only one at a time.
+                            it's used for wizards or tab panels.
+                            you can switch the active card with methods or via a TabBar.
+
+  - table                   arranges items in an HTML table-like grid, with configured column count. less used nowdays (hbox/vbox often suffice)
+
+  - accordion               stacks multiple panels and allows only one to be expanded at a time, others collapse
+
+  - anchor                  allows percentage-based width/height on child items. was connly used in older Sencha for form layouts, nowdays vbox and flex are more used.
+
+
+Specify a layout via the "layout" config:
+
+    Ext.create('Ext.panel.Panel', {
+        title: 'HBox Example',
+        width: 400, height: 100,
+        layout: {
+            type: 'hbox',
+            align: 'stretch'
+        },
+        items: [
+            { xtype: 'panel', title: 'Flex = 1', flex: 1 },
+            { xtype: 'panel', title: 'Flex = 2', flex: 2 }
+        ]
+    });
+
+
+The layout system is managed by the framework, and will work on its own in almost all cases.
+  Rarely if you're adding or resizing tons of items at once you might need to call container.suspendLayout()
+    followed by container.resumeLayout(true) or updateLayout() to batch the updates.
+
+In Sencha 7.5 responsive design is handled in a way that's complimentary to the layout system.
+  To get responsive behavior you dynamically change the component's layout based on size or orientation.
+
+  The responsive layout system has 3 key parts:
+
+    1) Ext.mixin.Responsive - You must include this mixin to enable the component to use responsiveConfig
+
+    2) responsiveConfig - the config where you define conditional configurations, i.e.:
+
+          responsiveConfig: {
+              tall: {
+                  headerPosition: 'top'
+              },
+              wide: {
+                  headerPosition: 'left'
+              }
+          }
+
+    3) responsive plugin - internally Sencha uses a responsive plugin that listens for resize events
+          and evaluates conditions like tall, wide, portrait, landscaope, etc.
+          when a condition is met it applies the responsiveConfig
+
+
+the layout system still governs how components are arranged.
+  the responsive config is complimentary in that allows you to change layout properties like visibility, position, size, or layout type
+
+Note that many times parent components will set a layout, but you can override it in your child config.
+
+============================================================================================
+EXT.FORM - FORMS, FIELDS, VALIDATION
+============================================================================================
+
+FormPanel (Ext.form.Panel) is the container for a form.
+  it wraps BasicForm (Ext.form.Basic) to manage fields, validation, loading, and submission.
+  In practice you rarely use BasicForm directly, you use the FormPanel and access it from that, i.e.:
+
+      const form = formPanel.getForm();     // returns the wrapped form
+
+      if (form.isValid()) {
+          const values = form.getValues();
+          console.log(values);
+          form.submit({                       // the BasicForm has these built-in operation handlers for submit, load, and reset
+              url: '/submit',
+              success: function(form, action) {
+                  Ext.Msg.alert('Success', 'Form submitted!');
+              },
+              failure: function(form, action) {
+                  Ext.Msg.alert('Failed', 'Form submission failed.');
+              }
+          });
+      }
+
+Useful BasicForm methods include:
+
+    // field Management
+    form.getFields(): Ext.util.Collection<Ext.form.field.Field>         // return all fields in the form
+    form.getValues(                                                     // return the current values of the form fields
+      asString?: boolean,
+      dirtyOnly?: boolean,
+      includeEmptyText?: boolean,
+      useDataValues?: boolean
+    ): any
+    form.setValues(values: any)
+    form.reset(): void;                                                 // resets all fields to their original values
+
+    // validation
+    form.isValid(): boolean;                  // returns true if all fields are valid.
+    form.isDirty(): boolean;
+    form.checkValidity(): boolean;            // triggers validation on all fields and returns true if valid.
+    form.hasInvalidField(): boolean;          // returns true if any field is invalid
+    form.clearInvalid();                      // clears all validation messages
+
+    // submission & loading
+    form.submit(options: {                    // submits the form
+      url?: string;
+      params?: any;
+      headers?: any;
+      method?: string;
+      success?: (form: Ext.form.Basic, action: any) => void;
+      failure?: (form: Ext.form.Basic, action: any) => void;
+      scope?: any;
+      clientValidation?: boolean;
+      waitMsg?: string;
+      waitTitle?: string;
+    }): void;
+
+    form.load(options: {                                        // loads data into the form from a remote source.
+      url?: string;                                             // it'll auto-populate all fields whose name matches a field on the model.
+      params?: any;                                             // when the user edits the form you'll call form.updateRecord to write the new record
+      headers?: any;                                            // to the form model, then call record.save() to send the updated data to the model's proxy.
+      method?: string;                                          // in this scenario the form doesn't need to be submitted since the data is already saved
+      success?: (form: Ext.form.Basic, action: any) => void;
+      failure?: (form: Ext.form.Basic, action: any) => void;
+      scope?: any;
+      waitMsg?: string;
+    }): void;
+
+    form.waitMsgTarget?: string | HTMLElement | Ext.Component;       // specifies where to show a loading message during form operations
+
+    // record binding
+    form.getRecord(): Ext.data.Model | null;                         // these methods allow binding and syncing with a model record
+    form.loadRecord(record: Ext.data.Model): void;
+    form.updateRecord(record?: Ext.data.Model): void;
+
+
+Here's an example of a simple form:
+
+      Ext.create('Ext.form.Panel', {
+          renderTo: document.body,
+          title: 'User Form',
+          width: 300,
+          bodyPadding: 10,
+          defaultType: 'textfield',             // sets the default xtype for form elements
+          items: [
+              {
+                fieldLabel: 'First Name',       // fieldLabel is the visible label
+                name: 'firstName',              // name is the field's data name, used in binding // submission
+                labelAlign: 'top',              // 'top' will cause the label to appear above the field; 'left' is the default
+                msgTarget: 'under',             // says where the validation error message will show up
+              },
+              {
+                fieldLabel: 'Last Name',
+                name: 'lastName'
+              },
+              {
+                xtype: 'datefield',             // override the default xtype for this field
+                fieldLabel: 'Date of Birth',
+                name: 'birthDate'
+              }
+          ]
+      });
+
+
+Ext.Form.field.* contains a variety of field components:
+    Ext.form.field.Text
+    Ext.form.field.TextArea             // multi-line text input
+    Ext.form.field.Number               // a text input that only allows numeric input
+    Ext.form.field.date                 // includes a built-in date picker
+    Ext.form.field.ComboBox             // a dropdown list of values (which can be backed by a store)
+    Ext.form.field.Checkbox
+    Ext.form.field.Radio                // group of radio buttons
+    Ext.form.field.Hidden               // stores data without rendering a visible input
+    Ext.form.field.File                 // file upload input. Sencha by default uses a hidden custom iframe to upload this,
+                                        // because older browsers didn't have an HTML5 form upload API.
+
+    Ext.form.field.Trigger              // base class for fields with clickable triggers (i.e. combobox), often extended by other fields
+    Ext.form.field.Field                // abstract base class for all form fields. provides shared functionality like value handling, validation, events, etc.
+    Ext.form.field.Picker               // base class for fields that open a picker (i.e. date or combobox)
+
+
+many fields have simple validation rules by default (i.e. a required textfield will be invalid if left empty).
+if you want to customize the validation there are 3 ways of doing it:
+  1) use the configs "regex" and "invalidText"
+  2) use the "validator" config (accepts a function that returns true for valid, or an error message)
+  3) use the VTypes system (Ext.form.field.VTypes) if you want to be able to reuse a validator.
+        it allows you to define custom validators that can be applied to many fields.
+        i.e. you could define a vType for "time" validation, then set the config "vtype" to "time"
+
+FormLayout is a container, so it can use any layout to arrange its fields.
+
+You include buttons in a form via its "buttons" config:
+
+    buttons: [{
+      text: 'Submit',
+      handler: function() {
+          var form = this.up('form');         // 'this.up' here is a trick to get the buttons first form ancestor (it climbs the component hierarchy to find it)
+          if (form.isValid()) {
+              form.submit({
+                ...
+              });
+          }
+      }
+    }]
+
+
+============================================================================================
+EXT.GRID - GRIDS AND DATA VISUALIZATION
+============================================================================================
+
+A sencha grid is composed of 4 main things:
+
+  1) Grid Panel container           a subclass of Panel which holds the grid
+  2) Grid View                      a table view of rows / columns and a header
+  3) Store                          provides the data (each row is a model instance from the store)
+  4) Columns                        a set of columns define how each field in the data will be rendered
+
+When bound to a store the grid will automatically update as the store's data changes:
+
+    Ext.create('Ext.grid.Panel', {
+        renderTo: document.body,          // for simplicity I've rendered this directly to the DOM body. Normally you'd put the grid in a container of some sort.
+        title: 'Users List',
+        width: 400,
+        height: 200,
+        store: userStore,                 // bind the grid to a store
+        columns: [
+            {
+              text: 'Name',
+              dataIndex: 'name',          // dataIndex is the model field name that this column will use
+              width: 100,
+              sortable: false             // you can disable sorting for specific columns if you want, assuming the store is sortable
+            },                            // if the store is remote this will trigger a new API call with sort params added
+            {
+              text: 'Email Address',
+              dataIndex: 'email',
+              width: 150,
+              hidden: true                // this will hide the column initially.
+            },                            // The user can toggle visibility via the column header if the grid has enableColumnHide defaulted to true
+            {
+              text: 'Phone Number',
+              dataIndex: 'phone',
+              flex: 1
+            }
+        ]
+    });
+
+By default Grids support a number of features:
+  - sorting
+  - column resizing / reordering (if enabled)
+  - column menu - this is a dropdown menu that allows the user to show / hide columns
+  - editing - support for in-place editing of cell values
+  - selection model
+      this is a type of class that manages & tracks row selection for data-bound UI components (such as grids):
+
+        Ext.grid.RowSelectionModel / Ext.selection.RowModel - the default for grid panels, allows selection of entire rows
+        Ext.selection.CellModel - allows individual cells or ranges of cells to be selected
+        Ext.selection.CheckboxModel - renders a column of checkboxes to manage row selection, typically defaulting to multi-select mode
+
+      you can further configure the selection model via the "mode" property. Available options are:
+        "SINGLE"
+        "MULTI"             allows complex selection of items using keyboard modifies (ctrl, shift, etc.)
+        "SIMPLE"            allows multiple items to be selected, but only via mouse clicks
+
+There are two cell editing modes that are supported:
+  1) Cell-level Editing (edit one cell at a time)
+      you enable this by adding the cell editing plugin, then for each cell that's editable you specify an editor config, i.e.:
+
+          plugins: [{ ptype: 'cellediting', clicksToEdit: 1 }]
+          ...
+          {
+            text: 'Email',
+            dataIndex: 'email',
+            editor: 'textfield'         // the column's cells will have a textfield editor pop up when clicked
+          }
+
+  2) Row-level Editing (edit a whole row at a time, looks similar to the Excel feature)
+
+          plugins: [{ ptype: 'rowediting', clicksToEdit: 1 }]
+
+
+Note that after cells are edited they'll be marked dirty, but you must still call store.sync() to make the API calls.
+
+If a field is marked allowBlank: false or has a validator the editor will display an error.
+  Sencha will prevent leaving the field until a valid entry is made.
+
+Grids also have a "features" config, which are modular enhancements for grids.
+  They add things such as grouping, summary rows, buffering, locking columns, etc.
+
+It's also common to add a PagingToolbar (Ext.toolbar.Paging) to a grid, usually docked at the bottom.
+  As discussed earlier this toolbar relies on the store for its configuration:
+
+      dockedItems: [{
+        xtype: 'pagingtoolbar',
+        store: userStore,
+        dock: 'bottom',
+        displayInfo: true
+      }]
+
+For large datasets (thousands of rows) Grids will use buffered rendering by default.
+  This works the same way mobile scrollviews do - they only render visible rows plus a buffer space.
+
+There's a RowExpander plugin that allows you to have expandable rows with additional details in them.
+
+There's also a WidgetColumn that allows you to embed arbitrary components into grid cells.
+  i.e. your cells can display a progress bar, star ratings, a button, etc.
+
+You sometimes need to use grids and forms in combination.
+  For example, when the user selects a grid cell you may want to show details in a form below for editing.
+  Handling the grid's "selectionchange" event allows you to trigger custom logic on editing:
+
+      grid.getSelectionModel().on('selectionchange', function(model, selected) {
+        if(selected.length) {
+            var record = selected[0];
+            form.loadRecord(record);
+        }
+      });
+
+Note that Sencha also has a few other specialized grids / panels:
+  Tree Panel (Ext.tree.Panel)         for hierarchical data
+  PropertyGrid                        a specialized grid for editing the properties of an object (like some panels in VS codes debugging flow)
+  PivotGrid                           an interactive, multi-dimensional grid designed for working with very large datasets
+
+Ext.grid.* has a variety of other namespaces for specialized behaviors (i.e. Ext.grid.locking for locking grids, etc.)
+
+============================================================================================
+MIXINS & PLUGINS FOR REUSABLE BEHAVIOR
+============================================================================================
+
+Sencha Mixins extend the Ext.Mixin base class
+Sencha classes are limited to single inheritance. Sencha Mixins are the "alternative" to multiple inheritance.
+  Mixins are added to a class via the "mixins" config
+
+Sencha's Mixin implementation involves copying the methods and properties from the Mixin into the target class.
+  This copying mechanism is different from typical JS inheritance, which uses a prototype chain.
+    Prototype chains can be fragile when the parent classes state gets modified.
+      They also create confusion about what the "this" pointer refers to.
+    With a Mixin you don't have these problems, all state winds up in the target class.
+      You call a Mixin's properties / methods by referencing the class instance itself.
+
+  If a method defined in a Mixin conflicts with one in the class, or the class's inheritance chain, the Mixin method is not used.
+    But you can still access the Mixin's method via:
+
+        this.mixins.<mixin-id>.<methodName>.call(this, ...)
+
+A Mixin is still a class, which means they can extend other classes and include their own Mixins.
+  Infact, in many other languages (like C++) inheritance works exactly like Mixins work in Sencha - during compilation the inherited code is copied into the target class.
+
+  So what is it that makes a Mixin fundamentally different from traditional multiple inheritance? What prevents the programmer from using them to do multiple inheritance?
+    Surprisingly nothing. Sencha has a set of design ideals around Mixins, but there's nothing to enforce them. It's up to the programmers to design with the ideals in mind:
+
+      1) Mixins aren't intended to be standalone classes, they're meant to be fragments of a class that add specific functionality to it.
+          Traditional inheritance conceptually emphasizes specialization of subclasses, but Mixins conceptually emphasize orthogonal design and composability.
+      2) Although Mixins can have state, the idea is to keep state out of the Mixin as much as possible. They should mainly just contain methods.
+          One of the problems with multiple inheritance is the complexity of managing distributed state across an inheritance hierarchy.
+          Some languages like Swift / Java have mechanisms that are similar to Mixins (called protocols) that disallow state, or only allow the use of static / computed state.
+            Sencha Mixins don't have that level of enforcement but still considers statelessness a design ideal.
+
+    In reality Sencha's Mixins are just a different implementation of multiple inheritance, one which bypasses the prototype chain.
+
+Some notable mixins in Sencha 7.5 include:
+
+  - Ext.mixin.Observable          adds an internal event handling system to the class, along with methods like on(), fireEvent(), un() (i.e. unsubscribe).
+                                    Most component classes and stores are already observable, either by extending Ext.mixin.Observable or mixing it in.
+                                    You rarely have to deal with this Mixin directly, but it's good to know the methods it provides.
+  - Ext.mixin.Bindable            used by certain classes to participate in the binding system
+  - Ext.mixin.Responsibe          allows a component to be made responsive (allows it to use responsiveConfig)
+  - Ext.grid.column.Column        A base mixin that defines the behavior of Grid columns.
+
+
+Sencha also has a plugin system that can be used to add or modify the functionality of a component.
+  A Plugin is a runtime instance.
+    The important difference between a Plugin and a Mixin is that a Plugin is applied to a component on a per-instance basis, not applied to the whole class.
+  Plugins are added to a component via the `plugins` config.
+
+Plugins have an init() method which the owning component will call, passing itself as an argument.
+  This allows the plugin to modify the component. The plugin can register event listeners, inject new methods or UI, intervene in the lifecycle, etc..
+
+Plugins also have a destroy() method where they can clean themselves up, and enable() / disable() methods to toggle themselves on and off.
+
+============================================================================================
+EXT.UTIL - UTILITY CLASSES AND FUNCTIONS
+============================================================================================
+
+Sencha provides a set of utility classes and singleton helpers in Ext.util (and some directly under Ext). A few noteworthy ones are:
+
+  - Ext.util.Format               A singleton w/ static methods for formatting strings, numbers, dates, etc.:
+                                      Ext.util.Format.date(value, format)
+                                      Ext.util.Format.number(value, "0,000.00")       // add commas and two decimals
+                                      Ext.util.Format.uppercase(str)
+                                      Ext.util.Format.lowercase(str)
+                                      Ext.util.Format.htmlEncode(str)                 // for escaping HTML
+                                      Ext.util.Format.currency(value)                 // format a number as a currency string
+
+  - Ext.util.Observable           Prior to Sencha 5 this was the class that implemented the event system. Now Sencha uses Ext.mixin.Observable
+  - Ext.util.TaskRunner           To run functions periodically or after a delay. It's more robust than setTimeout
+
+  - Ext.util.Collection
+  - Ext.util.MixedCollection      Both these are data structures with advanced querying / filtering capabilities. A store extends Ext.util.Collection
+
+  - Ext.util.Cookie               utilities to get/set cookies
+  - Ext.util.LocalStorage         A wrapper around the browser's localStorage API.
+                                  It adds a few additional features for Sencha compatibility like event-handling, configuration objects
+
+  - Ext.util.CSV                  utils for CSV encoding / decoding
+
+  - Ext.util.CSS                  helper for manipulating CSS at runtime
+
+  - Ext.Ajax                      A Singleton with the Ext.Ajax.request() method for making API calls.
+                                  It's just a wrapper around XMLHttpRequest which honors global timers, session management, and a few other Sencha-related things
+
+                                      Ext.Ajax.request({
+                                          url: '/resetPassword',
+                                          params: { userId: 123 },
+                                          success: function(response) {
+                                              var data = Ext.decode(response.responseText);
+                                              ...
+                                          }
+                                      });
+
+  - Ext.Msg                       A singleton modal dialogue, often used for Alerts, i.e.:
+
+                                      Ext.Msg.alert('Success', 'User saved successfully')
+
+  - Ext.String
+  - Ext.Array
+  - Ext.Object
+  - Ext.Date                      utility classes for common data-type operations
+
+  - Ext.Logger
+  - Ext.Error                     Logging & error handling. Usually not used directly
+
+  - Ext.fly
+  - Ext.get                       for DOM element access. Sencha wraps DOM elements with Ext.dom.Element for a uniform cross-browser API.
+                                  Usually you don't need these methods because the Sencha components provide enough methods to work with the elements.
+
+                                      Ext.get("elementId");
+
+  - Ext.Loader
+  - Ext.require                   The class loader and dynamic require API.
+                                  If using Sencha Cmd and modern build you normally don't call these manually (the manifest and requires config in classes handle it).
+
+============================================================================================
+ROUTING
+============================================================================================
+
+Sencha router manages navigation for single page apps via the URL hash (it uses fragment IDs).
+  It integrates with browser history to support forward/back buttons.
+  It ties into the MVVM architecture via controllers, which leverage the router and implement the navigation logic.
+
+  Developers declare a routes config object in a controller.
+    On the object each key is the routes URL fragment and each value is a handler function defined in the controller.
+    When the browser's URL hash matches a fragment the associated handler will trigger.
+
+The main application (Ext.app.Application) can specify a defaultToken, which is a default hash to use on startup if none is present in the URL.
+The main application can also listen for global router events (like unmatched routes) via the application's "listen" or "listeners" config.
+
+The router doesn't create or swap views. It's the controller's route handlers which manage that.
+  A common pattern is to have a main view controller, and show different sub-views inside it based on the router.
+    i.e. have a root view with a Card layout or an Ext.navigation.view stack,
+    and when a route handler is called it'll instantiate an appropriate view (if not already present)
+    and switch it into view (i.e. add it to the card layout and set it active).
+
+      Ext.define('MyApp.view.main.MainController', {
+          extend: 'Ext.app.ViewController',
+          routes: {
+              'users': 'onUsers',                             // static route
+              'user/:id': 'onUser',                           // route with parameter - the second segment will be extracted from the URL / passed to the handler as an argument
+              'search/:term/:page': 'onSearchResults'         // route with multiple params
+              '*': 'catchAll'                                 // The wildcard route ('*') is a special catch-all pattern that will match any hash
+          },                                                  // If defined, its handler runs before any specific route matches, which is useful for global pre-processing
+
+          onUsers: function() {
+              ...
+          },
+          onUser: function(id) {
+              var mainPanel = this.lookup('mainCardPanel');
+              var detailPanel = mainPanel.child('#userDetail');                 // check if the user detail panel already exists. If not, create one.
+              if (!detailPanel) {
+                  detailPanel = Ext.create({ xtype: 'userdetail', itemId: 'userDetail' });
+                  mainPanel.add(detailPanel);
+              }
+
+              detailPanel.getViewModel().set('userId', id);
+              detailPanel.getViewModel().load();                  // hypothetical load
+
+              mainPanel.setActiveItem(detailPanel);               // show the detail panel
+
+          },
+          onSearchResults: function(term, page) {
+              ...
+          },
+          catchAll: function() {
+              ...
+          },
+      });
+
+
+Apparently the typical tasks done in a route handler include:
+  1) determine the target view to show
+      This may involve looking up an existing component (by itemId, xtype, or a reference) or creating a new view.
+  2) Add or activate the view in the UI
+      the handler should add the target view to the container (if not already present) then make it active/visible
+  3) Load or update the data for the view if needed
+  4) Setup any view state
+      i.e. you may populate a search field with params you got from the route
+
+  To me this seems like a violation of the separation of concerns. The parent VC needs to know whether to call load() on its child, what data to set and where, etc.
+    It'd be better if we could just add a controller to a controller hierarchy, which would in turn initialize its view, call load() and whatever else.
+    With Sencha's architecture you could at least easily move steps 3 / 4 into the child ViewController, whose init() is called when its view is initialized...
+
+============================================================================================
+MISC OTHER
+============================================================================================
+
+Ext.direct - contains the classes for Sencha's RPC mechanism. When configured it'll generate client-side RPC stubs for server methods.
+
+Ext.dom - includes classes like Ext.dom.Element, which is Sencha's wrapper for DOM elements.
+  Though rarely needed, it has methods for manipulating CSS, content, etc.
+
+Ext.event - includes Sencha's event objects and event handling utilities.
+  For example, Ext.event.Event is the event object pass to event handlers (with cross-browser normalization of keys, button clicks, etc.)
+  The Modern toolkit also has gesture handlers located in Ext.event.gesture.*
+
+Sencha has a state manager that can save component state (i.e. collapsed panel state, grid column order) to local storage or remotely.
+  It uses classes like Ext.state.* and Ext.state.LocalStorageProvider or Ext.state.CookieProvider.
+  If you see "stateful: true" somewhere that's what it is.
+
+By default Sencha will catch many errors and log them via Ext.Error. In dev mode you may see console warnings when this happens.
+
+Ext.ux (user erxtensions) is a namespace for misc extensions or extensions added by the user.
+  In the Classic toolkit some noteworthy specialized components reside here:
+
+    Ext.ux.Splotlight             highlights a specific component or DOM element by masking the rest of the screen. Useful for tutorials or drawing attention
+    Ext.ux.CheckColumn            grid column that displays a checkbox
+    Ext.ux.grid.FiltersFeature    Adds filtering capabilities to grid columns
+
+There's an Ext.google namespace for google map integration
+
+Ext.draw - graphics package for creating vectors and animations. It's cross-platform and abstracts away differences in technology (canvas API, SVG)
+
+    Ext.draw.Container            The main component that contains and manages a drawing surface (Ext.draw.Surface)
+    Ext.draw.Surface              the interface onto which the graphics are rendered
+    Ext.draw.sprite.Sprite        the basic building blocks of any drawing, representing shapes on the surface.
+                                      This is an abstract class and it's subclassed in a variety of ways for different shapes
