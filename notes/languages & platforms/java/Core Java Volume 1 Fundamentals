@@ -332,7 +332,7 @@ typecasts are done w/ the (type) syntax:
     double x = 10.5; 
     int y = (int) x;
 
-    int w = 300
+    int w = 300;
     byte z = (byte) w;                      // z = 44  - this typecast truncated the number 
 
 
@@ -381,7 +381,7 @@ traditional switches have been around since Java 1, and worked the same way as t
 you can only switch on values of type int, string, or enum
     the value you're switching on can't be null or a NullPointerException is thrown
 
-Java 14 added a new switches that uses the -> syntax instead. these switch's do not fallthrough. 
+Java 14 added new switches that uses the -> syntax instead. these switch's do not fallthrough. 
     you can also create switch expressions where the switch itself will actually return a value.
         you do this either implicitly or with the yield keyword:
 
