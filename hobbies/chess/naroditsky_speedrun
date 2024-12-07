@@ -1,11 +1,5 @@
 
-- when up material trading capitalizes on a long term material advantage 
-  but sometimes avoiding the trade is better if your pieces have more immediate decisive value 
-
-- if you think about it the best way of chasing a piece out of a square is with a pawn 
-  it guarantees the piece will never return to the square... it also gains tempo 
-
-- part of the logic for opening up your kindside is a judgement call that 
+- part of the logic for opening up your kingside is a judgement call that 
   a) you have more pieces on the kingside 
   b) your attack is fast enough 
 
@@ -13,7 +7,8 @@
 
 - it's important to evaluate the value of pieces correctly. 
   look at how many squares the piece controls, what it's doing and what its potential is
-  although there are occasionally times when pieces are terrible, but when it opens up it will be very good. keep that in mind - you want to think in the long run too 
+  although there are occasionally times when pieces are terrible, but when it opens up it will be very good. 
+    keep that in mind - you want to think in the long run too 
 
 - in the opening he considers carefully whether to close or open the center.
   he bases this decision at least in part on comparing his development with his opponents 
@@ -60,5 +55,173 @@
 
 - in queen endgames it's often good to centralize the queen
 
+_____________________________________
+
+he prioritizes opening up the board alot, especially when he has initiative 
+  although there was another scenario where he was attacking on the kingside, and he kept the center closed. so it depends. 
+
+2 interesting ideas when you're thinking about a move to play: 
+  1) is it better if played in a different order 
+  2) are you playing the most ambitious move 
+
+
+there was an interesting point where he could have chosen to move the knight to 2 different squares, and couldn't make up his mind,
+  so he intentionally waited before moving the knight, and moved another piece instead. 
+  so flexibility / waiting to react to his opponents moves
+
+
+in general, pawn structure being ruined is important in 2 scenarios: 
+  1) the king is close to the pawns 
+  2) you're close to an endgame 
+
+  otherwise it is some factor but it's not something to fret about very much 
+
+
+try to resist trading down and releasing tension when you don't need to 
+
+
+take the advice "take toward the center" with a grain of salt, it's one of the principles which has many exceptions
+
+
+he points out that when the opponent has violated opening principles it gives you more liberty to violate them as well, if you wish 
+  i.e. make a move but delay development or castling, etc. 
+
+
+he goes through a detailed analysis of how to play for an outpost. but he notices the outpost very early. 
+  he also talks about how pieces that defend outposts can be traded off. 
+  an outpost can define the entire game if it's significant enough 
+
+  especially be careful of weak squares in the center of the board that can be occupied by knights 
+    knights are an ideal piece to occupy key squares in many scenarios 
+
+
+comparison with other openings or lines is often a good way to make sense of positions 
+
+at one point he fiancettos Bb7, and points out the other bishop Bd3 is also pointing at the kingside - both bishops are next to one another. 
+  he says this makes them stronger, and to somewhat prefer bishops together
+
+He explains that you don't want to overcommit pawns to occupying the center, since they can be undermined. 
+  There's a certain balance - you want to occupy the center but then back up the pawns with pieces so that you can maintain your control. 
+  Of course it all depends on the opening. 
+
+
+at one point black played a triangle structure against Nc3/d4/e4 - c6/d5/e6. 
+  Danya explained that we dont want to play e5 here. One reason is we want to open the board, not close it. 
+  When your opponent plays bad moves it's better to try to open the position, since that maximizes the impact of the bad moves. 
+  Another reason is the d4 pawn can be undermined but that's obvious. 
+
+Nimzowitsch thought that instead of taking back and occupying weak squares with pawns, you want to reserve the weak square for pieces. 
+  there are cases where this isn't true, but this is quite a firm rule according to Danya. 
+
+- he's very deliberate and conscious about attacking hooks. 
+  he realizes if his opponent has changed his kingside pawn structure and plays to that specifically
+
+- a successful attack depends on 2 things: 
+  1) the presence of enough pieces - you need a certain amount of firepower involved
+  2) weaknesses in the area where your opponents king is 
+
+  so a single queen can conduct an attack if the opponents king is weak and undefended 
+  on the other hand, you can have 5 pieces in the attack, but if the opponent also has 5 pieces there the attack may be defended
+
+  So using these principles you can rule out attacks with very minimal calculation.
+
+- piece activity in the endgame is incredibly important, sometimes even more important than material. 
+
+there's a common principle to apply when undermining a pawn chain: 
+    first attack the base and undermine support for the tip, then afterwards attack the tip 
+
+    
+he talks about the idea of carving out a good square for a piece
+  the scenario is the opponent has a square covering a square, and you want to put a piece on the square 
+    so you use one of your own pawns to undermine or take in a way that vacates the square 
+
+In one game he'd traded off his enemies LSB, and he still had is own. 
+  He knew he could exploit the enemy kings light squares, so he slowly formed a queen / LSB battery and ultimately checkmated the enemy
+
+
+the queen and the knight are the strongest attacking combo in chess, he says. 
+  when they combine near the enemy king it is devestating. 
+
+when attacking don't get too focused on mating and forget about just grabbing simple material, like a pawn, if it's the best available
+
+loss of tempo isn't as important in closed positions. 
+  this is notable for black if you want to make defensive maneuvers, 
+  and notable for white if you want to capitalize on being up in tempo (i.e. avoid closing the position)
+
+
+there was a time he pushed f4 in the opening, and his rationale for it was the opponent had developed slowly (they were playing the pirc) 
+  seems somewhat obvious but it's interesting to make the connection between f4 and initiative
+
+he points out that pawn weaknesses are especially disasterous when they occur on semi-open files. 
+  same is true if there are bishops which can attack the weaknesses, of course 
+
+whenever a pawn moves immediately ask yourself what weak squares or weaknesses have been left behind 
+  do the same when considering sacrifices, and when he moves pieces
+  and do the same when you move pawns / pieces 
+
+whenever you have a situation where a piece defends another piece - he calls this a type 2 defended piece 
+  in these situations you should look for whether the piece doing the defense can be overloaded 
+  take conscious note of type 2 defended pieces and look out for potential overloading tactics 
+
+so type 1 are pieces not defended by anything. type 2 are pieces defended by one o ther piece. 
+  type 3 are pieces defended by a pawn, or by multiple pieces. 
+  noticing all the type 2 pieces helps you reason about the tactics in the position.
+  Very cool way of thinking he's come up with 
+  And with a type 2 piece an important question to ask is if you can dislodge the defender somehow 
+
+when deciding to trade he recognizes what his opponents strongest piece was, and based his decision to trade on that. 
+  so he traded off his opponents strongest piece in this scenario 
+  he was in trouble so he had to trade, but he was white so it may not be obvious 
+
+if a move fails for a tactical reasons, be aware that the reason could change as the game goes on. 
+  so try to remain aware of the threats and reassess them as the game goes on 
+
+there was an interesting moment in the game, where the opponent had his knight on a forward square. 
+  We had a backward knight which could have traded it off. But that backward knight could also route to an outpost (no pawns could boot it from). 
+  and infact, there was no bishop of that outposts color either, so it was an eternal knight. 
+  he chose to avoid the trade and take the time to route the bishop. 
+  it was a mostly closed center so maybe that was why he felt he had more time, too. 
+  later he booted the enemy knight with a pawn. 
+
+he says to track & catalogue all your opponents weaknesses like a librarian. interesting idea
+
+he recommends having some way of "collecting tactical themes". Like you write down or keep some record of the noteworthy tactic. 
+  over time you'll build up all these tactics 
+
+he also disagrees with the common wisdom to "put pawns on opposite color as your bishop", because there are many exceptions. 
+
+but what he does believe in is fixing your opponents pawns on the same color complex as your bishop. And that makes sense. 
+
+studying your mating patterns is also good. there are names to them. you should know them. 
+
+he talks about this idea of a healthy waiting move. It's where you play a move that doesn't create any vulnerabilities, that's just generally good, 
+  waiting for the opponent to make his next move and reveal his plan... to which you can respond. 
+
+when considering weaknesses (your own and the opponents) you should assess whether it is exploitable. Sometimes weaknesses just aren't exploitable. 
+  For example, a backwards c pawn on a file that isn't open and won't open, and also can't be attacked by pieces. 
+  pushing g6 in front of the king after your opponent has traded off his bishop that could exploit those squares 
+  a square that you're weakening, but it's just inaccessible. a piece can't get to it in any timely manner. 
+
+  this kind of thinking allows you to reason about weak squares in a deeper way. 
+    for example, you may weaken a square but have a piece guarding it, 
+      and if the opponent only has 1 piece which could exploit and you could just trade it off... it may not be a problem. 
+
+
+a lead in development is a dynamic advantage. it exists for the moment, but if the opponent can catch up in development...   dissipates.
+  if there aren't enough targets or the king isn't weak enough the development advantage dissipates. 
+
+  material advantages are more static and long term. 
+
+consider looking more at annotated games. there are many games collections nowdays which you can hunt down. 
+  live commentary is also good.
+  analyzing with an engine and being able to learn from that analysis is a difficult task but you can do that too. 
+
+there was an interesting moment where, during some pawn trades, he didn't take back with his bishop (though it looked natural to do so). 
+  instead he took back with a pawn, which seemed slightly suboptimal in the short term. however, it kept the bishop on a desired diagonal. 
+  it was a diagonal where he could form a battery. he was prioritizing piece activity, essentially. 
+
+it's important to ask the Sam Shankland question to not make false assumptions. Also to work on tactics. 
+  this allows you to play at a higher level. 
+  you cant always ask this question, but asking it in critical positions is good. 
 
 

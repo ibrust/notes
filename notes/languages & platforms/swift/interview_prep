@@ -1,0 +1,156 @@
+// Optional Chaining
+struct Person {
+    var address: Address?
+}
+struct Address {
+    var street: String?
+}
+let person = Person(address: Address(street: "123 Main St"))
+let streetName = person.address?.street // Optional chaining
+
+// Guard Statement
+func processData(data: String?) {
+    guard let unwrappedData = data else {
+        print("Data is nil")
+        return
+    }
+    print("Processing: \(unwrappedData)")
+}
+
+// Do-Catch for Error Handling
+enum CustomError: Error {
+    case invalidInput
+}
+func validateInput(input: String) throws {
+    if input.isEmpty {
+        throw CustomError.invalidInput
+    }
+    print("Input is valid")
+}
+do {
+    try validateInput(input: "")
+} catch CustomError.invalidInput {
+    print("Caught invalid input error")
+}
+
+// Struct (Value Type)
+struct Point {
+    var x: Int
+    var y: Int
+}
+var p1 = Point(x: 1, y: 2)
+var p2 = p1 // p2 is a copy, not a reference
+
+// Class (Reference Type)
+class Car {
+    var make: String
+    init(make: String) {
+        self.make = make
+    }
+}
+let car1 = Car(make: "Toyota")
+let car2 = car1 // car2 references the same instance as car1
+
+// Basic Closure
+let greeting = { (name: String) -> String in
+    return "Hello, \(name)!"
+}
+print(greeting("Alice"))
+
+// Trailing Closure
+func performOperation(numbers: [Int], operation: (Int) -> Int) -> [Int] {
+    return numbers.map(operation)
+}
+let doubledNumbers = performOperation(numbers: [1, 2, 3]) { number in
+    return number * 2
+}
+print(doubledNumbers)
+
+// Protocol Definition
+protocol Greetable {
+    func greet()
+}
+
+// Protocol Conformance
+class MyClass: Greetable {
+    func greet() {
+        print("Hello from MyClass!")
+    }
+}
+
+// Delegation Example (Conceptual)
+protocol DataDelegate: AnyObject { // AnyObject for weak reference
+    func didReceiveData(_ data: String)
+}
+
+class DataSource {
+    weak var delegate: DataDelegate? // Weak reference to prevent retain cycles
+    func fetchData() {
+        let data = "Some fetched data"
+        delegate?.didReceiveData(data)
+    }
+}
+
+class DataConsumer: DataDelegate {
+    func didReceiveData(_ data: String) {
+        print("Consumer received: \(data)")
+    }
+}
+
+// Generic Function
+func swapValues<T>(_ a: inout T, _ b: inout T) {
+    let temp = a
+    a = b
+    b = temp
+}
+var int1 = 5, int2 = 10
+swapValues(&int1, &int2)
+print("int1: \(int1), int2: \(int2)")
+
+// Generic Struct
+struct Stack<Element> {
+    var items: [Element] = []
+    mutating func push(_ item: Element) {
+        items.append(item)
+    }
+    mutating func pop() -> Element? {
+        return items.popLast()
+    }
+}
+var stringStack = Stack<String>()
+stringStack.push("Apple")
+stringStack.push("Banana")
+print(stringStack.pop() ?? "")
+
+let numbers = [1, 2, 3, 4, 5]
+
+// map
+let squaredNumbers = numbers.map { $0 * $0 }
+print(squaredNumbers)
+
+// filter
+let evenNumbers = numbers.filter { $0 % 2 == 0 }
+print(evenNumbers)
+
+// reduce
+let sum = numbers.reduce(0) { $0 + $1 }
+print(sum)
+
+// Sorting an Array
+var unsortedArray = [3, 1, 4, 1, 5, 9, 2, 6]
+unsortedArray.sort()
+print(unsortedArray)
+
+// Searching in an Array
+let foundIndex = unsortedArray.firstIndex(of: 5)
+print(foundIndex ?? "Not found")
+
+// Asynchronous Task on Global Queue
+DispatchQueue.global().async {
+    // Perform a long-running task
+    print("Performing background task...")
+    DispatchQueue.main.async {
+        // Update UI on the main queue
+        print("UI updated after background task.")
+    }
+}

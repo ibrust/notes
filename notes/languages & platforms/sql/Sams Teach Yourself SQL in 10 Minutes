@@ -13,7 +13,7 @@ SELECT column_1
 FROM table_name
 WHERE ROWNUM <= 5;                      /* ORACLE */
 ____________________________________________________________________
-SELECT *                                /* wildcard column selection - returns any columns, even unknown ones
+SELECT *                                /* wildcard column selection - returns any columns, even unknown ones */
 FROM table_name;
 ____________________________________________________________________
 -- and /* */ are for comments. # can sometimes be used also.
@@ -89,7 +89,7 @@ FROM table_1;                                                          AS should
 
 /* AS is also often used to rename illegally titled columns (like those with spaces or dots) or to improve readability */
 ____________________________________________________________________
-SELECT column_1, column_2, column_1 * column_2 AS new_title         /* arithmetic select
+SELECT column_1, column_2, column_1 * column_2 AS new_title         /* arithmetic select */
 FROM table_1;
 ____________________________________________________________________
 /* functions are very DBSM specific. There's a tradeoff between portability and efficiency - using functions is usually more efficient than doing the operation manually,
@@ -113,10 +113,10 @@ WHERE to_number(to_char(date_column, 'YYYY')) = 2012
 
 SELECT column_1                                                             /* oracles roundabout way of doing the same thing, which turns out to be easier */
 FROM table_1
-WHERE date_column BETWEEN to_date("01-01-2012") AND to_date("12-31-2012");
+WHERE date_column BETWEEN to_date('01-01-2012') AND to_date('12-31-2012');
 
-SELECT column_1                                         /* MySQL and MariaDB have many different functions to work with dates, this one
-FROM table_1                                                                   extracts the year from it */
+SELECT column_1       /* MySQL and MariaDB have many different functions to work with dates, this one extracts the year from it */
+FROM table_1                                                                   
 WHERE YEAR(date_column) == 2012
 
 SELECT column_1
@@ -124,9 +124,11 @@ FROM table_1
 WHERE NOT column_1 < 10;                               /* NOT precedes the entire statement */
 
 
-/* there's usually more advanced date manipulation functions (an important part of database manipulation) but they're all very DBMS specific, refer to documentation */
+/* there's usually more advanced date manipulation functions (an important part of database manipulation) 
+   but they're all very DBMS specific, refer to documentation */
 ____________________________________________________________________
-/* the arithmetic functions tend to be more uniform across DBMS, though less used. common ones are: ABS(), COS(), EXP(), PI(), SIN(), SORT(), TAN() */
+/* the arithmetic functions tend to be more uniform across DBMS, though less used. 
+   common ones are: ABS(), COS(), EXP(), PI(), SIN(), SORT(), TAN() */
 ____________________________________________________________________
 /* aggregate functions are used to get statistics from multiple rows: SUM(), MIN(), MAX(), COUNT(), AVG()
    These functions tend to be supported by all DBMSs */

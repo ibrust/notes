@@ -1,0 +1,87 @@
+
+================================================
+NOTEWORTHY SYSTEMS
+================================================
+
+- search autocomplete 
+- search engine 
+- web crawler 
+- video streaming service 
+- mp3 streaming service 
+- image sharing service 
+- chat / messaging systems 
+- file storage and sahring systems 
+- recommendation systems (users recommended content based on history, interests, etc.)
+
+
+================================================
+KEY CONCEPTS
+================================================
+
+- horizontal vs. vertical scaling 
+- load balancing
+    - know common algorithms
+        - round-robin
+        - least connections
+        - weighted round-robin 
+    - get familiar with load balancing technology (reread the book on load balancing)
+- distributed systems fundamentals 
+    - fault tolerance
+    - concurrency control
+    - data consistency 
+ - network protocols 
+    - TCP/IP
+    - HTTP/HTTPS
+    - streaming protocols for mp3 or mp4 (DASH, etc.)
+- database fundamentals
+    - know the different types of databases and when to use them
+        - SQL
+            - structured DATA
+            - ACID properties
+            - suitable for transactions
+            - know some specific technologies (MySQL, PostgreSQL)
+        - noSQL (various types)
+            - flexible xchemas
+            - horizontal scalability
+            - suited for large datasets and varying data structures
+            - know some specific technologies
+                - mongoDB (document store)
+                - redix (key-value)
+                - cassandra (wide-column)
+                - Neo4J (graph)
+        - in memory
+        - understand indexing (accelerating query execution for specific data)
+        - understand blob storage (efficiently store large amounts of unstructured data)
+        - understand search-optimized databases (designed for fast and efficient search of large datasets using special indexing techniques)
+- know various caching strategies
+    - cache-aside
+    - write-through
+    - refresh-ahead
+- know various cache eviction policies
+    - LRU
+    - LFU
+- replication 
+    - speak to its availibility / fault tolerance benefits 
+    - speak to synchronous vs. asynchronous replication and its impact on consistency vs. availability
+- understand messaging systems
+    - discuss event driven architecture, and how asynchronous communication improves scalability / robustness
+    - understand the technologies used
+        - kafka
+        - rabbitMQ
+
+- understand web app architecture
+    - microservices vs. monolithic architecture and the tradeoffs of each 
+    - API gateways 
+        - centralized entry point for client requests
+        - routing to different services
+        - rate limiting 
+        - handles security 
+    - CDNs (content delivery networks)
+    - proxies
+        - understand their role in network architecture and security 
+        - know the difference between a forward and reverse proxy 
+    - API design 
+        - graphQL
+        - REST
+        - understand concepts of clean API design 
+
