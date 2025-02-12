@@ -1,0 +1,54 @@
+
+=================================================
+CHAPTER 1: INTRODUCING C# AND .NET 
+=================================================
+
+C# is statically typed, and it's strongly typed meaning it won't coalesce an integer to a string)
+    it also enforces types at runtime 
+    you can use the dynamic keyword if you explicitly want dynamic types somewhere in the program 
+
+in C# all types have a common base type, including primitives. 
+    i.e. an instance of any type can be converted to a string via calling its ToString() method 
+
+here are a few noteworthy language constructs C# supports: 
+    - interfaces 
+    - a special type of event method, which simplifies acting on an object's state changes 
+    - query expressions which are a form of reactive programming 
+    - records - similar to a dataclass, they're a way of easily writing immutable types 
+
+the Common Language Runtime (CLR) has a garbage collector which cleans up memory during runtime 
+
+C# doesn't eliminate pointers, it just makes them unnecessary for most programming tasks. 
+    but for interoperability or optimization you can use pointers within blocks marked with the unsafe keyword
+
+C# is actually platform neutral and works with a variety of platform-specific runtimes including:
+    - windows 
+    - macOS 
+    - Linux 
+    - Android / iOS 
+    - Blazer is a technology that can compile C# to web assembly and run it in the browser 
+
+regardless of platform, runtime support for C# will include: 
+    - a runtime (CLR on windows)
+    - the base class library (BCL)
+    - usually an application layer containing some native libraries for the platform 
+
+C# uses JIT by default (though it can also be configured for ahead-of-time compilation to improve startup times or satisfy iOS app store rules). 
+the intermediary bytecode they refer to as intermediary language (IL) 
+
+an assembly refers to the bundle of IL and metadata 
+    this metadata allows assemblies to reference types from one another
+        a program can also query its own metadata at runtime (reflection) or generate new IL at runtime (reflection.emit) 
+    there are tools (such as ildasm) which allow you to decompile an assembly to the original C# code 
+
+the BCL (base class library) is a set of assemblies for basic things.
+    this includes things such as input/output, text processing, networking, XML processing, concurrency, etc. 
+    it also contains the implementation of C# languages features such as collections, enums, queries, etc. 
+
+C# programs will target one or more platforms runtime / BCL / application framework. 
+
+pg 6
+
+
+
+
