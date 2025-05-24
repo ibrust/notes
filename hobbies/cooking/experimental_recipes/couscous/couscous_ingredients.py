@@ -1,5 +1,5 @@
+import random
 
-# in general cut ingredients small so they're tenderized during the short cooking time. you can also somewhat precook them
 common_ingredients = [
     "raisins",
     "parsley",
@@ -50,6 +50,12 @@ spices = [
     "nutmeg",
     "cayenne pepper",
 ]
+
+print(random.choice(common_ingredients))
+print(random.choice(common_ingredients))
+print(random.choice(common_ingredients))
+print(random.choice(common_ingredients))
+print(random.choice(spices))
 
 
 # go w/ 1.33 cups water per cup of couscous 
