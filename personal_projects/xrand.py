@@ -17,10 +17,10 @@ for x in range (0, iterations):
             if choice == "xv":
                 print(choice, random.randint(1,20000), random.randint(1,28))
             elif choice == "ash":
-                print(choice, random.randint(1,3623), random.randint(1,300))
+                print(choice, random.randint(1,3623), random.randint(1,150))
             elif choice == "pp":
                 total = random.randint(1, 9)
-                print(choice, "total: ", 9)
+                print(choice, "total: ", total)
             elif choice == "hy":
                 print(choice, "tr", random.randint(1,397), random.randint(1,20))
             break
