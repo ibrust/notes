@@ -1,242 +1,335 @@
-DONE
 
-- batter & ingredient tips: 
-    - ensure fresh leaveners (baking soda, baking powder), which can lose their potency over time. 
-        apparently baking powder also lowers the temp at which the maillard reaction occurs, helping with browning, but not when expired
-    - some people have tried incorporating small amounts of melted butter into the pancake mix 
-    - I saw one chef use a mix of baking soda and baking powder. he claimed the baking soda would react more quickly, giving him more bubbles early. another chef just used double baking powder, which seems more reliable to me, although I wonder if it could effect the batter flavor 
+===================================================
+PANCAKES - DONE
+===================================================
 
-- cooking tips: 
-    - use a non-stick ceramnic coated pan. a well seasoned carbon steel pan is also an option. 
-    - use low to medium-low, consistent heat 
-        (one chef recommended 300f, I need one of those heat guns to get it right)
-    - do not press on the pancake with the spatula 
-    - flip only once. wait until you start to see some bubbles across the surface, and the edges look dry 
-    - use a wire rack to keep them warm. put the wire rack over a baking sheet in a 150F-200F oven. 
-        putting them on a plate will make them steamy / soggy 
-    - many chefs like the griddle alot 
+soft white wheat typically has a protein content of 8.5%-10.5%. 
+    the kernel is softer, meaning the endosperm fractures easily during milling with minimal starch damage. 
+    the white designation refers to the lack of phenolic pigmentation in the bran layer. 
+    this allows for a flour that's whole grain, but with a flavor profile that is mild, sweet, and nutty rather than bitter. 
 
-- mistakes to avoid: 
-    - a stainless steel pan is not ideal. it's hard to make it not stick, and if they stick they'll fall apart. 
-    - some recommend recoating the pan with butter after every pancake to ensure it browns with butter 
-        others recommend a light coating of butter. too much can create an uneven, oily texture apparently. 
-        but Babbish / a few others say not to use butter at all, and only use it at the end. 
-            He says it causes the first weird pancake because that pancakew ill absorb all the fat. 
-            Apparently if the pan is non-stick you don't need the fat.  
-            I like the idea of adding it at the end, because butter has a low smoke point. 
-    - you need to preheat the pan. otherwise it'll stick a little bit, even to a non-stick pan... and it won't brown. 
-    - make sure your heat is distributed evenly throughout the pan, so that the pancakes cook evenly. 
-        it's a problem especially with square pans. 
-        but generally, to prevent this, you preheat the pan slowly, i.e. on medium-low heat, so that it has time to distribute the heat evenly 
-        it also helps if you move the pan around (if the pan shape requires it) 
-        another solution is to just use a griddle, which will have an even heat distribution 
-    - if the pan is too hot the pancake will look down on the outside (brown) but not done on the inside. lower the pan temp 
-    - if you let the batter rest too long the leavener gets expended and goes flat. 
-    - but if you don't let it rest enough it'll still have clumps, it won't be fully hydrated or fully mixed. 
+with pancakes we want a texture that's tender and breaks easily. we don't want the elasticity of bread. 
+    soft white wheat mimics the protein profile of pastry flour but retains the nutritional density and flavor complexity of whole grain. 
 
-    - make sure to get the ingredient ratios right. 
-        if your batter has too much flour it'll be too thick and goupy. it'll be raw in the middle by the end. 
-        too much sugar in the batter will cause the pancake to be too flat, it may stay liquidy
-        too much milk and the batter will be too thin 
-    - buttermilk pancake recipes rely on a baking soda leavener typically. 
-        buttermilk has the acid for activating the baking soda. 
-        if you don't add the acid or buttermilk it won't rise 
+the use of soft white wheat flour requires an adjustment in hydration strategy. 
+    research indicates that whole wheat batters typically require a higher liquid-to-flour ratio than white flour batters to account for bran absorption. 
+
+    a typical AP flour consists of mostly endosperm (starch and protein). soft white wheat flour includes the bran and germ. 
+    the bran contains pentosans and cellulose, fibers that are highly hydroscopic (water-loving). 
+
+    however, unlike the endosperm which hydrates quickly, bran particles are fibrous and tough. they absorb water sowly. 
+        if one were to mix the soft white wheat batter and cook immediately, the bran would steal liquid from the starch during cooking, 
+        but wouldn't have timme to soften. the result is a heavy, dry, and gritty pancake. 
+
+    so when using soft white wheat, the batter must be rested for 30 minutes at room temperature. 
+        the water has time to penetrate the tough outer layers of the brand, softening it significantly. 
+        this ensures the final texture is indistinguishable from raw flour in terms of tenderness. 
+
+        during resting, amylase enzymes in the flour will break down damaged starches into simple sugars (maltose and glucose). 
+            this improves the flavor (making it naturally sweeter), and aids in browning (maillard reaction). 
+        
+        resting also allows the gluten strands to relax, ensuring the pancake rises vertically rather than retracts horizontally. 
+
+The bran particles also interfere with the gluten network. they cut the gluten strands. 
+    in bread this prevents loft. 
+    in pancakes this is actually an advantage, since it prevents the rubbery texture we want to avoid. 
+
+
+the use of soft white wheat often implies home milling. freshly milled flour behaves differently than aged, store-bought flour. 
+
+    aged flour has been exposed to oxygen, which strengthtens the gluten structure. 
+    freshly milled flour forms weaker gluten, which is good for pancakes. 
+
+    the germ oil in fresh flour is volatile. it begins to oxidie (turn rancid) within days of milling. 
+        using fresh flour captures the volatie aromatics of wheat germ before they degrade. 
     
-    - if you add butter to the pancake recipe make sure the ingredients are all room temperature. 
-        otherwise when the cold ingredients mix with the melted butter they will resolidify the butter 
-        you'll wind up with butter globs in the batter that will melt and you'll have holes in the pancakes 
+    home mills often produce a slightly coarser grind than industrial roller mills. 
+        this accentuates teh ened for the rest period discussed earlier. 
 
-_____________________________
+    if using store-bought flour, the particle size is uniform and fine, but the flavor profile - while good - will lack the grassy freshness of home-milling. 
 
-our current goal is about 9% protein content for the flour. we may adjust if needed, we'll see. 
+    for home milling machines the Mockmill 200, the Lee Household Flour Mill, or The WonderMill appear to be the best options 
+        https://mockmill.us/product/mockmill-200-stone-grain-mill/
 
-    AI actually has these recommendations, which kind of are exactly that: 
 
-        50% All-Purpose + 50% Pastry Flour: Brings the protein content down to ~9-10%, ideal for fluffy but not overly delicate pancakes.
-        75% All-Purpose + 25% Cake Flour: Slightly softer pancakes, still with good structure.
-        Add-ins: A tablespoon of cornstarch per cup of flour can also reduce toughness and improve tenderness.
-
-        It claims you want the protein % down to like 8-10% 
-
-another interesting option is to use spelt. it has 9-12% protein, and is often used interchangeably with all-purpose flour. 
-
-=======================================================
-MAKING THE BATTER 
-=======================================================
-
-1) fully whisk dry ingredients together
-
-2) fully whisk wet ingredients separately (maybe wait until the end to whisk and add the egg)
-
-3) combine wet & dry gently, just until no dry streaks remain 
-    (it took ~27 stirs when I tried it)
-    scrape around the bottom to get pockets of flour
-    as soon as you stop seeing dry flour stop mixing 
-    good to use a glass bowl so you can see the flour 
+food science literature broadly suggests a ratio of 1 to 1.25 tsp of baking powder per cup of flour. 
+    exceeding this ratio introduces chemical tastes. 
+    most commercial baking powders are double acting. they contain sodium bicarbonate (alkali) and two acids: 
+        monocalcium phosphate (fast-acting)
+        sodium aluminum sulfate (slow-acting, heat-activated)
     
-4) let rest for ~15-30min. lumps are okay - they'll hydrate and smooth out during resting
+    sodium aluminum sulfate is the culprit behind the metallic taste of cheap pancakes with excess baking powder in them. 
 
-5) the pancakes are done when you see bubbles, they pop and the hole remains (it doesn't dissolve) 
+    but even aluminum free powders can taste salty or chemical-like if used in excess. 
 
-6) make sure you add salted butter to the pancakes while they're warm
-
-7) you can put finished pancakes in a low oven (150-200) while cooking the rest 
-
-note: pastry flour tends to absorb a bit less liquid, so your batter might be thinner.
-        if it looks too runny reduce buttermilk by 1–2 tablespoons or add 1–2 teaspoons extra flour.
-
-=======================================================
-EXPERIMENTAL RECIPE NUMBERS
-=======================================================
-
-___________________________
-My ideal derived recipe: 
-1 cup flour (50/50 italian all-purpose and tip 00)
-1.7 tbsp sugar
-1.25 tbsp baking powder 
-5/8 tsp salt 
-1/2 tsp baking soda 
-
-9/10ths cup buttermilk 
-3 tbsp butter (melted, unsalted) 
-1 large egg 
-1.5-1.7 tsp vanilla extract (but I may lower this to 1 tsp next time)
-
-AIs critiques: 
-    Salt: 5/8 tsp is a little high for just 1 cup flour. Most recipes use ½ tsp per cup. 
-        Yours is slightly above that, so pancakes may taste a bit salty.
-    Baking Powder: 1.25 tbsp is on the upper end for 1 cup flour. 
-        It should work, but if you notice a metallic or bitter aftertaste, reduce to 1 tbsp.
-    Buttermilk: 0.9 cup is fine, but if batter feels too thick, you might need a splash more (up to 1 cup).
-        (since I'm using tipo 00 the 0.9 actually makes sense / is consistent with AIs earlier recommendation)
-
-My critiques after trying it: 
-    Overall they were very good, but maybe we could improve a few things: 
-    - We were at 1.5-1.7 tsp vanilla. I thought the pancakes may have had too much vanilla, 
-        and I didn't put the entire amount in... I probably put 1.25 in. 
-        Maybe try AIs recommendation of 1 tsp vanilla, or even less. 
-        according to AI: 
-            Most classic recipes use 1/2 to 1 tsp per cup of flour.
-            1/2 tsp gives a subtle background note.
-            1 tsp gives a clear vanilla flavor without overpowering.
-            1.25 tsp is fine if you want a strong vanilla presence, but it’s edging toward dessert-like.
-            If you want balanced flavor, go with 1 tsp.
-            If you love vanilla-forward pancakes, keep 1.25 tsp.
-            If you want the flour and buttermilk to shine more, drop to 1/2 tsp.
-    - The batter felt almost too thick. However, that may have been why it rose so well. 
-        I could try adding slightly more buttermilk next time... but I liked how the pancakes turned out. 
-        They had incredible rise. So maybe I'll just cook them slower - our burners were on '4'. 
-        I'll have to find out what temperature that is and adjust accordingly. Maybe try 3.5 next time. 
-        I'd like to keep the batter ratio just due to the incredible amount of lift we got.
-        If I am removing vanilla though I will need some more buttermilk... 
-            maybe .95 cups makes sense. Although I don't think I got all 3 tbsp of butter in either.
-
-___________________________
-AIs "balanced" recommendation after looking at the other recipes:
-
-1 & 1/4 cups flour (16g)                
-1.5 - 2 tbsp sugar                      // for mild sweetness - not dessert-level
-1 - 1.25 tbsp baking powder             // enough lift without bitterness. usually 1-1.25 per cup of flour 
-1/2 - 5/8 tsp salt                      // flavor without overpowering - around 1/2 tsp per cup of flour
-1/2 tsp baking soda                     // usually 1/2 tsp per cup of buttermilk
-
-1 cup buttermilk 
-2-3 tbsp butter (melted, unsalted)      // rich but not greasy
-1 large egg 
-1 tsp vanilla extract                   // pleasant aroma without dominating
+    to get extra lift we will used whipped egg whites rather than excess baking powder. 
 
 
-=======================================================
-RESTING THE BATTER 
-=======================================================
-
-Why let the batter rest if the baking powder is reacting once it gets wet? 
-    because it'll react again when heat hits it, but letting the batter rest 
-    allows the flour to fully absorb moisture and it allows the gluten strands to relax 
-        letting the gluten strands relax is especially important if it was mixed too much. 
-    also, small bubbles are still forming within the batter from the banking powder as it rests, they don't all dissipate, it's heavy batter. 
-        but if you were to let the batter rest too long those bubbles would dissipate 
-
-    ideal time to let the batter rest: ~15 min apparently. Babbish thinks 30 min... he's probably right. we'll go with 30 
-
-=======================================================
-AMOUNT OF STIRRING  
-=======================================================
-
-overmixing the battery actually creates 2 problems: 
-    1) it overactivates gluten, causing a chewy pancake 
-    2) it breaks up the bubbles released by the baking powder, reducing fluffiness
-        thicker batters (like pancake batter) are more sensitive to bubble loss. 
-        thinner batters (like crepes) can tolerate more mixing
-
-Babbish says to stir or whisk lightly until you see no more dry ingredients 
-
-=======================================================
-PAN HEAT  
-=======================================================
-
-375F is the recommended heat according to AI, who cites America's test kitchen / Serious Eats 
-    which matches medium-low to medium on most burners, apparently. 
-
-    but this is above the smoke point of butter, which I find dubious 
-
-    I saw one chef recommending NOT putting butter in the pan, but rather adding it afterwards... 
-
-    another option is to use ghee 
-
-whatever temperature we settle on will require an infrared thermometer, 
-    or a griddle with a temperature setting
-
-worth noting: 
-    thicker batter may need a slightly lower heat to cook through fully 
-    also, egg-rich or sugar-rich batters will burn easier, so use slightly lower heat 
-    resting the batter also helps the pancake cook evenly 
+the ratio of 1/2 tsp baking soda to 1 cup buttermilk is chemically sound. 
+    buttermilk contains lactic acid. 1/2 tsp baking soda is sufficient to neutralize the acidity of 1 cup of buttermilk. 
 
 
-=======================================================
-MISC
-=======================================================
+By keeping baking soda at 1/2 tsp we ensure the buttermilk's sourness is neutralized. 
+    The PH of the batter dictates browning. 
+    An acidic batter browns slowly. 
+    One that's excessively alkhaline (too much baking soda) browns too quickly, potentially burning before the interior is set.
+    A neutral to slightly alkhaline batter is ideal for the Maillard reaction. 
 
-for taste in our pancakes tupelo honey is recommended. Sidr is a potential alternative option. 
-    YS BEE FARMS Raw Tupelo Blossom Honey is a good one 
+By separating the egg whites and whipping them to soft peaks, we uncurl the albumin proteins. 
+    These proteins bond to form a web that traps air bubbles. 
+    When the whipped egg whites are folded into the batter at the end, they introduce thousands of macroscopic air pockets. 
 
-=======================================================
-AI MODIFICATIONS TO MY RECIPE
-=======================================================
+    Upon hitting the griddle, the gas in these air pockets expands rapidly, in proportion with the temperature increase. 
+    This results in a tall, light pancake, counteracting the natural heaviness of whole wheat flour. 
 
-1) Espresso pancake
-        1 tsp espresso powder 
-        reduce the amount of vanilla extract to 1/2 tsp
-        a pinch of cinnamon 
-        drizzle ganache on top (chocolate sauce, research how to make)
+Butter is an emulsion of butterfat (~80-82%), water (~16-17%), and milk solids (~1-2% proteins and lactose)
 
-2) chia pancakes 
-        1 tbsp chia seeds in the batter (hydrated in liquid for best texture)
-            Mix 1 tbsp chia seeds with 2 tbsp water or buttermilk. Let sit for 10 minutes until gel-like. This prevents crunchiness and adds moisture.
-        1/2 tsp cardamom
-        1/4 cup chopped pecans  in the batter
-        A drizzle of honey or maple syrup in the batter for subtle sweetness 
-        Top with fresh berries, a dollop of Greek yogurt, and a drizzle of honey for a wholesome finish.
+Browning butter is the single most impactful flavor modification available.
+    Stages of browning butter: 
+        1) vaporization - when heated to 212F, the water in butter boils off. This is the "foaming" stage. 
+        2) maillard reaction - after the water is gone, at around 284F-320F, the milk proteins (casein/whey) and lactose (milk sugar) react. 
+            The amino acids and sugars recombine to form hundreds of new flavor compounds (pyrazines, furans) which tasted like toasted / nutty caramel.
 
-3) orange zest pancakes 
-        1 tsp finely grated orange zest (from a fresh orange)
-        1 tbsp fresh orange juice (boosts citrus flavor without thinning too much)
-        Pinch of cinnamon (pairs beautifully with orange)
-        Put orange segments on top, along with maple syrup - apparently they will pair well 
+    soft white wheat and brown butter are complimentary pairings. both have a complex, toasted, nutty taste. 
 
-Other ingredients AI could flesh out a recipe around: 
-    - Crushed cookies 
-    - chopped pecans 
-    - rolled oats 
-    - Fresh berries (blueberries, raspberries, strawberries)
-    - Banana slices
+    When browning butter, you lose water, and some of the butter solids cling to the pan. This must be accounted for in the recipe. 
+        
+        We will brown a slightly larger quantity of butter (4 tbsp) to ensure we have enough yield after solids cling to the pan 
 
-=======================================================
-MORE ADVANCED PANCAKE RECIPES / IDEAS
-=======================================================
+        We will also shock the brown butter with 1 tablespoon of cold milk immediately after removing it from the heat. 
+            this instantly drops the temperature, preventing the delicate hazelnut solids from burning and turning bitter, and replacing the evaporated water. 
 
-1) Dutch Baby Pancake
-    Oven-baked pancake that puffs dramatically, served with fruit and powdered sugar.
+In our recipe, we will use the white of an egg for the foam aeration, but the yolk also plays a crucial role. 
+    The lecithin in the yolk helps bind the brown butter with the buttermilk. 
+    Without sufficient emulsification, the fat can pool in the batter, leading to greasy pockets. 
+    A stable emulsion ensures the butter is distributed evenly, coating the flour particles. 
 
-2) Sweet Potato Pancakes
-    Naturally sweet and hearty, often paired with warm spices.
+    By coating the flour proteins, the butter fat limits their ability to absorb water and form tough gluten strands. 
+        This "shortening" of the gluten is vital for tenderness. 
+        To maximize this, we will whisk the yolks with the butter and buttermilk before combining with the flour. 
+
+The buttermilk (and the egg) must be room temperature. 
+    Cold ingredients have higher surface tension and viscosity. 
+    When cold milk hits melted butter, the butter creates crystallized flakes (seizing), which do not distribute evenly. 
+
+    Room temperature liquid also dissolves sugar and salt more effectively than cold liquids. 
+
+Ricotta is a whey cheese. 
+    It is comprised of coagulated proteins that do not melt like cheddar or mozzarella. 
+    Instead, they become soft and creamy.
+    When whisked into the batter, ricotta creates microscopic pockets of custard.
+        It adds significant moisture without thinning the batter (as milk would) or making it heavy (as oil would).
+        This mimics the texture of "Dutch Baby" pancakes or heavy soufflés.
+
+Malted Milk Powder is a mixture of malted barley, wheat flour, and evaporated whole milk.
+    It provides a distinct savory-sweetness (umami) that plain sugar lacks.
+    The maltose helps with browning, and the milk solids add richness.
+    It bridges the gap between the rustic whole wheat flour and the sweet toppings.
+
+
+The ideal cooking temperature for pancakes is between 360F and 375F.
+
+    If the temperature is too low, the batter spreads too much before setting. 
+        The Maillard reaction is slow, resulting in pale, tough pancakes (the moisture evaporates before the crust forms).
+    If the temperature is too high, the exterior burns before the interior heat transfer is sufficient to set the starches and egg proteins. 
+
+    At the correct temperature, a drop of water vaporizes instantly at its base, creating a gas cushion that allows the droplet to skitter 
+        across the pan friction-free. If the water just sizzles and stays in place, the pan is too cool
+
+Cast iron holds heat well, maintaining temperature when cold batter is dropped onto it. This ensures consistent crust. 
+    However, it requires excellent seasoning to prevent sticking. 
+
+
+Do not cook the pancakes in butter. Butter has a low smoke point (350F) and the solids will burn, leaving black specks in the second batch. 
+    Use clarrified butter (ghee). 
+    Apply it to the pan then wipe it out with a paper towel. You want a microscopic film, not a pool.
+        Pooling fat creates a fried pattern rather than an even, golden brown sheet of color. 
+
+
+===================================================
+RARE INGREDIENTS
+===================================================
+
+cream of tartar 
+ricotta cheese 
+soft white wheat flour 
+malted milk powder 
+vanilla bean paste
+buttermilk
+
+===================================================
+NOTEWORTHY EQUIPMENT 
+===================================================
+
+griddle 
+
+===================================================
+INGREDIENTS
+===================================================
+
+soft white wheat flour          1.5 cups (180g) 
+malted milk powder              3 tbsp (25g) 
+cane sugar                      2 tbsp (25g) 
+baking powder                   1.5 tsp (6g)
+baking soda                     0.5 tsp (3g) 
+fine sea salt                   3/4 tsp (4g) 
+
+buttermilk                      1 cup + 2 tbsp (280g) 
+ricotta cheese                  1/4 cup (60g) 
+2 egg yolks                     40g
+2 egg whites                    60g
+vanilla bean paste              1.5 tsp (10g) 
+unsalted butter, to be browned  4 tbsp (56g) 
+cold milk                       1 tbsp 
+cream of tartar                 1/8 tsp (0.5g)
+
+===================================================
+PREPARATION 
+===================================================
+
+1) brown the butter 
+    a) cut the butter into smaller pieces and distribute evenly in a light colored saucepan (stainless steel or enamel) over medium heat 
+    b) stir continuously & watch carefully.
+    c) after 5-8 minutes the butter will brown. 
+        immediately move from heat & pour into a bowl
+        add the 1 tbsp of cold milk to stop further browning 
+    d) let the butter cool for ~10 minutes (set a timer)
+
+2) prepare the dry ingredients 
+    a) put the 1.5 cups wheat flour, 3 tbsp malted milk powder, 2 tbsp sugar, 1.5 tsp baking powder, 0.5 tsp baking soda, and 3/4 tsp salt into a bowl
+    b) sift the contents into another bowl
+    c) whisk thoroughly for 30 seconds (to ensure even distribution) 
+
+3) create the emulsion 
+    a) in a separate medium bowl whisk together the buttermilk, ricotta cheese, egg yolks, and vanilla bean paste.
+        whisk until the ricotta is mostly smooth (small curds are acceptable)
+    b) while whisking, slowly drizzle the cooled butter into the buttermilk. 
+        make sure to incorporate all the toasted milk solids at the bottom 
+        the lecithin eggyolks will help emulsify the butter 
+
+4) mix the wet & dry ingredients 
+    a) using a silicone spatula, mix gently. 
+        stop mixing while there are still streaks of flour visible, don't make it too smooth 
+        usually 25 stirs works, but you'll be folding in the egg whites a bit later so maybe stir even less in this recipe 
+    b) cover the bowl with a towel and let it sit at room temperature for 20 to 30 minutes 
+
+5) aerate & fold in the egg whites (after the rest period is complete)
+    a) begin preheating the griddle to 375
+    b) in a clean bowl (grease will inhibit foam) whip the 2 egg whites & the 1/8 tsp cream of tartar 
+        do not whip to "stiff peaks", it'll be hard to fold and will break into chunks rather than blending. 
+    c) stir about 1/3rd of the egg whites into the batter. 
+        apparently this lightens the density of the batter, making it easier to stir in the rest of the egg whites 
+    d) add the remaining egg whites using the "cut and fold" technique. 
+        slice the spatula down the center, scrape the bottom, and fold over the top. rotate the bowl & repeat until the whites are just incorporated.  
+        watch a video on how to do this. 
+
+6) cook the pancakes 
+    a) apply a thin layer of ghee to the griddle, then wipe it almost entirely off 
+    b) use a 1/3rd cup measure to portion out the batter onto the griddle. 
+        do not flatten them, let gravity dictate the shape. 
+    c) watch for bubbles to indicate they're ready to flip. It usually takes 2.5 to 3 minutes. 
+    d) cook the other sides for 1.5 to 2 minutes usually. it'll brown faster on this side 
+    e) transfer immediately to a warm plate. do not stack high, the steam from teh bottom pancakes will make them soggy. 
+
+
+
+
+===================================================
+SERVING
+===================================================
+
+===================================================
+MEAL COMBINATIONS
+===================================================
+
+orange-honey-sage butter
+    ingredients: 
+        1 stick salted butter (room temperature) 
+        2 tbsp honey (orange blossom or clover) 
+        1 tbsp fresh orange zest 
+        1 tsp fresh sage, minced extremely fine 
+
+    - whip teh butter in a stand mixer with the paddle attachment into pale and aerated (~3-4 minutes) 
+    - add honey, zest, and sage 
+    - whip for another minute 
+
+roasted fruit infused syrup 
+    by roasting the syrup we concentrate the flavor & prevent sogginess 
+
+    ingredients: 
+        2 cups blueberries 
+        1 tsp oil 
+        1 cup maple syrup 
+        1 strip lemon peel 
+    
+    - in a bowl toss the blueberries with the oil 
+    - roast on a sheet pan at 400F for 15-20 minutes until they burst and juices thicken 
+    - scrape berries & juices into a saucepan 
+    - add 1 cup maple syrup & 1 strip lemon peel 
+    - simmer for 5 minutes (the pectin from the roasted berries will slightly thicken the syrup) 
+    - removme lemon peel & serve 
+
+toasted pecans (adds crunch to the pancakes) 
+    ingredients: 
+        pecans 
+        cayenne pepper, 1 pinch 
+        brown sugar 
+
+    - toast pecans in a pan until fragrant 
+    - toss with pinch of cayenne pepper & brown sugar while hot 
+    - chop roughly 
+    - sprinkle over the pancakes before adding the syrup 
+
+older / simpler pancake recipe: 
+    1 & 1/4 cups flour (16g)                
+    1.5 - 2 tbsp sugar                      // for mild sweetness - not dessert-level
+    1 - 1.25 tbsp baking powder             // enough lift without bitterness. usually 1-1.25 per cup of flour 
+    1/2 - 5/8 tsp salt                      // flavor without overpowering - around 1/2 tsp per cup of flour
+    1/2 tsp baking soda                     // usually 1/2 tsp per cup of buttermilk
+
+    1 cup buttermilk 
+    2-3 tbsp butter (melted, unsalted)      // rich but not greasy
+    1 large egg 
+    1 tsp vanilla extract                   // pleasant aroma without dominating
+
+===================================================
+TEST RESULTS / ADJUSTMENTS
+===================================================
+
+- ensure fresh leaveners (baking soda, baking powder), which can lose their potency over time. 
+    apparently baking powder also lowers the temp at which the maillard reaction occurs, helping with browning, but not when expired
+
+- use a wire rack to keep them warm. put the wire rack over a baking sheet in a 150F-200F oven. 
+    putting them on a plate will make them steamy / soggy 
+
+- a stainless steel pan is not ideal. it's hard to make it not stick, and if they stick they'll fall apart. 
+
+- some recommend recoating the pan with butter after every pancake to ensure it browns with butter 
+    others recommend a light coating of butter. too much can create an uneven, oily texture apparently. 
+    but Babbish / a few others say not to use butter at all, and only use it at the end. 
+        He says it causes the first weird pancake because that pancakew ill absorb all the fat. 
+        Apparently if the pan is non-stick you don't need the fat.  
+        I like the idea of adding it at the end, because butter has a low smoke point. 
+        
+- you need to preheat the pan. otherwise it'll stick a little bit, even to a non-stick pan... and it won't brown. 
+- make sure your heat is distributed evenly throughout the pan, so that the pancakes cook evenly. 
+    generally, to prevent this, you preheat the pan slowly, so that it has time to distribute the heat evenly 
+    it also helps if you move the pan around (if the pan shape requires it) 
+    another solution is to just use a griddle, which will have an even heat distribution 
+- if you let the batter rest too long the leavener gets expended and goes flat. 
+    but if you don't let it rest enough it'll still have clumps, it won't be fully hydrated or fully mixed. 
+
+- make sure to get the ingredient ratios right. 
+    if your batter has too much flour it'll be too thick and goupy. it'll be raw in the middle by the end. 
+    too much sugar in the batter will cause the pancake to be too flat, it may stay liquidy
+    too much milk and the batter will be too thin 
+    
+- buttermilk pancake recipes rely on a baking soda leavener typically. 
+    buttermilk has the acid for activating the baking soda. 
+    if you don't add the acid or buttermilk it won't rise 
+
+- if you add butter to the pancake recipe make sure the ingredients are all room temperature. 
+    otherwise when the cold ingredients mix with the melted butter they will resolidify the butter 
+    you'll wind up with butter globs in the batter that will melt and you'll have holes in the pancakes 
+
+
