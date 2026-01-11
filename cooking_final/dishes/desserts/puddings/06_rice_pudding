@@ -1,9 +1,245 @@
-Rice Pudding (Kheer & Global Variants): The Grain Essential
-The Starch Release
-Rice pudding relies on the gelatinization of rice starch to thicken the milk. It is one of the most ancient forms of pudding, existing in nearly every culture that cultivates rice.
-Kheer (South Asian)
-Kheer is distinguished by the use of Basmati rice and the reduction method. Unlike Western rice puddings which might be baked with eggs, Kheer is typically cooked on the stovetop by simmering milk until it reduces and thickens naturally. It is flavored with cardamom, saffron, rose water, and nuts.56
-Texture: Kheer is fluid and pourable, not solid. The Basmati grains remain distinct but soft.
-Flavor: Floral and aromatic, contrasting with the vanilla-heavy Western versions.57
-The "Creamiest" Western Versions
-The search for the "best" rice pudding often lands on stovetop methods that use short-grain or Arborio rice. These grains have a higher amylopectin content, releasing more starch and creating a risotto-like creaminess without the need for eggs. "Diner-style" rice pudding often incorporates eggs for a custard-like set, but the purest creamy texture comes from the slow breakdown of the rice grain itself.
+
+===================================================
+RICE PUDDING - DONE
+===================================================
+
+A good rice pudding relies on: 
+    1) precise gelatinization of rice starch
+    2) controlled denaturation of egg protein
+    3) maillard-toasting of dairy solids
+
+You want rice pudding to have a a dual texture. 
+    it should be a creamy, suspended starch matrix that contains distinct, slightly chewy grains. 
+
+The behavior of rice in a fluid medium is dictated by the ratio of amylose to amylopectin in the endosperm. 
+    amylopectin is branched-chain polysaccharides whereas amylose is linear. 
+    
+    their ratio determines how the rice cooks, thickens the liquid, and behaves upon cooling (retrogradation)
+
+    during cooking the polysaccharides break down (called gelatinization) 
+
+    high amylose rice varieties (basmati, jasmine - typically 20-25% amylose) require more time/energy to hydrate.
+        Upon cooling, linear amylose molecules realign rapidly into a rigid structure. 
+
+        In a rice pudding this would result in distinct, separate grains that lack cohesiveness. 
+            As the pudding tools these grains harden, making the pudding grainy and chalky rather than creamy. 
+
+    high amylopectin rice varieties (japonica, glutinous rice) have a lower gelatinization temperature and swell more. 
+        the branched structure prevents tight realignment upon cooling, so the it remains softer and more fluid. 
+
+        However, amylopecton is also responsible for stickiness. 
+            In excess, it can cause the rice grains to dissolve entirely into a cohesive glue. 
+
+    Arborio rice is the ideal strain for bread pudding.
+        This is an italian strain developed for risotto. 
+        It has a high amylopectin exterior that soughs off easily during agitation, which thickens the milk. 
+        It also has a chalky, high-amylose center (the perla) that remains firm even after prolonged cooking. 
+
+        This dichotomy allows us to cook the pudding until the liquid is thick and creamy without it turning to mush. 
+
+Some authorities suggest boiling the rice for a short time in water to hydrate it. 
+    This does hydrate it, but it's a missed opportunity for flavor infusion. 
+    Rice absorbs the liquid inwhich it's cooked. 
+        If the liquid is water, the interior of the grain tastes like water. 
+        If the liquid is milk, the grain tastes milky. 
+
+    Furthermore, pre-cooked rice releases less starch into the final pudding, 
+        which will mean we must put less liquid into it, compromising flavor. 
+
+Instead we will use a Risotto technique - saute the rice in butter (~300-300F) before adding the milk to it. 
+This serves 3 critical functions:
+    1) it initiates the Maillard reaction on the surface of the rice and on the milk solids in the butter 
+    2) the fat coats the individual rice grains, creating a lipid barrier. 
+        This will slow the milks initial pentration of the rice, 
+            preventing it from absorbing it too quickly and bursting. 
+        This allows for a longer cooking time, which facilitates greater evaporation and concentration 
+            of the milk without destroying the rice. 
+    3) The lipid coating lubricates the grains, preventing them from clumping early on before hydration is complete. 
+
+
+The "pudding" texture of the liquid is determined by the interaction between the milk and dissolved starches / sugars. 
+
+    Heavy cream is high in fat, but low in water content, which can hindre starch gelatinization. 
+        To swell the starch needs water, not fat. 
+        Cooking the rice in cream would result in undercooked, hard grains and a broken, greasy emulsion. 
+    Whole milk is the ideal medium. 
+        It contains sufficient water for efficient starch hydration. 
+        It also contains lactose (milk sugar), proteins (casein/whey), and fat. 
+        As the milk reduces, lactose anad protiens will be concentrated. 
+            This creates a flavor similar to condensed milk - rich, sweet, and complex. 
+
+
+Typical recipes call for a liquid-to-rice ratio of 4:1. 
+    This is insufficient for a premium result. It hydrates the rice but leaves little excess liquid for the pudding.
+    Upon cooling, the starch retrogrdes and the structure collapses into a solid block. 
+To achieve a flowing pudding consistency we use a high-reduction technique. 
+    The ratio will be closer to 12:1, but we'll simmer it for an extended period. 
+        This will allow the rice to fully release its starch into the liquid. 
+        It also facilitates the Maillard reaction of lactose and milk proteins. 
+
+    Some sites suggest 6:1, others go as high as 17:1, but 12:1 is a good balance.
+    With a 12:1 ratio it should take about 45-60 minutes of simmering to concentrate the flavor.
+
+
+While starch provides texture, it doesn't provide lubrication or lipidity. 
+    For this, we will use egg yolks. 
+    The lecithin and liporoteins in the yolks will coat the starch and fat molecules, creating a smooth emulsion. 
+
+Tempered egg yolks will be added at the end of cooking. 
+We also will only use the yolks, we will discard the whites. 
+    Whites coagulate at a lower temperature and can create a rubby or sulferous structure that is less creamy. 
+
+The adding of sugar is also chemically significant. 
+    Sucrose is highly hygroscopic (water-attracting). 
+        In the cooking liquid, sugar will compete with starch for available water. 
+        This competition increases the temperature required for starch to gelatinize. 
+    
+    If the sugar was added in the beginning, the rice grains may never fully soften, regardless of cooking time. 
+        To avoid this, we add the majority of sugar toward the end of cooking, after the rice is 90% tender. 
+        
+
+For vanilla we'll use a bean in the beginning (which contains hundreds of complex compounds) and extract at the end. 
+    Boiling vanilla bean infuses the milk. 
+    Adding extact at the end preserves the delicate volatiles that would otherwise evaporate during cooking. 
+
+Salt potentiates flavor. 
+    In sweet dairy, it suppresses bitterness and amplifies perceived sweetness and creaminess. 
+    A lack of salt is a big reason for bland taste. 
+
+We'll also add some orange or lemon zest strips (not grated) during the simmer.
+    This provides a critical counterpoint to the rich fats, and prevents palate fatigue. 
+
+
+===================================================
+RARE INGREDIENTS
+===================================================
+
+arborio rice
+1 vanilla bean (or 1 tbsp paste if unavailable) 
+1 cinnamon stick
+
+===================================================
+INGREDIENTS
+===================================================
+
+arborio rice, 1/2 cup, 100g
+unsalted butter, 2 tablespoons
+whole milk, 5-6 cups, 1.4 L
+sugar (granulated), 1/2 cup, 100g
+salt (kosher), 1/2 teaspoon
+vanilla bean, 1 whole (or 1 tbsp vanilla paste)
+cinnamon stick, 1 whole - use Ceylon cinnamon for complex floral notes, or Cassia for classic heat.
+orange zest, 2 strips (not grated)
+egg yolks, 2 large
+heavy cream, 1/2 cup
+vanilla extract, 1 teaspoon
+
+===================================================
+PREPARATION 
+===================================================
+
+
+1) saute the rice
+    a) heat a dutch oven over medium heat 
+    b) melt 2 tbsp unsalted butter 
+    c) the moment the butter begins to foam (evaporation), immediately add the 1/2 cup arborio rice. 
+        the rice should not be washed, that'd prevent it from toasting 
+    e) stir constantly with the spatula. 
+        you are coating every grain of rice
+    f) cook for 3-4 minutes
+        the edges of the rice should become translucent, and the rice should have a pale golden hue
+        the butter will brown at the same time
+
+2) simmer the rice 
+    a) add 5 cups of whole milk (saving 1 cup for later) 
+        it will sputter violently. 
+        stir immediately to stop the browning of butter. 
+    b) add in the spices: 
+        i) scraped vanilla seeds / vanilla pod (or 1 tbsp vanilla paste)
+        ii) cinnamon stick (broken in half)
+        iii) orange zest, 2 strips (not grated)
+        iv) 1/2 tsp salt 
+    c) bring to a boil, then reduce heat to low
+        the liquid should be ~200F, barely bubbling
+    d) cook uncovered for 45-55 minutes 
+        you must stir it every 5-8 minutes 
+        the stirring action will knock hydrated starches off the surface of the rice into the milk. 
+        this is what thickens the pudding, and is the goal 
+    e) at ~45 minutes taste a grain of rice. 
+        it should be tender with no chalkiness, but still offer slight resistance (al dente). 
+        if the liquid has evaporated but the rice is still hard, add the reserved 1 cup of milk in 1/4 increments 
+
+3) sweeten
+    a) only after the rice is tender stir in the 1/2 cup of sugar
+    f) continue to simmer for 5-10 minutes afterwards 
+        the mixture will temporarily thin as sugar dissolves and interferes with the starch network.
+        then it will thicken again
+        the pudding should resemble a heavy cream soup. 
+        It should be looser than what you want the final result to be. 
+        If it stands up on peaks, it is too thick, so add more milk. 
+
+4) temper the egg yolks & emulsify
+    a) in a bowl whisk 2 egg yolks and 1/2 cup heavy cream 
+    b) to prevent the eggs from curdling upon contact with the pudding: 
+        i) take about 1/2 cup of the pudding liquid (avoiding rice grains) out of the pot
+        ii) slowly drizzle the hot liquid into the egg / cream bowl while whisky vigorously 
+            this raises the temperature of the eggs to ~110-120F
+        iii) repeat with another 1/2 cup of pudding liquid
+        iv) turn the main pot heat down to low
+        v) wait 1-2 minutes to ensure the pot temperature drops to 175-180F. It should not be bubbling
+        vi) pour the tempered egg mixture into the main pot, stirring continuously 
+
+    c) cook on low heat for 2-3 minutes, stirring constantly. 
+        it should be 170F-175F.
+        do not let it reach higher temperature, the egg could scramble.  
+        the egg proteins should coagulate enough to thicken the liquid into a custard
+
+5) finishing 
+    a) turn off the heat
+    b) remove the vanilla pod (if used), cinnamon stick, and orange strips 
+
+    c) stir in 1 tsp of vanilla extract
+        ensure the pot is ~170F or lower when you do this
+        adding the extract off heat prevents the alcohol-based flavor compounds from flashing off 
+    d) pour into a serving dish (so that it cools off) 
+    e) allow it to cool to warm room temperature
+        the starch will retrograde slightly, firming the pudding up 
+        it is best served warm or at room temperature. refridgeration will make it significantly firmer
+
+===================================================
+SERVING
+===================================================
+
+===================================================
+MEAL COMBINATIONS
+===================================================
+
+===================================================
+TEST RESULTS / ADJUSTMENTS
+===================================================
+
+- if the milk has reduced to a thick sludge, but the rice grains are still crunchy in the middle,
+    the heat may have been too high or you may have added to teh sugar too early. 
+    don't cook any longer, you'll just burn the pudding. 
+    add 1/2 cup h ot water (water penetrates better than milk at this stage).
+    cover and cook on lowest possible setting for 10 minutes
+    the steam pressure will force hydration
+- if the pudding separates into a solid mass of rice and a pool of watery liquid after cooling,
+    this is retrogradation gone wrong. If the putting was cooked until it was too thick (over-gelatinized),
+    the starch network becomes too tight upon cooling. As the amylose re-bonds, they squeeze water out of the matrix. 
+    This is why you stop cooking when the pudding is still soupy. 
+- if there are small yellow specks in the pudding it means the egg yolks were heated about 180F. 
+    at this temperature the protieins (ovotransferrin) tighten aggressively, squeezing out water and fat, 
+    resulting in solid curds. 
+    you can try vigorously whisking it to re-emulsify the yolk lipids. 
+- if a brown layer stuck to the bottom of the pan and there's a bitter acrid taste throughout,
+    it's because milk solids settled to the bottom adn burned. 
+    it may have been because agitation was insiffucient. 
+    do not scrape the bottom. if you smell burning, pour the unburnt top layer of pudding into a new clean pot immediately.
+
+
+===================================================
+RECIPES TO USE LEFTOVER INGREDIENTS
+===================================================
+
+
