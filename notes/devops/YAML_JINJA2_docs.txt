@@ -1,0 +1,421 @@
+==================================
+# YAML OVERVIEW
+==================================
+
+YAML is indentation sensitive like python. Use spaces only (not tabs) and be consistent with the amount of indentation.
+
+YAML keys/values are written with a space in between: 
+
+  name: Joe Dimagio 		# YAML does not require quotes around string values, nor does it require commas at the end.
+  age: 35 			# You might need to add quotes if it contains special characters (like # or :), but usually not. 
+
+
+YAML supports both block and inline styles for lists and maps:
+  fruits:
+    - apple
+    - banana				# list items can be any data type, even including nested maps 
+    - cherry
+  fruits: [apple, banana, cherry]
+
+  person: { first_name: Alice, last_name: Johnson, age: 30, married: false }
+
+
+here's a list of noteworthy YAML operators and syntactic quirks:
+
+  #       comment
+
+  &       an "anchor", defines a reusable block of content
+  *       an "alias", reuses content defined by the anchor
+  <<:     the "merge key" operator, merges the contents of a mapping (usually an alias) into another mapping
+
+  |       precedes a multiline string to specify "literal" parsing style, i.e. newlines will be included in the parsed output
+  >       precedes a multiline string to specify "folded" parsing style, i.e. newlines will be stripped out of the parsed output
+
+
+  prop_name: |
+    Line 1
+    Line 2          # Line 1\nLine 2			# joins the lines, preserving any spacing exactly as written 
+  prop_name2: >
+    Line 1
+    Line 2          # Line 1 Line 2			# joins the lines continuously, inserting 1 space between them
+
+
+  YAML 1.1 did alot of type coercion. The the Boolean conversion was removed in YAML 1.2. Still, it's best to avoid those:
+
+    value1: yes       became true
+    value2: on        became true
+    value3: no        becomes false
+    value4: off       became false
+    value5: "yes"     stayed a string. To prevent type coercion you often must quote the value
+
+    value6: 123       becomes integer
+    value7: 1.0       becomes float
+
+
+  YAML interprets all of these as null values:
+
+    null1: null
+    null2: ~
+    null3:
+
+
+YAML allows multiple documents in one file. 
+  Three hyphens (---) at the start of a line indicate the start of a new YAML document. 
+  Three periods (...) indicate the end of a document (optional) 
+
+  This can be useful in specific scenarios, like when concatenating multiple configs into one stream. 
+
+
+In addition to the typical block styling, YAML supports a curly braces syntax that's very similar to JSON:
+
+  {name: John Smith, age: 35, fruits: [Apple, Orange, Strawberry]}
+
+Both styles can be mixed in the same document. 
+Block style is generally preferred but for one-line maps the JSON style is sometimes used.
+
+YAML interprets an unquoted sequence as a string unless it matches a specific pattern of another type (i.e. Boolean, number).
+	You can write strings with no quotes if they don't contain special characters or leading/trailing spaces. 
+	
+	Double quotes allow escape sequences (using \ for special characters) 
+	Single quotes are literal, and do not process escape sequences. 
+	
+YAML can represent dates/timestamps and other user-defined types, but by default these are parsed as strings 
+	unless explicit tags are used or the parser is in a mode to auto-detect them.
+
+
+Complex data structures in YAML are built from lists and nested mappings (dictionaries). 
+
+	# nested mapping 
+	customer_vector_clustering:
+  		top_k_features: 8
+  		pca:
+    			components: 9
+  		kmeans:
+    			n_init: 10
+
+	# list
+	fruits: [apple, banana, cherry]
+
+YAML can nest lists inside maps, maps inside lists, and so on.
+
+lists are ordered in YAML, but mappings are not ordered. 
+
+YAML has a syntax that allows keys to contain spaces or special characters:
+
+	my key : value  	valid, uses ? to signify the key
+	"my key": value  	valid
+	'my key': value  	valid
+	my key: value		potentially problematic - could be misinterpreted if not handled carefully by the parser
+	
+
+For reusability YAML provides anchors (&) and aliases (*), which work together:
+
+	&job_timeout 30					# an anchor creates a pointer to the node (can be a scalar, list, or mapping)
+							# the pointer can be accessed via the nodes name 
+	job1:
+		timeout: *job_timeout			# the alias references the node by name 
+	job2:
+		timeout: *job_timeout
+
+
+YAML is one-pass, so aliases must be used after the anchor is defined. 
+
+YAML also has a merge operator (<<) which merges an anchored mapping into something: 
+
+	
+	db_settings: &db_settings
+  		host: localhost
+  		port: 5432
+  		user: admin
+  		password: secure_password
+
+	production:
+  		<<: *db_settings		# merge db_settings into the production config 
+  		database: production_db
+  		port: 5433			# override or add fields after the merge 
+
+aliases copy the anchored content. If you inject an anchored list, then modify one of its elements, it will not effect the original. 
+
+Your anchors/aliases cannot result in circular references. 
+
+
+==================================
+# JINJA2
+==================================
+
+Jinja2 is a templating engine for Python that allows you to embed dynamic expressions and logic into text files (i.e. YAML)
+	It lets you insert variables, loops, and conditionals directly into YAML files.
+
+	It's widely used to produce multiple variations of a config from one template. 
+	Tools like Ansible leverage Jinja2 to create dynamic YAML configurations.
+	
+A Jinja2 template is a text file that contains unchanging text mixed with dynamic elements.
+
+Dynamic elements come in 3 forms: 
+
+	- Expressions: these evaluate the content dynamically and render them in the output file 
+
+		app_name: "{{ app_name_variable }}"		# substitute in a variable 
+
+		port_number: "{{ 8000 + 80 }}"			# arithmetic
+
+		formatted_name: "{{ 'server' ~ '01' }}" 	# string concatenation 
+
+		item: "{{ user_list[0] }}"			# accessing dictionary/list items
+		value: "{{ dictionary['key'] }}"
+
+		description: "{{ input_text | title }}"		# using filters
+		data: "{{ raw_data | to_json }}"
+
+
+	- Statements: these include conditionals, for loops, and setting variables. These generally don't produce direct output themselves. 
+
+		
+		{% set max_connections = 100 %}			# setting a variable
+
+		
+		enabled: >					# if statement
+			{% if environment == 'production' %}
+			true
+			{% else %}
+			false
+			{% endif %}
+
+		
+		log_level: >					# if/elif/else
+			{% if debug_mode %} debug
+			{% elif verbose_mode %} info
+			{% else %} warning
+			{% endif %}
+
+								# for Loop (generating multiple lines)
+		items:
+			{% for item in list_of_items %}
+			- {{ item }}				# the block inside the for loop will be rendered each iteration
+			{% endfor %}
+
+		
+		allowed_users:					# combining for and if
+			{% for user in users %}	
+			{% if user.active %}
+			- {{ user.name }}
+			{% endif %}
+			{% endfor %}
+
+
+	- Tags: these often used in Ansible tasks or configuration files to define behavior
+
+		raw_example: |
+			{% raw %}						# uses the 'raw' tag to prevent rendering
+			This {{ variable }} will not be rendered.
+			{% endraw %}
+
+		
+		trimmed_data: >
+			{%- if variable -%}					# {%- is a tag that trims leading whitespace. -%} removes trailing whitespace
+		 	{{ value }}
+			{%- endif -%}
+
+		import_config: >
+			{% include 'header.conf.j2' %}				# include is a tag that includes another file
+
+
+anything inside # ... # is a comment and will be ignored (strange syntax)
+
+
+The variables Jinja uses are provided when it's run via a context dictionary or arguments passed in.
+Running Jinja involves writing / loading a template file (ending in .j2), and programmatically calling Jinja's render() function:
+
+	
+	from jinja2 import Template, Environment, FileSystemLoader
+
+	env = Environment(loader=FileSystemLoader('templates'))		# assume the file contains "Hello, {{ name }}! Today is {{ day_of_week }}."
+	template = env.get_template('greeting.j2')
+
+	# to initialize the template's variables you pass a context dictionary or specific arguments to the render function
+	context = {"name": "Alice", "day_of_week": "Wednesday"}
+
+	result_text = template.render(**context)
+	print(result_text)  						# prints "Hello, Alice! Today is Wednesday."
+	
+
+Using it in combination with YAML is simple, because YAML is a text file:
+
+	# config.yaml.j2 (best practice is to end these files with .yaml.j2)
+	app:
+  	  name: {{ app_name }}
+  	  version: {{ version }}
+  	  settings:
+    	    debug: {{ debug }} 
+    	    database: {{ db_url }
+
+
+	# runner.py	
+	from jinja2 import Environment, FileSystemLoader
+	import yaml
+
+	env = Environment(loader=FileSystemLoader('../templates/'))	# setup Jinja environment and load the template file
+	template = env.get_template('productConfig.yaml.j2')
+
+	config_data = {
+    	  "app_name": "thayer-data-science",
+    	  "version": "2.0.1",
+    	  "debug": False,
+    	  "db_url": "postgres://user:pass@host/dbname"
+	}
+
+	yaml_config = template.render(**config_data)
+
+	with open('configs/productConfig.yaml', 'w') as f:
+		f.write(yaml_output)
+
+
+You can use dot notation or array-style notation to access attributes of objects or dictionary keys passed in the context:
+
+	app:
+	  firstName: {{ user.firstName }}
+          lastName: {{ user['lastName'] }}
+
+
+
+If a variable is missing from the context, Jinja2 by default treats it as undefined.
+This can be dangerous if you expected a value to exist in the file. You may encounter a blank instead. 
+You can provide default fallbacks to guard against this:
+
+	timeout: {{ timeout_value|default(60) }}  
+
+Alternatively, you can configure Jinja to be strict about undefined variables (raising an error) 
+
+Inside loop blocks, Jinja2 provides special variables for accessing the index:
+
+	loop.index 		# 1-based index
+	loop.index0 		# 0-based
+	loop.first
+	loop.last
+
+When using control structures in a YAML template, pay attention to indentation. 
+	The tags {% ... %} won't appear in the output, but they can affect how the text is indented. 
+	Write the Jinja tags flush left and indent the content inside appropriately to match YAML structure. 
+
+	Jinja also has whitespace trimming and control options to avoid extra blank lines when using if statements or loops.
+		e.g. using a minus sign at the front {%- endif %} can strip a leading newline to prevent orphan blank lines.
+
+
+
+Filters allow you to post-process or format variables.
+They're a suffix that the variable is piped into:
+	
+	field: {{ variable | <filter_name> }}
+
+Filters can be chained, and can accept arguments like functions:
+
+	tags: "{{ tags_list|join(', ') }}"
+
+Some common filers include: 
+
+	default(value) 			provide a default for the variable if it's undefined 
+
+						{{ timeout|default(60) }}
+
+
+	upper, lower 			change the case of the entire string
+
+						{{ env|upper }} 		# "dev" becomes "DEV"
+
+
+	replace(old, new)		replace substrings 
+			
+						{{ path|replace('\\', '/') }}	# normalize a Windows path 
+
+
+	join(separator)			join list of elements into one string with a separator 
+
+
+	length				get the count of elements in a list or characters in a string
+
+
+	round(precision, method)	round numbers 
+			
+						{{ score|round(2, 'floor') }}
+
+
+	capitalize / title 		capitalize the first letter, or title-case a string 
+
+
+	trim 				strip whitespace from both ends 
+
+
+	strip 				remove all whitespace characters 
+
+
+you can also create custom filters in python and add them to the Jinja environment. 
+
+
+Macros are Jinja's version of functions you can write. 
+You define a macro via:
+
+	{% macro <function_name(params)> %}  
+	...
+	{% endmacro %}
+
+
+For example: 
+
+	{% macro serviceblock(name, port) %}
+	{{ name }}:
+  	  image: "{{ name }}image:latest"
+  	  port: {{ port }}
+	{% endmacro %}
+
+
+You can import macros from another jinja file via: 
+
+	{% from 'file.j2' import macro_name %} 		# import a specific macro 
+	{% import 'file.j2' as macros %}		# import all macros from the file into a namespace "macros"
+
+
+Jinja2 also supports template inheritance. 
+This allows you to extract common YAML into a base template, and define blocks that child templates can override or fill in:
+
+	# parent.yml.j2
+	app:
+  	  name: {{ app_name }}
+  	  environment: {{ environment }}
+  	  version: {{ version }}
+	services:
+  	  {% block services %}		# a block is a named section of a template that can be overridden by child templates
+  	  default-service:
+    	    image: alpine:latest
+     	    replicas: 1
+            resources:
+              cpu: "500m"
+       	      memory: "256Mi"
+  	  {% endblock %}
+
+
+	# child.yml.j2
+	{% extends "parent.yml.j2" %}
+
+	{% block services %}
+  	  web:
+    	    image: {{ web_image }}
+    	    replicas: {{ web_replicas }}
+    	    resources:
+              cpu: "1"
+              memory: "512Mi"
+  	  db:
+    	    image: {{ db_image }}
+    	    storage: {{ db_storage }}
+	{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+

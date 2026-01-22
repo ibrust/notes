@@ -24,53 +24,6 @@ GET STARTED
     - restrict which branches can trigger a workflow
 
 
-
-=================================================================
-YAML
-=================================================================
-
-- here's a list of noteworthy YAML operators and syntactic quirks:
-
-  #       comment
-
-  &       an "anchor", defines a reusable block of content
-  *       an "alias", reuses content defined by the anchor
-  <<:     the "merge key" operator, merges the contents of a mapping (usually an alias) into another mapping
-
-  |       precedes a multiline string to specify "literal" parsing style, i.e. newlines will be included in the parsed output
-  >       precedes a multiline string to specify "folded" parsing style, i.e. newlines will be stripped out of the parsed output
-
-  prop_name: |
-    Line 1
-    Line 2          # Line 1\nLine 2
-  prop_name2: >
-    Line 1
-    Line 2          # Line 1 Line 2
-
-YAML does alot of type coercion:
-  value1: yes       becomes true
-  value2: on        becomes true
-  value3: no        becomes false
-  value4: off       becomes false
-  value5: "yes"     stays a string. To prevent type coercion you often must quote the value
-
-  value6: 123       becomes integer
-  value7: 1.0       becomes float
-
-YAML interprets all of these as null values:
-  null1: null
-  null2: ~
-  null3:
-
-YAML supports both block and inline styles for lists and maps:
-  fruits:
-    - apple
-    - banana
-    - cherry
-  fruits: [apple, banana, cherry]
-
-YAML is indentation sensitive like python. Uses spaces only (not tabs) and be consistent with the amount of indentation.
-
 =================================================================
 CONCEPTS - WORKFLOWS AND ACTIONS
 =================================================================

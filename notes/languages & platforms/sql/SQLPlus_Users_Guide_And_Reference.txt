@@ -1,0 +1,509 @@
+--------------------------------------------
+SQL*Plus User's Guide and Reference
+--------------------------------------------
+
+--------------------------------------------
+CH2: Configuring SQL*Plus
+--------------------------------------------
+
+Some noteworthy environment variables:
+
+
+	ORACLE_HOME		where SQL*Plus is installed.
+
+	PATH			the path to search for executables, and DLLs in Windows. Typically includes ORACLE_HOME/bin
+
+	LD_LIBRARY_PATH		the path used to search for libraries on UNIX and Linux.
+
+	LOCAL			Windows environment variable to specify a connection string. Performs the same function as TWO_TASK on UNIX.
+
+	TWO_TASK		UNIX environment variable to specify a connection string. 
+					Connections that do not specify a database will connect to the database specified in TWO_TASK.
+ 
+	ORACLE_PATH 		location of SQL scripts. If SQL*Plus cannot find the file in ORACLE_PATH, or if ORACLE_PATH is not set, 
+				it searches for the file in the current working directory.
+
+	SQLPATH			Environment variable or Windows registry entry to specify the location of SQL scripts. 
+				SQL*Plus searches for SQL scripts, including login.sql, in the directories specified by SQLPATH. 
+				SQLPATH is a colon-separated list of directories
+
+				The HKEY_LOCAL_MACHINE\SOFTWARE\ORACLE\HOME0 registry subkey (or the HOMEn directory for the associated ORACLE_HOME) 
+					contains the SQLPATH registry entry.
+
+	TNS_ADMIN		location of the tnsnames.ora file. If not specified, $ORACLE_HOME/network/admin is used
+
+
+You can set up your SQL*Plus environment to use the same settings with each session. 
+	modify glogin.sql for site wide settings and login.sql or user settings.
+
+	these files are run after a successful Oracle Database connection from a SQLPLUS or CONNECT command, or where /NOLOG is specified
+
+	You can add any SQL commands, PL/SQL blocks, or SQL*Plus commands to login.sql and it'll run them. 
+
+
+
+you can store the current SQL*Plus system variables in a script with the STORE command. 
+	If you alter any variables, this script can be run to restore the original values. 
+	This is useful if you want to reset system variables after running a report that alters them.
+
+	STORE SET file_name			// stores all current system variables 
+	START file_name				// restore all system variables from file. you can also run file_name using @ or @@ 
+
+--------------------------------------------
+CH3: Starting SQL*Plus 
+--------------------------------------------
+
+from the CLI the SQLPLUS command starts SQL*Plus
+	
+As a command-line alternative it is possible to store credentials in a client-side Oracle wallet. 
+	An Oracle wallet is a secure software container that is used to store authentication and signing credentials.
+	Using the Oracle wallet eliminates the need to embed usernames and passwords in application code, batch jobs, or scripts. 
+
+When you configure a client to use the external password store applications can use the following CONNECT syntax to connect to databases. 
+	Instead of passing the login credentials Oracle will look for them in the client wallet. 
+
+	CONNECT /@database_alias
+
+
+You can change your password using the CLI via the PASSWORD command
+
+To connect one database to another both databases must have Oracle Net configured, and have compatible network drivers. 
+	You must enter either a connection identifier or a net service name to connect to a database other than the default.
+
+the simple form of a connection identifier is: 
+	
+	[//]host[:port][/service_name]
+
+	i.e.
+
+	sqlplus hr@\"sales-server:1521/sales.us.acme.com\"
+	
+	connect hr@"sales-server:1521/sales.us.acme.com"		// When the password is omitted the connect string needs to be quoted.
+
+The full form of a connection identifier is: 
+
+	(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=host)(PORT=port))(CONNECT_DATA=(SERVICE_NAME=service_name))) 
+
+
+	SERVICE_NAME is a global name entered during database creation. It's a unique combination of database name + domain 
+
+	an INSTANCE_NAME is the name you give the database when creating it. it defaults to the SID you entered during creation. 
+		an Oracle System Identifier (SID) uniquely identifies a database instance. 
+		you must use an SID instead of SERVICE_NAME when connecting to Oracle 8.0 databases or earlier 
+
+		but you can optionally use INSTANCE_NAME in place of SERVICE_NAME too 
+
+
+Your DBA is responsible for creating the databases you use and defining net service names (which are aliases) for them in the tnsnames.ora file.
+	A net service name definition in the tnsnames.ora file has the syntax:
+
+	net_service_name=(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=host)(PORT=port))(CONNECT_DATA=(SERVICE_NAME=service_name))) 
+
+To use a net service name (an alias) the machine must have a net service name entry in its tsnames.ora file. 
+	But this is not required if you use a connection identifier directly. 
+
+
+you can start SQL*Plus without connecting to a database via /NOLOG
+
+	SQLPLUS /NOLOG 
+
+	this can be useful when doing some admin tasks, like writing or editing scripts 
+
+
+to get help from the CLI use the HELP command 
+
+	HELP INDEX			// show a list of SQL commands
+	
+	HELP <command name> 
+	i.e. 
+	HELP ACCEPT
+
+
+the following command pings the network listener associated with a given connection identifier: 
+
+	SQLPLUS -P connect_identifer			// returns 0 for success, 1 for failure 
+
+
+the RESTRICT command can be used to disable certain commands that interact with the operating system.
+
+
+--------------------------------------------
+CH4: SQL*Plus Basics 
+--------------------------------------------
+
+You can enter three kinds of commands in either the command-line or the iSQL*Plus user interfaces:
+
+	SQL commands, for working with information in the database
+	PL/SQL blocks, also for working with information in the database
+	SQL*Plus commands, for formatting query results, setting options, and editing and storing SQL commands and PL/SQL blocks
+
+The area where SQL*Plus stores your most recently entered SQL command or PL/SQL block (but not SQL*Plus commands) is called the SQL buffer. The command or block remains there until you enter another. If you want to edit or re-run the current SQL command or PL/SQL block, you may do so without re-entering it.
+
+You can divide your SQL command into separate lines at any points you wish, as long as individual words are not split between lines
+
+You can end a SQL command in one of three ways:
+
+	with a semicolon (;)
+	with a slash (/) on a line by itself
+	with a blank line
+
+A semicolon (;) tells SQL*Plus that you want to run the command.  
+Return will cause SQL*Plus to process the command and store it in the SQL buffer 
+A slash (/) on a line by itself also tells SQL*Plus that you wish to run the command.
+
+Stored procedures are PL/SQL functions, packages, or procedures. To create stored procedures, you use these SQL CREATE commands: 
+
+	CREATE FUNCTION
+	CREATE LIBRARY
+	CREATE PACKAGE
+	CREATE PACKAGE BODY
+	CREATE PROCEDURE
+	CREATE TRIGGER
+	CREATE TYPE
+
+Entering any of these commands places you in PL/SQL mode, where you can enter your PL/SQL subprogram. 
+	You're also placed PL/SQL mode when you type DECLARE or BEGIN at the SQL*Plus command prompt.
+
+	DECLARE
+	    x   NUMBER := 100;
+	    BEGIN
+	        FOR i IN 1..10 LOOP
+	           IF MOD (i, 2) = 0 THEN    --i is even
+	             INSERT INTO temp VALUES (i, x, 'i is even');
+	           ELSE
+	             INSERT INTO temp VALUES (i, x, 'i is odd');
+	           END IF;
+	           x := x + 100;
+	       END LOOP;
+	   END;
+	   .
+	/
+
+When you use CREATE to create a stored procedure, a message appears if there are compilation errors. To view these errors you use SHOW ERRORS:
+
+	SHOW ERRORS PROCEDURE ASSIGNVL
+
+To execute a PL/SQL statement that references a stored procedure you can use the EXECUTE command:
+	
+	EXECUTE :ID := EMPLOYEE_MANAGEMENT.GET_ID('BLAKE')
+
+You can run (or re-run) the current SQL command or PL/SQL block by entering the RUN command or the slash (/) command 
+
+
+SQL*Plus commands have a different syntax from SQL commands or PL/SQL blocks.
+	You can continue a long SQL*Plus command by typing a hyphen at the end of the line and pressing Return. 
+	If you wish, you can type a space before typing the hyphen.
+	You do not need to end a SQL*Plus command with a semicolon, it's optional. 
+
+		COLUMN SALARY FORMAT $99,999 -
+		HEADING 'MONTHLY SALARY'
+
+The SQL*Plus command SET controls many variables--called SET variables or system variables
+	To list the current setting of a SET command variable enter SHOW followed by the variable name at the command prompt.
+
+
+The SQL DML commands UPDATE, INSERT, and DELETE specify changes you wish to make to the information stored in the database.
+	They can be used independently or within a PL/SQL block
+	These changes are not made permanent until you enter a SQL COMMIT command or a SQL DCL or DDL command (such as CREATE TABLE), or use the autocommit feature.
+		 The SQL*Plus autocommit feature causes pending changes to be committed after a specified number of successful SQL DML transactions. 
+			(A SQL DML transaction is either an UPDATE, INSERT, or DELETE command, or a PL/SQL block.)
+		You control the autocommit feature with the SQL*Plus SET command's AUTOCOMMIT variable:
+
+			SET AUTOCOMMIT ON
+			SET AUTOCOMMIT OFF
+			SET AUTOCOMMIT IMMEDIATE
+			SET AUTOCOMMIT 10		// commit after 10  DML commands
+			SHOW AUTOCOMMIT			// indicate autocommits present state
+
+		When the autocommit feature is turned on, you cannot roll back changes to the database.
+
+
+
+To run a host operating system command enter the SQL*Plus command HOST followed by the host operating system command:
+
+	HOST DIRECTORY *.SQL
+
+note that operating system commands entered from a SQL*Plus session using the HOST command do not effect the current SQL*Plus session
+
+
+To see the definitions of each column in a given table or view use the SQL*Plus DESCRIBE command:
+
+	DESCRIBE EMP_DETAILS_VIEW;
+
+To see the definition of a function or procedure use the SQL*Plus DESCRIBE command:
+	
+	DESCRIBE afunc
+
+--------------------------------------------
+CH5: Using Scripts in SQL*Plus
+--------------------------------------------
+
+The use of an external editor in combination with the @, @@ or START commands is an effective method of creating and executing generic scripts. 
+	You can write scripts which contain SQL*Plus, SQL and PL/SQL commands, which you can retrieve and edit before executing
+
+	You can run your host operating system's default text editor without leaving SQL*Plus by entering the EDIT command.
+	Or you can use the SQL*Plus DEFINE command to define the variable _EDITOR to hold the name of your preferred text editor:
+
+		DEFINE _EDITOR = vi
+
+	You can include an editor definition in your user or site profile so that it is always enabled when you start SQL*Plus. 
+
+	To create a script with a text editor enter EDIT followed by the name of the file to edit or create.
+	EDIT adds the filename extension .SQL to the name unless you specify the file extension:
+
+		EDIT SALES
+
+	You must include a semicolon at the end of each SQL command and a slash (/) on a line by itself after each PL/SQL block in the file.
+
+
+Because SQL*Plus does not store SQL*Plus commands in the buffer, you edit a SQL*Plus command entered directly at the command prompt by using Backspace or by re-entering the command.
+
+
+
+
+
+But for SQL / PL/SQL you can use a number of SQL*Plus commands to edit the SQL command currently stored in the buffer.
+	Some examples of these commands are APPEND, CHANGE, DEL, INPUT, LIST
+
+	FULL COMMAND 		ABBREVIATED
+	============================================================================================
+	APPEND text		A text			// add text to current line 
+	CHANGE/old/new		C/old/new		// changes old to new in the current line
+	CHANGE/text		C/text			// deletes text from the current line
+	CLEAR BUFFER		CL BUFF			// deletes all lines
+	DEL			DEL * 			// deletes the current line
+	DEL n						// deletes line n
+	DEL n *						// deletes line n through the current line
+	DEL LAST					// deletes the last line
+	DEL m n						// deletes a range of lines (m to n)
+	DEL * n						// deletes the current line through line n
+	INPUT						// adds one or more lines
+	INPUT text					// adds a line consisting of text
+	LIST						// lists all lines in the SQL buffer
+	LIST n						// lists line n
+	LIST *						// lists the current line
+	LIST n *					// lists line n through the current line
+	LIST LAST					// lists the last line
+	LIST m n					// lists a range of lines (m to n)
+	LIST * n					// lists the current line through line n
+
+
+The SQL buffer contains the last SQL or PL/SQL command. 
+	Any editing command other than LIST and DEL affects only a single line in the buffer. 
+	This line is called the current line. 
+	It is marked with an asterisk when you list the current command or block.
+
+	LIST a given line to make it the current line.
+	When you LIST or RUN the command in the buffer, the last line of the command becomes the current line.
+		Note that using the slash (/) command to run the command in the buffer does not affect the current line
+	If you get an error, the error line automatically becomes the current line.
+
+To insert a line before line 1 enter a zero ("0") and follow the zero with text. Then press Return again to indicate you will not enter any more lines. : 
+	
+	0 SELECT EMPLOYEE_ID
+
+
+You can enter comments in a script in three ways:
+
+	using the SQL*Plus REMARK command for single line comments.
+	using the SQL comment delimiters /*... */ for single or multi line comments.
+	using ANSI/ISO comments -- for single line comments.
+
+		REMARK this is a comment.;
+		/* This is a multi-line
+			comment */
+		SET LONG 777 -- set maximum width for LONG to 777
+
+SQL*Plus does not have a SQL or PL/SQL command parser. 
+	It scans the first few keywords of each new statement to determine the command type, SQL, PL/SQL or SQL*Plus. 
+	Comments in some locations can prevent SQL*Plus from correctly identifying the command type, giving unexpected results.
+
+	1) Do not put comments within the first few keywords of a statement. 
+		The location of the comment prevents SQL*Plus from recognizing the command.
+		Move the comment to avoid this error.
+
+		CREATE OR REPLACE
+  			/* HELLO */			<- bad 
+  			PROCEDURE HELLO AS
+
+		CREATE OR REPLACE PROCEDURE
+  			/* HELLO */			<- good
+  			HELLO AS
+
+	2) Do not put comments after statement terminators (period, semicolon or slash)
+
+
+		SELECT 'Y' FROM DUAL; -- TESTING	<- bad 
+
+
+	3) Do not put statement termination characters after a comment
+
+		SELECT * -- COMMENT;			<- bad
+
+	4) Do not use ampersand characters '&' in comments in a SQL statement or PL/SQL block.
+		SQL*Plus interprets text after the ampersand character "&" as a substitution variable and prompts for the value of the variable 
+
+
+		SELECT REGION_NAME, CITY
+		/* THIS & THAT */			<- bad 
+
+
+Use START to run a script containing SQL commands, PL/SQL blocks, and SQL*Plus commands. 
+	You don't need to add the file extension. 
+	You can have many commands in the file:
+
+		START file_name
+
+	To see the commands as SQL*Plus runs them you can SET the ECHO variable to ON.
+
+You can also use the @ command to run a script (same thing as START):
+
+	@file_name
+
+To run a series of scripts in sequence create a script with several START commands in it. 
+	you can also use the @@ command for this. It's the same as @, but can also be used to run nested scripts, 
+		since it will look for the script in the same path or URL as the script from which it was called. 
+
+You can include an EXIT command in a script to return a value when the script finishes. 
+	You can also use  WHENEVER SQLERROR command in a script to automatically exit SQL*Plus with a return code should your script generate a SQL error.
+
+
+--------------------------------------------
+CH6: Using Substitution Variables
+--------------------------------------------
+
+
+You can define variables, called substitution variables, for repeated use in a single script by using the DEFINE command.
+	Note that in a SQL*Plus session there is just one global namespace for substitution variables.
+	Also remember that your variables are always treated as having the CHAR datatype. 
+
+		DEFINE L_NAME = SMITH		// set a variable 
+		DEFINE L_NAME			// list a specific variables value
+		DEFINE				// list all defined variables 
+
+	To delete a variable use the UNDEFINE command. 
+
+		UNDEFINE L_NAME	
+
+
+There are 9 predefined variables that exist on setup. Note that these can be changed (but think twice before changing): 
+
+	_CONNECT_IDENTIFIER 			// Connection identifier used to make connection, where available
+
+	_DATE 					// Either the current date as a dynamic variable, or a fixed string. 
+						// The current date is the default and is formatted using the value of NLS_DATE_FORMAT.
+						// Because _DATE can be used as a normal substitution variable users may put it in TTITLE.
+						// If it is used with an ampersand than the value will be set to the time when the TTITLE command is executed. 
+						// If it is used without an ampersand prefix, it will be re-evaluated for each page
+						// if you change _DATE via DEFINE _DATE you can reset it to its default behavior via DEFINE _DATE = ""
+
+	_EDITOR 				// Specifies the editor used by the EDIT command
+
+	_O_VERSION 				// Current version of the installed Oracle Database
+
+	_O_RELEASE				// Full release number of the installed Oracle Database
+
+	_PRIVILEGE				// Privilege level of the current connection
+
+	_SQLPLUS_RELEASE			// Full release number of installed SQL*Plus component
+
+	_USER					// User name used to make connection
+
+	_SQL_ID					// sql_id of the SQL statement executed
+
+
+	Note that you can view the value of each of these variables with the DEFINE command.
+
+
+You can use variables (called substitution variables) anywhere in a SQL or SQL*Plus command except as the first word of the command.
+	when SQL*Plus encounters an undefined substitution variable it'll prompt you for the value (which it reads via standard input).
+		the input value will be a string. it can include spaces / punctuation as well. 
+		after inputing the value SQL*Plus will output a verification message which you can turn off via SET VERIFY OFF
+
+	SELECT &SORTCOL, SALARY				// substitution variables are preceded by & or &&
+	FROM &MYTABLE
+	WHERE SALARY>12000;
+
+If a single ampersand is used the value you enter at the prompt is not stored. 
+	Immediately after the value is substituted the value is discarded and is undefined again. 
+	If the variable is referenced twice, even in the same statement, you are prompted twice.
+If a double ampersand is used the value will persist until you exit, and you won't be prompted again. 
+
+the ACCEPT command can also be used to prompt for the variables value: 
+
+	ACCEPT user_name CHAR PROMPT 'Enter the users name: '
+	SELECT EMPLOYEE_ID FROM EMPLOYEES WHERE last_name = '&user_name'; 			// does this need to be &&? test it
+
+
+If you wish to append characters immediately after a substitution variable use a period to separate the variable from the character.
+	And if you want to append a period immediately after a substitution variable use two periods.
+
+	ACCEPT manufacturer_number CHAR PROMPT 'Enter the item number: '
+	SELECT ITEM_NO FROM ITEMS WHERE item_number = '&manufacturer_number.103';			// so if you input '222' this will search for '222103'
+
+
+be aware that comments that contain text which match substitution variables may be treated as such. keep your substitution variables out of comments. 
+
+
+The COLUMN command allows you to control a columns display attributes when the column is referenced in SELECT commands. 
+	COLUMN also has an option NEW_VALUE which allows you to store the last value of the column selected in a query into a variable
+
+	COLUMN last_name NEW_VALUE name_found					// name_found will be the variable storing the name after SELECT is run
+	SELECT last_name from EMPLOYEE_TABLE WHERE employee_id = 100;
+
+
+note that substitution variables are pre-processed and substituted in before the command gets executed. 
+	so you actually get prompted for the variables during the preprocessing phase, not during script execution. 
+	and this preprocessing is run by the SQL*Plus client. the script isn't sent to the database to be executed until after preprocessing finishes. 
+
+	also note it isn't possible to prompt repeatedly in a PL/SQL loop, you will just get one prompt. the preprocessor isn't executing the loop. 
+
+	likewise at the prompt if you input an ampersand (&) followed by a new variable name the preprocessor won't recognize this as a new substitution variable for it to process. 
+
+
+Certain commands have some special significance for working with substitution variables: 
+	
+	ACCEPT 				// read input and store it in the variable 
+	COLUMN				// specifies display attributes for a given column
+	DEFINE				// specifies a user or predefined variable and assigns a CHAR value to it. 
+					// it can also list the value and type of variables
+
+	UNDEFINE			// deletes one or more substitution variables that you defined either explicitly (with the DEFINE command) 
+					// or implicitly (with an argument to the START command).
+
+	EDIT				// opens a text editor to edit the contents of a file or the buffer
+	EXIT 				// commits or rolls back all pending changes, logs out of Oracle Database, and terminates SQL*Plus
+	HOST				// executes an OS system call from within SQL*Plus 
+	
+	TTITLE				// places and formats a specified title at the top of each report page
+
+
+						
+
+	BTITLE				// places and formats a specified title at the bottom of each report page
+	REPHEADER			// places and formats a specified report header at the top of each report
+	REPFOOTER 			// places and formats a specified report footer at the bottom of each report
+
+	WHENEVER OSERROR 		// performs the specified action (exits SQL*Plus by default) if an operating system error occurs
+	WHENEVER SQLERROR		// performs the specified action (exits SQL*Plus by default) if a SQL command or PL/SQL block generates an error
+
+
+
+TTITLE works with substitution variables in a unique way. 
+
+	If you want the same value on every page then use "&" and put the variable inside a quoted string
+
+		ACCEPT my_customer CHAR PROMPT 'Enter your company name: '
+		TTITLE LEFT 'Report generated for company &my_customer'
+		SELECT last_name, job_id from EMPLOYEE_TABLE ORDER BY job_id;
+
+	If you want each title to have data from the query that is unique to each report page then do not use "&" and do not put the variable inside quotes.
+
+		COLUMN job_id NEW_VALUE job_id_variable NOPRINT
+		BREAK ON job_id SKIP PAGE
+		TTITLE LEFT 'Employees in job: ' job_id_variable
+		SELECT last_name, job_id from EMPLOYEE_TABLE ORDER BY job_id;
+
+
+left off in the middle of 6.3.6.1 - https://docs.oracle.com/en/database/oracle/oracle-database/23/sqpug/using-substitution-variables-sqlplus.html#GUID-54D6D2BB-1EC4-4AC4-8E01-3B253037AE70
+
