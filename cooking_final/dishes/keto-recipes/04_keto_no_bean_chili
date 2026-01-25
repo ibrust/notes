@@ -9,17 +9,102 @@ The lack of fillters in this no-bean chili mean it's even more critical to use h
 
 The choice of meat is the most critical thing. We'll use beef chuck, which is rich in collagen and intramuscular fat. 
     Lean cuts like sirloin dry out when simmered. 
-    chuck undergoes a transformation. As the meat is held at 160F+, the triple-helix structure of the collagen 
-        begins to unwind and hydrolyze into gelatin. 
+    When cooked, chuck undergoes a transformation. 
+    
+        120-130F: The muscle fibers begin to denature and shrink. Myosin coagulates, and the meat changes from raw to rare
+        140-150F: The collagen sheath surrounding the muscle fibers begins to shrink, exerting pressure on the cells 
+            and squeezing out intracellular water. If the meat is held here, it becomes tough and dry.
+        160-180F: Collagen hydrolysis begins but is kinetically slow. 
+            A chuck roast might require 24 to 48 hours in this range to become tender. 
+            This is the "stall" often referred to in barbecue. 
+        180-200F: This is the target range. Here kinetic energy is sufficient to unwind the collagen triple helix. 
+            The gelatin formed dissolves into the extracellular space, lubricating the muscle fibers 
+            and providing the sensation of "moistness" even though the fibers themselves have lost water.
+        212F: The high heat causes the muscle fibers to super-contract and harden, leading to a dry texture 
+            despite the presence of liquid. Furthermore, boiling emulsifies the rendered fat into the sauce, 
+            creating a greasy, opaque suspension.
 
-        The collagen hydrolyzation process accelerates significantly in the range of 180-205F. 
-        If the simmer is too gentle (below 180), the process is much slower and my require more than 3 hours.
-        Many culinary experts suggest that chuck roast needs to reach an internal temperature of at least 190-210F to be tender.
-        However, if your cooking liquid is too high (i.e. at a rolling boil of 212F), 
-            the muscle fibers will contract and expel moisture before the collagen has had enough time to melt. 
-            This creates meat that si tough, dry, and stringy. 
-        The goal should be a 3-4 hour simmer between 180-200F
+        Many culinary experts suggest that chuck roast needs to reach an internal temperature of 190-210F to be tender.
+        Our goal is a 3-4 hour simmer between 180-200F. 
 
+    With a standard fluid like water, temperature gradients between the bottom of the pot and the rest are transient. 
+        But a chili is thick enough to counteract the forces that would normally drive convection.
+        Heat transfer shifts from efficient convection to inefficient conduction.
+            And organic compounds (meat, sauce, vegetables) / water are relatively poor thermal conductors.
+        So the heat at the bottom of the pot builds up while the rest of the pot remains cooler.
+            This can make it impossible to keep the entire pot in the target window of 180-200F. 
+
+        The dutch oven is the traditional pot used for braising, but its properties are often not understood. 
+            It doesn't conduct heat well, it retains it well. 
+            Energy applied to the bottom won't migrate to the sides of the pot quickly, and the chili won't cook evently.
+
+        Fully clad triple-ply stainless steel pots will conduct the heat better, but they don't fully solve the problem.
+            Their thermal conductivity is ~237 W/mK 
+
+        The ideal pot will be a heavy-gauge copper one. 
+            Their thermal conductivity is ~401 W/mK, the highest there is. 
+            A heavy copper pot (2.5mm thickness) conducts heat so efficiently that the thermal energy travels up the sidewalls
+            almost as effectively as it travels across the bottom. The sides of the pot effectively become heating elements.
+
+        A wide, shallow pot is also preferred to a tall thin one, assuming the burner fits it. 
+            The heat from the burner won't have to travel as far to reach the rest of the soup. 
+        
+    Problems with heat distribution are more prominent on the stove-top then in the oven, where heat is omnidirectional.
+
+        Air transfers heat less efficiently than metal and liquid. 
+        The viscosity of the chili will still impede convective heat transfer within the pot. 
+        We'll need to determine the precise equilibrium where energy input from the oven balances the energy loss via evaporation
+            to sustain the chili in the target 180-200F range. 
+
+        If you're using a convection oven the correct oven temperature may be ~25F lower than a standard oven. 
+
+        The perfect simmer in an oven is non-intuitive. 
+        A set temperature of 250F does not equate to a food temperature of 250F, nor does it guarantee a boil.
+
+        If one places a tightly sealed pot in an oven set to 300F, the contents of the pot will eventually 
+            reach thermal equilibrium with the oven air. 
+        The liquid in the pot will boil. It will remain at 212F until all the water has vaporized, 
+            after which the temperature of the desiccated solids will rise to 300F.
+        Standard cookbook instructions often recommend 325F or 350F for braising.
+            But research indicates these temperatures invariably lead to a boil inside a covered pot.
+        To maintain 180-200F we must leverage evaporative cooling. 
+
+        - In a sealed pot: 
+            Relative humidity is 100%. Evaporation stops. Temperature rises to oven temp, capped at 212F
+
+        - In an open pot: 
+            Evaporation is maximized. The liquid temperature will stabilize ~20-40F below the oven temperature.
+            However, the rate of liquid loss is high, leading to drying and scorching of exposed meat.
+
+        - When the lid is left slightly ajar: 
+            This allows just enough evaporation to depress the liquid temperature below the boiling point, 
+            preventing the pressure cooker effect while retaining enough moisture to keep the meat submerged.
+
+        Empirical data and expert consensus point to 250F as the optimal oven setting for equilibrium (non-convection).
+
+        In an oven set to 250F the ambient temperature is vastly lower than a gas flame (which can be 3000F).
+            It is impossible to scorch the bottom of a pot in a 250F oven unless the liquid completely evaporates.
+
+    
+        Because Chili does not support convection (due to its thickness) the surface layer of the chili,
+            exposed to the dry oven air vai the cracked lid, will undergo rapid evaporation. 
+            The proteins will coagulate and polymerize, forming a tough, dark skin on the top. 
+            Stirring this back into the chili introduces tough, unpleasant particles that ruin the texture. 
+            Discarding it wastes volume. 
+
+        To solve this we'll use a cartouche in conjunction with the lid left ajar. 
+            A cartouche is a lid made of parchment paper that's directly in contact with the liquid. 
+            It traps a thin layer of steam against the surface of the meat, keeping it hydrated. 
+            It also allows for a controlled rate of evaporation based on the size of the hole. 
+
+        Be aware that the temperature of the chili may seem to stall at around 160-170F for a period. 
+            This is similar to the stall observed in BBQ brisket. 
+            As the collagen breaks down and releases water, and as the muscle fibers contract and squeeze out water, 
+            the evaporative load increases, cooling the pot. 
+            Do not increase the oven temperature if this happens, provided the meat is cooking. 
+            The temperature will creep up to 180F as the surface moisture reduces.
+
+        
 
     gelatin serves two purposes in our recipe: 
         1) it coats the muscle fibers, making t heir meat seem juicy even after hours of cooking 
@@ -88,6 +173,7 @@ This will cause a series of chemical reactions to take place:
 Chili is scientifically proven to taste better the next day. 
     This occurs because the gelatin sets, and the volatile aromatic compounds diffuse into the fat molecules, 
     creating a more unified flavor.
+ 
 
 ===================================================
 RARE INGREDIENTS
@@ -262,36 +348,57 @@ PREPARATION
     f) scrape the bottom of the pan vigorously with a wooden spatula to dissolve the fond on the bottom 
 
 
-8) cook at simmer 
-    a) transfer the mixture to a stainless steel triple-ply pot (the soup is thick so we need good conduction)
+8) add the ingredients & bring them up to temperature
+
+    a) transfer the mixture to a stainless steel triple-ply pot (if simmering on stovetop) or a dutch oven (if using oven)
     b) return all beef (and any accumulated juices from the bowl) to the pot 
     c) pour in the chili paste from the blender 
     d) pour in the remaining 2 cups of beef bone broth (you started with 4 cups, used 2 on the chilies)
-        Ensure the liquid covers the meat cubes. This is critical for tenderization. 
-        If it doesn't, you'll have to adjust the amounts later. 
-        Meanwhile try adding a little water. 
-    e) bring the mixture to a boil
-    f) immediately reduce heat to low (~1.5 with the lid on was about right for our burners) 
-        the goal is a temperature 180-200F 
-    g) cover the pot, leaving the lid slightly ajar to allow for evaporation and temperature regulation 
-    h) simmer for 3 to 3.5 hours 
-        at 2 hours, taste for salt. the meat should be starting to soften. 
-        You might need to periodically stir it to maintain temperature regulation. 
-        If so, when temps reach ~195-200F, stir the pot. 
-        keep the lid on otherwise (it regulates temperature).
+            Ensure the liquid covers the meat cubes. This is critical for tenderization. 
+            If it doesn't, you'll have to adjust the amounts later. 
+            Meanwhile try adding a little water. 
 
+9) simmer the chili (either on a stovetop or in the oven) 
 
-9) keto thickening
-    a) check that the meat is tender (it should yield easily to a fork) 
-    b) while the chili finishes, sprinkle the 2.5 tsp gelatin over 2 tbsp of cold water in a small cup 
-    c) let it sit for 5 minutes until it becomes a solid rubbery puck 
-    d) stir the bloomed gelatin into the hot chili. it will dissolve instantly 
-    e) in a small bowl, whisk the 1/2 tsp xantham gum into 1 tbsp olive oil until smooth 
-    f) pour this oil-gum mixture into the chili while stirring. 
+    - if cooking in the oven: 
+        a) preheat the oven to 250F 
+        b) bring the mixture to a ~190F simmer (but not a boil)
+            we do this because air is a poor heat conductor. it would take too long for the chili to get hot ifput it in the oven without simmering first
+        c) arrange racks so the chili will sit on the lower-middle position (not at the very bottom) 
+        d) construct a cartouche: 
+            i) tear off a piece of parchment paper slightly larger than the pots diameter 
+            ii) fold it into a triangle and trim the edge to match the radius of the pot 
+            iii) snip the tip to create a ~1 inch vent hole 
+        e) once simmering, apply the cartouche 
+            i) remove the pot from the heat 
+            ii) carefully lay the parchment paper circle directly onto the surface of the chili. 
+            iii) press it down gently with a spoon so it is wetted by the liquid and makes full contact.
+        f) place the lid on top, leaving it slightly ajar 
+        g) put the pot in the oven for 3 to 4 hours
+        h) monitor the temperature periodically
+
+    - if cooking on a burner:
+        a) bring the mixture to a boil
+        b) immediately reduce heat to low (~1.5 with the lid on was about right for our burners) 
+                the goal is a temperature 180-200F 
+        c) cover the pot, leaving the lid slightly ajar to allow for evaporation and temperature regulation 
+        d) simmer for 3 to 4 hours
+            at 2 hours, taste for salt. the meat should be starting to soften. 
+            You might need to periodically stir it to maintain temperature regulation. 
+            If so, when temps reach ~195-200F, stir the pot. 
+            keep the lid on otherwise (it regulates temperature).
+
+9) keto thickening / reduction phase 
+    a) remove the lid. if you cooked in an oven, remove the cartouche & transfer back to the stovetop 
+    b) check that the meat is tender (it should yield easily to a fork) 
+    c) while the chili finishes, sprinkle the 2.5 tsp gelatin over 2 tbsp of cold water in a small cup 
+    d) let it sit for 5 minutes until it becomes a solid rubbery puck 
+    e) stir the bloomed gelatin into the hot chili. it will dissolve instantly 
+    f) in a small bowl, whisk the 1/2 tsp xantham gum into 1 tbsp olive oil until smooth 
+    g) pour this oil-gum mixture into the chili while stirring. 
         never add xanthan powder directly to hot liquid, it will clump instantly 
-    g) remove the lid entirely & simmer for an additional 20 minutes. 
+    h) simmer for an additional 15 minutes. 
         the sauce will tighten up significantly as the hydrocolloids hydrate and water evaporates 
-    
 
 10) finishing 
     a) turn off the heat 
@@ -326,4 +433,3 @@ NUTRITIONAL INFO
 ===================================================
 
 net carbs: 61
-calories: ~7000 
