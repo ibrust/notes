@@ -9,8 +9,17 @@ The lack of fillters in this no-bean chili mean it's even more critical to use h
 
 The choice of meat is the most critical thing. We'll use beef chuck, which is rich in collagen and intramuscular fat. 
     Lean cuts like sirloin dry out when simmered. 
-    chuk undergoes a transformation. As the meat is held between 160-180F, the triple-helix structure of the collagen 
+    chuck undergoes a transformation. As the meat is held at 160F+, the triple-helix structure of the collagen 
         begins to unwind and hydrolyze into gelatin. 
+
+        The collagen hydrolyzation process accelerates significantly in the range of 180-205F. 
+        If the simmer is too gentle (below 180), the process is much slower and my require more than 3 hours.
+        Many culinary experts suggest that chuck roast needs to reach an internal temperature of at least 190-210F to be tender.
+        However, if your cooking liquid is too high (i.e. at a rolling boil of 212F), 
+            the muscle fibers will contract and expel moisture before the collagen has had enough time to melt. 
+            This creates meat that si tough, dry, and stringy. 
+        The goal should be a 3-4 hour simmer between 180-200F
+
 
     gelatin serves two purposes in our recipe: 
         1) it coats the muscle fibers, making t heir meat seem juicy even after hours of cooking 
@@ -47,6 +56,35 @@ corn flour (masa harina) is 75% carbs, and is traditionally used as a thickener 
     in addition to the gelatin we get from the braise, we'll also supplement with some unflavored beef gelatin. 
 
 
+We employ a novel method when cooking the minced portion of the ground beef. 
+
+    When ground beef is first added to a pot, then stirred or broken up, max surface area is exposed to the heat source. 
+        Ground beef has a higher surface area than other meats. 
+    When the beef was originally ground the cells were disrupted, which caused the release of water and myoglobin. 
+        This water pools at the bottom of the pot. 
+        It makes the meat turns grey without developing a crust. 
+
+    So to cook the ground beef we'll compress it into a single, cohesive patty that covers the bottom of the dutch oven.
+        This reduces the surface area of the meat, minimizing evaporation and the cooling that results.
+            Only the top of the patty is exposed to air. 
+            The bottom surface is in direct contact with the pan.
+            The interior moisture remains trapped within the protein matrix, unable to evaporate.
+        The direct contact between the meat and the cast iron (which should be preheated to 400F) 
+            allows the meat surface temperature to rise rapidly above the Maillard threshold 
+            before internal moisture can migrate to the surface to quench it.
+        The uninterrupted contact also allows proteins to adhere to the pot bottom, 
+            creating a fond that is essential for later deglazing w/ fish sauce and broth. 
+
+Dry brining is when you salt the surface of meat and allow it to rest in the refridgerator for a prolonged time. 
+This will cause a series of chemical reactions to take place:
+    1) 0-30 minutes - salt crystals on the meats surface create a hypertonic environment. 
+        Osmotic pressure draws water out of the muscle cells to the surface. The meat looks wet. 
+    2) 30-60 minutes - the drawn-out water dissolves the salt, creating a highly concentrated brine on the surface. 
+    3) 1-24 hours - teh diffusion gradient reverses. The meat's muscle fibers absorb the salty brine back into the tissue. 
+        Once inside, the chloride ions interact with the electrostatic charges on the protein filaments (actin and myosin). 
+        They cause the filaments to repel each other, creating larger gaps that can hold water. 
+        The proteins effectively loosen and denature, trapping moisture so it can't be squeezed out as easily during cooking.
+
 Chili is scientifically proven to taste better the next day. 
     This occurs because the gelatin sets, and the volatile aromatic compounds diffuse into the fat molecules, 
     creating a more unified flavor.
@@ -55,21 +93,19 @@ Chili is scientifically proven to taste better the next day.
 RARE INGREDIENTS
 ===================================================
 
-beef chuck roast (heavily marbled), 5 lbs
-jalepeno, 1 fresh
 dried ancho chilies, 6 whole 
 dried guajillo chilies, 3 whole 
 dried pasilla chilies, 3 whole 
 dried chipotle meco chilies, 1-2 whole (optional, for smoke) 
 dried chilies de arbol, 2 whole 
-unflavored beef gelatin, 1 packet 
+unflavored beef gelatin, 2.5 tsp or 1 packet 
 xanthan gum, 1/2 tsp 
 fish sauce, 1 tbsp 
 tamari, 1 tbsp (gluten free soy sauce) 
 marmite, 1 tsp (yeast extract) 
-unsweetened cocoa powder, 1 tbsp 
+unsweetened cocoa powder, 1 tsp 
 whole cumin seeds, 4 tbsp 
-dried mexican oregano, 2 tbsp 
+dried mexican oregano, 2 tbsp
 
 ===================================================
 NOTEWORTHY EQUIPMENT 
@@ -82,7 +118,7 @@ spice grinder - for the cumin & spices
 INGREDIENTS
 ===================================================
 
-beef chuck roast (heavily marbled), 5 lbs
+beef chuck roast (heavily marbled), 4.75 lbs
 thick cut bacon (uncured, sugar-free), 6 slices 
 avocado oil, 2 tbsp 
 dried ancho chilies, 6 whole 
@@ -112,10 +148,11 @@ tamari, 1 tbsp (gluten free soy sauce)
 marmite, 1 tsp (yeast extract) 
 apple cider vinegar, 1 tbsp 
 
-unflavored beef gelatin, 1 packet 
+unflavored beef gelatin, 2.5 tsp or 1 packet 
 xanthan gum, 1/2 tsp 
 
 olive oil, 1 tbsp 
+1.625 tsp of morton's salt or fine table salt
 
 aged cheddar cheese (garnish)
 cilantro (garnish)
@@ -124,22 +161,31 @@ cilantro (garnish)
 PREPARATION 
 ===================================================
 
-1) prepare the meat 
-    a) cut 3.5 lbs of the chuk roast into 1/2 to 3/4 inch cubes 
-    b) take the remaining 1.5 lbs and mince or pulse it in a food processor until it resembles coarse ground beef 
-    c) toss all the beef with 1 tbsp salt 
-    d) let all the beef sit on a wire rack for 45 minutes while you prepare the chili paste
-        this draws out moisture and denatures surface proteins, facilitating a better sear. 
-    e) dice the bacon 
+1) dry brine the beef the day before 
+    a) remove the paddywhacks on the chuck roasts (it's the yellow chord on each one, if it's there)
+    b) cut all of the chuck roast into 1/2-3/4 inch cubes.
+         you cut beef perpendicular to the muscle fibers (against the grain)
+         make sure to cut them small enough so that they can fit in the pot efficiently
+    c) weigh out 1.5 lbs of the beef to become mince later. 
+        leave it unsalted.
+        just put it in the refridgerator.
+    d) weigh out 3.25 lbs of meat to keep as cubes. discard the rest or use for something else
+    e) toss the 3.25 lbs with 1.625 tsp of morton's salt or fine table salt (if using flakey salt you need double that)
+    e) put in the refridgerator for 5-24 hours (but no longer)
 
-2) prepare the chili paste 
+2) finish preparing the beef / bacon
+    a) pulse the beef saved for mince in a food processor until it looks like ground beef
+    b) put the mince back in the refridgerator while you prepare the chili paste 
+    c) dice the bacon 
+
+3) prepare the chili paste 
     a) cut off the stems of the chilies, slice them lengthwise, and deseed them / discard the seeds:  
         6 dried ancho chilies
         3 dried guajillo chilies
         3 dried pasilla chilies,
         1-2 dried chipotle meco chilies
         2 dried chilies de arbol
-    b) heat a dry cast iron skillet over medium-high (375F) 
+    b) heat a dry cast iron skillet to 350-375F
     c) toast the chilies for 15-30 seconds on each side. make sure not to burn
     d) place some of the toasted chili skins in a bowl. 
         Don't include the meco chilies, but put everything else in. 
@@ -155,33 +201,46 @@ PREPARATION
         ii) espresso powder, very finely ground, 1 tsp
     i) blend on high for at least 2 minutes until perfectly smooth. 
 
+4) prepare the vegetables / spices 
+    a) dice the onion 
+    b) mince the garlic 
+    c) deseed & cut up the jalepeno 
+    d) measure out the spices: 
+        - whole cumin seeds, 4 tbsp 
+        - dried mexican oregano, 2 tbsp 
+        - ground cloves, 1/2 tsp 
+        - smoked paprika, 1 tbsp 
+        - ground coriander, 1 tsp 
+        - ground allspice, 1/2 tsp 
+        - ceylon cinnamon, 1/2 tsp 
 
-3) brown the meat 
-    a) in a dutch oven, cook the diced bacon over medium-low heat until crisp and all fat renders
+5) brown the meat 
+    a) in a cast iron pan, cook the diced bacon over medium-low heat until crisp and all fat renders
     b) remove the bacon and save it for later as a garnish 
-    c) you should have about 3-4 tbsp of fat in the pot. if not, add tallow or oil 
-    d) turn heat to high 
+    c) you should have about 3-4 tbsp of fat in the pan. if not, add tallow or oil 
+    d) heat the pan to between 400-450F (I put our burner on ~5-6)
     e) sear the cubed beef 
-        i) sear it in batches so the pan isn't crowded. no pieces should touch
-        ii) sear for 2-3 minutes per side
-        iii) remove it to a bowl when done 
-    f) cook the ground beef 
-        i) put the ground beef in the dutch oven (keep it on high)
-        ii) press it into a large patty covering the bottom of the pot 
-        iii) let it cook undisturbed for 4-5 minutes until a dark crust forms (like a smash burger) 
-        iv) break it up and brown the rest of the meat, probably 2-3 minutes
-        v) remove to a bowl 
+        i) take the cubed beef out of the refridgerator (it goes straight from the fridge to the pan to avoid condensation) 
+        ii) sear it in batches so the pan isn't crowded. no pieces should touch
+        iii) sear for 2-3 minutes per side
+        iv) remove it to a bowl when done 
+    f) cook the minced beef 
+        i) take the mince out of the fridge 
+        ii) on a sheet of parchment paper, press the meat into a disk slightly smaller than the diameter of the pan
+        iii) invert the paper to drop the patty into the pan
+        iv) let it cook undisturbed for 4-5 minutes until a dark crust forms 
+        v) break the meat up & cook it for about 2-3 minutes. 
+            we want to break it up so it doesn't cook at 1 large mass, since it needs to dissolve
+        vii) remove to a bowl 
 
-
-4) cook the vegetables 
+6) cook the vegetables 
     a) reduce heat to medium
-    b) add more tallow/oil to the pot if it's dry
+    b) add more tallow/oil to the pan if it's dry
     c) add the onions and fresh jalepeno
     d) saute for 8-10 minutes until soft and golden 
-    e) add the minced garlic & cook for 1 minute until fragrant 
+    e) add the garlic & cook for 1 minute until fragrant 
 
-
-5) add spices, tomatoes, & flavors 
+7) add spices, tomatoes, & flavors 
     a) add the following spices: 
         - whole cumin seeds, 4 tbsp 
         - dried mexican oregano, 2 tbsp 
@@ -200,24 +259,31 @@ PREPARATION
         - fish sauce, 1 tbsp  
         - tamari, 1 tbsp 
         - marmite, 1 tsp (yeast extract) 
-    f) scrape the bottom of the pot vigorously with a wooden spatula to dissolve the fond on the bottom 
+    f) scrape the bottom of the pan vigorously with a wooden spatula to dissolve the fond on the bottom 
 
 
-6) cook at simmer 
-    a) return all beef (and any accumulated juices from the bowl) to the pot 
-    b) pour in the chili paste from the blender 
-    c) pour in the remaining 2 cups of beef bone broth (you started with 4 cups, used 2 on the chilies)
-    d) bring the mixture to a boil
-    f) immediately reduce heat to the lowest setting. 
-        the goal is a temperature 180-190F 
+8) cook at simmer 
+    a) transfer the mixture to a stainless steel triple-ply pot (the soup is thick so we need good conduction)
+    b) return all beef (and any accumulated juices from the bowl) to the pot 
+    c) pour in the chili paste from the blender 
+    d) pour in the remaining 2 cups of beef bone broth (you started with 4 cups, used 2 on the chilies)
+        Ensure the liquid covers the meat cubes. This is critical for tenderization. 
+        If it doesn't, you'll have to adjust the amounts later. 
+        Meanwhile try adding a little water. 
+    e) bring the mixture to a boil
+    f) immediately reduce heat to low (~1.5 with the lid on was about right for our burners) 
+        the goal is a temperature 180-200F 
     g) cover the pot, leaving the lid slightly ajar to allow for evaporation and temperature regulation 
     h) simmer for 3 to 3.5 hours 
-        at 2 hours, taste for salt. the meat should be starting to soften 
+        at 2 hours, taste for salt. the meat should be starting to soften. 
+        You might need to periodically stir it to maintain temperature regulation. 
+        If so, when temps reach ~195-200F, stir the pot. 
+        keep the lid on otherwise (it regulates temperature).
 
 
-7) keto thickening
+9) keto thickening
     a) check that the meat is tender (it should yield easily to a fork) 
-    b) while the chili finishes, sprinkle the gelatin over 2 tbsp of cold water in a small cup 
+    b) while the chili finishes, sprinkle the 2.5 tsp gelatin over 2 tbsp of cold water in a small cup 
     c) let it sit for 5 minutes until it becomes a solid rubbery puck 
     d) stir the bloomed gelatin into the hot chili. it will dissolve instantly 
     e) in a small bowl, whisk the 1/2 tsp xantham gum into 1 tbsp olive oil until smooth 
@@ -227,9 +293,9 @@ PREPARATION
         the sauce will tighten up significantly as the hydrocolloids hydrate and water evaporates 
     
 
-8) finishing 
+10) finishing 
     a) turn off the heat 
-    b) stir in the apple cider vinegar
+    b) stir in the 1 tbsp apple cider vinegar
         the acid wakes up the heavy flavors and cuts through fat 
     c) season to taste 
         i) if it's too bitter, add a pinch of salt or a tiny amount (1/2 tsp) of liquid sweetener (monk fruit / stevia) 
@@ -254,3 +320,10 @@ TEST RESULTS / ADJUSTMENTS
 ===================================================
 RECIPES TO USE LEFTOVER INGREDIENTS
 ===================================================
+
+===================================================
+NUTRITIONAL INFO 
+===================================================
+
+net carbs: 61
+calories: ~7000 
