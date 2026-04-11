@@ -1,4 +1,7 @@
 
+Intro video: 
+    https://aws.amazon.com/architecture/
+
 Training & Assessment tools:
     https://aws.amazon.com/well-architected-tool/
 
@@ -88,129 +91,479 @@ Operational Excellence design principles:
         You should still have safety mechanisms (like error thresholds or approval steps) to maintain some human control. 
 
     - Make frequent, small, reversible changes. 
+        This limits the potential damage of a single failure, and makes it easier to undo the change.
+
+    - Continuously reevaluate and update operational playbooks as the system evolves. 
+        Regularly review these procedures with the team to identify gaps and get everyone on board. 
+
+    - Simulate failure scenarios to identify problems and assess how the team responds. 
+        Adjust your architecture and procedures based on the results. 
+
+    - Learn from every operational event and metric. 
+        Document the lessons learned and share them with the team. 
+
+    - Use managed services to minimize maintenance and infrastructure management. 
+        This reduces operational load on the team, allowing them to focus on their unique business requirements.
 
 
-    Make frequent, small, reversible changes: Update your systems in small, incremental steps rather than large, infrequent releases. This approach limits the potential damage of a single failure and ensures that any problematic change can be quickly and easily undone.
+Operational excellence is a human-centric discipline. It aligns technical efforts with the business objectives. 
 
-    Refine operations procedures frequently: Continuously evaluate and update your operational "playbooks" as your systems evolve. Regularly review these procedures with your teams to identify gaps, communicate updates to stakeholders, and ensure everyone is prepared to execute them effectively.
+Establishing shared goals ensures all team members understand their role in the broader organization. 
+    Leadership should determine these goals by weighing trade offs (i.e. speed to market vs costs). 
+    
+You should also maintain a central risk registry. 
+    This is a document used to identify, track, and manage all risks that could impact operations.
+    It enables leadership to plan for handling problems instead of just reacting to them. 
 
-    Anticipate failure: Regularly simulate failure scenarios to understand your system's risks and how your team responds under pressure. Testing these scenarios allows you to identify weaknesses in your architecture or procedures and make proactive adjustments before a real incident occurs.
+It's also important that every application, platform, or procedure has an identifiable owner. 
+    This prevents the "bystander effect", where problems go ignored because no one feels responsibility for them. 
 
-    Learn from all operational events and metrics: Treat every success and failure as a learning opportunity. Document the lessons learned from operational data and share those insights across the entire organization to drive continuous improvement.
+Similarly, it's important that there are formal agreements on how teams interact. These expectations should be documented. 
 
-    Use managed services: Leverage pre-built, provider-managed services to handle routine maintenance and infrastructure management. This reduces the operational burden on your team, allowing them to focus on work that provides unique value to the business.
+Leaders also need to promote a culture (through their attitude) that encourages best practices, risk escalation, 
+    and experimentation without fear of failure.
 
+It's also important that leaders are able to get feedback. 
+    Regular reviews w/ the Well-Architected Tool is one way of getting continuous feedback. 
+    Continuous feedback is important for adapting operations to changing business conditions. 
 
+Observability (metrics, logs, traces, etc.) is also critical (it's the first step to building resilient systems). 
+    By properly observing the system, problems can be identified early on and fixed before they get bigger.
 
+Deployments should be frequent, incremental, and reversible. 
+    Smaller updates reduce the blast radius of a potential failure, making it easier to debug and roll back.
+    CD is enabled by CI - automated testing and fast PR feedback 
 
-At its core, operational excellence is a human-centric discipline that aligns technical effort with clear business objectives. Success begins with shared goals, ensuring that every team member understands their specific role in the broader organization and how their work contributes to customer value. This clarity allows leadership to set meaningful priorities and navigate complex trade-offs, such as choosing between speed-to-market and cost optimization. By maintaining a central risk registry, organizations can make these decisions intentionally rather than by accident, treating risk as a manageable variable rather than an unknown threat.
+Infrastructure, policies, and procedures should be code (typically in the form of templates).
+    This ensures consistency in development, test, and production.
+    There should also be supporting documentation (playbooks and runbooks) to guide the team through incidents and routine tasks. 
+    Often teams will conduct "pre-mortems", where they prepare for potential failures beforehand. 
 
-A robust operating model relies on defined ownership and accountability. Every application, platform, and procedure must have an identified owner to prevent the "bystander effect," where critical tasks go unaddressed because responsibilities are vague. This structure is supported by formal agreements between teams, ensuring they understand how to collaborate and support one another’s success. However, a rigid structure is not enough; it must be paired with a culture of empowerment and learning. Leaders must act as sponsors for best practices, encouraging team members to escalate risks early and experiment with new technologies without the fear of failure.
+Good operations teams establish baselines for their metrics, and setup alerts at thresholds. 
 
-To sustain this excellence, organizations should leverage managed services and automation to reduce the "toil" of routine maintenance. This allows internal teams to focus on strategic innovation that differentiates the business. Finally, the process must be circular: by incorporating diverse perspectives to challenge assumptions and using tools like the AWS Well-Architected Tool for regular audits, an organization can create a continuous feedback loop. This ensures that as the business environment changes, the operational procedures evolve alongside it, turning every event—whether a success or a failure—into a lesson for future improvement.
+It's also important to gather metrics on the operations effort itself, such as deployment speeds and incident response times.
+    This helps to identify problems in the operations and set goals for improvement.
 
+Operational events that are understood should be handled using runbooks, which are written beforehand. 
+    More complex investigations are guided by playbooks.
 
+Every alert should have a dedicated owner and a defined escalation path. 
+    This ensures the right people get engaged based on urgency / business impact.
+    Response strategies should also be prioritized based on t heir impact on the customer. 
+    To handle scenarios where standard procedures don't apply, high level decision makers should be identified in advance. 
 
+Dashboards and notifications should be used to keep everyone in the org aligned (business leaders, developers, ops). 
 
+Also try to script / automate the respones to recurring events, where possible. This can ensure a more consistent, rapid response.  
 
-Preparation for operational excellence centers on building deep visibility into your systems and engineering them to be resilient to change. This starts with observability, which goes beyond traditional monitoring by using metrics, logs, and traces to understand the internal state of a workload. By aligning these technical outputs with business-focused Key Performance Indicators (KPIs), teams can transition from a reactive "fix-it" mindset to a proactive stance. This data-driven approach allows for the identification of patterns and anomalies, enabling you to predict and prevent issues before they impact the end user.
+It's critical to conduct post-incident analysis of every customer-impacting event.
+    This allows temas to identify root causes and correct them.
+    The root causes should be communicated broadly to ensure the entire organization learns from the event. 
 
-To maintain a healthy system, the flow of changes into production must be frequent, incremental, and reversible. Smaller updates significantly reduce the "blast radius" of any single failure, making it easier to troubleshoot and roll back when things go wrong. This strategy relies on fast feedback loops and automated testing to ensure quality at every stage. By planning for unsuccessful changes as a standard part of the deployment process, you ensure the team remains agile and capable of rapid recovery without the stress of a high-stakes, "all-or-nothing" release.
+Beyond the team level, it's important to identify organization level issues too. 
+    Regular retrospectives and centralized analytics (for shared trend analysis) are two ways of doing this. 
+    One goal here is to ensure that lessons learned by one team benefit the organization as a whole. 
 
-Finally, achieving operational excellence requires treating operations as code. By defining infrastructure, policies, and procedures through templates, you ensure consistency across development, test, and production environments. This engineering rigor should be supported by documented runbooks and playbooks that guide the team through routine tasks and incident resolution. Techniques such as "pre-mortems"—where teams anticipate failures before they happen—and consistent resource tagging for cost and governance ensure that the organization is operationally ready to support the workload as it scales.
-
-
-
-
-
-True operational excellence depends on the ability to filter out technical noise and focus on meaningful data. Effective observability requires establishing clear baselines and alert thresholds so that deviations can be accurately interpreted. This interpretation must be grounded in business and customer outcomes rather than just technical uptime. By measuring both the health of the workload and the efficiency of the operations supporting it—such as deployment speed and incident response times—an organization can validate whether it is truly meeting its goals and identify specific areas for improvement.
-
-Managing operational events effectively requires a structured approach to both planned and unplanned activities. Well-understood events should be handled via runbooks, while more complex investigations are guided by playbooks. Every alert must have a designated owner and a predefined escalation path to ensure that the right personnel are engaged based on the urgency and business impact of the event. Furthermore, response strategies should be prioritized by their effect on the customer, with decision-makers identified in advance to handle high-impact scenarios where standard procedures may not apply.
-
-Finally, communication is a critical component of operational health. Organizations should use tailored dashboards and notifications to keep different stakeholders—from developers to business leaders—informed about system status and recovery progress. Tools like Amazon CloudWatch, X-Ray, and CloudTrail provide the necessary telemetry to aggregate these views and conduct root cause analysis. By scripting responses to recurring events and automating them where possible, teams can reduce manual toil and ensure a consistent, rapid response to the evolving needs of the workload.
-
-
-
-The final stage of operational excellence is the commitment to continuous evolution. This is achieved by dedicating specific work cycles to small, incremental improvements rather than waiting for major overhauls. A critical driver of this evolution is the post-incident analysis of every customer-impacting event. Instead of simply fixing the immediate symptom, teams must identify root contributing factors and implement preventative actions to ensure the issue does not recur. These findings should be communicated to all relevant stakeholders to ensure the entire organization learns from the event.
-
-Effective evolution requires structured feedback loops and cross-team knowledge sharing. By conducting regular retrospectives and analyzing trends across different departments, an organization can identify systemic opportunities for improvement that might be missed at the individual team level. This collaborative approach ensures that a lesson learned in one area provides a benefit to the whole. To support this, technical teams should leverage data analytics—storing logs in a central repository like Amazon S3 and using querying tools like Athena—to visualize trends and turn raw operational data into actionable business intelligence.
-
-Ultimately, successful evolution depends on creating a safe environment for experimentation. By maintaining distinct environments—ranging from unrestricted sandboxes to highly controlled production stacks—teams can develop and test improvements with minimal risk. This tiered approach allows for "safe failure" during the development phase, which encourages innovation and increases the predictability of successful results when changes are finally deployed. By treating every operational event as a data point for growth, the organization ensures its operations remain efficient and aligned with shifting business needs.
-
+Lastly, it's important to maintain a safe environemnt for experimentation.
+    This is facilitated by maintaining distinct environments (development, staging, production) 
+    This encourages innovation by making failures non-threatening.
 
 =================================================
 SECURITY
 =================================================
 
-Moving into the Security pillar, the focus shifts from operational efficiency to protecting information, systems, and assets. These seven areas represent the practical framework for securing any cloud-based workload.
+The security pillar is about protecting data, systems, and assets. 
 
-The Seven Best Practice Areas of Security
-    Security Foundations: Establish the overarching governance and organizational practices that influence security posture before any architecture is built.
+The best practices for securing a workload cover 7 areas: 
 
-    Identity and Access Management: Implement strict controls to define who can access specific resources and ensure that users or services only have the permissions necessary for their tasks.
+    - security foundation
+        a) establish the governance, risk management, and compliance standards that define your orgs security policies. 
+            e.g., which AWS regions are permitted, which regulary standards (HIPAA, etc.) must be met, etc. 
 
-    Detection: Deploy automated tools and monitoring to identify potential security incidents, unauthorized activity, or configuration changes in real-time.
+        b) separate workloads into distinct AWS accounts (for production, development, security, etc.).
+            Centrally manage these accounts using AWS Organizations.
+            This ensures a breach of one AWS account doesn't effect the whole business.
 
-    Infrastructure Protection: Secure the network and compute resources—such as VPCs and instances—that host your workloads from external and internal threats.
+        c) apply Service Control Policies (SCPs) to your AWS accounts. 
+            This sets the "maximum allowed permissions" for every user and service in an account. 
+            It prevents even an Admin from performing high-risk actions (like deleting audit trails, disabling logging).
 
-    Data Protection: Use encryption, versioning, and access policies to maintain the confidentiality and integrity of your data both at rest and in transit.
+        The security foundation should be in place before any developer launches a resource.
 
-    Incident Response: Develop and regularly simulate a formal process for responding to security events to minimize damage and ensure rapid recovery.
+    - identity and access management 
+        strictly control who can access resources.
+        users and services should only have the permissions that are required to complete their tasks. 
 
-    Application Security: Integrate security testing and scanning directly into your software development lifecycle to protect your code and its dependencies.
+    - detection
+        use automated tools and monitoring to immediately identify unauthorized activity or configuration changes. 
 
+    - infrastructure protection 
+        secure the network (VPCs) and compute resources (instances) that host your workloads. 
+        your should secure them from both external and internal threats.
 
-A critical component of this pillar is the Shared Responsibility Model, which differentiates the security "of" the cloud from security "in" the cloud.
+    - data protection 
+        use encryption, versioning, and access policies. 
+        your goal is to maintain both confidentiality and data integrity.
 
-    AWS responsibility: Physical security of the data centers, hardware, and the software layers providing the cloud services.
+    - incident response  
+        you should develop a process for responding to security events, and regularly simulate the events. 
+        the goal is to minimize damage and ensure rapid recovery.
 
-    Customer responsibility: Everything built or stored on that infrastructure, including guest operating systems, network configurations, and data encryption.
+    - application security 
+        to acheive this, security scanning and testing should be integrated into the CI/CD process
 
+It's important to understand the Shared Responsibility Model. 
+    It distinguishes what Amazon will secure (the cloud itself) vs. what you must secure (what's in the cloud). 
+
+    What Amazon secures depends on what type of services it is (IaaS, PaaS, SaaS): 
+    - IaaS (e.g. EC2)
+        AWS secures the physical data centers, hardware, cooling, and virtualization layer 
+        Customer secures the guest OS (updates and patching), network configs (VPCs and Security Groups), data encryption, user identities
+    
+    - PaaS (e.g. Lambda, RDS)
+        AWS secures the physical infrastructure plus the underlying OS, database engine patching, runtime environment.
+        Customer secures the application code, data classification, and access to the service. 
+
+    - SaaS (e.g. Chiem, QuickSight) 
+        AWS secures the entire tech stack, including infrastructure, OS, data, and the application code 
+        Customer secures only the user auth (who can log in) and access to the data passed to the service
 
 
 Security design principles: 
 
-    Implement a strong identity foundation: Use the principle of least privilege to ensure users and services have only the specific permissions they need to perform their tasks. Centralize your identity management and move away from using long-term, static credentials that can be easily compromised.
+    - Implement a strong identification system. 
+        Ensure users and services only have permissions they need for their task (least privilege principle).
+        Centralize identity management. 
+        Migrate off of long term, static credentials that can be easily compromised. 
 
-    Maintain traceability: Monitor and log all actions and changes within your environment in real-time. Integrate these logs with automated systems that can immediately investigate suspicious activity and trigger alerts.
+    - Monitor and log actions / changes in the environment.
+        Integrate the logs with automated systems that immediately investgiate suspicious activity / trigger alerts. 
 
-    Apply security at all layers: Use a "defense in depth" approach by placing security controls at every level of the stack. This includes the network edge, the virtual private cloud (VPC), load balancers, individual compute instances, and the application code itself.
+    - Apply security at all layers.
+        This includes the network edge, VPC, load balancers, compute instances, and application code. 
 
-    Automate security best practices: Define and manage your security controls as code within version-controlled templates. This allows you to scale securely and consistently while reducing the risk of manual configuration errors.
+    - Define and manage security controls as code. Put it in templates under version control.
+        This allows you to scale security, and reduces the risk of configuration errors. 
 
-    Protect data in transit and at rest: Classify your data based on sensitivity and apply appropriate protections like encryption or tokenization. Ensure data is guarded both while it is stored on disk and while it is moving across the network.
+    - Protect data in transit and at rest. 
+        Classify data based on sensitivity, then apply appropriate protections (encryption, tokenization).
+        Ensure data is guarded while in transit and at rest (doesn't Amazon do this for us?). 
 
-    Keep people away from data: Minimize or eliminate the need for humans to directly access or manually process sensitive information. Using automated tools for data handling reduces the risk of accidental modification, mishandling, or human error.
+    - Keep people away from data. 
+        Minimize the need for humans to directly access or manually process the data. 
+        Use automated tools for data handling (prevents accidental corruption). 
 
-    Prepare for security events: Establish formal incident management policies and processes that align with your organizational needs. Regularly run security simulations to ensure your team can detect, investigate, and recover from incidents with speed and precision.
-
-
-
-Securely operating a workload requires taking the foundational principles of Operational Excellence and applying them through a defensive lens. This starts with evolving your threat model based on industry intelligence and automating security tasks to ensure they scale consistently and without manual error. A key architectural strategy here is account segregation, which involves isolating workloads into separate AWS accounts based on their function or data sensitivity to strictly limit the "blast radius" of any potential compromise.
-
-At the core of this pillar is Identity and Access Management (IAM), the gatekeeper that ensures only authenticated and authorized entities can interact with your resources. You must manage two distinct types of identities: human identities (administrators and developers using consoles or command-line tools) and machine identities (service applications or EC2 instances making programmatic requests). Centralizing these identities and enforcing Multi-Factor Authentication (MFA) and complex password policies provides a necessary layer of protection against unauthorized access.
-
-The actual execution of these protections relies on the principle of least privilege, where you grant only the exact permissions required for a specific task. To maintain this safely, the use of temporary credentials—issued through the AWS Security Token Service—is the gold standard. For workforce identities, the framework strongly recommends using IAM Identity Center for programmatic access to the CLI or SDKs. This approach replaces dangerous, long-term static access keys with short-lived tokens, significantly reducing the risk of a permanent credential leak.
-
-
-
-Detective controls are the primary mechanism for identifying security threats and verifying that your environment adheres to legal and compliance standards. By establishing clear operational baselines through asset inventories and internal audits, you can quickly recognize when activity becomes "anomalous." These controls provide the necessary reactive visibility to understand the scope and impact of a security event after it has been triggered.
-
-Within AWS, these capabilities are powered by a suite of logging and monitoring services. Amazon GuardDuty acts as a managed threat detection layer, continuously monitoring for malicious behavior, while AWS CloudTrail and AWS Config provide a detailed audit trail of API activity and resource configuration history. When combined with Amazon CloudWatch for real-time metrics and alarming, these tools create an automated analysis pipeline that alerts your team to risks as they emerge.
-
-Finally, successful detection relies on structured log management. Beyond simply capturing data, you must analyze and respond to it to satisfy forensic and regulatory requirements. AWS enables you to automate the entire log lifecycle—from initial collection to long-term archiving or eventual deletion—ensuring that data is handled reliably and cost-effectively throughout its useful lifespan.
+    - Prepare for security events.
+        Establish incident response processes and formal policies. 
+        Regularly run security simulations to test whether you can detect, investigate, and recover from incidents. 
 
 
-Infrastructure protection is rooted in the "defense in depth" methodology, creating multiple layers of security to safeguard both network and compute resources from internal and external threats. At the network level, this is primarily achieved through the Amazon Virtual Private Cloud (VPC), which allows for a highly controlled topology using private subnets, routing tables, and both stateful and stateless packet inspection. By enforcing strict boundary protection and monitoring all points of ingress and egress, organizations can maintain a secured environment that scales alongside their operational needs.
+A threat model is a representation of all the ways someone could attack your system.
+    Construct a threat model based on industry best practices, and keep it updated. 
 
-For compute resources—ranging from EC2 instances and containers to serverless Lambda functions—protection requires a similar multi-layered approach. This involves constant monitoring and comprehensive logging to identify anomalies within the compute environment. A key strategy for maintaining this security at scale is hardening, where secure configurations are persisted into immutable Amazon Machine Images (AMIs). This ensures that every new instance, whether launched manually or via Auto Scaling, inherently carries the same verified security posture, effectively eliminating configuration drift and reducing the attack surface.
+Automate security tasks to ensure they scale and are performed reliably. 
+
+It's important to separate workloads (based on function or data sensitivity) across separate AWS accounts. 
+    It limits the blast radius of an attack. 
+
+Good Identity and Access Management (IAM) ensures only authenticated users / machines can interact with resources. 
+    Centralize the identities of users / machines and enforce proper auth (multi-factor / password policies).
+
+The principle of least privilege is important (only granting permissions necessary for a task). 
+    To maintain this, the use of temporary credentials is best practice (issued through AWS Security Token Service). 
+    For developers, AWS's IAM Identity Center can provide controlled access to CLIs or SDKs.
+        This will provide short-lived tokens instead of long-term static access keys.
 
 
-Data protection is built on the foundation of data classification, which categorizes information based on its sensitivity to determine appropriate security and retention controls. This process ensures that critical assets are shielded by encryption, rendering data unintelligible to unauthorized users and supporting both financial security and regulatory compliance. Crucially, AWS operates on a model where the customer maintains full ownership and residency of their data; content stays within its designated Region unless explicitly moved by the user.
+Preventative controls (e.g. IAM, Firewalls) block bad code, unauthorized access, malicious actions, etc..
+Detective controls are the logs and alerts which alert the security team to events. 
+    To have good detective controls you first need good operational baselines, 
+    so that you can know when behavior becomes anomalous. 
 
-For data at rest, protection involves a multi-layered approach using encryption and automated key management. AWS provides integrated tools for regular key rotation and server-side encryption (SSE) for storage services like Amazon S3. To ensure high availability and resiliency, these storage systems are designed for extreme durability (99.999999999%), often paired with versioning to protect against accidental overwrites or deletions. Detailed logging of file access and modifications provides the necessary audit trail to verify that these protections remain effective.
 
-Protecting data in transit requires securing the communication pathways between services and users. This is typically managed through HTTPS and SSL/TLS protocols. AWS simplifies this by allowing services like Elastic Load Balancing (ELB) to handle the heavy lifting of encryption and decryption (SSL termination). By implementing these controls across all transit points, you minimize the risk of data loss or unauthorized interception while the information is moving through the network.
+Amazon CloudTrail records events. Every time something calls an AWS API it gets recorded by CloudTrail.
+Amazon Config contains the current state of all the distributed resources.
+    It also tracks how those configs have changed over the last 6 months. 
+Threat Intelligence is a collection of known malicious threat signatures. 
+    AWS & their partners (CrowdStrike, ProofPoint) have identified these signatures across the internet:
+        - malicious IPs 
+        - Tor Exit Nodes (anonymous proxies often used to hide attacks)
+        - Crypto mining pools (known addresses where hijacked servers send mined crypto)
+        - C2 Domains (Command and Control - domains used by malware to receive malicious instructions from the hacker)
+
+Amazon GuardDuty is the threat detection layer.
+    It uses ML to cross reference the logs from CloudTrail / Config with Threat Intelligence to find patterns. 
+    Examples of patterns include: 
+        - a developers credentials being used from a known malicious IP in a country you don't operate in 
+        - an EC2 instance that starts communicating with a Bitcoin mining pool or a C2 server
+        - unusual patterns of data being pulled from a sensitive bucket
+
+    Examining the CloudTrail logs yourself would be impossible since they're too large and full of noise. 
+    GuardDuty monitors continuously.
+
+Amazon EventBridge is a central orchestrator for events. 
+    It can be used to bridge the gap between detection (GuardDuty) and programmatic response.
+    GuardDuty's findings can be ingested by EventBridge. 
+    When a finding matches a predefined rule, EventBridge can broadcast an event. 
+        This can trigger alerts (Amazon SNS) or automated remediation logic (AWS Lambda) downstream. 
+
+    You can also pipe these events to CloudWatch to trigger alerts in response to aggregated statistics.
+    Amazon CloudWatch provides statistical monitoring. 
+        It aggregates statistics into metrics, hosts centralized logs for audit purposes, 
+        and it can trigger alarms if metrics exceed thresholds.
+
+Forensics is the process of reconstructing a security incident after it has occurred.
+    You need this for legal reasons and for fixing the vulnerabilities.
+Governments and industries also establish regulations you must adhere to (HIPAA, PCI, SOC2, etc.)
+    Most regulations require you keep logs for a period of time. 
+        If during an audit you do not have the logs, you can face fines / lose certification.
+
+Structured Log Management ensures your data is kept consistent and searchable to meet forensic and regularoy needs.
+
+    Short term data is often stored in CloudWatch, where it's live, indexed, and visible in dashboards / monitoring. 
+    For long term storage it's often moved to S3 (specifically Glacier tiers). 
+
+    AWS can automate the entire logging lifecycle - collection, storage, archiving, and deletion.
+        
+        Cloudwatch Retention Policies determine how long data remains in Cloudwatch before it's purged.
+            To move the logs into S3 before they're purged you'd use Kinesis Data Firehose or a CloudWatch Export Task.
+                Kinesis Data Firehose would be used for real time streaming (e.g. near-instant cold storage analysis).
+                Cloudwatch Export Task is batched, and data may take up to ~12 hours to become available. 
+        
+        S3 Lifecycle Policies can automatically transition aging data through cost-optimized storage tiers
+            (e.g., S3 Standard → Glacier Deep Archive) based on the age of the record.
+            S3 Object Lock's WORM protections (write once, read many) also satisfy legal requirements.
+    
+        Automated logging ensures the data is handled reliably and cost effectively.
+
+
+To guard infrastructure you typically setup multiple layers of security throughout the network and compute resources,
+    and guard against both internal and external threats. 
+    This is known as a "defense of depth" strategy.
+
+    At the network level, this is achieved using Amazon Virtual Private Cloud (VPC).
+        VPC allows you to setup subnets, routing tables, and packet inspection for a highly controlled network topology.
+        Security is achieved by enforcing strict boundary protection and monitoring all points of ingress and egress. 
+
+    For compute resources, protection involves: 
+    - comprehensive logging and continuous monitoring to identify anomalies
+    - hardening, a practice where secure configurations are persisted in immutable Amazon Machine Images (AMIs).
+        hardening ensures that any new instance, even automated ones, has the same secure configurations.  
+
+
+Data must be properly classified by sensitivity. 
+    This allows you to determine the right security and retention policy for it. 
+
+Critical data must be encrypted to support both financial security and regularity compliance. 
+In AWS, the user maintains full ownership of their data, and decides which region it's stored in. 
+    Data stays within its designated region unless explicitly moved by the user. 
+
+To protect data at rest AWS uses KMS and SSE. 
+
+AWS Key Management Service (KMS) provides automated key management as a centralized service.
+    This handles the entire key lifecycle: generation, storage, distribution, rotation, and retirement. 
+    Automating this reduces human error and ensures security standards (like regular rotation) are met consistently.
+
+AWS provides Server-Side Encryption (SSE), which encrypts data before writing it to disk and decrypts during retrieval. 
+    In Amazon S3, SSE is implemented in 3 different models. 
+    The models differ in who manages the encryption keys and the level of control / auditability they provide:
+
+        SSE-S3      the most integrated and automated option. AWS manages the data keys entirely.
+                        this is the default model used by all new S3 buckets. 
+                        the only downside is it offers limited visibility in the lifecycle of the keys. 
+
+        SSE-KMS     builds on the automation of SSE-S3 but integrates AWS KMS, providing more control / auditability. 
+                        The KMS key policy also acts as a second layer of protection. 
+                        You can use either an AWS-managed KMS key or a customer-managed KMS key. 
+                        AWS CloudTrail also logs an event every time a key is used to encrypt or decrypt something.
+                            Often times an audit trail like this is required for regulatory compliance (HIPAA, SOC2)
+                        At scale, SSE-KMS also allows you to use S3 Bucket Keys. These are temporary, bucket-level keys 
+                            which you can use to decrypt data without pinging KMS too frequently. 
+                            Otherwise, you'd need to query KMS every time you upload or download an object,
+                                which could mean high costs / hitting KMS throttling limits during high traffic. 
+        
+        SSE-C       This is for customer provided keys. It's useful in special cases where the customer must 
+                        physically possess and manage the keys themselves. The customer provides the encryption key 
+                        with every HTTP request when uploading or downloading an object. S3 uses the provided key
+                        to perform the encryption or decryption, then immediately discards it. 
+                        This places the responsibility managing the keys lifecycle on the customer.  
+                        If a key is lost, the data becomes unrecoverable, since AWS has no record of it. 
+                        As of April 2026, AWS has disabled SSE-C by default for new buckets, prioritizing the more
+                            auditable SSE-KMS. SSE-C isn't being phased out but must be explicitly enabled. 
+
+AWS S3 provides extreme durability (99.999999999% - 11 9's), which guarantees the encrypted data persists. 
+You can also enable versioning on an S3 bucket, which will guard against accidental overwrites of the data. 
+    By default, the versioning will track state indefinitely (though that can be reconfigured, since it's expensive).
+And you can enable S3 data events, which will record in CloudTrail every API call made to the S3 bucket. 
+    It'll identify the user / role responsible for the action, and what action they performed. 
+    The SSE-KMS logging tells you which keys were used, but the S3 logging tells you which files were accessed.
+        
+
+To protect data in transit AWS uses TLS. 
+
+SSL termitation (aka SSL offloading) is when an SSL connection is terminated at proxy (usually a load balancer),
+    decrypted, then forwarded to internal servers. 
+
+    It reduces the CPU burden placed on the internal servers, 
+        because the proxy can be optimized for the decryption.  
+    
+    It also greatly simplifies certificate management - instead of installing and renewing certificates 
+        on every internal server, only the proxy's must be renewed. 
+        In AWS certificates are managed via AWS Certificate Manager (ACM), which automates their renewal / deployment.
+
+In SSL bridging the load balancer terminates the initial connection to inspect the traffic for security threats 
+    then immediately re-encrypts the data.
+In End-to-End encryption the data is kept encrypted.
+
+SSL termination does make internal traffic unencrypted, but that's often considered an acceptable tradeoff 
+    because it occurs within a VPC (Virtual Private Cloud). 
+However, organizations with high security requirements or strict regularly compliance requirements
+    may require SSL Bridging or End-to-End Encryption instead. 
+
+
+Behind the scenes, AWS uses Software Defined Networking (SDN) to manage network configurations.
+    This is a system which separates the logical network configuration from physical network devices. 
+    It consists of three layers: 
+
+        SDN Control Plane
+            This is the API users / applications interact with to make network changes. It's a regional service.
+            It validates the changes against account limits and IAM permissions, then translates them into instructions.
+            The instructions are sent to distributed network components, which store them in their local caches.
+
+        SDN Mapping Service
+            Since the VPC is an overlay network (a virtual, logical network built on top of the physical network),
+            the private IP addresses within the VPC don't correspond with IPs of physical servers. 
+            The Mapping Service is what maps the VPCs virtual IPs to physical servers.
+                It contains a massive, real-time record of every virtual entity (MAC and IP addresses) 
+                and the physical servers they're associated with. 
+                To send a message over the VPC network AWS queries this service to determine the physical route to take.
+
+        SDN Data Plane (Nitro and Hyperplane)
+
+            Every AWS server has an AWS Nitro Card installed on it. This is a specialized network card that 
+            processes AWS's network packets very efficiently. It wraps / unwraps packets, enforces 
+            Security Groups rules (at the hardware level), and handles hardware-level encryption. 
+
+            In traditional networking, firewalls / load balancers / NAT gateways maintain state for active connections.
+                The state consists of the source / destination IP and ports. 
+                It's necessary for routing return traffic, maintaining security context (for analysis of permitted connections), and for handshake-based internet protocols (like TCP).
+
+            In a cloud context, the memory limits of these physical network devices don't scale enough.
+                After a traditional devices memory limit is hit (which often happens during network spikes), 
+                    it'll need to connect with secondary storage to continue operating.
+                    That's slow and introduces distributed state management complexity.
+
+            AWS Hyperplane is a high performance, distributed network state management system.
+                When a packet enters the VPC, Hyperplane uses hashing to assign the packet to a subset of its nodes. 
+                The state information is replicated across multiple nodes, ensuring connections are maintained reliably. 
+
+                Hyperplane also handles volatile traffic spikes by scaling up nodes while shifting data / resharding.
+
+    AWS's VPC Router is not a physical or virtual machine, it's an SDN function implemented using Nitro Cards 
+        and the Mapping Service. It's thousands of Nitro Cards working together to enforce network configs / 
+        routing tables / security policies. 
+
+        The Nitro Card consults its local hardware cache (regularly updated via the Control Plane) to determine
+            the packets destination. 
+            
+            If the packet is destined for another instance within the same VPC, the Nitro Card queries the Mapping  
+                Service to resolve the address. It wraps the packet and sends it off. Upon arrival, the destination's
+                Nitro Card unwraps it.
+        
+            If the packet is destined to a regional edge device (e.g. Internet Gateway or Virtual Private Gateway), 
+                the Nitro Card ensures the packet is translated properly before forwarding it. 
+
+        The VPC router's distributed design scales infinitely since every new server contains a Nitro Card.
+            In contrast, traditional routers have a limited backplane or memory.
+
+        The VPC router is also where VPC encryption is applied and enforced. 
+            When the packet passes through the Nitro Card, AWS enforces hardware-level encryption independent of
+            the OS. AWS's VPC Encryption Controls provide "transparent" encryption for all traffic.
+            Note that this link-layer encryption guards data on the wire, but is gone by the time it reaches the OS. 
+
+
+
+        
+        The primary function of the routing tables is to define the "Public" or "Private" status of a subnet. Although an Internet Gateway is attached to the VPC as a whole, it remains dormant for any specific subnet until that subnet’s route table is updated with a "Default Route" ($0.0.0.0/0$) pointing to the gateway. This architectural choice places the power of network segmentation directly in the hands of the architect. By creating a custom route table and associating it with a specific subnet, you effectively create a logical boundary. You can ensure that your database tier, for example, has no route to the internet at all, while your web tier uses its route table to communicate with the outside world.In modern 2026 architectures, this routing layer is also where the VPC Encryption Controls and Gateway Load Balancers are integrated. By manipulating the routes, you can force traffic to move through a specific sequence of "inspection" subnets before it ever reaches its final destination. This "Next Hop" logic allows you to treat the route table as a programmable switchboard, directing traffic through firewalls, intrusion detection systems, or private service endpoints, all while the underlying hardware ensures that every byte remains encrypted and isolated from other tenants in the AWS ecosystem.
+
+
+In AWS, the Internet Gateway connects the public internet to the VPC. 
+
+
+        Technically, this statement is partially accurate but incomplete, and that missing nuance is exactly what leads to security vulnerabilities in network design.At the infrastructure level, an Internet Gateway (IGW) is a horizontally scaled, redundant, and highly available software-defined component. While we often describe it as "connecting" the internet to the VPC, it is more accurate to describe it as a translator and a doorway. It provides a target in your VPC route tables for internet-bound traffic and performs Static Network Address Translation (Static NAT) for instances that have been assigned public IP addresses.The "accuracy" problem in your statement lies in the word "connects," which implies an automatic, open pipe. In reality, attaching an IGW to a VPC does absolutely nothing to your traffic until two other conditions are met at the subnet and instance levels.First, the infrastructure-level software (the VPC Router) must be programmed via a Route Table to recognize the IGW. Even if an IGW is attached to the VPC, a subnet remains "private" and isolated from the internet until a route is explicitly added that directs traffic destined for the outside world ($0.0.0.0/0$) to that specific Gateway. Without this instruction, the "connection" between the internet and that specific segment of your network does not exist.Second, the IGW only facilitates communication for instances that possess a Public IP address. Because VPCs use private address ranges (such as $10.0.0.0/16$), the public internet has no way of routing packets back to those internal addresses. The Internet Gateway manages this by maintaining a 1-to-1 mapping between an instance's private IP and its public IP. When traffic leaves the VPC, the IGW swaps the private source address for the public one; when traffic returns, it performs the reverse.Therefore, a more precise architectural definition would be: The Internet Gateway is a VPC-level edge component that enables communication between the VPC and the internet by serving as a routing target and performing address translation, but it only facilitates "connectivity" for subnets and instances that are explicitly configured to use it.
+
+
+
+VPC subnets are isolated parts of a VPCs IP address range (configured by dividing up CIDR blocks). 
+    Subnets ared used to hierarchically structure a private network (e.g., setting a tiered architecture).
+        This is beneficial for security - you establish entry points to the subnet and control access in and out.
+
+    
+
+
+    In AWS, a subnet's first 4 IPs and last IP are reserved (DNS, VPC router, network address, etc.). 
+    
+    A VPC spans an entire AWS Region, but a VPC subnet is isolated to one Availability Zone. 
+
+
+
+AWS's Elastic Load Balancer (ELB) is a distributed service consisting of a service plane and data plane.
+    The data plane consists of worker nodes, which are load balancers of various types.
+    Each VPC subnet (which is tied to a single availability zone) will have at least 1 load balancer node. 
+    
+
+
+        The Service Plane (The Orchestrator)
+        The Service Plane (often called the Control Plane) is the administrative "brain" of the system. It handles the logic, configuration, and monitoring of the load balancer without ever touching the actual data packets. Its primary responsibilities include:
+
+        Configuration Management: Processing API calls to create or update listeners, target groups, and security settings.
+
+        Orchestration: Monitoring the health of backend targets and communicating those status changes to the data plane.
+
+        Elasticity: Watching traffic metrics and automatically provisioning or removing worker nodes in the data plane to handle fluctuations in demand.
+
+        The Data Plane (The Muscle)
+        The Data Plane consists of the actual Worker Nodes—managed resources deployed into your specific VPC subnets. This is where the "heavy lifting" occurs:
+
+        Traffic Processing: These nodes intercept incoming requests, perform SSL/TLS decryption (for ALB/NLB), and execute routing logic to forward traffic to the healthiest backend target.
+
+        Physical Presence: Unlike the regional service plane, the data plane is zonal. If you enable three Availability Zones, AWS places worker nodes in all three to ensure high availability.
+
+        Implementation Variance: The nature of these nodes changes by type: ALB nodes are software-based reverse proxies, while NLB nodes are hardware-accelerated interfaces powered by the AWS Hyperplane for massive throughput.
+
+
+
+
+        To understand ELB (Elastic Load Balancing) fundamentally, you have to distinguish between the Service Plane (the brand and management tools) and the Data Plane (the actual "workers" that move your traffic).1. ELB as a "Management Plane"Specifically, ELB is an AWS Managed Service Framework. It is not a single piece of hardware; it is a set of APIs and control logic that manages specialized resources on your behalf.When you "create an ELB," you are actually instructing AWS to provision a fleet of managed resources (Load Balancer Nodes) into your VPC. ELB acts as the "brain" that:Auto-Scales: It monitors the traffic hitting your load balancer and automatically adds or removes the underlying "balancer nodes" to handle the load.Health Monitoring: It constantly "pings" your backend targets (EC2, Lambda, etc.) and updates its internal routing table to avoid dead servers.DNS Integration: It provides a stable DNS name (like my-load-balancer-1234.us-east-1.elb.amazonaws.com) and manages the underlying IP addresses so you don't have to.2. The Relationship Between ELB and the Specific BalancersYou can think of ELB as the "Parent Class" in a software project, while the ALB, NLB, and GLB are the "Child Classes" that inherit basic properties but perform very different specific jobs.ComponentWhat it is exactlyELB ServiceThe AWS "wrapper" that handles billing, API calls, CloudWatch metrics, and high-level scaling logic.ALB (The Specialist)A Layer 7 Application Proxy. It's a fleet of managed software instances that can "read" your HTTP traffic.NLB (The Speedster)A Layer 4 Flow-Hash Engine. It uses specialized AWS hardware (Hyperplane) to route packets without looking inside them.GWLB (The Bridge)A Layer 3 Gateway. It creates a transparent tunnel to send all your traffic through a security appliance (like a firewall) and back.3. The "Invisible" InfrastructureOne of the most common misconceptions is that an ELB is a single virtual machine. In reality, an ELB consists of:Nodes in every Subnet: If you select three Availability Zones, AWS provisions at least one "balancer node" in each zone.The Controller: A behind-the-scenes system that watches your Auto Scaling groups and updates the nodes whenever a new server is born or dies.4. How it fits with your 2026 VPC ControlsBy 2026, the "ELB" service has become the primary enforcement point for the VPC Encryption Controls. Because ELB is a managed service, AWS can upgrade the underlying hardware of all your balancers (ALB and NLB alike) to the latest Nitro chips. This allows them to enforce encryption on the "wire" within your VPC without you having to update your application code.In summary, ELB is the Orchestrator. It’s the platform that takes your requirements ("I need to route by URL" or "I need a static IP") and deploys the specific network machinery (ALB or NLB) to make it happen.
+
+
+
+
+
+        The Elastic Load Balancing (ELB) service is the foundational abstraction within AWS that manages the automated distribution of incoming application traffic across multiple targets, such as Amazon EC2 instances, containers, and IP addresses. By acting as a single point of contact for clients, the ELB enhances the fault tolerance of applications, ensuring that even if an individual component fails, the system remains available. While the ELB family shares common features like health checks and integration with Auto Scaling, the specific behavior of a load balancer depends on its type: Application, Network, or Gateway.
+
+        The Application Load Balancer (ALB) is a sophisticated, Layer 7 (Application Layer) proxy designed specifically for modern web traffic and microservices. Because it operates at the highest level of the OSI model, it is "content-aware," meaning it terminates the client connection to inspect HTTP headers, cookies, and URL paths. This allows the ALB to perform advanced request-level routing, such as directing /api traffic to one set of servers and /images to another. In the context of the 2026 VPC Encryption Controls, the ALB typically utilizes SSL Bridging, where it decrypts traffic to make routing decisions and then re-encrypts it before sending it to the backend to maintain a secure environment.
+
+        In contrast, the Network Load Balancer (NLB) is built for extreme performance and operates at Layer 4 (Transport Layer). It is designed to handle millions of requests per second with ultra-low latency by focusing solely on IP protocols and port numbers. Fundamentally, the NLB acts as a high-speed traffic cop that provides a static IP address per Availability Zone, making it the ideal choice for applications requiring fixed endpoints or long-lived connections like WebSockets. Because it does not inherently inspect the application payload, it supports End-to-End Encryption (SSL Passthrough), allowing encrypted data to flow untouched from the client to the server, satisfying the strictest zero-trust compliance requirements.
+
+        Finally, the Gateway Load Balancer (GWLB) serves a specialized niche by combining the functions of a transparent network gateway and a load balancer. Operating at Layer 3 (Network Layer), the GWLB is primarily used to scale and manage a fleet of third-party "inline" virtual appliances, such as firewalls, intrusion detection systems, or deep packet inspection tools. It uses the GENEVE protocol to wrap original packets and route them to security appliances for inspection before they reach their final destination. This allows architects to insert sophisticated security checkpoints into their network architecture seamlessly, ensuring that all traffic—whether encrypted or unencrypted—is thoroughly vetted by the designated security stack without disrupting the flow of the application.
+
+
+
+
+
+
+
+
+You can use AWS's Elastic Load Balancer (ELB) for SSL termination, 
+    SSL bridging (often in combination with an Application Load Balancer), or End-to-End encryption.
+
+
+        Additionally, the recent introduction of VPC Encryption Controls in 2026 allows architects to monitor and enforce encryption for all traffic flows within and across Virtual Private Clouds, providing a programmable way to ensure that no unencrypted traffic exists within the network environment.In conclusion, the AWS encryption model functions by integrating automated key management with high-durability storage and secure transit protocols to form a cohesive defense-in-depth architecture. By utilizing envelope encryption—where a master key in KMS protects unique data keys—AWS provides a scalable way to secure vast amounts of information without compromising performance. When combined with rigorous logging and the latest network-level encryption enforcement tools, these controls provide the necessary assurance that data remains confidential and integral throughout its entire lifecycle in the cloud.
+
+        The integration of secure communication protocols and automated networking controls is a cornerstone of the AWS Well-Architected Framework’s Security pillar. At the network perimeter, Transport Layer Security (TLS) serves as the standard for ensuring that data is encrypted as it moves between users and the AWS cloud. By utilizing Elastic Load Balancing (ELB), architects can implement SSL Termination (also known as SSL Offloading), which centralizes the management of digital certificates through AWS Certificate Manager (ACM). In this configuration, the load balancer handles the computationally intensive task of the TLS handshake and decryption, allowing backend application servers to focus exclusively on processing business logic. For environments with stricter compliance requirements, such as those governed by PCI DSS or HIPAA, architects often opt for SSL Bridging, where the load balancer decrypts traffic for inspection and immediately re-encrypts it before sending it to the backend, maintaining encryption-in-transit throughout the entire internal network path.The VPC Encryption Controls introduced in 2026 represent a significant evolution in network security by moving encryption enforcement from the application layer down to the infrastructure layer. Operating in two distinct modes—Monitor and Enforce—this feature allows security teams to eliminate "shadow" unencrypted traffic within their Virtual Private Clouds. In Monitor mode, AWS provides detailed logs identifying any resources communicating in plaintext, which is essential for auditing legacy systems. Enforce mode, however, takes a proactive stance by dropping any traffic that is not encrypted and preventing the deployment of non-Nitro-based instances that lack the hardware-accelerated AES-256 encryption capabilities required for transparent network protection. This ensures that every packet moving between modern EC2 instances, Load Balancers, and VPC Endpoints is automatically protected by hardware-level encryption without requiring manual configuration of TLS within the application code itself.This network-level security is seamlessly integrated with the storage-level protection provided by Envelope Encryption. This cryptographic design pattern is used by AWS Key Management Service (KMS) to solve the performance and latency issues inherent in managing large-scale data encryption. In this model, a KMS Key (the master key) never leaves the secure boundaries of the AWS hardware security modules. Instead, it is used to encrypt a unique Data Key (DEK), which is then sent to the storage service, such as Amazon S3 or EBS. The storage service uses this plaintext data key to encrypt the actual data locally and then stores the encrypted version of the key alongside the data. This "envelope" approach allows for high-speed encryption of massive files because the heavy cryptographic work happens at the storage edge, while the master key remains centrally managed and auditable.When these transit and rest protections are combined with AWS CloudTrail, they form a cohesive Defense-in-Depth architecture that provides end-to-end visibility and accountability. Every network flow monitored by VPC Encryption Controls and every cryptographic request handled by KMS generates a permanent, immutable log entry. This creates a "Golden Record" that security teams can use to prove to auditors that data was not only encrypted while at rest on a durable 11-nines storage system but was also protected by modern TLS ciphers while moving through the network. This multi-layered strategy ensures that even if one security control is bypassed, the confidentiality and integrity of the data are maintained by secondary and tertiary layers of protection.
+
+
 
 Incident response is the safety net that ensures an organization can maintain operations even when preventive measures fail. The speed of recovery depends heavily on architectural readiness, which involves designing systems that can be easily isolated or contained without causing a total service collapse. To achieve this, security teams must have pre-defined access and a suite of "clean room" environments—often provisioned via AWS CloudFormation—where forensic investigations can take place in a safe, isolated space without contaminating production data.
 
@@ -324,6 +677,9 @@ Networking and Content Delivery should be optimized to minimize latency and jitt
 
 Finally, a high-performance culture is sustained through automation and data-driven reviews. By defining Infrastructure as Code (IaC) and using CI/CD pipelines, you can iterate on performance improvements in a repeatable, low-cost manner. This process must be guided by well-defined metrics—both technical (like time-to-first-byte) and business-centric (like cost per request). Automated performance testing and load generation should be integrated into your deployment cycle to catch regressions early. Visualizing these metrics across different builds allows teams to identify "hot spots" or low utilization, turning performance management from a one-time task into a cycle of continual optimization.
 
+=================================================
+COST OPTIMIZATION
+=================================================
 
 Cost Optimization is the practice of delivering maximum business value at the lowest possible price point. While initial deployments—especially "lift and shift" migrations—often prioritize speed over efficiency, long-term success requires a shift toward data-driven decision-making. By balancing the need for rapid delivery with consistent benchmarking, organizations can move away from over-provisioned "just in case" environments and fully realize the economic advantages of the cloud.
 
