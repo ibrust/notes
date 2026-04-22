@@ -358,15 +358,28 @@ Critical data must be encrypted to support both financial security and regularit
 In AWS, the user maintains full ownership of their data, and decides which region it's stored in. 
     Data stays within its designated region unless explicitly moved by the user. 
 
-To protect data at rest AWS uses KMS and SSE. 
+To protect data at rest AWS uses Key Management Service (KMS) and Server-Side Encryption (SSE). 
 
 AWS Key Management Service (KMS) provides automated key management as a centralized service.
     This handles the entire key lifecycle: generation, storage, distribution, rotation, and retirement. 
     Automating this reduces human error and ensures security standards (like regular rotation) are met consistently.
 
+Envelope encryption is a hierarchical encryption strategy used by AWS.
+    It combines both symmetric and asymmetric encryption.
+    The KMS encrypts the data with a Data Encryption Key (DEK) that gets generated. 
+        Then the DEK itself is encrypted using a master key also in KMS (formerly called a Customer Master Key),
+        and the DEK is stored with the encrypted data. So even if someone gets ahold of the DEK, 
+        it can't be used for decryption without calling the KMS to use the master key to unwrap it.
+        The benefit of this strategy is really performance and scalability. The request to KMS to decrypt the data 
+        only needs to send the DEK and get back the decrypted DEK. Then the bulk of the decryption operation can be
+        performed locally using the decrypted DEK.
+        It also simplifies security governance, because rotating the master key doesn't require reencrypting 
+        the entire dataset, you only need to rewrap the DEK. 
+
 AWS provides Server-Side Encryption (SSE), which encrypts data before writing it to disk and decrypts during retrieval. 
     In Amazon S3, SSE is implemented in 3 different models. 
-    The models differ in who manages the encryption keys and the level of control / auditability they provide:
+    The models all use envelope encryption. They differ in who manages the master key and the level of control /
+        auditability they provide:
 
         SSE-S3      the most integrated and automated option. AWS manages the data keys entirely.
                         this is the default model used by all new S3 buckets. 
@@ -397,9 +410,9 @@ You can also enable versioning on an S3 bucket, which will guard against acciden
 And you can enable S3 data events, which will record in CloudTrail every API call made to the S3 bucket. 
     It'll identify the user / role responsible for the action, and what action they performed. 
     The SSE-KMS logging tells you which keys were used, but the S3 logging tells you which files were accessed.
-        
 
-To protect data in transit AWS uses TLS. 
+
+AWS uses TLS to protect data in transit. 
 
 SSL termitation (aka SSL offloading) is when an SSL connection is terminated at proxy (usually a load balancer),
     decrypted, then forwarded to internal servers. 
@@ -419,6 +432,17 @@ SSL termination does make internal traffic unencrypted, but that's often conside
     because it occurs within a VPC (Virtual Private Cloud). 
 However, organizations with high security requirements or strict regularly compliance requirements
     may require SSL Bridging or End-to-End Encryption instead. 
+
+
+AWS's VPC Encryption Controls (VPCEC) allow you to monitor / enforce encryption for all traffic in the VPC. 
+    This enforcement occurs at the hardware level (via Nitro Cards), not the application level. 
+    It allows you to ensure no traffic in the VPC is inadvertently or covertly unencrypted.
+
+    The VPCEC can be run in Monitor mode or Enforce mode.
+    In Monitor mode, AWS logs any resources that communicate without encryption. 
+        This is useful for auditing legacy systems. 
+    In Enforce mode, any traffic not encrypted is dropped, and you cannot deploy any instances 
+        that do not have Nitro Cards.
 
 
 Behind the scenes, AWS uses Software Defined Networking (SDN) to manage network configurations.
@@ -476,108 +500,190 @@ Behind the scenes, AWS uses Software Defined Networking (SDN) to manage network 
         The VPC router's distributed design scales infinitely since every new server contains a Nitro Card.
             In contrast, traditional routers have a limited backplane or memory.
 
-        The VPC router is also where VPC encryption is applied and enforced. 
+        The VPC router is also where VPC encryption is applied and enforced ("transparent" encryption for all traffic). 
             When the packet passes through the Nitro Card, AWS enforces hardware-level encryption independent of
-            the OS. AWS's VPC Encryption Controls provide "transparent" encryption for all traffic.
-            Note that this link-layer encryption guards data on the wire, but is gone by the time it reaches the OS. 
+            the OS. It also checks whether the destination supports VPC encryption before proceeding.
+            Note that this link-layer encryption guards data on the wire, but is gone by the time it reaches the OS.
 
+        You can manage Routing Tables in the AWS Console. Here you're really interacting with the SDN Control Plane.
+            The control plane will validate the routes (ensuring they don't overlap or conflict) and push the rules 
+            to the Nitro Cards local cache, as we've discussed.
 
+            Every Routing table has a mandatory "Local" route that covers the VPCs whole CIDR block. 
+                This Route is immutable - it can't be removed from the table. 
+                It's like a base level route. 
+                It'll catch everything local that doesn't match a longer, more specific route. 
 
+        Within a VPC, each VPC subnet should have exactly one associated AWS Routing Table. 
         
-        The primary function of the routing tables is to define the "Public" or "Private" status of a subnet. Although an Internet Gateway is attached to the VPC as a whole, it remains dormant for any specific subnet until that subnet’s route table is updated with a "Default Route" ($0.0.0.0/0$) pointing to the gateway. This architectural choice places the power of network segmentation directly in the hands of the architect. By creating a custom route table and associating it with a specific subnet, you effectively create a logical boundary. You can ensure that your database tier, for example, has no route to the internet at all, while your web tier uses its route table to communicate with the outside world.In modern 2026 architectures, this routing layer is also where the VPC Encryption Controls and Gateway Load Balancers are integrated. By manipulating the routes, you can force traffic to move through a specific sequence of "inspection" subnets before it ever reaches its final destination. This "Next Hop" logic allows you to treat the route table as a programmable switchboard, directing traffic through firewalls, intrusion detection systems, or private service endpoints, all while the underlying hardware ensures that every byte remains encrypted and isolated from other tenants in the AWS ecosystem.
+            The Routing Table defines whether the subnet is public or private. 
+                A public subnet is one with an Internet Gateway (IGW) in its Routing Table.
+                A private subnet has a Routing Table that points traffic to a NAT Gateway (Hyperplane) 
+                    or a Virtual Private Gateway (VPN / Direct Connect)
+        
+            The Nitro Card will handle requests differently depending on the Destination in the Routing Table: 
+                - it's the Local Route:
+                    this trigges a query to the Mapping Service 
+                    it's treated as Peer-to-Peer communication within the VPC 
+                - it's a NAT Gateway / Network Load Balancer / Gateway Load Balancer / AWS PrivateLink: 
+                    the packet gets forwarded to the Hyperplane.
+                    All the network components listed are stateful so the Hyperplane should be consulted. 
+                - it's an Interface VPC Endpoint: 
+                    traffic is redirected to the services ENI (Elastic Network Interface)
+        
+            If multiple routes could match a packet, it'll match the longest prefix in the table (most specific address)
 
+            Without a Routing Table association, subnets default to use the VCP's Main Route Table. 
+                But this is dangerous if a public route is in the main table - the subnet will be public.
+                This is why it's best practice not to add public routes to the main table.
+                    By keeping the main table private, misconfigured subnets won't accidentally be given public access.
 
-In AWS, the Internet Gateway connects the public internet to the VPC. 
+In AWS, a Public IP is temporary. It will remain constant as long as the instance stays running, 
+    but when it stops or terminates the IP gets released. It comes from a regional pool of IPs that are associated 
+    with the running instance when it starts. 
 
+An Elastic IP (EIP) is a reserved IPv4 address that remains associated with your account until you release it. 
+    It's called elastic because it can be quickly remapped to new instances if they happen to crash. 
 
-        Technically, this statement is partially accurate but incomplete, and that missing nuance is exactly what leads to security vulnerabilities in network design.At the infrastructure level, an Internet Gateway (IGW) is a horizontally scaled, redundant, and highly available software-defined component. While we often describe it as "connecting" the internet to the VPC, it is more accurate to describe it as a translator and a doorway. It provides a target in your VPC route tables for internet-bound traffic and performs Static Network Address Translation (Static NAT) for instances that have been assigned public IP addresses.The "accuracy" problem in your statement lies in the word "connects," which implies an automatic, open pipe. In reality, attaching an IGW to a VPC does absolutely nothing to your traffic until two other conditions are met at the subnet and instance levels.First, the infrastructure-level software (the VPC Router) must be programmed via a Route Table to recognize the IGW. Even if an IGW is attached to the VPC, a subnet remains "private" and isolated from the internet until a route is explicitly added that directs traffic destined for the outside world ($0.0.0.0/0$) to that specific Gateway. Without this instruction, the "connection" between the internet and that specific segment of your network does not exist.Second, the IGW only facilitates communication for instances that possess a Public IP address. Because VPCs use private address ranges (such as $10.0.0.0/16$), the public internet has no way of routing packets back to those internal addresses. The Internet Gateway manages this by maintaining a 1-to-1 mapping between an instance's private IP and its public IP. When traffic leaves the VPC, the IGW swaps the private source address for the public one; when traffic returns, it performs the reverse.Therefore, a more precise architectural definition would be: The Internet Gateway is a VPC-level edge component that enables communication between the VPC and the internet by serving as a routing target and performing address translation, but it only facilitates "connectivity" for subnets and instances that are explicitly configured to use it.
-
-
+An AWS Internet Gateway can be attached to a VPC and serve as a connection / translation point for the public internet.
+    It's actually a distributed service. It's horizontally scalable and very reliable.
+    It provides a target in Routing tables for internet bound traffic.
+        For the Internet Gateway to get used, subnets must add a route to their Routing tables 
+        to direct internet "Default Route" traffic ($0.0.0.0/0$) to it. 
+    It also performs Static Network Address Translation (Static NAT) for instances that have Public/ Elastic IPs.
+        Public / Elastic IPs can be associated with Elastic Network Interfaces (ENIs). 
+            Resources which require external visibility can in turn be assigned these ENIs.
+            The most common of such resources are EC2 instances in a public subnet. 
+                The way this works is the EC2 instance's ENI is given a Public or Elastic IP.
+                But the instance's OS remains unaware of the Public / Elastic IP. It only knows about the private one. 
+                The Internet Gateway Service will translate between the Public / Elastic IP and the private one. 
+            Internet-Facing Load Blanacers require Public / Elastic IPs, as do a variety of other components. 
+            Public NAT Gateways explicitly require Elastic IPs.
 
 VPC subnets are isolated parts of a VPCs IP address range (configured by dividing up CIDR blocks). 
-    Subnets ared used to hierarchically structure a private network (e.g., setting a tiered architecture).
+    Subnets ared used to hierarchically structure a private network (e.g., setting up a tiered architecture).
         This is beneficial for security - you establish entry points to the subnet and control access in and out.
-
-    
-
+    By combining Subnets with Routes you can force traffic through specific components for packet inspection.
+        For example, you can direct traffic through firewalls, intrusion detection systems, etc..
 
     In AWS, a subnet's first 4 IPs and last IP are reserved (DNS, VPC router, network address, etc.). 
     
     A VPC spans an entire AWS Region, but a VPC subnet is isolated to one Availability Zone. 
 
 
+In Networking, a virtual appliance is a virtual machine designed to perform a network function that was traditionally
+    handled by physical hardware. Unlike standard software, which runs on a general purpose OS, a virtual appliance
+    is a pre-packaged image (like an Amachine Machine Image) with "just enough" operating system (JeOS). 
+    The JeOS is hardened and stripped of unneeded services. This improves performance and reduces attack surface. 
+    The entire image (kernel / application / dependencies) are highly optimized to perform specific networking tasks 
+    such as as inspection, encryption, traffic shaping, etc., replacing physical network devices.
 
-AWS's Elastic Load Balancer (ELB) is a distributed service consisting of a service plane and data plane.
-    The data plane consists of worker nodes, which are load balancers of various types.
-    Each VPC subnet (which is tied to a single availability zone) will have at least 1 load balancer node. 
+    They're mainly used for sophisticated security and traffic management such as Next-Generation Firewalls (NGFW),
+    Intrusion Prevention Systems (IPS), Deep Packet Inspection (DPI) tools, etc.. 
+
+    One advantage of these being virtual is they're scalable and easily replicated. 
+
+
+AWS's Elastic Load Balancer (ELB) is a distributed service made up of a service / data plane (like so many AWS services).
+    The ELB service plane is regional. It provides an API, and handles orchestration / configs / scaling / monitoring.
+        When you create an ELB, you're really telling AWS to provision a fleet of managed Nodes in your VPC. 
     
+    The ELB data plane consists of load balancers of various types, which are the worker nodes.
+        The data plane is zonal. If you enable 3 Availability Zones, AWS will place worker nodes in each one.
+        Every VPC subnet (tied to a single availability zone) will have at least 1 load balancer node. 
+
+    When a load balancer is deployed, each selected subnet gets a node provisioned for it. 
+        The ELB creates an Elastic Network Interface (ENI) for each node. 
+        Each node gets a private IP from the subnets CIDR block.
+            The ELB service automatically leases these IPs from the subnet without your manual intervention. 
+            But to allow room for scaling, best practice is to keep at least 8 IPs per subnet free (or use a /27 mask). 
+        As traffic fluctuates, the ELB service autoscales the number of nodes, adding / removing ENIs as necessary.
+            One consequence of autoscaling is the load balancers IPs are constantly changing.
+        When deploying the load balancer you're given one stable DNS name (e.g. my-alb-123.us-east-1.elb.amazonaws.com). 
+            This is used to identify the Load Balancer globally across all Subnets and Availability Zones. 
+            It's not part of the ENI. It is a pointer managed by AWS's DNS servers. 
+            When a client looks up this stable DNS name, AWS's DNS service returns a list of A-records (IP addresses). 
+                These IPs are the addresses of the specific ENI load balancer nodes that are currently available.
+            
+            While each ENI node does have its own private DNS name, you almost never use those directly.
+                This is so that, if a node fails or scales away, the ELB service just instructs the DNS to remove 
+                that specific IP from the A-record list. Meanwhile, the stable DNS name never changes.   
+
+        The load balancer node will continuously perform health checks for all its registered targets. 
+            It will only route new connections to eligible, healthy targets. 
+        
+        So adding load balancers enhances both the elasticity and fault tolerance of your systems. 
+
+    The load balancers (depending on the type) can provide SSL termination, SSL bridging, or End-to-End encryption.
+
+    Types of load balancers include: 
+        - Application Load Balancer (ALB)
+            This is a Layer 7 (Application Layer) proxy designed for web traffic and microservices.
+            Since it operates at the application layer, it can inspect HTTP headers, cookies, and URLs.
+            This allows it to route requests based on content (e.g., routing /api URLs to servers 
+            and /image URLs to an object store). 
+            With VPC Encryption Controls setup the ALB usually does SSL Bridging, where it decrypts packets
+            to make routing decisions then reencrypts them before sending them off. 
+
+        - Network Load Balancer (NLB)
+            This is a Layer 4 (Transport Layer) proxy designed to handle IP protocols and port numbers for millions of
+            requests with ultra-low latency. It provides a static IP address per Availability Zone, making it useful
+            for applications requiring fixed endpoints or long-lived connections (e.g. WebSockets). 
+            It doesn't inspect the payload and provides End-to-End Encryption.
+
+        - Gateway Load Balancer (GWLB)
+            This is a Layer 3 (Network Layer) proxy designed to easily integrate third party virtual appliances. 
+            Since GWLB operates at Layer 3 it listens for all IP packets, regardless of port or protocol. 
+
+            The GWLB acts as a single entry and exit point for traffic directed at your virtual appliances. 
+                Using Gateway Load Balancer Endpoints (GWLBE) traffic can be steered from an application VPC 
+                to a centralized security VPC, inspected, and then returned to its original path. 
+
+            Like other load balancers, the GWLB provides health monitoring and scaling of virtual appliances. 
+            
+            The GWLB enables the entire security stack to be located in a dedicated, isolated VPC, 
+                which simplifies governance and administration, among other things. 
 
 
-        The Service Plane (The Orchestrator)
-        The Service Plane (often called the Control Plane) is the administrative "brain" of the system. It handles the logic, configuration, and monitoring of the load balancer without ever touching the actual data packets. Its primary responsibilities include:
+A "clean room" in Incident Response refers to an isolated VPC or separate AWS account used to create a sandbox for
+    investigating security breaches. Production data will be copied into it (using EBS snapshots). The security team 
+    will freeze the compromised resource, take a snapshot of its EBS volumes, and then re-encrypt and attach those 
+    volumes to a forensic workstation inside the clean room.
 
-        Configuration Management: Processing API calls to create or update listeners, target groups, and security settings.
+    This allows for forensic investigation without risking integrity of production data or the safety of the network. 
+    Security teams can perform root cause analysis, memory forensics, and malware execution here. 
+        The environment isn't connected to the public internet, which prevent malware from communicating outside. 
+        It has strict ingress rules, with VPC Endpoints to only required services like S3 (logging) or KMS (decryption).
+        Logging ensures the evidence is preserved in a way that meets legal and regulatory requirements.
 
-        Orchestration: Monitoring the health of backend targets and communicating those status changes to the data plane.
+    These environments are typically deployed using Infrastructure as Code (IaC) like AWS CloudFormation or Terraform. 
+        This ensures the environment is consistent, so that small config differences don't undermine the investigation.
 
-        Elasticity: Watching traffic metrics and automatically provisioning or removing worker nodes in the data plane to handle fluctuations in demand.
+Using AWS APIs you can automate, in response to threat detection, the isolation and freezing of compromised instances, 
+    and taking of EBS snapshots. It's important to simulate security incidents regularly to practice working with these
+    tools, and to verify the tools are setup correctly / that people are prepared.
 
-        The Data Plane (The Muscle)
-        The Data Plane consists of the actual Worker Nodes—managed resources deployed into your specific VPC subnets. This is where the "heavy lifting" occurs:
-
-        Traffic Processing: These nodes intercept incoming requests, perform SSL/TLS decryption (for ALB/NLB), and execute routing logic to forward traffic to the healthiest backend target.
-
-        Physical Presence: Unlike the regional service plane, the data plane is zonal. If you enable three Availability Zones, AWS places worker nodes in all three to ensure high availability.
-
-        Implementation Variance: The nature of these nodes changes by type: ALB nodes are software-based reverse proxies, while NLB nodes are hardware-accelerated interfaces powered by the AWS Hyperplane for massive throughput.
-
-
-
-
-        To understand ELB (Elastic Load Balancing) fundamentally, you have to distinguish between the Service Plane (the brand and management tools) and the Data Plane (the actual "workers" that move your traffic).1. ELB as a "Management Plane"Specifically, ELB is an AWS Managed Service Framework. It is not a single piece of hardware; it is a set of APIs and control logic that manages specialized resources on your behalf.When you "create an ELB," you are actually instructing AWS to provision a fleet of managed resources (Load Balancer Nodes) into your VPC. ELB acts as the "brain" that:Auto-Scales: It monitors the traffic hitting your load balancer and automatically adds or removes the underlying "balancer nodes" to handle the load.Health Monitoring: It constantly "pings" your backend targets (EC2, Lambda, etc.) and updates its internal routing table to avoid dead servers.DNS Integration: It provides a stable DNS name (like my-load-balancer-1234.us-east-1.elb.amazonaws.com) and manages the underlying IP addresses so you don't have to.2. The Relationship Between ELB and the Specific BalancersYou can think of ELB as the "Parent Class" in a software project, while the ALB, NLB, and GLB are the "Child Classes" that inherit basic properties but perform very different specific jobs.ComponentWhat it is exactlyELB ServiceThe AWS "wrapper" that handles billing, API calls, CloudWatch metrics, and high-level scaling logic.ALB (The Specialist)A Layer 7 Application Proxy. It's a fleet of managed software instances that can "read" your HTTP traffic.NLB (The Speedster)A Layer 4 Flow-Hash Engine. It uses specialized AWS hardware (Hyperplane) to route packets without looking inside them.GWLB (The Bridge)A Layer 3 Gateway. It creates a transparent tunnel to send all your traffic through a security appliance (like a firewall) and back.3. The "Invisible" InfrastructureOne of the most common misconceptions is that an ELB is a single virtual machine. In reality, an ELB consists of:Nodes in every Subnet: If you select three Availability Zones, AWS provisions at least one "balancer node" in each zone.The Controller: A behind-the-scenes system that watches your Auto Scaling groups and updates the nodes whenever a new server is born or dies.4. How it fits with your 2026 VPC ControlsBy 2026, the "ELB" service has become the primary enforcement point for the VPC Encryption Controls. Because ELB is a managed service, AWS can upgrade the underlying hardware of all your balancers (ALB and NLB alike) to the latest Nitro chips. This allows them to enforce encryption on the "wire" within your VPC without you having to update your application code.In summary, ELB is the Orchestrator. It’s the platform that takes your requirements ("I need to route by URL" or "I need a static IP") and deploys the specific network machinery (ALB or NLB) to make it happen.
-
+You need detailed logging to be able to reconstruct the full trail and timeline of an incident. 
+    Detailed logging facilitates root cause analysis. 
+    It also allows you to identify all the resources that were impacted.
 
 
+Application security (AppSec) is the ongoing process of securing software by identifying, fixing, and preventing
+    vulnerabilities throughout the entire SDLC (from design to deployment).
+AppSec is not merely technical, it's a philosophy.
+    Its "Shift Left" philosophy suggests that security is a foundation requirement and should be considered 
+    early on in development, not afterwards. Threat modeling and risk assessments should be performed during 
+    the initial design phase.
 
-
-        The Elastic Load Balancing (ELB) service is the foundational abstraction within AWS that manages the automated distribution of incoming application traffic across multiple targets, such as Amazon EC2 instances, containers, and IP addresses. By acting as a single point of contact for clients, the ELB enhances the fault tolerance of applications, ensuring that even if an individual component fails, the system remains available. While the ELB family shares common features like health checks and integration with Auto Scaling, the specific behavior of a load balancer depends on its type: Application, Network, or Gateway.
-
-        The Application Load Balancer (ALB) is a sophisticated, Layer 7 (Application Layer) proxy designed specifically for modern web traffic and microservices. Because it operates at the highest level of the OSI model, it is "content-aware," meaning it terminates the client connection to inspect HTTP headers, cookies, and URL paths. This allows the ALB to perform advanced request-level routing, such as directing /api traffic to one set of servers and /images to another. In the context of the 2026 VPC Encryption Controls, the ALB typically utilizes SSL Bridging, where it decrypts traffic to make routing decisions and then re-encrypts it before sending it to the backend to maintain a secure environment.
-
-        In contrast, the Network Load Balancer (NLB) is built for extreme performance and operates at Layer 4 (Transport Layer). It is designed to handle millions of requests per second with ultra-low latency by focusing solely on IP protocols and port numbers. Fundamentally, the NLB acts as a high-speed traffic cop that provides a static IP address per Availability Zone, making it the ideal choice for applications requiring fixed endpoints or long-lived connections like WebSockets. Because it does not inherently inspect the application payload, it supports End-to-End Encryption (SSL Passthrough), allowing encrypted data to flow untouched from the client to the server, satisfying the strictest zero-trust compliance requirements.
-
-        Finally, the Gateway Load Balancer (GWLB) serves a specialized niche by combining the functions of a transparent network gateway and a load balancer. Operating at Layer 3 (Network Layer), the GWLB is primarily used to scale and manage a fleet of third-party "inline" virtual appliances, such as firewalls, intrusion detection systems, or deep packet inspection tools. It uses the GENEVE protocol to wrap original packets and route them to security appliances for inspection before they reach their final destination. This allows architects to insert sophisticated security checkpoints into their network architecture seamlessly, ensuring that all traffic—whether encrypted or unencrypted—is thoroughly vetted by the designated security stack without disrupting the flow of the application.
-
-
-
-
-
-
-
-
-You can use AWS's Elastic Load Balancer (ELB) for SSL termination, 
-    SSL bridging (often in combination with an Application Load Balancer), or End-to-End encryption.
-
-
-        Additionally, the recent introduction of VPC Encryption Controls in 2026 allows architects to monitor and enforce encryption for all traffic flows within and across Virtual Private Clouds, providing a programmable way to ensure that no unencrypted traffic exists within the network environment.In conclusion, the AWS encryption model functions by integrating automated key management with high-durability storage and secure transit protocols to form a cohesive defense-in-depth architecture. By utilizing envelope encryption—where a master key in KMS protects unique data keys—AWS provides a scalable way to secure vast amounts of information without compromising performance. When combined with rigorous logging and the latest network-level encryption enforcement tools, these controls provide the necessary assurance that data remains confidential and integral throughout its entire lifecycle in the cloud.
-
-        The integration of secure communication protocols and automated networking controls is a cornerstone of the AWS Well-Architected Framework’s Security pillar. At the network perimeter, Transport Layer Security (TLS) serves as the standard for ensuring that data is encrypted as it moves between users and the AWS cloud. By utilizing Elastic Load Balancing (ELB), architects can implement SSL Termination (also known as SSL Offloading), which centralizes the management of digital certificates through AWS Certificate Manager (ACM). In this configuration, the load balancer handles the computationally intensive task of the TLS handshake and decryption, allowing backend application servers to focus exclusively on processing business logic. For environments with stricter compliance requirements, such as those governed by PCI DSS or HIPAA, architects often opt for SSL Bridging, where the load balancer decrypts traffic for inspection and immediately re-encrypts it before sending it to the backend, maintaining encryption-in-transit throughout the entire internal network path.The VPC Encryption Controls introduced in 2026 represent a significant evolution in network security by moving encryption enforcement from the application layer down to the infrastructure layer. Operating in two distinct modes—Monitor and Enforce—this feature allows security teams to eliminate "shadow" unencrypted traffic within their Virtual Private Clouds. In Monitor mode, AWS provides detailed logs identifying any resources communicating in plaintext, which is essential for auditing legacy systems. Enforce mode, however, takes a proactive stance by dropping any traffic that is not encrypted and preventing the deployment of non-Nitro-based instances that lack the hardware-accelerated AES-256 encryption capabilities required for transparent network protection. This ensures that every packet moving between modern EC2 instances, Load Balancers, and VPC Endpoints is automatically protected by hardware-level encryption without requiring manual configuration of TLS within the application code itself.This network-level security is seamlessly integrated with the storage-level protection provided by Envelope Encryption. This cryptographic design pattern is used by AWS Key Management Service (KMS) to solve the performance and latency issues inherent in managing large-scale data encryption. In this model, a KMS Key (the master key) never leaves the secure boundaries of the AWS hardware security modules. Instead, it is used to encrypt a unique Data Key (DEK), which is then sent to the storage service, such as Amazon S3 or EBS. The storage service uses this plaintext data key to encrypt the actual data locally and then stores the encrypted version of the key alongside the data. This "envelope" approach allows for high-speed encryption of massive files because the heavy cryptographic work happens at the storage edge, while the master key remains centrally managed and auditable.When these transit and rest protections are combined with AWS CloudTrail, they form a cohesive Defense-in-Depth architecture that provides end-to-end visibility and accountability. Every network flow monitored by VPC Encryption Controls and every cryptographic request handled by KMS generates a permanent, immutable log entry. This creates a "Golden Record" that security teams can use to prove to auditors that data was not only encrypted while at rest on a durable 11-nines storage system but was also protected by modern TLS ciphers while moving through the network. This multi-layered strategy ensures that even if one security control is bypassed, the confidentiality and integrity of the data are maintained by secondary and tertiary layers of protection.
-
-
-
-Incident response is the safety net that ensures an organization can maintain operations even when preventive measures fail. The speed of recovery depends heavily on architectural readiness, which involves designing systems that can be easily isolated or contained without causing a total service collapse. To achieve this, security teams must have pre-defined access and a suite of "clean room" environments—often provisioned via AWS CloudFormation—where forensic investigations can take place in a safe, isolated space without contaminating production data.
-
-A proactive approach relies on automated response mechanisms. By leveraging AWS APIs, organizations can trigger the automated isolation of compromised instances and initiate immediate data capture for forensics the moment a threat is detected. This removes the latency of manual human intervention during a critical event. However, these automated tools are only effective if they are routinely validated. Game days (simulated security incidents) serve as a practice ground to verify that the architecture, tooling, and personnel are prepared to restore operations to a known good state under pressure.
-
-Detailed logging provides the forensic trail necessary to reconstruct the timeline of an incident. By capturing file access and configuration changes, teams can conduct a deep root cause analysis to identify exactly which assets were impacted. When these logs are integrated with automated alerting, they create a continuous loop of detection and remediation that significantly minimizes the potential impact on the organization.
-
-
-Application security (AppSec) is the systematic integration of security into the design, build, and testing phases of software development. A "shift-left" strategy is central to this, using techniques like threat modeling during the design phase to identify and resolve flaws before they become costly production defects. By incorporating security controls early in the Software Development Lifecycle (SDLC), organizations can minimize technical debt and ensure that security is treated as a foundational requirement rather than a final hurdle.
-
-A mature AppSec program focuses on four critical areas: the organization’s culture, the security of the build pipeline, security in the pipeline, and dependency management. Securing the pipeline itself ensures that the infrastructure used to deploy code is not a point of vulnerability, while security in the pipeline utilizes automated testing to provide builders with high-fidelity feedback in real-time. This automation reduces the time required for manual security reviews and increases the velocity at which secure features can be delivered to production.
-
-Ultimately, success in AppSec relies as much on people as it does on technology. Properly trained personnel must understand the security properties of their tools and the risks associated with third-party libraries. By maintaining a structured mechanism to identify and fix issues—and validating those fixes through continuous testing—organizations can significantly reduce the likelihood of security defects reaching live environments. This end-to-end view ensures that every component, from the initial line of code to the final deployment, is verified for integrity.
-
+The four pillars of AppSec are: 
+    Culture: 
+        Security must be a shared responsibility across the entire org
+    Pipeline Infrastructure:
+        The servers, tools, and environments used to build / deploy code must be secure.
+    Automated Validation: 
+        Integrate automated security testing into CI/CD. 
+    Dependency Management: 
+        Most modern applications rely heavily on open source libraries. Managing their security is essential. 
 
 
 =================================================
